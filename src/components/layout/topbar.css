@@ -1,0 +1,265 @@
+/* ============ TOPBAR ============ */
+.topbar {
+  height: 64px;
+  background: #fff;
+  border-bottom: 1px solid #e8ede9;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  flex-shrink: 0;
+  gap: 16px;
+}
+
+/* ---------- LEFT ---------- */
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1;
+  min-width: 0;
+}
+
+.topbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: #1b4332;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: -0.01em;
+  flex-shrink: 0;
+}
+.topbar-brand-icon { font-size: 22px; }
+
+/* Clock */
+.topbar-demo-clock {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f7faf8;
+  border: 1px solid #e0e9e3;
+  border-radius: 8px;
+  padding: 5px 12px;
+  flex-shrink: 0;
+}
+.clock-icon { font-size: 14px; color: #2d6a4f; }
+.clock-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+.clock-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #1b4332;
+}
+.clock-sub {
+  font-size: 10px;
+  color: #6b7280;
+}
+
+/* Time travel button */
+.topbar-time-btn {
+  background: #1b4332;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  flex-shrink: 0;
+  font-family: inherit;
+}
+.topbar-time-btn:hover { background: #14352a; }
+
+/* Search */
+.topbar-search {
+  flex: 1;
+  max-width: 500px;
+  background: #f7f9f8;
+  border: 1px solid #e0e9e3;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 13px;
+  outline: none;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+.topbar-search:focus {
+  border-color: #2d6a4f;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.1);
+}
+.topbar-search::placeholder { color: #9ca3af; }
+
+/* ---------- RIGHT ---------- */
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.topbar-bell {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+.topbar-bell:hover { background: #f0f4f1; }
+.topbar-bell-badge {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  border: 2px solid #fff;
+}
+
+/* ---------- User ---------- */
+.topbar-user { position: relative; }
+
+.topbar-user-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 5px 8px;
+  border-radius: 10px;
+  transition: background 0.15s;
+  font-family: inherit;
+}
+.topbar-user-btn:hover { background: #f0f4f1; }
+
+.topbar-user-info {
+  text-align: right;
+  line-height: 1.15;
+}
+.topbar-user-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1f2937;
+}
+.topbar-user-role {
+  font-size: 10px;
+  color: #6b7280;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  margin-top: 1px;
+}
+
+.topbar-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #1b4332;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+.topbar-avatar-lg { width: 44px; height: 44px; font-size: 18px; }
+
+.topbar-chevron {
+  font-size: 12px;
+  color: #6b7280;
+  margin-left: -4px;
+}
+
+/* ---------- Dropdown ---------- */
+.topbar-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 260px;
+  background: #fff;
+  border: 1px solid #e0e9e3;
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+  padding: 8px;
+  z-index: 1000;
+  animation: dropdownFade 0.15s ease-out;
+}
+@keyframes dropdownFade {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.topbar-dropdown-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+}
+.topbar-dropdown-header .name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1f2937;
+}
+.topbar-dropdown-header .email {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+.topbar-dropdown-divider {
+  height: 1px;
+  background: #e8ede9;
+  margin: 6px 0;
+}
+.topbar-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #1f2937;
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-family: inherit;
+}
+.topbar-dropdown-item:hover { background: #f0f4f1; }
+.topbar-dropdown-item .icon { font-size: 16px; width: 20px; text-align: center; }
+.topbar-dropdown-item-danger { color: #dc2626; }
+.topbar-dropdown-item-danger:hover { background: #fef2f2; }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1280px) {
+  .topbar-demo-clock { display: none; }
+}
+@media (max-width: 991.98px) {
+  .topbar-time-btn { display: none; }
+  .topbar-user-info { display: none; }
+}
