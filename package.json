@@ -6,13 +6,14 @@
   "scripts": {
     "dev": "vite",
     "server": "json-server db.json --port 9999",
-    "dev:all": "concurrently -k -n api,web -c blue,green \"npm:server\" \"npm:dev\"",
+    "dev:all": "concurrently -k -n api,web -c blue,green \"npm:server\" \"npm:dev:server\"",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"src/**/*.{ts,tsx,css,json}\"",
-    "format:check": "prettier --check \"src/**/*.{ts,tsx,css,json}\""
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,css,json}\"",
+    "dev:server": "vite --mode server"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.2.7",

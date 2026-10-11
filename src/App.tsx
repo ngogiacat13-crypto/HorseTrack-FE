@@ -4,6 +4,8 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './index.css';
 import './styles/tokens.css';
 import './styles/ht.css';
+import './styles/trainer.css';
+import './styles/vet.css';
 import { AuthProvider, useAuth } from './auth/AuthContext';
 import { ToastProvider } from './components/ui/Ht';
 import { ROLE_HOME, Role } from './api/mockData';
@@ -24,6 +26,22 @@ import { ManagerUsers } from './pages/manager/ManagerUsers';
 import { ManagerAuditLogs } from './pages/manager/ManagerAuditLogs';
 import { TrainerHerdOverview } from './pages/trainer/HerdOverview';
 import { StableMap } from './pages/trainer/StableMap';
+import { TrainerHorseRecord } from './pages/trainer/TrainerHorseRecord';
+import { TrainerPlans } from './pages/trainer/TrainerPlans';
+import { TrainerPlanCreate } from './pages/trainer/TrainerPlanCreate';
+import { TrainerSchedule } from './pages/trainer/TrainerSchedule';
+import { TrainerSessionDetail } from './pages/trainer/TrainerSessionDetail';
+import { TrainerRaces } from './pages/trainer/TrainerRaces';
+import { TrainerProposalCreate } from './pages/trainer/TrainerProposalCreate';
+import { VetHerd } from './pages/vet/VetHerd';
+import { VetInbox } from './pages/vet/VetInbox';
+import { VetHorseHealth } from './pages/vet/VetHorseHealth';
+import { VetProtocols } from './pages/vet/VetProtocols';
+import { VetProtocolCreate } from './pages/vet/VetProtocolCreate';
+import { VetProtocolDetail } from './pages/vet/VetProtocolDetail';
+import { VetVaccinations } from './pages/vet/VetVaccinations';
+import { VetRaceExams } from './pages/vet/VetRaceExams';
+import { VetMedicines } from './pages/vet/VetMedicines';
 import { GroomTodayTasks } from './pages/groom/TodayTasks';
 import { OwnerInvoices } from './pages/owner/Invoices';
 import { HorseProfile } from './pages/shared/HorseProfile';
@@ -71,6 +89,13 @@ const AppRoutes: React.FC = () => {
 
         {/* Trainer */}
         <Route path="/trainer" element={<RoleGuard role="HeadTrainer"><TrainerHerdOverview /></RoleGuard>} />
+        <Route path="/trainer/horses/:id" element={<RoleGuard role="HeadTrainer"><TrainerHorseRecord /></RoleGuard>} />
+        <Route path="/trainer/plans" element={<RoleGuard role="HeadTrainer"><TrainerPlans /></RoleGuard>} />
+        <Route path="/trainer/plans/new" element={<RoleGuard role="HeadTrainer"><TrainerPlanCreate /></RoleGuard>} />
+        <Route path="/trainer/schedule" element={<RoleGuard role="HeadTrainer"><TrainerSchedule /></RoleGuard>} />
+        <Route path="/trainer/sessions/:id" element={<RoleGuard role="HeadTrainer"><TrainerSessionDetail /></RoleGuard>} />
+        <Route path="/trainer/races" element={<RoleGuard role="HeadTrainer"><TrainerRaces /></RoleGuard>} />
+        <Route path="/trainer/races/new" element={<RoleGuard role="HeadTrainer"><TrainerProposalCreate /></RoleGuard>} />
         <Route path="/trainer/stable" element={<RoleGuard role="HeadTrainer"><StableMap /></RoleGuard>} />
 
         {/* Groom */}
@@ -79,8 +104,17 @@ const AppRoutes: React.FC = () => {
         {/* Owner */}
         <Route path="/owner" element={<RoleGuard role="HorseOwner"><OwnerInvoices /></RoleGuard>} />
 
-        {/* Vet & Warehouse */}
-        <Route path="/vet" element={<RoleGuard role="Veterinarian"><Placeholder title="Sức khỏe đàn ngựa" /></RoleGuard>} />
+        {/* Veterinarian */}
+        <Route path="/vet" element={<RoleGuard role="Veterinarian"><VetHerd /></RoleGuard>} />
+        <Route path="/vet/cases" element={<RoleGuard role="Veterinarian"><VetInbox /></RoleGuard>} />
+        <Route path="/vet/horses/:id" element={<RoleGuard role="Veterinarian"><VetHorseHealth /></RoleGuard>} />
+        <Route path="/vet/protocols" element={<RoleGuard role="Veterinarian"><VetProtocols /></RoleGuard>} />
+        <Route path="/vet/protocols/new" element={<RoleGuard role="Veterinarian"><VetProtocolCreate /></RoleGuard>} />
+        <Route path="/vet/protocols/:id" element={<RoleGuard role="Veterinarian"><VetProtocolDetail /></RoleGuard>} />
+        <Route path="/vet/vaccinations" element={<RoleGuard role="Veterinarian"><VetVaccinations /></RoleGuard>} />
+        <Route path="/vet/race-exams" element={<RoleGuard role="Veterinarian"><VetRaceExams /></RoleGuard>} />
+        <Route path="/vet/medicines" element={<RoleGuard role="Veterinarian"><VetMedicines /></RoleGuard>} />
+
         <Route path="/warehouse" element={<RoleGuard role="WarehouseManager"><Placeholder title="Danh sách tồn kho" /></RoleGuard>} />
       </Route>
 

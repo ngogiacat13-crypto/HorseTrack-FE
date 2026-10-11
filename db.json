@@ -116,6 +116,28 @@
       "lastLogin": "29/09 10:00",
       "status": "ACTIVE",
       "horsesOwned": 3
+    },
+    {
+      "id": "11",
+      "username": "minhtam",
+      "password": "password123",
+      "fullname": "Lê Minh Tâm",
+      "email": "tam@horsetrack.vn",
+      "phone": "0912345611",
+      "role": "HeadTrainer",
+      "lastLogin": "02/10 16:20",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "12",
+      "username": "vancuong",
+      "password": "password123",
+      "fullname": "Đỗ Văn Cường",
+      "email": "cuong@horsetrack.vn",
+      "phone": "0912345612",
+      "role": "Groom",
+      "lastLogin": "03/10 06:05",
+      "status": "ACTIVE"
     }
   ],
   "registrations": [
@@ -650,10 +672,23 @@
   ],
   "protocols": [
     {
+      "version": 2,
+      "replaces": "PD-0010",
+      "supersededBy": null,
+      "vet": "Lê Thị Hương",
+      "wait": {
+        "eta": "10/10/2026",
+        "requiredBy": "08/10/2026",
+        "at": "02/10 17:40",
+        "note": "Chờ lô bông gạc SHIP-0024."
+      },
+      "delayed": true,
+      "progress": [],
+      "outcome": null,
+      "alertState": "REQUIRES_VET_REVIEW",
       "id": "PD-0011",
       "horse": "Storm",
       "diagnosis": "Sưng gân gấp chân trước trái",
-      "vet": "Lê Thị Hương",
       "state": "REQUIRES_VET_REVIEW",
       "label": "Cần BS đánh giá lại",
       "tone": "danger",
@@ -667,10 +702,9 @@
         "WAITING_RESTOCK",
         "REQUIRES_VET_REVIEW"
       ],
-      "alertState": "REQUIRES_VET_REVIEW",
       "materials": [
         {
-          "item": "Thuốc ABC · 10 lọ",
+          "item": "Phenylbutazone 20% · 10 lọ",
           "status": "Đủ · đã giữ 10",
           "tone": "success"
         },
@@ -680,7 +714,7 @@
           "tone": "danger"
         },
         {
-          "item": "Thuốc XYZ · 30 viên (GĐ 2)",
+          "item": "Firocoxib 57 mg · 30 viên (GĐ 2)",
           "status": "Đủ",
           "tone": "success"
         }
@@ -710,47 +744,351 @@
           "text": "gửi kiểm tồn · thay thế PD-0010",
           "at": "02/10 16:48"
         }
-      ]
+      ],
+      "horseId": "h-storm",
+      "caseId": "C-0012",
+      "createdAt": "02/10/2026",
+      "requiredBy": "08/10/2026",
+      "phases": [
+        {
+          "no": 1,
+          "name": "Chống viêm cấp",
+          "startDate": "08/10/2026",
+          "days": 10,
+          "goal": "Giảm sưng",
+          "items": [
+            {
+              "itemId": "VT-0002",
+              "name": "Phenylbutazone 20%",
+              "unit": "lọ",
+              "unitPrice": 500000,
+              "qty": 10
+            },
+            {
+              "itemId": "VT-0004",
+              "name": "Bông gạc",
+              "unit": "cuộn",
+              "unitPrice": 50000,
+              "qty": 20
+            }
+          ]
+        },
+        {
+          "no": 2,
+          "name": "Phục hồi gân",
+          "startDate": "19/10/2026",
+          "days": 14,
+          "goal": "Phục hồi vận động",
+          "items": [
+            {
+              "itemId": "VT-0003",
+              "name": "Firocoxib 57 mg",
+              "unit": "viên",
+              "unitPrice": 80000,
+              "qty": 30
+            }
+          ]
+        }
+      ],
+      "stock": {
+        "at": "02/10 17:05",
+        "by": "Trần Văn Kho",
+        "lines": [
+          {
+            "itemId": "VT-0002",
+            "name": "Phenylbutazone 20%",
+            "unit": "lọ",
+            "need": 10,
+            "available": 10,
+            "held": 10,
+            "short": 0,
+            "eta": null,
+            "lot": "L-ABC-0907",
+            "expiry": "09/2027"
+          },
+          {
+            "itemId": "VT-0004",
+            "name": "Bông gạc",
+            "unit": "cuộn",
+            "need": 20,
+            "available": 8,
+            "held": 8,
+            "short": 12,
+            "eta": "10/10/2026",
+            "lot": null,
+            "expiry": null,
+            "shipment": "SHIP-0024"
+          },
+          {
+            "itemId": "VT-0003",
+            "name": "Firocoxib 57 mg",
+            "unit": "viên",
+            "need": 30,
+            "available": 30,
+            "held": 30,
+            "short": 0,
+            "eta": null,
+            "lot": "L-XYZ-0925",
+            "expiry": "03/2027"
+          }
+        ]
+      }
     },
     {
+      "version": 1,
+      "replaces": null,
+      "supersededBy": null,
+      "vet": "Lê Thị Hương",
+      "wait": null,
+      "delayed": false,
+      "progress": [],
+      "outcome": null,
       "id": "PD-0012",
       "horse": "Bolt",
       "diagnosis": "Viêm khớp nhẹ",
-      "vet": "Lê Thị Hương",
-      "state": "WAITING_STOCK_CHECK",
-      "label": "Chờ kho kiểm tồn",
+      "state": "STOCK_AVAILABLE",
+      "label": "Kho đủ hàng — chờ BS xác nhận",
       "tone": "info",
-      "cost": 2400000,
+      "cost": 1600000,
       "open": true,
       "path": [
         "DRAFT",
-        "WAITING_STOCK_CHECK"
+        "WAITING_STOCK_CHECK",
+        "STOCK_AVAILABLE"
       ],
       "materials": [
         {
-          "item": "Thuốc XYZ · 20 viên",
-          "status": "Đang kiểm",
-          "tone": "neutral"
+          "item": "Firocoxib 57 mg · 20 viên",
+          "status": "Đủ · đã giữ 20",
+          "tone": "success"
         }
       ],
-      "note": "Gửi kho lúc 02/10 10:00.",
+      "note": "Kho đã giữ đủ thuốc. Bác sĩ cần xác nhận phác đồ trước khi cấp phát.",
       "log": [
         {
-          "who": "BS Lê Thị Hương",
+          "tone": "success",
+          "who": "Trần Văn Kho",
+          "text": "xác nhận đủ hàng, giữ 20 viên Firocoxib 57 mg",
+          "at": "03/10 09:15"
+        },
+        {
+          "who": "Lê Thị Hương",
           "text": "gửi kiểm tồn",
-          "at": "02/10 10:00"
+          "at": "30/09 09:00"
         }
-      ]
+      ],
+      "horseId": "h-bolt",
+      "caseId": "C-0009",
+      "createdAt": "30/09/2026",
+      "requiredBy": "04/10/2026",
+      "phases": [
+        {
+          "no": 1,
+          "name": "Giảm đau khớp",
+          "startDate": "04/10/2026",
+          "days": 10,
+          "goal": "Hết cứng khớp khi khởi động",
+          "items": [
+            {
+              "itemId": "VT-0003",
+              "name": "Firocoxib 57 mg",
+              "unit": "viên",
+              "unitPrice": 80000,
+              "qty": 20
+            }
+          ]
+        }
+      ],
+      "stock": {
+        "at": "03/10 09:15",
+        "by": "Trần Văn Kho",
+        "lines": [
+          {
+            "itemId": "VT-0003",
+            "name": "Firocoxib 57 mg",
+            "unit": "viên",
+            "need": 20,
+            "available": 20,
+            "held": 20,
+            "short": 0,
+            "eta": null,
+            "lot": "L-XYZ-0925",
+            "expiry": "03/2027"
+          }
+        ]
+      }
     },
     {
+      "version": 1,
+      "replaces": null,
+      "supersededBy": null,
+      "vet": "Lê Thị Hương",
+      "wait": null,
+      "delayed": false,
+      "progress": [],
+      "outcome": null,
+      "alertState": "STOCK_SHORTAGE",
+      "id": "PD-0013",
+      "horse": "Comet",
+      "horseId": "h-comet",
+      "caseId": "C-0011",
+      "diagnosis": "Viêm móng nhẹ chân sau trái",
+      "createdAt": "30/09/2026",
+      "requiredBy": "04/10/2026",
+      "phases": [
+        {
+          "no": 1,
+          "name": "Kháng khuẩn",
+          "startDate": "04/10/2026",
+          "days": 5,
+          "goal": "Hết nóng móng",
+          "items": [
+            {
+              "itemId": "VT-0006",
+              "name": "Ceftiofur 1 g",
+              "unit": "liều",
+              "unitPrice": 220000,
+              "qty": 5
+            },
+            {
+              "itemId": "VT-0011",
+              "name": "Vitamin E + Selen",
+              "unit": "lọ",
+              "unitPrice": 180000,
+              "qty": 20
+            }
+          ]
+        },
+        {
+          "no": 2,
+          "name": "Bảo vệ móng",
+          "startDate": "09/10/2026",
+          "days": 7,
+          "goal": "Móng ổn định",
+          "items": [
+            {
+              "itemId": "VT-0012",
+              "name": "Băng thun tự dính",
+              "unit": "cuộn",
+              "unitPrice": 45000,
+              "qty": 6
+            }
+          ]
+        }
+      ],
+      "state": "STOCK_SHORTAGE",
+      "label": "Thiếu vật tư — chờ BS quyết định",
+      "tone": "danger",
+      "trainingLocked": false,
+      "open": true,
+      "path": [
+        "DRAFT",
+        "WAITING_STOCK_CHECK",
+        "STOCK_SHORTAGE"
+      ],
+      "stock": {
+        "at": "02/10 15:30",
+        "by": "Trần Văn Kho",
+        "lines": [
+          {
+            "itemId": "VT-0006",
+            "name": "Ceftiofur 1 g",
+            "unit": "liều",
+            "need": 5,
+            "available": 5,
+            "held": 5,
+            "short": 0,
+            "eta": null,
+            "lot": "L-K2-0820",
+            "expiry": "08/2027"
+          },
+          {
+            "itemId": "VT-0011",
+            "name": "Vitamin E + Selen",
+            "unit": "lọ",
+            "need": 20,
+            "available": 14,
+            "held": 14,
+            "short": 6,
+            "eta": "15/10/2026",
+            "lot": null,
+            "expiry": null,
+            "shipment": "SHIP-0026"
+          },
+          {
+            "itemId": "VT-0012",
+            "name": "Băng thun tự dính",
+            "unit": "cuộn",
+            "need": 6,
+            "available": 6,
+            "held": 6,
+            "short": 0,
+            "eta": null,
+            "lot": "L-BT-0901",
+            "expiry": "—"
+          }
+        ]
+      },
+      "materials": [
+        {
+          "item": "Ceftiofur 1 g · 5 liều",
+          "status": "Đủ · đã giữ 5",
+          "tone": "success"
+        },
+        {
+          "item": "Vitamin E + Selen · 20 lọ",
+          "status": "Thiếu 6 · ETA 15/10",
+          "tone": "danger"
+        },
+        {
+          "item": "Băng thun tự dính · 6 cuộn",
+          "status": "Đủ",
+          "tone": "success"
+        }
+      ],
+      "note": "Thiếu 6 lọ Vitamin E + Selen, hàng về 15/10 — sau ngày cần thuốc 04/10. Bác sĩ chọn đổi thuốc hoặc chờ.",
+      "log": [
+        {
+          "tone": "warning",
+          "who": "Trần Văn Kho",
+          "text": "báo thiếu Vitamin E + Selen 6 lọ · ETA 15/10",
+          "at": "02/10 15:30"
+        },
+        {
+          "who": "Lê Thị Hương",
+          "text": "gửi kiểm tồn",
+          "at": "30/09 14:40"
+        }
+      ],
+      "cost": 4970000
+    },
+    {
+      "version": 1,
+      "replaces": null,
+      "supersededBy": null,
+      "vet": "Lê Thị Hương",
+      "wait": null,
+      "delayed": false,
+      "progress": [
+        {
+          "at": "30/09 08:30",
+          "by": "Lê Thị Hương",
+          "text": "Hết sốt (37,8°C), còn ho nhẹ buổi sáng."
+        },
+        {
+          "at": "02/10 08:20",
+          "by": "Lê Thị Hương",
+          "text": "Hết dịch mũi, phổi trong. Hoàn tất GĐ 1 kháng sinh."
+        }
+      ],
+      "outcome": null,
       "id": "PD-0009",
       "horse": "Wind",
       "diagnosis": "Theo dõi hô hấp · cách ly",
-      "vet": "Lê Thị Hương",
       "state": "IN_TREATMENT",
       "label": "Đang điều trị · GĐ 1/2",
       "tone": "success",
-      "cost": 3100000,
+      "cost": 2200000,
       "trainingLocked": true,
       "open": true,
       "path": [
@@ -763,7 +1101,7 @@
       ],
       "materials": [
         {
-          "item": "Kháng sinh K2 · 14 liều",
+          "item": "Ceftiofur 1 g · 14 liều",
           "status": "Đã cấp phát",
           "tone": "success"
         }
@@ -782,13 +1120,68 @@
           "text": "xác nhận phác đồ",
           "at": "26/09 15:00"
         }
-      ]
+      ],
+      "horseId": "h-wind",
+      "caseId": "C-0010",
+      "createdAt": "26/09/2026",
+      "requiredBy": "27/09/2026",
+      "phases": [
+        {
+          "no": 1,
+          "name": "Kháng sinh",
+          "startDate": "27/09/2026",
+          "days": 7,
+          "goal": "Hết sốt, giảm ho",
+          "items": [
+            {
+              "itemId": "VT-0006",
+              "name": "Ceftiofur 1 g",
+              "unit": "liều",
+              "unitPrice": 220000,
+              "qty": 10
+            }
+          ]
+        },
+        {
+          "no": 2,
+          "name": "Theo dõi sau điều trị",
+          "startDate": "04/10/2026",
+          "days": 7,
+          "goal": "Đủ điều kiện hết cách ly",
+          "items": []
+        }
+      ],
+      "stock": {
+        "at": "26/09 10:00",
+        "by": "Trần Văn Kho",
+        "lines": [
+          {
+            "itemId": "VT-0006",
+            "name": "Ceftiofur 1 g",
+            "unit": "liều",
+            "need": 10,
+            "available": 10,
+            "held": 10,
+            "short": 0,
+            "eta": null,
+            "lot": "L-K2-0820",
+            "expiry": "08/2027"
+          }
+        ]
+      }
     },
     {
+      "version": 1,
+      "replaces": null,
+      "supersededBy": null,
+      "vet": "Lê Thị Hương",
+      "wait": null,
+      "delayed": false,
+      "progress": [],
+      "outcome": null,
       "id": "PD-0008",
       "horse": "Star",
       "diagnosis": "Phục hồi sau mỏi cơ",
-      "vet": "Lê Thị Hương",
       "state": "READY_FOR_DISPENSING",
       "label": "Chờ cấp phát",
       "tone": "info",
@@ -803,7 +1196,7 @@
       ],
       "materials": [
         {
-          "item": "Gel giảm đau · 2 tuýp",
+          "item": "Gel Diclofenac 1% · 2 tuýp",
           "status": "Đã giữ",
           "tone": "success"
         }
@@ -816,21 +1209,69 @@
           "text": "xác nhận phác đồ",
           "at": "03/10 09:05"
         }
-      ]
+      ],
+      "horseId": "h-star",
+      "caseId": "C-0008",
+      "createdAt": "29/09/2026",
+      "requiredBy": "03/10/2026",
+      "phases": [
+        {
+          "no": 1,
+          "name": "Giảm đau cơ",
+          "startDate": "03/10/2026",
+          "days": 5,
+          "goal": "Hết căng cơ đùi",
+          "items": [
+            {
+              "itemId": "VT-0007",
+              "name": "Gel Diclofenac 1%",
+              "unit": "tuýp",
+              "unitPrice": 625000,
+              "qty": 2
+            }
+          ]
+        }
+      ],
+      "stock": {
+        "at": "29/09 11:00",
+        "by": "Trần Văn Kho",
+        "lines": [
+          {
+            "itemId": "VT-0007",
+            "name": "Gel Diclofenac 1%",
+            "unit": "tuýp",
+            "need": 2,
+            "available": 2,
+            "held": 2,
+            "short": 0,
+            "eta": null,
+            "lot": "L-GEL-0811",
+            "expiry": "11/2027"
+          }
+        ]
+      }
     },
     {
+      "version": 1,
+      "replaces": null,
+      "supersededBy": "PD-0011",
+      "vet": "Lê Thị Hương",
+      "wait": null,
+      "delayed": false,
+      "progress": [],
+      "outcome": null,
       "id": "PD-0010",
       "horse": "Storm",
       "diagnosis": "Sưng gân gấp (bản cũ)",
-      "vet": "Lê Thị Hương",
       "state": "SUPERSEDED",
       "label": "Đã thay thế",
       "tone": "neutral",
-      "cost": 7900000,
+      "cost": 8650000,
       "open": false,
       "path": [
         "DRAFT",
         "WAITING_STOCK_CHECK",
+        "STOCK_SHORTAGE",
         "SUPERSEDED"
       ],
       "materials": [
@@ -847,17 +1288,117 @@
           "text": "tạo bản mới PD-0011",
           "at": "02/10 16:48"
         }
-      ]
+      ],
+      "horseId": "h-storm",
+      "caseId": "C-0012",
+      "createdAt": "27/09/2026",
+      "requiredBy": "06/10/2026",
+      "phases": [
+        {
+          "no": 1,
+          "name": "Chống viêm cấp",
+          "startDate": "06/10/2026",
+          "days": 12,
+          "goal": "Giảm sưng",
+          "items": [
+            {
+              "itemId": "VT-0002",
+              "name": "Phenylbutazone 20%",
+              "unit": "lọ",
+              "unitPrice": 500000,
+              "qty": 10
+            },
+            {
+              "itemId": "VT-0004",
+              "name": "Bông gạc",
+              "unit": "cuộn",
+              "unitPrice": 50000,
+              "qty": 25
+            }
+          ]
+        },
+        {
+          "no": 2,
+          "name": "Phục hồi gân",
+          "startDate": "19/10/2026",
+          "days": 14,
+          "goal": "Phục hồi vận động",
+          "items": [
+            {
+              "itemId": "VT-0003",
+              "name": "Firocoxib 57 mg",
+              "unit": "viên",
+              "unitPrice": 80000,
+              "qty": 30
+            }
+          ]
+        }
+      ],
+      "stock": {
+        "at": "28/09 10:00",
+        "by": "Trần Văn Kho",
+        "lines": [
+          {
+            "itemId": "VT-0002",
+            "name": "Phenylbutazone 20%",
+            "unit": "lọ",
+            "need": 10,
+            "available": 10,
+            "held": 10,
+            "short": 0,
+            "eta": null,
+            "lot": null,
+            "expiry": null
+          },
+          {
+            "itemId": "VT-0004",
+            "name": "Bông gạc",
+            "unit": "cuộn",
+            "need": 25,
+            "available": 8,
+            "held": 8,
+            "short": 17,
+            "eta": "07/10/2026",
+            "lot": null,
+            "expiry": null
+          },
+          {
+            "itemId": "VT-0003",
+            "name": "Firocoxib 57 mg",
+            "unit": "viên",
+            "need": 30,
+            "available": 30,
+            "held": 30,
+            "short": 0,
+            "eta": null,
+            "lot": null,
+            "expiry": null
+          }
+        ]
+      }
     },
     {
+      "version": 1,
+      "replaces": null,
+      "supersededBy": null,
+      "vet": "Lê Thị Hương",
+      "wait": null,
+      "delayed": false,
+      "progress": [
+        {
+          "at": "18/09 09:00",
+          "by": "Lê Thị Hương",
+          "text": "Vết xước đã lành, ngừng sát khuẩn."
+        }
+      ],
+      "outcome": "Lành hoàn toàn 18/09.",
       "id": "PD-0007",
       "horse": "Flash",
       "diagnosis": "Trầy xước nhẹ chân sau",
-      "vet": "Lê Thị Hương",
       "state": "COMPLETED",
       "label": "Hoàn tất",
       "tone": "success",
-      "cost": 650000,
+      "cost": 65000,
       "open": false,
       "path": [
         "DRAFT",
@@ -870,7 +1411,7 @@
       ],
       "materials": [
         {
-          "item": "Dung dịch sát khuẩn · 1 chai",
+          "item": "Povidone-iodine 10% · 1 chai",
           "status": "Đã cấp",
           "tone": "success"
         }
@@ -883,7 +1424,47 @@
           "text": "đóng ca",
           "at": "28/09 16:00"
         }
-      ]
+      ],
+      "horseId": "h-flash",
+      "caseId": "C-0006",
+      "createdAt": "12/09/2026",
+      "requiredBy": "12/09/2026",
+      "phases": [
+        {
+          "no": 1,
+          "name": "Sát khuẩn",
+          "startDate": "12/09/2026",
+          "days": 5,
+          "goal": "Lành vết xước",
+          "items": [
+            {
+              "itemId": "VT-0008",
+              "name": "Povidone-iodine 10%",
+              "unit": "chai",
+              "unitPrice": 65000,
+              "qty": 1
+            }
+          ]
+        }
+      ],
+      "stock": {
+        "at": "12/09 16:40",
+        "by": "Trần Văn Kho",
+        "lines": [
+          {
+            "itemId": "VT-0008",
+            "name": "Povidone-iodine 10%",
+            "unit": "chai",
+            "need": 1,
+            "available": 1,
+            "held": 1,
+            "short": 0,
+            "eta": null,
+            "lot": null,
+            "expiry": null
+          }
+        ]
+      }
     }
   ],
   "shipments": [
@@ -897,10 +1478,17 @@
     },
     {
       "id": "SHIP-0023",
-      "item": "Thuốc ABC · 30 lọ",
+      "item": "Phenylbutazone 20% · 30 lọ",
       "status": "IN_TRANSIT",
       "eta": "07/10",
       "forRef": "bổ sung tồn"
+    },
+    {
+      "id": "SHIP-0026",
+      "item": "Vitamin E + Selen · 20 lọ",
+      "status": "IN_TRANSIT",
+      "eta": "15/10",
+      "forRef": "PD-0013"
     }
   ],
   "invoices": [
@@ -1190,6 +1778,14 @@
         "tone": "success"
       },
       {
+        "time": "09:00",
+        "horse": "Flash",
+        "plan": "Tốc độ · P3",
+        "trainer": "Trần Đức Hùng",
+        "status": "Tạm dừng — chờ HLV",
+        "tone": "warning"
+      },
+      {
         "time": "10:00",
         "horse": "Galaxy",
         "plan": "Sức bền · P2",
@@ -1201,7 +1797,7 @@
         "time": "11:00",
         "horse": "Thunder",
         "plan": "Sức bền · P1",
-        "trainer": "Trần Đức Hùng",
+        "trainer": "Lê Minh Tâm",
         "status": "Sắp diễn ra",
         "tone": "info"
       },
@@ -1209,7 +1805,7 @@
         "time": "14:00",
         "horse": "Star",
         "plan": "Phục hồi · P1",
-        "trainer": "Trần Đức Hùng",
+        "trainer": "Lê Minh Tâm",
         "status": "Chưa bắt đầu",
         "tone": "neutral"
       }
@@ -1322,5 +1918,2690 @@
         "amount": 18900000
       }
     ]
-  }
+  },
+  "horses": [
+    {
+      "id": "h-galaxy",
+      "name": "Galaxy",
+      "breed": "Thoroughbred",
+      "sex": "♂",
+      "age": 4,
+      "microchip": "VN-MC-0031",
+      "owner": "Hoàng Thị Lan",
+      "stall": "A-01",
+      "trainerId": "2",
+      "health": "HEALTHY",
+      "trainingLocked": false,
+      "form": null,
+      "pendingCase": "C-0015",
+      "lock": null,
+      "injuries": [],
+      "medicalHistory": [
+        {
+          "date": "03/10/2026",
+          "title": "Gửi ca khám #C-0015 sau phiên S-0023",
+          "tone": "danger"
+        },
+        {
+          "date": "20/09/2026",
+          "title": "Tiêm phòng cúm ngựa",
+          "tone": "success"
+        },
+        {
+          "date": "01/09/2026",
+          "title": "Khám định kỳ",
+          "tone": "success"
+        }
+      ],
+      "medicalDiet": null
+    },
+    {
+      "id": "h-storm",
+      "name": "Storm",
+      "breed": "Arabian",
+      "sex": "♂",
+      "age": 3,
+      "microchip": "VN-MC-0042",
+      "owner": "Đỗ Minh Quân",
+      "stall": "A-02",
+      "trainerId": "11",
+      "health": "INJURED",
+      "trainingLocked": true,
+      "form": null,
+      "pendingCase": null,
+      "lock": {
+        "by": "Lê Thị Hương",
+        "at": "28/09/2026",
+        "reason": "Chấn thương chân trước trái",
+        "review": "Đánh giá lại sau GĐ 1 phác đồ PD-0011 (dự kiến 18/10)"
+      },
+      "injuries": [
+        {
+          "id": "INJ-01",
+          "part": "Chân trước trái",
+          "severity": "Nặng",
+          "date": "28/09/2026",
+          "vet": "Lê Thị Hương",
+          "note": "Sưng gân gấp, đau khi chạm",
+          "x": 39,
+          "y": 66,
+          "caseId": "C-0012"
+        },
+        {
+          "id": "INJ-02",
+          "part": "Vai",
+          "severity": "Nhẹ",
+          "date": "27/09/2026",
+          "vet": "Lê Thị Hương",
+          "note": "Trầy xước nhẹ",
+          "x": 38,
+          "y": 40,
+          "caseId": "C-0012"
+        }
+      ],
+      "medicalHistory": [
+        {
+          "date": "28/09/2026",
+          "title": "Khóa huấn luyện (BR_01)",
+          "tone": "danger"
+        },
+        {
+          "date": "27/09/2026",
+          "title": "Khám chấn thương · #C-0012",
+          "tone": "danger"
+        },
+        {
+          "date": "20/09/2026",
+          "title": "Tiêm phòng cúm ngựa",
+          "tone": "success"
+        },
+        {
+          "date": "15/09/2026",
+          "title": "Tẩy giun định kỳ",
+          "tone": "success"
+        }
+      ],
+      "medicalDiet": {
+        "by": "Lê Thị Hương",
+        "at": "28/09/2026",
+        "morning": "2 kg cám + 1 kg cỏ khô",
+        "noon": "1,5 kg cỏ khô",
+        "evening": "2 kg cám + 1 kg cỏ khô",
+        "special": "Bột nghệ chống viêm 30 g/ngày",
+        "note": "Giảm năng lượng trong thời gian khóa tập."
+      }
+    },
+    {
+      "id": "h-bolt",
+      "name": "Bolt",
+      "breed": "Quarter Horse",
+      "sex": "♂",
+      "age": 5,
+      "microchip": "VN-MC-0027",
+      "owner": "Vũ Thị Mai",
+      "stall": "A-03",
+      "trainerId": "2",
+      "health": "WATCH",
+      "trainingLocked": false,
+      "form": null,
+      "pendingCase": null,
+      "lock": null,
+      "injuries": [],
+      "medicalHistory": [
+        {
+          "date": "30/09/2026",
+          "title": "Khám cứng khớp · #C-0009",
+          "tone": "warning"
+        },
+        {
+          "date": "02/10/2026",
+          "title": "Viêm khớp nhẹ · phác đồ PD-0012 chờ kho",
+          "tone": "warning"
+        }
+      ],
+      "medicalDiet": null
+    },
+    {
+      "id": "h-thunder",
+      "name": "Thunder",
+      "breed": "Thoroughbred",
+      "sex": "♂",
+      "age": 4,
+      "microchip": "VN-MC-0035",
+      "owner": "Hoàng Thị Lan",
+      "stall": "B-01",
+      "trainerId": "11",
+      "health": "HEALTHY",
+      "trainingLocked": false,
+      "form": "GOOD",
+      "pendingCase": null,
+      "lock": null,
+      "injuries": [],
+      "medicalHistory": [],
+      "medicalDiet": null
+    },
+    {
+      "id": "h-star",
+      "name": "Star",
+      "breed": "Arabian",
+      "sex": "♀",
+      "age": 3,
+      "microchip": "VN-MC-0044",
+      "owner": "Vũ Thị Mai",
+      "stall": "A-05",
+      "trainerId": "11",
+      "health": "WATCH",
+      "trainingLocked": false,
+      "form": null,
+      "pendingCase": null,
+      "lock": null,
+      "injuries": [],
+      "medicalHistory": [
+        {
+          "date": "03/10/2026",
+          "title": "Phác đồ PD-0008 phục hồi mỏi cơ · chờ cấp phát",
+          "tone": "warning"
+        }
+      ],
+      "medicalDiet": null
+    },
+    {
+      "id": "h-flash",
+      "name": "Flash",
+      "breed": "Thoroughbred",
+      "sex": "♀",
+      "age": 4,
+      "microchip": "VN-MC-0038",
+      "owner": "Đỗ Minh Quân",
+      "stall": "B-02",
+      "trainerId": "2",
+      "health": "HEALTHY",
+      "trainingLocked": false,
+      "form": "GOOD",
+      "pendingCase": null,
+      "lock": null,
+      "injuries": [],
+      "medicalHistory": [],
+      "medicalDiet": null
+    },
+    {
+      "id": "h-wind",
+      "name": "Wind",
+      "breed": "Akhal-Teke",
+      "sex": "♂",
+      "age": 6,
+      "microchip": "VN-MC-0019",
+      "owner": "Vũ Thị Mai",
+      "stall": "B-03",
+      "trainerId": "11",
+      "health": "QUARANTINE",
+      "trainingLocked": true,
+      "form": null,
+      "pendingCase": null,
+      "lock": {
+        "by": "Lê Thị Hương",
+        "at": "26/09/2026",
+        "reason": "Cách ly theo dõi hô hấp",
+        "review": "Đánh giá lại 06/10"
+      },
+      "injuries": [],
+      "medicalHistory": [
+        {
+          "date": "26/09/2026",
+          "title": "Cách ly + khóa huấn luyện (BR_01)",
+          "tone": "danger"
+        },
+        {
+          "date": "26/09/2026",
+          "title": "Khám hô hấp · #C-0010",
+          "tone": "danger"
+        },
+        {
+          "date": "26/09/2026",
+          "title": "Cách ly · khóa huấn luyện · PD-0009",
+          "tone": "danger"
+        }
+      ],
+      "medicalDiet": {
+        "by": "Lê Thị Hương",
+        "at": "26/09/2026",
+        "morning": "Cỏ khô ngâm nước 3 kg",
+        "noon": "Cỏ khô ngâm nước 2 kg",
+        "evening": "1,5 kg cám ẩm",
+        "special": "",
+        "note": "Ngâm cỏ khô để giảm bụi hô hấp."
+      }
+    },
+    {
+      "id": "h-spirit",
+      "name": "Spirit",
+      "breed": "Quarter Horse",
+      "sex": "♀",
+      "age": 5,
+      "microchip": "VN-MC-0024",
+      "owner": "Hoàng Thị Lan",
+      "stall": "B-04",
+      "trainerId": "11",
+      "health": "HEALTHY",
+      "trainingLocked": false,
+      "form": null,
+      "pendingCase": null,
+      "lock": null,
+      "injuries": [],
+      "medicalHistory": [],
+      "medicalDiet": null
+    },
+    {
+      "id": "h-arrow",
+      "name": "Arrow",
+      "breed": "Thoroughbred",
+      "sex": "♂",
+      "age": 3,
+      "microchip": "VN-MC-0047",
+      "owner": "Đỗ Minh Quân",
+      "stall": "B-05",
+      "trainerId": "11",
+      "health": "HEALTHY",
+      "trainingLocked": false,
+      "form": null,
+      "pendingCase": null,
+      "lock": null,
+      "injuries": [],
+      "medicalHistory": [],
+      "medicalDiet": null
+    },
+    {
+      "id": "h-comet",
+      "name": "Comet",
+      "breed": "Arabian",
+      "sex": "♂",
+      "age": 5,
+      "microchip": "VN-MC-0051",
+      "owner": "Lý Gia Hân",
+      "stall": "C-01",
+      "trainerId": "2",
+      "health": "WATCH",
+      "trainingLocked": false,
+      "form": null,
+      "pendingCase": null,
+      "lock": null,
+      "injuries": [
+        {
+          "id": "INJ-03",
+          "part": "Móng sau trái",
+          "severity": "Trung bình",
+          "date": "30/09/2026",
+          "vet": "Lê Thị Hương",
+          "note": "Nóng móng, đau khi kẹp thử",
+          "x": 72,
+          "y": 93,
+          "caseId": "C-0011"
+        }
+      ],
+      "medicalHistory": [
+        {
+          "date": "30/09/2026",
+          "title": "Khám viêm móng · #C-0011",
+          "tone": "warning"
+        }
+      ],
+      "medicalDiet": null
+    },
+    {
+      "id": "h-lightning",
+      "name": "Lightning",
+      "breed": "Quarter Horse",
+      "sex": "♂",
+      "age": 4,
+      "microchip": "VN-MC-9016",
+      "owner": "Vũ Thị Mai",
+      "stall": "C-02",
+      "trainerId": "11",
+      "health": "HEALTHY",
+      "trainingLocked": false,
+      "form": null,
+      "pendingCase": null,
+      "lock": null,
+      "injuries": [],
+      "medicalHistory": [],
+      "medicalDiet": null
+    },
+    {
+      "id": "h-blaze",
+      "name": "Blaze",
+      "breed": "Thoroughbred",
+      "sex": "♀",
+      "age": 3,
+      "microchip": "VN-MC-0055",
+      "owner": "Lý Gia Hân",
+      "stall": "C-03",
+      "trainerId": "11",
+      "health": "HEALTHY",
+      "trainingLocked": false,
+      "form": null,
+      "pendingCase": null,
+      "lock": null,
+      "injuries": [],
+      "medicalHistory": [],
+      "medicalDiet": null
+    }
+  ],
+  "trainingPlans": [
+    {
+      "id": "KH-0012",
+      "horseId": "h-galaxy",
+      "horseName": "Galaxy",
+      "type": "Sức bền",
+      "phases": [
+        {
+          "no": 1,
+          "name": "Nền thể lực",
+          "weeks": 2,
+          "intensity": "Nhẹ",
+          "distanceM": 1200,
+          "sessionsPerWeek": 4,
+          "hrLimit": 160
+        },
+        {
+          "no": 2,
+          "name": "Tăng sức bền",
+          "weeks": 3,
+          "intensity": "Vừa",
+          "distanceM": 1600,
+          "sessionsPerWeek": 4,
+          "hrLimit": 180
+        },
+        {
+          "no": 3,
+          "name": "Duy trì trước giải",
+          "weeks": 2,
+          "intensity": "Cao",
+          "distanceM": 2000,
+          "sessionsPerWeek": 3,
+          "hrLimit": 185
+        }
+      ],
+      "currentPhase": 2,
+      "week": 3,
+      "status": "PAUSED",
+      "startDate": "07/09/2026",
+      "goal": "Giải đua Đại Việt 2026 · 1600 m",
+      "createdBy": "Trần Đức Hùng",
+      "pausedReason": "Phiên S-0023 vượt ngưỡng — chờ BS đánh giá ca C-0015"
+    },
+    {
+      "id": "KH-0011",
+      "horseId": "h-storm",
+      "horseName": "Storm",
+      "type": "Sức bền",
+      "phases": [
+        {
+          "no": 1,
+          "name": "Nền thể lực",
+          "weeks": 2,
+          "intensity": "Nhẹ",
+          "distanceM": 1200,
+          "sessionsPerWeek": 4,
+          "hrLimit": 160
+        },
+        {
+          "no": 2,
+          "name": "Tăng sức bền",
+          "weeks": 3,
+          "intensity": "Vừa",
+          "distanceM": 1600,
+          "sessionsPerWeek": 4,
+          "hrLimit": 180
+        },
+        {
+          "no": 3,
+          "name": "Duy trì trước giải",
+          "weeks": 2,
+          "intensity": "Cao",
+          "distanceM": 2000,
+          "sessionsPerWeek": 3,
+          "hrLimit": 185
+        }
+      ],
+      "currentPhase": 1,
+      "week": 2,
+      "status": "PAUSED",
+      "startDate": "14/09/2026",
+      "goal": "Nền thể lực",
+      "createdBy": "Lê Minh Tâm",
+      "pausedReason": "Khóa huấn luyện từ 28/09 (BR_01)"
+    },
+    {
+      "id": "KH-0013",
+      "horseId": "h-bolt",
+      "horseName": "Bolt",
+      "type": "Tốc độ",
+      "phases": [
+        {
+          "no": 1,
+          "name": "Khởi động tốc độ",
+          "weeks": 2,
+          "intensity": "Vừa",
+          "distanceM": 800,
+          "sessionsPerWeek": 3,
+          "hrLimit": 175
+        },
+        {
+          "no": 2,
+          "name": "Bứt tốc ngắn",
+          "weeks": 2,
+          "intensity": "Cao",
+          "distanceM": 1000,
+          "sessionsPerWeek": 3,
+          "hrLimit": 185
+        },
+        {
+          "no": 3,
+          "name": "Nước rút",
+          "weeks": 2,
+          "intensity": "Cao",
+          "distanceM": 1200,
+          "sessionsPerWeek": 3,
+          "hrLimit": 185
+        }
+      ],
+      "currentPhase": 1,
+      "week": 2,
+      "status": "ACTIVE",
+      "startDate": "21/09/2026",
+      "goal": "Cự ly ngắn 1000 m",
+      "createdBy": "Trần Đức Hùng"
+    },
+    {
+      "id": "KH-0014",
+      "horseId": "h-thunder",
+      "horseName": "Thunder",
+      "type": "Sức bền",
+      "phases": [
+        {
+          "no": 1,
+          "name": "Nền thể lực",
+          "weeks": 2,
+          "intensity": "Nhẹ",
+          "distanceM": 1200,
+          "sessionsPerWeek": 4,
+          "hrLimit": 160
+        },
+        {
+          "no": 2,
+          "name": "Tăng sức bền",
+          "weeks": 3,
+          "intensity": "Vừa",
+          "distanceM": 1600,
+          "sessionsPerWeek": 4,
+          "hrLimit": 180
+        },
+        {
+          "no": 3,
+          "name": "Duy trì trước giải",
+          "weeks": 2,
+          "intensity": "Cao",
+          "distanceM": 2000,
+          "sessionsPerWeek": 3,
+          "hrLimit": 185
+        }
+      ],
+      "currentPhase": 1,
+      "week": 2,
+      "status": "ACTIVE",
+      "startDate": "21/09/2026",
+      "goal": "Giải đua Đại Việt 2026 · 1600 m",
+      "createdBy": "Lê Minh Tâm"
+    },
+    {
+      "id": "KH-0015",
+      "horseId": "h-star",
+      "horseName": "Star",
+      "type": "Phục hồi",
+      "phases": [
+        {
+          "no": 1,
+          "name": "Hồi phục nhẹ",
+          "weeks": 2,
+          "intensity": "Nhẹ",
+          "distanceM": 600,
+          "sessionsPerWeek": 3,
+          "hrLimit": 150
+        },
+        {
+          "no": 2,
+          "name": "Trở lại nhịp",
+          "weeks": 2,
+          "intensity": "Vừa",
+          "distanceM": 1000,
+          "sessionsPerWeek": 3,
+          "hrLimit": 165
+        }
+      ],
+      "currentPhase": 1,
+      "week": 1,
+      "status": "ACTIVE",
+      "startDate": "28/09/2026",
+      "goal": "Trở lại tập sau mỏi cơ",
+      "createdBy": "Lê Minh Tâm"
+    },
+    {
+      "id": "KH-0010",
+      "horseId": "h-flash",
+      "horseName": "Flash",
+      "type": "Tốc độ",
+      "phases": [
+        {
+          "no": 1,
+          "name": "Khởi động tốc độ",
+          "weeks": 2,
+          "intensity": "Vừa",
+          "distanceM": 800,
+          "sessionsPerWeek": 3,
+          "hrLimit": 175
+        },
+        {
+          "no": 2,
+          "name": "Bứt tốc ngắn",
+          "weeks": 2,
+          "intensity": "Cao",
+          "distanceM": 1000,
+          "sessionsPerWeek": 3,
+          "hrLimit": 185
+        },
+        {
+          "no": 3,
+          "name": "Nước rút",
+          "weeks": 2,
+          "intensity": "Cao",
+          "distanceM": 1200,
+          "sessionsPerWeek": 3,
+          "hrLimit": 185
+        }
+      ],
+      "currentPhase": 3,
+      "week": 1,
+      "status": "ACTIVE",
+      "startDate": "24/08/2026",
+      "goal": "Giải Mở rộng Bình Dương · 1200 m",
+      "createdBy": "Trần Đức Hùng"
+    },
+    {
+      "id": "KH-0009",
+      "horseId": "h-spirit",
+      "horseName": "Spirit",
+      "type": "Sức bền",
+      "phases": [
+        {
+          "no": 1,
+          "name": "Nền thể lực",
+          "weeks": 2,
+          "intensity": "Nhẹ",
+          "distanceM": 1200,
+          "sessionsPerWeek": 4,
+          "hrLimit": 160
+        },
+        {
+          "no": 2,
+          "name": "Tăng sức bền",
+          "weeks": 3,
+          "intensity": "Vừa",
+          "distanceM": 1600,
+          "sessionsPerWeek": 4,
+          "hrLimit": 180
+        },
+        {
+          "no": 3,
+          "name": "Duy trì trước giải",
+          "weeks": 2,
+          "intensity": "Cao",
+          "distanceM": 2000,
+          "sessionsPerWeek": 3,
+          "hrLimit": 185
+        }
+      ],
+      "currentPhase": 3,
+      "week": 1,
+      "status": "ACTIVE",
+      "startDate": "17/08/2026",
+      "goal": "Giải Mở rộng Bình Dương · 1200 m",
+      "createdBy": "Lê Minh Tâm"
+    },
+    {
+      "id": "KH-0016",
+      "horseId": "h-comet",
+      "horseName": "Comet",
+      "type": "Sức bền",
+      "phases": [
+        {
+          "no": 1,
+          "name": "Nền thể lực",
+          "weeks": 2,
+          "intensity": "Nhẹ",
+          "distanceM": 1200,
+          "sessionsPerWeek": 4,
+          "hrLimit": 160
+        },
+        {
+          "no": 2,
+          "name": "Tăng sức bền",
+          "weeks": 3,
+          "intensity": "Vừa",
+          "distanceM": 1600,
+          "sessionsPerWeek": 4,
+          "hrLimit": 180
+        },
+        {
+          "no": 3,
+          "name": "Duy trì trước giải",
+          "weeks": 2,
+          "intensity": "Cao",
+          "distanceM": 2000,
+          "sessionsPerWeek": 3,
+          "hrLimit": 185
+        }
+      ],
+      "currentPhase": 1,
+      "week": 1,
+      "status": "ACTIVE",
+      "startDate": "28/09/2026",
+      "goal": "Nền thể lực",
+      "createdBy": "Trần Đức Hùng"
+    },
+    {
+      "id": "KH-0017",
+      "horseId": "h-lightning",
+      "horseName": "Lightning",
+      "type": "Tốc độ",
+      "phases": [
+        {
+          "no": 1,
+          "name": "Khởi động tốc độ",
+          "weeks": 2,
+          "intensity": "Vừa",
+          "distanceM": 800,
+          "sessionsPerWeek": 3,
+          "hrLimit": 175
+        },
+        {
+          "no": 2,
+          "name": "Bứt tốc ngắn",
+          "weeks": 2,
+          "intensity": "Cao",
+          "distanceM": 1000,
+          "sessionsPerWeek": 3,
+          "hrLimit": 185
+        },
+        {
+          "no": 3,
+          "name": "Nước rút",
+          "weeks": 2,
+          "intensity": "Cao",
+          "distanceM": 1200,
+          "sessionsPerWeek": 3,
+          "hrLimit": 185
+        }
+      ],
+      "currentPhase": 1,
+      "week": 1,
+      "status": "ACTIVE",
+      "startDate": "29/09/2026",
+      "goal": "Làm quen đường đua CLB",
+      "createdBy": "Lê Minh Tâm"
+    },
+    {
+      "id": "KH-0008",
+      "horseId": "h-galaxy",
+      "horseName": "Galaxy",
+      "type": "Phục hồi",
+      "phases": [
+        {
+          "no": 1,
+          "name": "Hồi phục nhẹ",
+          "weeks": 2,
+          "intensity": "Nhẹ",
+          "distanceM": 600,
+          "sessionsPerWeek": 3,
+          "hrLimit": 150
+        },
+        {
+          "no": 2,
+          "name": "Trở lại nhịp",
+          "weeks": 2,
+          "intensity": "Vừa",
+          "distanceM": 1000,
+          "sessionsPerWeek": 3,
+          "hrLimit": 165
+        }
+      ],
+      "currentPhase": 2,
+      "week": 2,
+      "status": "COMPLETED",
+      "startDate": "03/08/2026",
+      "goal": "Sau giải Hè Phú Thọ",
+      "createdBy": "Trần Đức Hùng"
+    }
+  ],
+  "trainingSessions": [
+    {
+      "id": "S-0018",
+      "horseId": "h-galaxy",
+      "horseName": "Galaxy",
+      "planId": "KH-0012",
+      "phaseNo": 2,
+      "label": "Sức bền · P2",
+      "date": "30/09/2026",
+      "time": "10:00",
+      "groom": "Phạm Văn Toàn",
+      "track": "đường cát 1600 m",
+      "status": "COMPLETED",
+      "thresholds": {
+        "hr": 180,
+        "speed": 60
+      },
+      "readings": [
+        {
+          "t": "10:00",
+          "hr": 116,
+          "speed": 0
+        },
+        {
+          "t": "10:10",
+          "hr": 148,
+          "speed": 38
+        },
+        {
+          "t": "10:20",
+          "hr": 172,
+          "speed": 46
+        },
+        {
+          "t": "10:30",
+          "hr": 150,
+          "speed": 30
+        }
+      ],
+      "decision": null,
+      "evaluation": {
+        "score": 8,
+        "comment": "Giữ nhịp tốt ở vòng 2–3, hồi phục nhanh.",
+        "by": "Trần Đức Hùng",
+        "at": "30/09 11:05"
+      }
+    },
+    {
+      "id": "S-0019",
+      "horseId": "h-bolt",
+      "horseName": "Bolt",
+      "planId": "KH-0013",
+      "phaseNo": 1,
+      "label": "Tốc độ · P1",
+      "date": "01/10/2026",
+      "time": "08:00",
+      "groom": "Phạm Văn Toàn",
+      "track": "đường cỏ 800 m",
+      "status": "COMPLETED",
+      "thresholds": {
+        "hr": 180,
+        "speed": 60
+      },
+      "readings": [
+        {
+          "t": "08:00",
+          "hr": 112,
+          "speed": 0
+        },
+        {
+          "t": "08:08",
+          "hr": 160,
+          "speed": 48
+        },
+        {
+          "t": "08:16",
+          "hr": 168,
+          "speed": 52
+        },
+        {
+          "t": "08:24",
+          "hr": 140,
+          "speed": 20
+        }
+      ],
+      "decision": null,
+      "evaluation": {
+        "score": 7,
+        "comment": "Xuất phát chậm, cần luyện phản xạ cổng.",
+        "by": "Trần Đức Hùng",
+        "at": "01/10 09:00"
+      }
+    },
+    {
+      "id": "S-0020",
+      "horseId": "h-thunder",
+      "horseName": "Thunder",
+      "planId": "KH-0014",
+      "phaseNo": 1,
+      "label": "Sức bền · P1",
+      "date": "02/10/2026",
+      "time": "09:00",
+      "groom": "Ngô Văn Sơn",
+      "track": "đường cát 1200 m",
+      "status": "COMPLETED",
+      "thresholds": {
+        "hr": 180,
+        "speed": 60
+      },
+      "readings": [
+        {
+          "t": "09:00",
+          "hr": 110,
+          "speed": 0
+        },
+        {
+          "t": "09:10",
+          "hr": 138,
+          "speed": 34
+        },
+        {
+          "t": "09:20",
+          "hr": 152,
+          "speed": 40
+        },
+        {
+          "t": "09:30",
+          "hr": 130,
+          "speed": 22
+        }
+      ],
+      "decision": null,
+      "evaluation": null
+    },
+    {
+      "id": "S-0021",
+      "horseId": "h-bolt",
+      "horseName": "Bolt",
+      "planId": "KH-0013",
+      "phaseNo": 1,
+      "label": "Tốc độ · P1",
+      "date": "03/10/2026",
+      "time": "08:00",
+      "groom": "Phạm Văn Toàn",
+      "track": "đường cỏ 800 m",
+      "status": "COMPLETED",
+      "thresholds": {
+        "hr": 180,
+        "speed": 60
+      },
+      "readings": [
+        {
+          "t": "08:00",
+          "hr": 114,
+          "speed": 0
+        },
+        {
+          "t": "08:08",
+          "hr": 158,
+          "speed": 49
+        },
+        {
+          "t": "08:16",
+          "hr": 170,
+          "speed": 53
+        },
+        {
+          "t": "08:24",
+          "hr": 138,
+          "speed": 18
+        }
+      ],
+      "decision": null,
+      "evaluation": null
+    },
+    {
+      "id": "S-0022",
+      "horseId": "h-flash",
+      "horseName": "Flash",
+      "planId": "KH-0010",
+      "phaseNo": 3,
+      "label": "Tốc độ · P3",
+      "date": "03/10/2026",
+      "time": "09:00",
+      "groom": "Ngô Văn Sơn",
+      "track": "đường cỏ 1200 m",
+      "status": "PAUSED_PENDING_TRAINER",
+      "thresholds": {
+        "hr": 180,
+        "speed": 60
+      },
+      "readings": [
+        {
+          "t": "09:00",
+          "hr": 118,
+          "speed": 0
+        },
+        {
+          "t": "09:03",
+          "hr": 146,
+          "speed": 42
+        },
+        {
+          "t": "09:06",
+          "hr": 165,
+          "speed": 55
+        },
+        {
+          "t": "09:09",
+          "hr": 176,
+          "speed": 59
+        },
+        {
+          "t": "09:12",
+          "hr": 184,
+          "speed": 61
+        }
+      ],
+      "decision": null,
+      "evaluation": null,
+      "pausedAt": "09:12",
+      "pausedReason": "Nhịp tim 184 bpm vượt ngưỡng 180; tốc độ 61 km/h vượt ngưỡng 60 (BR_02).",
+      "recovery": [
+        {
+          "t": "09:15",
+          "hr": 152,
+          "speed": 0
+        },
+        {
+          "t": "09:20",
+          "hr": 128,
+          "speed": 0
+        }
+      ],
+      "alerts": [
+        {
+          "to": "Trần Đức Hùng",
+          "role": "HLV trưởng",
+          "channel": "alert chặn",
+          "at": "09:12",
+          "seen": true
+        },
+        {
+          "to": "Ngô Văn Sơn",
+          "role": "Mã phu",
+          "channel": "banner",
+          "at": "09:12",
+          "seen": true
+        }
+      ]
+    },
+    {
+      "id": "S-0023",
+      "horseId": "h-galaxy",
+      "horseName": "Galaxy",
+      "planId": "KH-0012",
+      "phaseNo": 2,
+      "label": "Sức bền · P2",
+      "date": "03/10/2026",
+      "time": "10:00",
+      "groom": "Phạm Văn Toàn",
+      "track": "đường cát 1600 m",
+      "status": "STOPPED",
+      "thresholds": {
+        "hr": 180,
+        "speed": 60
+      },
+      "readings": [
+        {
+          "t": "10:00",
+          "hr": 118,
+          "speed": 0
+        },
+        {
+          "t": "10:04",
+          "hr": 133,
+          "speed": 38
+        },
+        {
+          "t": "10:08",
+          "hr": 147,
+          "speed": 44
+        },
+        {
+          "t": "10:12",
+          "hr": 158,
+          "speed": 47
+        },
+        {
+          "t": "10:16",
+          "hr": 166,
+          "speed": 49
+        },
+        {
+          "t": "10:20",
+          "hr": 176,
+          "speed": 51
+        },
+        {
+          "t": "10:23",
+          "hr": 195,
+          "speed": 52
+        }
+      ],
+      "decision": {
+        "type": "STOP_VET",
+        "by": "Trần Đức Hùng",
+        "at": "10:26",
+        "caseId": "C-0015",
+        "note": "Ngựa có dấu hiệu thở gấp sau vòng thứ 3, bước chân trước phải hơi ngắn — nghi chấn thương chân."
+      },
+      "evaluation": null,
+      "pausedAt": "10:23",
+      "pausedReason": "Nhịp tim 195 bpm vượt ngưỡng 180 (BR_02).",
+      "recovery": [
+        {
+          "t": "10:26",
+          "hr": 171,
+          "speed": 0
+        }
+      ],
+      "alerts": [
+        {
+          "to": "Trần Đức Hùng",
+          "role": "HLV trưởng",
+          "channel": "alert chặn",
+          "at": "10:23",
+          "seen": true
+        },
+        {
+          "to": "Phạm Văn Toàn",
+          "role": "Mã phu",
+          "channel": "banner",
+          "at": "10:23",
+          "seen": true
+        }
+      ]
+    },
+    {
+      "id": "S-0024",
+      "horseId": "h-thunder",
+      "horseName": "Thunder",
+      "planId": "KH-0014",
+      "phaseNo": 1,
+      "label": "Sức bền · P1",
+      "date": "03/10/2026",
+      "time": "11:00",
+      "groom": "Ngô Văn Sơn",
+      "track": "đường cát 1200 m",
+      "status": "SCHEDULED",
+      "thresholds": {
+        "hr": 180,
+        "speed": 60
+      },
+      "readings": [],
+      "decision": null,
+      "evaluation": null
+    },
+    {
+      "id": "S-0025",
+      "horseId": "h-star",
+      "horseName": "Star",
+      "planId": "KH-0015",
+      "phaseNo": 1,
+      "label": "Phục hồi · P1",
+      "date": "03/10/2026",
+      "time": "14:00",
+      "groom": "Phạm Văn Toàn",
+      "track": "đường cỏ 600 m",
+      "status": "SCHEDULED",
+      "thresholds": {
+        "hr": 180,
+        "speed": 60
+      },
+      "readings": [],
+      "decision": null,
+      "evaluation": null
+    },
+    {
+      "id": "S-0026",
+      "horseId": "h-spirit",
+      "horseName": "Spirit",
+      "planId": "KH-0009",
+      "phaseNo": 3,
+      "label": "Sức bền · P3",
+      "date": "04/10/2026",
+      "time": "07:00",
+      "groom": "Ngô Văn Sơn",
+      "track": "đường cát 2000 m",
+      "status": "SCHEDULED",
+      "thresholds": {
+        "hr": 180,
+        "speed": 60
+      },
+      "readings": [],
+      "decision": null,
+      "evaluation": null
+    },
+    {
+      "id": "S-0027",
+      "horseId": "h-comet",
+      "horseName": "Comet",
+      "planId": "KH-0016",
+      "phaseNo": 1,
+      "label": "Sức bền · P1",
+      "date": "04/10/2026",
+      "time": "08:30",
+      "groom": "Đỗ Văn Cường",
+      "track": "đường cát 1200 m",
+      "status": "SCHEDULED",
+      "thresholds": {
+        "hr": 180,
+        "speed": 60
+      },
+      "readings": [],
+      "decision": null,
+      "evaluation": null
+    }
+  ],
+  "vetCases": [
+    {
+      "id": "C-0015",
+      "horseId": "h-galaxy",
+      "horse": "Galaxy",
+      "source": "SESSION_STOP",
+      "sessionId": "S-0023",
+      "type": "Nghi chấn thương",
+      "severity": "HIGH",
+      "status": "NEW",
+      "sender": "Trần Đức Hùng",
+      "at": "03/10 10:26",
+      "note": "Nhịp tim 195 bpm (ngưỡng 180). Thở gấp sau vòng thứ 3, bước chân trước phải hơi ngắn — nghi chấn thương chân.",
+      "exam": null,
+      "protocolId": null
+    },
+    {
+      "id": "C-0014",
+      "horseId": "h-bolt",
+      "horse": "Bolt",
+      "source": "GROOM_REPORT",
+      "type": "Đau bụng",
+      "severity": "MEDIUM",
+      "status": "NEW",
+      "sender": "Phạm Văn Toàn",
+      "at": "02/10 16:40",
+      "note": "Bolt nằm lăn nhiều sau bữa chiều, ăn ít hơn bình thường, phân khô.",
+      "exam": null,
+      "protocolId": null
+    },
+    {
+      "id": "C-0013",
+      "horseId": "h-star",
+      "horse": "Star",
+      "source": "GROOM_REPORT",
+      "type": "Chán ăn",
+      "severity": "LOW",
+      "status": "NEW",
+      "sender": "Phạm Văn Toàn",
+      "at": "01/10 07:15",
+      "note": "Star bỏ gần nửa khẩu phần sáng 2 ngày liên tiếp, vẫn uống nước bình thường.",
+      "exam": null,
+      "protocolId": null
+    },
+    {
+      "id": "C-0012",
+      "horseId": "h-storm",
+      "horse": "Storm",
+      "source": "SESSION_STOP",
+      "sessionId": "S-0014",
+      "type": "Chấn thương chân",
+      "severity": "HIGH",
+      "status": "MONITORING",
+      "sender": "Trần Đức Hùng",
+      "at": "27/09 09:40",
+      "note": "Dừng phiên ở vòng 2, ngựa đi khập khiễng chân trước trái.",
+      "exam": {
+        "symptoms": "Sưng nóng vùng gân gấp chân trước trái, đau khi ấn, đi khập khiễng độ 2/5.",
+        "diagnosis": "Viêm gân gấp nông chân trước trái",
+        "severity": "HIGH",
+        "plan": "Khóa tập, chườm lạnh 2 lần/ngày, lập phác đồ chống viêm 2 giai đoạn.",
+        "health": "INJURED",
+        "by": "Lê Thị Hương",
+        "at": "27/09 10:30"
+      },
+      "protocolId": "PD-0011"
+    },
+    {
+      "id": "C-0011",
+      "horseId": "h-comet",
+      "horse": "Comet",
+      "source": "GROOM_REPORT",
+      "type": "Viêm móng",
+      "severity": "MEDIUM",
+      "status": "MONITORING",
+      "sender": "Đỗ Văn Cường",
+      "at": "30/09 08:05",
+      "note": "Móng chân sau trái nóng, ngựa né khi gõ móng.",
+      "exam": {
+        "symptoms": "Nóng vùng móng chân sau trái, phản ứng đau khi kẹp thử móng.",
+        "diagnosis": "Viêm móng nhẹ chân sau trái",
+        "severity": "MEDIUM",
+        "plan": "Giảm cường độ tập, kháng sinh + vitamin E/Selen, kiểm tra lại sau 7 ngày.",
+        "health": "WATCH",
+        "by": "Lê Thị Hương",
+        "at": "30/09 14:20"
+      },
+      "protocolId": "PD-0013"
+    },
+    {
+      "id": "C-0010",
+      "horseId": "h-wind",
+      "horse": "Wind",
+      "source": "GROOM_REPORT",
+      "type": "Ho, chảy mũi",
+      "severity": "HIGH",
+      "status": "MONITORING",
+      "sender": "Ngô Văn Sơn",
+      "at": "26/09 06:50",
+      "note": "Wind ho nhiều buổi sáng, chảy dịch mũi trong, sốt nhẹ 38,9°C.",
+      "exam": {
+        "symptoms": "Ho khan, dịch mũi trong, sốt 38,9°C, phổi có tiếng rít nhẹ.",
+        "diagnosis": "Viêm đường hô hấp trên — nghi nhiễm khuẩn",
+        "severity": "HIGH",
+        "plan": "Cách ly khu riêng, khóa tập, kháng sinh K2 7 ngày, đo nhiệt 2 lần/ngày.",
+        "health": "QUARANTINE",
+        "by": "Lê Thị Hương",
+        "at": "26/09 09:10"
+      },
+      "protocolId": "PD-0009"
+    },
+    {
+      "id": "C-0009",
+      "horseId": "h-bolt",
+      "horse": "Bolt",
+      "source": "TRAINER_REQUEST",
+      "type": "Cứng khớp sau tập",
+      "severity": "LOW",
+      "status": "MONITORING",
+      "sender": "Trần Đức Hùng",
+      "at": "29/09 17:30",
+      "note": "Bolt bước ngắn ở 10 phút đầu khởi động, hết sau khi làm nóng.",
+      "exam": {
+        "symptoms": "Khớp gối trước phải hơi cứng khi khởi động, không sưng.",
+        "diagnosis": "Viêm khớp nhẹ gối trước phải",
+        "severity": "LOW",
+        "plan": "Tiếp tục tập nhẹ, giảm đau đường uống 10 ngày.",
+        "health": "WATCH",
+        "by": "Lê Thị Hương",
+        "at": "30/09 08:45"
+      },
+      "protocolId": "PD-0012"
+    },
+    {
+      "id": "C-0008",
+      "horseId": "h-star",
+      "horse": "Star",
+      "source": "TRAINER_REQUEST",
+      "type": "Mỏi cơ",
+      "severity": "LOW",
+      "status": "MONITORING",
+      "sender": "Lê Minh Tâm",
+      "at": "28/09 18:10",
+      "note": "Star mỏi cơ đùi sau buổi tập sức bền.",
+      "exam": {
+        "symptoms": "Cơ đùi sau căng, không sưng, đi lại bình thường.",
+        "diagnosis": "Mỏi cơ sau tập",
+        "severity": "LOW",
+        "plan": "Gel Diclofenac 1% 5 ngày, giảm cường độ 1 tuần.",
+        "health": "WATCH",
+        "by": "Lê Thị Hương",
+        "at": "29/09 09:00"
+      },
+      "protocolId": "PD-0008"
+    },
+    {
+      "id": "C-0007",
+      "horseId": "h-thunder",
+      "horse": "Thunder",
+      "source": "TRAINER_REQUEST",
+      "type": "Khám định kỳ",
+      "severity": "LOW",
+      "status": "CLOSED",
+      "sender": "Lê Minh Tâm",
+      "at": "20/09 08:00",
+      "note": "Khám định kỳ trước mùa giải.",
+      "exam": {
+        "symptoms": "Không có dấu hiệu bất thường.",
+        "diagnosis": "Sức khỏe tốt",
+        "severity": "LOW",
+        "plan": "Không cần điều trị.",
+        "health": "HEALTHY",
+        "by": "Lê Thị Hương",
+        "at": "20/09 09:30"
+      },
+      "protocolId": null,
+      "outcome": "Đủ điều kiện tập luyện bình thường."
+    },
+    {
+      "id": "C-0006",
+      "horseId": "h-flash",
+      "horse": "Flash",
+      "source": "GROOM_REPORT",
+      "type": "Trầy xước",
+      "severity": "LOW",
+      "status": "CLOSED",
+      "sender": "Ngô Văn Sơn",
+      "at": "12/09 16:20",
+      "note": "Vết xước nhỏ cổ chân sau phải.",
+      "exam": {
+        "symptoms": "Vết xước nông 3 cm, không chảy máu.",
+        "diagnosis": "Trầy xước nhẹ chân sau",
+        "severity": "LOW",
+        "plan": "Sát khuẩn tại chỗ 5 ngày.",
+        "health": "HEALTHY",
+        "by": "Lê Thị Hương",
+        "at": "12/09 17:00"
+      },
+      "protocolId": "PD-0007",
+      "outcome": "Lành hoàn toàn 18/09."
+    }
+  ],
+  "tournaments": [
+    {
+      "id": "T-2026-BD",
+      "name": "Giải Mở rộng Bình Dương 2026",
+      "organizer": "CLB Đua ngựa Bình Dương",
+      "date": "25/10/2026",
+      "venue": "Trường đua Đại Nam",
+      "distance": "1200 m",
+      "deadline": "10/10/2026",
+      "conditions": "Ngựa 3–6 tuổi, không bị khóa y tế",
+      "source": "Quản lý CLB nhập 12/09"
+    },
+    {
+      "id": "T-2026-DV",
+      "name": "Giải đua Đại Việt 2026",
+      "organizer": "Hiệp hội đua ngựa VN",
+      "date": "15/11/2026",
+      "venue": "Trường đua Phú Thọ",
+      "distance": "1600 m",
+      "deadline": "25/10/2026",
+      "conditions": "Ngựa 3–7 tuổi, có hồ sơ khám trong 30 ngày",
+      "source": "Quản lý CLB nhập 20/09"
+    },
+    {
+      "id": "T-2026-DL",
+      "name": "Cúp Mùa Đông Đà Lạt",
+      "organizer": "Sở VH-TT Lâm Đồng",
+      "date": "20/12/2026",
+      "venue": "Trường đua Đà Lạt",
+      "distance": "2000 m",
+      "deadline": "30/11/2026",
+      "conditions": "Ngựa từ 4 tuổi",
+      "source": "Quản lý CLB nhập 28/09"
+    },
+    {
+      "id": "T-2026-PT",
+      "name": "Giải Hè Phú Thọ 2026",
+      "organizer": "Hiệp hội đua ngựa VN",
+      "date": "20/09/2026",
+      "venue": "Trường đua Phú Thọ",
+      "distance": "1600 m",
+      "deadline": "05/09/2026",
+      "conditions": "Ngựa 3–7 tuổi",
+      "source": "Quản lý CLB nhập 10/08",
+      "finished": true
+    }
+  ],
+  "raceProposals": [
+    {
+      "id": "DX-0009",
+      "horseId": "h-bolt",
+      "horseName": "Bolt",
+      "owner": "Vũ Thị Mai",
+      "tournamentId": "T-2026-BD",
+      "status": "WAITING_VET_EXAM",
+      "createdAt": "03/10/2026",
+      "createdBy": "Trần Đức Hùng",
+      "history": [
+        {
+          "at": "03/10 08:40",
+          "who": "Trần Đức Hùng",
+          "text": "tạo đề xuất · gửi yêu cầu khám trước thi đấu"
+        }
+      ],
+      "vetResult": null,
+      "ownerResponse": null,
+      "result": null
+    },
+    {
+      "id": "DX-0008",
+      "horseId": "h-comet",
+      "horseName": "Comet",
+      "owner": "Lý Gia Hân",
+      "tournamentId": "T-2026-BD",
+      "status": "WAITING_VET_EXAM",
+      "createdAt": "02/10/2026",
+      "createdBy": "Trần Đức Hùng",
+      "history": [
+        {
+          "at": "02/10 11:00",
+          "who": "Trần Đức Hùng",
+          "text": "tạo đề xuất · gửi yêu cầu khám trước thi đấu"
+        }
+      ],
+      "vetResult": null,
+      "ownerResponse": null,
+      "result": null
+    },
+    {
+      "id": "DX-0007",
+      "horseId": "h-thunder",
+      "horseName": "Thunder",
+      "owner": "Hoàng Thị Lan",
+      "tournamentId": "T-2026-DV",
+      "status": "WAITING_VET_EXAM",
+      "createdAt": "01/10/2026",
+      "createdBy": "Lê Minh Tâm",
+      "history": [
+        {
+          "at": "01/10 15:20",
+          "who": "Lê Minh Tâm",
+          "text": "tạo đề xuất · gửi yêu cầu khám trước thi đấu"
+        }
+      ],
+      "vetResult": null,
+      "ownerResponse": null,
+      "result": null
+    },
+    {
+      "id": "DX-0006",
+      "horseId": "h-flash",
+      "horseName": "Flash",
+      "owner": "Đỗ Minh Quân",
+      "tournamentId": "T-2026-BD",
+      "status": "WAITING_OWNER",
+      "createdAt": "28/09/2026",
+      "createdBy": "Trần Đức Hùng",
+      "history": [
+        {
+          "at": "30/09 10:10",
+          "who": "BS Lê Thị Hương",
+          "text": "kết quả khám ĐẠT",
+          "tone": "success"
+        },
+        {
+          "at": "28/09 09:00",
+          "who": "Trần Đức Hùng",
+          "text": "tạo đề xuất · gửi yêu cầu khám trước thi đấu"
+        }
+      ],
+      "vetResult": {
+        "pass": true,
+        "by": "Lê Thị Hương",
+        "at": "30/09/2026",
+        "note": "Tim mạch, khớp ổn định. Theo dõi nhịp tim khi bứt tốc."
+      },
+      "ownerResponse": null,
+      "result": null
+    },
+    {
+      "id": "DX-0005",
+      "horseId": "h-spirit",
+      "horseName": "Spirit",
+      "owner": "Hoàng Thị Lan",
+      "tournamentId": "T-2026-BD",
+      "status": "READY_TO_SUBMIT",
+      "createdAt": "25/09/2026",
+      "createdBy": "Lê Minh Tâm",
+      "history": [
+        {
+          "at": "29/09 18:30",
+          "who": "Hoàng Thị Lan",
+          "text": "đồng ý cho ngựa thi đấu",
+          "tone": "success"
+        },
+        {
+          "at": "27/09 14:00",
+          "who": "BS Lê Thị Hương",
+          "text": "kết quả khám ĐẠT",
+          "tone": "success"
+        },
+        {
+          "at": "25/09 08:40",
+          "who": "Lê Minh Tâm",
+          "text": "tạo đề xuất · gửi yêu cầu khám trước thi đấu"
+        }
+      ],
+      "vetResult": {
+        "pass": true,
+        "by": "Lê Thị Hương",
+        "at": "27/09/2026",
+        "note": "Đủ điều kiện."
+      },
+      "ownerResponse": {
+        "agree": true,
+        "at": "29/09/2026"
+      },
+      "result": null
+    },
+    {
+      "id": "DX-0004",
+      "horseId": "h-bolt",
+      "horseName": "Bolt",
+      "owner": "Vũ Thị Mai",
+      "tournamentId": "T-2026-DV",
+      "status": "VET_FAILED",
+      "createdAt": "26/09/2026",
+      "createdBy": "Trần Đức Hùng",
+      "history": [
+        {
+          "at": "02/10 10:00",
+          "who": "BS Lê Thị Hương",
+          "text": "kết quả khám KHÔNG ĐẠT: viêm khớp nhẹ",
+          "tone": "danger"
+        },
+        {
+          "at": "26/09 16:15",
+          "who": "Trần Đức Hùng",
+          "text": "tạo đề xuất · gửi yêu cầu khám trước thi đấu"
+        }
+      ],
+      "vetResult": {
+        "pass": false,
+        "by": "Lê Thị Hương",
+        "at": "02/10/2026",
+        "note": "Viêm khớp nhẹ, đang điều trị PD-0012. Không đủ điều kiện thi đấu."
+      },
+      "ownerResponse": null,
+      "result": null
+    },
+    {
+      "id": "DX-0003",
+      "horseId": "h-galaxy",
+      "horseName": "Galaxy",
+      "owner": "Hoàng Thị Lan",
+      "tournamentId": "T-2026-PT",
+      "status": "RESULT_RECORDED",
+      "createdAt": "20/08/2026",
+      "createdBy": "Trần Đức Hùng",
+      "history": [
+        {
+          "at": "21/09 09:00",
+          "who": "Trần Đức Hùng",
+          "text": "nhập kết quả: Hạng 2 · 1:38.42",
+          "tone": "success"
+        },
+        {
+          "at": "01/09 10:00",
+          "who": "Trần Đức Hùng",
+          "text": "đánh dấu đã gửi hồ sơ cho ban tổ chức"
+        },
+        {
+          "at": "28/08 20:00",
+          "who": "Hoàng Thị Lan",
+          "text": "đồng ý cho ngựa thi đấu",
+          "tone": "success"
+        },
+        {
+          "at": "25/08 11:00",
+          "who": "BS Lê Thị Hương",
+          "text": "kết quả khám ĐẠT",
+          "tone": "success"
+        },
+        {
+          "at": "20/08 09:00",
+          "who": "Trần Đức Hùng",
+          "text": "tạo đề xuất"
+        }
+      ],
+      "vetResult": {
+        "pass": true,
+        "by": "Lê Thị Hương",
+        "at": "25/08/2026",
+        "note": "Đủ điều kiện."
+      },
+      "ownerResponse": {
+        "agree": true,
+        "at": "28/08/2026"
+      },
+      "result": {
+        "rank": 2,
+        "time": "1:38.42",
+        "note": "Về nhì sau nước rút cuối."
+      }
+    },
+    {
+      "id": "DX-0002",
+      "horseId": "h-star",
+      "horseName": "Star",
+      "owner": "Vũ Thị Mai",
+      "tournamentId": "T-2026-PT",
+      "status": "OWNER_DECLINED",
+      "createdAt": "18/08/2026",
+      "createdBy": "Lê Minh Tâm",
+      "history": [
+        {
+          "at": "27/08 08:00",
+          "who": "Vũ Thị Mai",
+          "text": "từ chối: muốn để ngựa nghỉ hết tháng 9",
+          "tone": "danger"
+        },
+        {
+          "at": "24/08 15:00",
+          "who": "BS Lê Thị Hương",
+          "text": "kết quả khám ĐẠT",
+          "tone": "success"
+        },
+        {
+          "at": "18/08 10:00",
+          "who": "Lê Minh Tâm",
+          "text": "tạo đề xuất"
+        }
+      ],
+      "vetResult": {
+        "pass": true,
+        "by": "Lê Thị Hương",
+        "at": "24/08/2026",
+        "note": "Đủ điều kiện."
+      },
+      "ownerResponse": {
+        "agree": false,
+        "at": "27/08/2026",
+        "reason": "Muốn để ngựa nghỉ hết tháng 9."
+      },
+      "result": null
+    }
+  ],
+  "vaccinations": [
+    {
+      "id": "VC-031",
+      "horseId": "h-thunder",
+      "horse": "Thunder",
+      "type": "Cúm ngựa (nhắc lại)",
+      "due": "06/10/2026",
+      "status": "DUE_SOON",
+      "kind": "VACCINE",
+      "cycleMonths": 6
+    },
+    {
+      "id": "VC-032",
+      "horseId": "h-spirit",
+      "horse": "Spirit",
+      "type": "Uốn ván",
+      "due": "08/10/2026",
+      "status": "DUE_SOON",
+      "kind": "VACCINE",
+      "cycleMonths": 6
+    },
+    {
+      "id": "VC-033",
+      "horseId": "h-arrow",
+      "horse": "Arrow",
+      "type": "Tẩy giun định kỳ",
+      "due": "09/10/2026",
+      "status": "DUE_SOON",
+      "kind": "DEWORM",
+      "cycleMonths": 3
+    },
+    {
+      "id": "VC-034",
+      "horseId": "h-storm",
+      "horse": "Storm",
+      "type": "Cúm ngựa (nhắc lại)",
+      "due": "05/10/2026",
+      "status": "POSTPONED",
+      "note": "Hoãn do đang điều trị",
+      "kind": "VACCINE",
+      "cycleMonths": 6
+    },
+    {
+      "id": "VC-035",
+      "horseId": "h-galaxy",
+      "horse": "Galaxy",
+      "type": "Viêm não Nhật Bản",
+      "due": "28/10/2026",
+      "status": "SCHEDULED",
+      "kind": "VACCINE",
+      "cycleMonths": 6
+    },
+    {
+      "id": "VC-030",
+      "horseId": "h-storm",
+      "horse": "Storm",
+      "type": "Cúm ngựa",
+      "kind": "VACCINE",
+      "cycleMonths": 6,
+      "due": "20/09/2026",
+      "status": "DONE",
+      "doneAt": "20/09/2026",
+      "lot": "VX-CUM-2608",
+      "by": "Lê Thị Hương"
+    },
+    {
+      "id": "VC-029",
+      "horseId": "h-storm",
+      "horse": "Storm",
+      "type": "Tẩy giun định kỳ",
+      "kind": "DEWORM",
+      "cycleMonths": 3,
+      "due": "15/09/2026",
+      "status": "DONE",
+      "doneAt": "15/09/2026",
+      "lot": "IV-0712",
+      "by": "Lê Thị Hương"
+    },
+    {
+      "id": "VC-036",
+      "horseId": "h-bolt",
+      "horse": "Bolt",
+      "type": "Uốn ván",
+      "kind": "VACCINE",
+      "cycleMonths": 12,
+      "due": "04/10/2026",
+      "status": "DUE_SOON"
+    },
+    {
+      "id": "VC-037",
+      "horseId": "h-lightning",
+      "horse": "Lightning",
+      "type": "Tẩy giun định kỳ",
+      "kind": "DEWORM",
+      "cycleMonths": 3,
+      "due": "20/10/2026",
+      "status": "SCHEDULED"
+    }
+  ],
+  "stalls": [
+    {
+      "id": "A-01",
+      "zone": "Khu A",
+      "horseId": "h-galaxy",
+      "horse": "Galaxy",
+      "status": "CLEAN",
+      "groom": "Phạm Văn Toàn"
+    },
+    {
+      "id": "A-02",
+      "zone": "Khu A",
+      "horseId": "h-storm",
+      "horse": "Storm",
+      "status": "NEEDS_CLEANING",
+      "groom": "Phạm Văn Toàn"
+    },
+    {
+      "id": "A-03",
+      "zone": "Khu A",
+      "horseId": "h-bolt",
+      "horse": "Bolt",
+      "status": "CLEAN",
+      "groom": "Phạm Văn Toàn"
+    },
+    {
+      "id": "A-04",
+      "zone": "Khu A",
+      "horseId": null,
+      "horse": null,
+      "status": "MAINTENANCE",
+      "groom": "Phạm Văn Toàn"
+    },
+    {
+      "id": "A-05",
+      "zone": "Khu A",
+      "horseId": "h-star",
+      "horse": "Star",
+      "status": "CLEAN",
+      "groom": "Phạm Văn Toàn"
+    },
+    {
+      "id": "B-01",
+      "zone": "Khu B",
+      "horseId": "h-thunder",
+      "horse": "Thunder",
+      "status": "CLEAN",
+      "groom": "Ngô Văn Sơn"
+    },
+    {
+      "id": "B-02",
+      "zone": "Khu B",
+      "horseId": "h-flash",
+      "horse": "Flash",
+      "status": "CLEAN",
+      "groom": "Ngô Văn Sơn"
+    },
+    {
+      "id": "B-03",
+      "zone": "Khu B",
+      "horseId": "h-wind",
+      "horse": "Wind",
+      "status": "NEEDS_CLEANING",
+      "groom": "Ngô Văn Sơn"
+    },
+    {
+      "id": "B-04",
+      "zone": "Khu B",
+      "horseId": "h-spirit",
+      "horse": "Spirit",
+      "status": "CLEAN",
+      "groom": "Ngô Văn Sơn"
+    },
+    {
+      "id": "B-05",
+      "zone": "Khu B",
+      "horseId": "h-arrow",
+      "horse": "Arrow",
+      "status": "CLEAN",
+      "groom": "Ngô Văn Sơn"
+    },
+    {
+      "id": "C-01",
+      "zone": "Khu C",
+      "horseId": "h-comet",
+      "horse": "Comet",
+      "status": "CLEAN",
+      "groom": "Đỗ Văn Cường"
+    },
+    {
+      "id": "C-02",
+      "zone": "Khu C",
+      "horseId": "h-lightning",
+      "horse": "Lightning",
+      "status": "CLEAN",
+      "groom": "Đỗ Văn Cường"
+    },
+    {
+      "id": "C-03",
+      "zone": "Khu C",
+      "horseId": "h-blaze",
+      "horse": "Blaze",
+      "status": "CLEAN",
+      "groom": "Đỗ Văn Cường"
+    }
+  ],
+  "grooms": [
+    {
+      "id": "4",
+      "name": "Phạm Văn Toàn",
+      "zones": [
+        "Khu A"
+      ]
+    },
+    {
+      "id": "8",
+      "name": "Ngô Văn Sơn",
+      "zones": [
+        "Khu B"
+      ]
+    },
+    {
+      "id": "12",
+      "name": "Đỗ Văn Cường",
+      "zones": [
+        "Khu C"
+      ]
+    }
+  ],
+  "inventory": [
+    {
+      "id": "VT-0001",
+      "name": "Cám ngựa",
+      "category": "Thức ăn",
+      "group": "Thức ăn",
+      "route": "Uống",
+      "unit": "kg",
+      "unitPrice": 18000,
+      "onHand": 120,
+      "held": 0,
+      "safety": 50
+    },
+    {
+      "id": "VT-0005",
+      "name": "Cỏ khô",
+      "category": "Thức ăn",
+      "group": "Thức ăn",
+      "route": "Uống",
+      "unit": "kg",
+      "unitPrice": 9000,
+      "onHand": 500,
+      "held": 0,
+      "safety": 100
+    },
+    {
+      "id": "VT-0002",
+      "name": "Phenylbutazone 20%",
+      "category": "Thuốc",
+      "group": "Giảm đau – kháng viêm",
+      "route": "Tiêm IV",
+      "unit": "lọ",
+      "unitPrice": 500000,
+      "onHand": 15,
+      "held": 10,
+      "safety": 20,
+      "note": "kháng viêm",
+      "brand": "Equipalazone, Butasyl",
+      "doseRef": "2,2–4,4 mg/kg/ngày",
+      "detectionHours": 168,
+      "rx": true
+    },
+    {
+      "id": "VT-0003",
+      "name": "Firocoxib 57 mg",
+      "category": "Thuốc",
+      "group": "Giảm đau – kháng viêm",
+      "route": "Uống",
+      "unit": "viên",
+      "unitPrice": 80000,
+      "onHand": 95,
+      "held": 50,
+      "safety": 30,
+      "note": "giảm đau khớp",
+      "brand": "Equioxx",
+      "doseRef": "0,1 mg/kg/ngày",
+      "detectionHours": 336,
+      "rx": true
+    },
+    {
+      "id": "VT-0013",
+      "name": "Flunixin meglumine 50 mg/ml",
+      "category": "Thuốc",
+      "group": "Giảm đau – kháng viêm",
+      "route": "Tiêm IV",
+      "unit": "lọ",
+      "unitPrice": 420000,
+      "onHand": 12,
+      "held": 0,
+      "safety": 4,
+      "note": "đau bụng, sốt",
+      "brand": "Finadyne, Banamine",
+      "doseRef": "1,1 mg/kg/ngày",
+      "detectionHours": 144,
+      "rx": true
+    },
+    {
+      "id": "VT-0014",
+      "name": "Ketoprofen 100 mg/ml",
+      "category": "Thuốc",
+      "group": "Giảm đau – kháng viêm",
+      "route": "Tiêm IV",
+      "unit": "lọ",
+      "unitPrice": 380000,
+      "onHand": 6,
+      "held": 0,
+      "safety": 2,
+      "brand": "Ketofen",
+      "doseRef": "2,2 mg/kg/ngày",
+      "rx": true
+    },
+    {
+      "id": "VT-0015",
+      "name": "Meloxicam 20 mg/ml",
+      "category": "Thuốc",
+      "group": "Giảm đau – kháng viêm",
+      "route": "Tiêm IV",
+      "unit": "lọ",
+      "unitPrice": 350000,
+      "onHand": 8,
+      "held": 0,
+      "safety": 2,
+      "brand": "Metacam",
+      "doseRef": "0,6 mg/kg/ngày",
+      "rx": true
+    },
+    {
+      "id": "VT-0007",
+      "name": "Gel Diclofenac 1%",
+      "category": "Thuốc",
+      "group": "Giảm đau – kháng viêm",
+      "route": "Bôi ngoài da",
+      "unit": "tuýp",
+      "unitPrice": 625000,
+      "onHand": 6,
+      "held": 2,
+      "safety": 2,
+      "brand": "Surpass",
+      "doseRef": "dải 12 cm, 2 lần/ngày",
+      "rx": true
+    },
+    {
+      "id": "VT-0016",
+      "name": "Dexamethasone 2 mg/ml",
+      "category": "Thuốc",
+      "group": "Corticoid",
+      "route": "Tiêm IV/IM",
+      "unit": "lọ",
+      "unitPrice": 120000,
+      "onHand": 10,
+      "held": 0,
+      "safety": 3,
+      "brand": "Azium",
+      "doseRef": "0,02–0,1 mg/kg",
+      "detectionHours": 48,
+      "rx": true
+    },
+    {
+      "id": "VT-0017",
+      "name": "Triamcinolone acetonide 40 mg/ml",
+      "category": "Thuốc",
+      "group": "Corticoid",
+      "route": "Tiêm khớp",
+      "unit": "lọ",
+      "unitPrice": 950000,
+      "onHand": 4,
+      "held": 0,
+      "safety": 1,
+      "brand": "Kenalog-Vet",
+      "doseRef": "6–18 mg/khớp",
+      "rx": true
+    },
+    {
+      "id": "VT-0006",
+      "name": "Ceftiofur 1 g",
+      "category": "Thuốc",
+      "group": "Kháng sinh",
+      "route": "Tiêm IM",
+      "unit": "liều",
+      "unitPrice": 220000,
+      "onHand": 26,
+      "held": 5,
+      "safety": 10,
+      "note": "hô hấp, mô mềm",
+      "brand": "Naxcel, Excenel",
+      "doseRef": "2,2–4,4 mg/kg/ngày",
+      "rx": true
+    },
+    {
+      "id": "VT-0018",
+      "name": "Penicillin G procaine 300.000 IU/ml",
+      "category": "Thuốc",
+      "group": "Kháng sinh",
+      "route": "Tiêm IM",
+      "unit": "lọ",
+      "unitPrice": 260000,
+      "onHand": 14,
+      "held": 0,
+      "safety": 4,
+      "doseRef": "22.000 IU/kg, 12 giờ/lần",
+      "rx": true
+    },
+    {
+      "id": "VT-0019",
+      "name": "Gentamicin 100 mg/ml",
+      "category": "Thuốc",
+      "group": "Kháng sinh",
+      "route": "Tiêm IV",
+      "unit": "lọ",
+      "unitPrice": 310000,
+      "onHand": 9,
+      "held": 0,
+      "safety": 3,
+      "doseRef": "6,6 mg/kg/ngày",
+      "rx": true
+    },
+    {
+      "id": "VT-0020",
+      "name": "Trimethoprim-sulfadiazine",
+      "category": "Thuốc",
+      "group": "Kháng sinh",
+      "route": "Uống",
+      "unit": "gói",
+      "unitPrice": 95000,
+      "onHand": 40,
+      "held": 0,
+      "safety": 10,
+      "note": "bột uống",
+      "brand": "Uniprim",
+      "doseRef": "25–30 mg/kg, 12 giờ/lần",
+      "rx": true
+    },
+    {
+      "id": "VT-0021",
+      "name": "Metronidazole 500 mg",
+      "category": "Thuốc",
+      "group": "Kháng sinh",
+      "route": "Uống",
+      "unit": "viên",
+      "unitPrice": 6000,
+      "onHand": 200,
+      "held": 0,
+      "safety": 60,
+      "doseRef": "15–25 mg/kg, 8–12 giờ/lần",
+      "rx": true
+    },
+    {
+      "id": "VT-0022",
+      "name": "Omeprazole 37% paste",
+      "category": "Thuốc",
+      "group": "Tiêu hóa",
+      "route": "Uống",
+      "unit": "ống",
+      "unitPrice": 780000,
+      "onHand": 10,
+      "held": 0,
+      "safety": 4,
+      "note": "loét dạ dày",
+      "brand": "GastroGard",
+      "doseRef": "4 mg/kg/ngày (điều trị)",
+      "rx": true
+    },
+    {
+      "id": "VT-0023",
+      "name": "Butylscopolamine 20 mg/ml",
+      "category": "Thuốc",
+      "group": "Tiêu hóa",
+      "route": "Tiêm IV",
+      "unit": "lọ",
+      "unitPrice": 290000,
+      "onHand": 5,
+      "held": 0,
+      "safety": 2,
+      "note": "đau bụng co thắt",
+      "brand": "Buscopan",
+      "doseRef": "0,3 mg/kg",
+      "rx": true
+    },
+    {
+      "id": "VT-0024",
+      "name": "Dầu khoáng (mineral oil)",
+      "category": "Thuốc",
+      "group": "Tiêu hóa",
+      "route": "Qua ống thông dạ dày",
+      "unit": "lít",
+      "unitPrice": 85000,
+      "onHand": 20,
+      "held": 0,
+      "safety": 5,
+      "note": "tắc ruột do phân"
+    },
+    {
+      "id": "VT-0025",
+      "name": "Men vi sinh tiêu hóa",
+      "category": "Thuốc",
+      "group": "Tiêu hóa",
+      "route": "Uống",
+      "unit": "gói",
+      "unitPrice": 45000,
+      "onHand": 30,
+      "held": 0,
+      "safety": 10,
+      "note": "50 g/gói"
+    },
+    {
+      "id": "VT-0026",
+      "name": "Acepromazine 10 mg/ml",
+      "category": "Thuốc",
+      "group": "An thần – gây tê",
+      "route": "Tiêm IV/IM",
+      "unit": "lọ",
+      "unitPrice": 240000,
+      "onHand": 6,
+      "held": 0,
+      "safety": 2,
+      "doseRef": "0,02–0,05 mg/kg",
+      "rx": true
+    },
+    {
+      "id": "VT-0027",
+      "name": "Xylazine 100 mg/ml",
+      "category": "Thuốc",
+      "group": "An thần – gây tê",
+      "route": "Tiêm IV",
+      "unit": "lọ",
+      "unitPrice": 330000,
+      "onHand": 6,
+      "held": 0,
+      "safety": 2,
+      "brand": "Rompun",
+      "doseRef": "0,5–1,1 mg/kg",
+      "rx": true
+    },
+    {
+      "id": "VT-0028",
+      "name": "Detomidine 10 mg/ml",
+      "category": "Thuốc",
+      "group": "An thần – gây tê",
+      "route": "Tiêm IV",
+      "unit": "lọ",
+      "unitPrice": 690000,
+      "onHand": 4,
+      "held": 0,
+      "safety": 1,
+      "brand": "Domosedan",
+      "doseRef": "0,01–0,02 mg/kg",
+      "rx": true
+    },
+    {
+      "id": "VT-0029",
+      "name": "Butorphanol 10 mg/ml",
+      "category": "Thuốc",
+      "group": "An thần – gây tê",
+      "route": "Tiêm IV",
+      "unit": "lọ",
+      "unitPrice": 850000,
+      "onHand": 3,
+      "held": 0,
+      "safety": 1,
+      "brand": "Torbugesic",
+      "doseRef": "0,01–0,02 mg/kg",
+      "rx": true,
+      "controlled": true
+    },
+    {
+      "id": "VT-0030",
+      "name": "Lidocaine 2%",
+      "category": "Thuốc",
+      "group": "An thần – gây tê",
+      "route": "Tiêm tại chỗ",
+      "unit": "lọ",
+      "unitPrice": 60000,
+      "onHand": 15,
+      "held": 0,
+      "safety": 5,
+      "note": "gây tê tại chỗ",
+      "rx": true
+    },
+    {
+      "id": "VT-0031",
+      "name": "Furosemide 50 mg/ml",
+      "category": "Thuốc",
+      "group": "Hô hấp",
+      "route": "Tiêm IV",
+      "unit": "lọ",
+      "unitPrice": 110000,
+      "onHand": 10,
+      "held": 0,
+      "safety": 3,
+      "note": "xuất huyết phổi do vận động",
+      "brand": "Lasix, Salix",
+      "doseRef": "0,5–1 mg/kg",
+      "rx": true
+    },
+    {
+      "id": "VT-0032",
+      "name": "Clenbuterol siro 25 µg/ml",
+      "category": "Thuốc",
+      "group": "Hô hấp",
+      "route": "Uống",
+      "unit": "chai",
+      "unitPrice": 1450000,
+      "onHand": 3,
+      "held": 0,
+      "safety": 1,
+      "note": "giãn phế quản",
+      "brand": "Ventipulmin",
+      "doseRef": "0,8 µg/kg, 12 giờ/lần",
+      "rx": true
+    },
+    {
+      "id": "VT-0033",
+      "name": "Natri hyaluronate 10 mg/ml",
+      "category": "Thuốc",
+      "group": "Khớp",
+      "route": "Tiêm IV/khớp",
+      "unit": "ống",
+      "unitPrice": 1650000,
+      "onHand": 4,
+      "held": 0,
+      "safety": 1,
+      "note": "ống 4 ml",
+      "brand": "Legend, Hyonate",
+      "doseRef": "40 mg IV",
+      "rx": true
+    },
+    {
+      "id": "VT-0034",
+      "name": "PSGAG 100 mg/ml",
+      "category": "Thuốc",
+      "group": "Khớp",
+      "route": "Tiêm IM",
+      "unit": "ống",
+      "unitPrice": 1250000,
+      "onHand": 6,
+      "held": 0,
+      "safety": 2,
+      "note": "ống 5 ml",
+      "brand": "Adequan",
+      "doseRef": "500 mg mỗi 4 ngày × 7 lần",
+      "rx": true
+    },
+    {
+      "id": "VT-0009",
+      "name": "Ivermectin 1,87% gel",
+      "category": "Thuốc",
+      "group": "Kháng ký sinh trùng",
+      "route": "Uống",
+      "unit": "ống",
+      "unitPrice": 90000,
+      "onHand": 30,
+      "held": 0,
+      "safety": 10,
+      "note": "tẩy giun",
+      "brand": "Eqvalan",
+      "doseRef": "0,2 mg/kg"
+    },
+    {
+      "id": "VT-0035",
+      "name": "Moxidectin + Praziquantel gel",
+      "category": "Thuốc",
+      "group": "Kháng ký sinh trùng",
+      "route": "Uống",
+      "unit": "ống",
+      "unitPrice": 260000,
+      "onHand": 20,
+      "held": 0,
+      "safety": 6,
+      "note": "giun + sán dây",
+      "brand": "Equest Pramox",
+      "doseRef": "0,4 mg/kg + 2,5 mg/kg"
+    },
+    {
+      "id": "VT-0036",
+      "name": "Pyrantel pamoate gel",
+      "category": "Thuốc",
+      "group": "Kháng ký sinh trùng",
+      "route": "Uống",
+      "unit": "ống",
+      "unitPrice": 120000,
+      "onHand": 16,
+      "held": 0,
+      "safety": 6,
+      "brand": "Strongid-P",
+      "doseRef": "6,6 mg/kg"
+    },
+    {
+      "id": "VT-0037",
+      "name": "Fenbendazole 10% hỗn dịch",
+      "category": "Thuốc",
+      "group": "Kháng ký sinh trùng",
+      "route": "Uống",
+      "unit": "chai",
+      "unitPrice": 340000,
+      "onHand": 8,
+      "held": 0,
+      "safety": 3,
+      "brand": "Panacur",
+      "doseRef": "10 mg/kg/ngày × 5 ngày"
+    },
+    {
+      "id": "VT-0010",
+      "name": "Vaccine cúm ngựa",
+      "category": "Vaccine",
+      "group": "Vaccine",
+      "route": "Tiêm IM",
+      "unit": "liều",
+      "unitPrice": 350000,
+      "onHand": 10,
+      "held": 0,
+      "safety": 4,
+      "note": "nhóm theo nguy cơ"
+    },
+    {
+      "id": "VT-0038",
+      "name": "Vaccine uốn ván (giải độc tố)",
+      "category": "Vaccine",
+      "group": "Vaccine",
+      "route": "Tiêm IM",
+      "unit": "liều",
+      "unitPrice": 150000,
+      "onHand": 12,
+      "held": 0,
+      "safety": 4,
+      "note": "vaccine cốt lõi"
+    },
+    {
+      "id": "VT-0039",
+      "name": "Vaccine dại",
+      "category": "Vaccine",
+      "group": "Vaccine",
+      "route": "Tiêm IM",
+      "unit": "liều",
+      "unitPrice": 180000,
+      "onHand": 10,
+      "held": 0,
+      "safety": 4,
+      "note": "vaccine cốt lõi"
+    },
+    {
+      "id": "VT-0040",
+      "name": "Vaccine viêm não Nhật Bản",
+      "category": "Vaccine",
+      "group": "Vaccine",
+      "route": "Tiêm IM",
+      "unit": "liều",
+      "unitPrice": 260000,
+      "onHand": 8,
+      "held": 0,
+      "safety": 4
+    },
+    {
+      "id": "VT-0041",
+      "name": "Vaccine Herpes ngựa EHV-1/4",
+      "category": "Vaccine",
+      "group": "Vaccine",
+      "route": "Tiêm IM",
+      "unit": "liều",
+      "unitPrice": 420000,
+      "onHand": 6,
+      "held": 0,
+      "safety": 2,
+      "note": "nhóm theo nguy cơ"
+    },
+    {
+      "id": "VT-0042",
+      "name": "Vaccine liên cầu (Strangles)",
+      "category": "Vaccine",
+      "group": "Vaccine",
+      "route": "Nhỏ mũi",
+      "unit": "liều",
+      "unitPrice": 480000,
+      "onHand": 4,
+      "held": 0,
+      "safety": 2,
+      "note": "nhóm theo nguy cơ"
+    },
+    {
+      "id": "VT-0011",
+      "name": "Vitamin E + Selen",
+      "category": "Thuốc",
+      "group": "Vitamin – bổ sung",
+      "route": "Tiêm IM",
+      "unit": "lọ",
+      "unitPrice": 180000,
+      "onHand": 14,
+      "held": 14,
+      "safety": 6,
+      "note": "phục hồi cơ",
+      "brand": "E-SE",
+      "rx": true
+    },
+    {
+      "id": "VT-0043",
+      "name": "Điện giải bột",
+      "category": "Thuốc",
+      "group": "Vitamin – bổ sung",
+      "route": "Uống",
+      "unit": "gói",
+      "unitPrice": 35000,
+      "onHand": 60,
+      "held": 0,
+      "safety": 20,
+      "note": "bù nước sau tập/nắng nóng"
+    },
+    {
+      "id": "VT-0044",
+      "name": "Biotin bổ sung móng",
+      "category": "Thuốc",
+      "group": "Vitamin – bổ sung",
+      "route": "Uống",
+      "unit": "kg",
+      "unitPrice": 650000,
+      "onHand": 5,
+      "held": 0,
+      "safety": 2,
+      "note": "20 mg/ngày"
+    },
+    {
+      "id": "VT-0008",
+      "name": "Povidone-iodine 10%",
+      "category": "Thuốc",
+      "group": "Sát trùng – vết thương",
+      "route": "Bôi ngoài da",
+      "unit": "chai",
+      "unitPrice": 65000,
+      "onHand": 12,
+      "held": 0,
+      "safety": 4,
+      "brand": "Betadine"
+    },
+    {
+      "id": "VT-0045",
+      "name": "Chlorhexidine 2%",
+      "category": "Thuốc",
+      "group": "Sát trùng – vết thương",
+      "route": "Bôi ngoài da",
+      "unit": "chai",
+      "unitPrice": 70000,
+      "onHand": 10,
+      "held": 0,
+      "safety": 4
+    },
+    {
+      "id": "VT-0046",
+      "name": "Kem Silver sulfadiazine 1%",
+      "category": "Thuốc",
+      "group": "Sát trùng – vết thương",
+      "route": "Bôi ngoài da",
+      "unit": "tuýp",
+      "unitPrice": 95000,
+      "onHand": 8,
+      "held": 0,
+      "safety": 3,
+      "note": "vết thương, bỏng"
+    },
+    {
+      "id": "VT-0047",
+      "name": "DMSO 90%",
+      "category": "Thuốc",
+      "group": "Sát trùng – vết thương",
+      "route": "Bôi ngoài da",
+      "unit": "chai",
+      "unitPrice": 280000,
+      "onHand": 5,
+      "held": 0,
+      "safety": 2,
+      "note": "giảm phù nề tại chỗ",
+      "rx": true
+    },
+    {
+      "id": "VT-0048",
+      "name": "Ichthammol 20%",
+      "category": "Thuốc",
+      "group": "Sát trùng – vết thương",
+      "route": "Đắp móng",
+      "unit": "hộp",
+      "unitPrice": 140000,
+      "onHand": 6,
+      "held": 0,
+      "safety": 2,
+      "note": "áp xe móng"
+    },
+    {
+      "id": "VT-0004",
+      "name": "Bông gạc",
+      "category": "Vật tư y tế",
+      "group": "Vật tư y tế",
+      "route": "—",
+      "unit": "cuộn",
+      "unitPrice": 50000,
+      "onHand": 8,
+      "held": 8,
+      "safety": 15,
+      "note": "băng bó"
+    },
+    {
+      "id": "VT-0012",
+      "name": "Băng thun tự dính",
+      "category": "Vật tư y tế",
+      "group": "Vật tư y tế",
+      "route": "—",
+      "unit": "cuộn",
+      "unitPrice": 45000,
+      "onHand": 25,
+      "held": 6,
+      "safety": 10,
+      "brand": "Vetrap"
+    },
+    {
+      "id": "VT-0049",
+      "name": "Bông cuộn y tế 500 g",
+      "category": "Vật tư y tế",
+      "group": "Vật tư y tế",
+      "route": "—",
+      "unit": "cuộn",
+      "unitPrice": 75000,
+      "onHand": 20,
+      "held": 0,
+      "safety": 6
+    },
+    {
+      "id": "VT-0050",
+      "name": "Miếng đắp móng",
+      "category": "Vật tư y tế",
+      "group": "Vật tư y tế",
+      "route": "—",
+      "unit": "miếng",
+      "unitPrice": 55000,
+      "onHand": 30,
+      "held": 0,
+      "safety": 10,
+      "brand": "Animalintex"
+    },
+    {
+      "id": "VT-0051",
+      "name": "Dịch truyền Ringer lactate 5 L",
+      "category": "Vật tư y tế",
+      "group": "Dịch truyền",
+      "route": "Truyền IV",
+      "unit": "túi",
+      "unitPrice": 210000,
+      "onHand": 10,
+      "held": 0,
+      "safety": 4,
+      "note": "đau bụng, mất nước"
+    },
+    {
+      "id": "VT-0052",
+      "name": "Bơm tiêm 20 ml + kim",
+      "category": "Vật tư y tế",
+      "group": "Vật tư y tế",
+      "route": "—",
+      "unit": "hộp",
+      "unitPrice": 120000,
+      "onHand": 15,
+      "held": 0,
+      "safety": 5,
+      "note": "hộp 50 cái"
+    }
+  ],
+  "feedRequests": [
+    {
+      "id": "FR-0004",
+      "horseId": "h-wind",
+      "horse": "Wind",
+      "item": "Men tiêu hóa 50 g/ngày",
+      "reason": "Wind ăn kém, phân lỏng nhẹ sau 5 ngày kháng sinh.",
+      "by": "Ngô Văn Sơn",
+      "at": "02/10 18:00",
+      "status": "PENDING"
+    },
+    {
+      "id": "FR-0003",
+      "horseId": "h-storm",
+      "horse": "Storm",
+      "item": "Bột nghệ chống viêm 30 g/ngày",
+      "reason": "Hỗ trợ chống viêm trong thời gian điều trị gân.",
+      "by": "Phạm Văn Toàn",
+      "at": "28/09 08:30",
+      "status": "APPROVED",
+      "vetNote": "Đồng ý, đã đưa vào khẩu phần y tế.",
+      "decidedBy": "Lê Thị Hương",
+      "decidedAt": "28/09 10:00"
+    }
+  ]
 }

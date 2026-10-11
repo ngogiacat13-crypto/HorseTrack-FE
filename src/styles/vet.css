@@ -1,0 +1,99 @@
+/* ============================================================
+   Veterinarian screens — 2D injury map, case inbox, protocol builder.
+   Uses the tokens from tokens.css and the ht-* base from ht.css.
+   ============================================================ */
+
+/* ---------- 2D injury map ---------- */
+.ht-injury { display: grid; gap: var(--space-3); }
+.ht-injury__canvas { position: relative; width: 100%; max-width: 640px; margin: 0 auto; aspect-ratio: 1280 / 896; border-radius: var(--radius-md); background: var(--bg); user-select: none; }
+.ht-injury__canvas.is-editable { cursor: crosshair; outline: 1px dashed var(--border-strong); outline-offset: 4px; }
+.ht-injury__canvas img { display: block; width: 100%; height: 100%; pointer-events: none; }
+.ht-injury__mark { position: absolute; width: 20px; height: 20px; margin: -10px 0 0 -10px; padding: 0; border-radius: 50%; border: 3px solid var(--surface); box-shadow: 0 0 0 1px var(--border-strong), 0 2px 6px rgba(0, 0, 0, .18); cursor: pointer; background: var(--warning); }
+.ht-injury__mark[data-sev="high"] { background: var(--danger); box-shadow: 0 0 0 6px rgba(220, 53, 69, .22), 0 2px 6px rgba(0, 0, 0, .18); }
+.ht-injury__mark[data-sev="mid"] { background: #f08c00; }
+.ht-injury__mark[data-sev="low"] { background: var(--accent); }
+.ht-injury__mark[aria-pressed="true"] { outline: 2px solid var(--primary); outline-offset: 3px; }
+.ht-injury__mark:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+.ht-injury__mark--pending { background: var(--surface); border: 3px dashed var(--primary); box-shadow: none; pointer-events: none; animation: ht-pulse 1.4s ease-in-out infinite; }
+@keyframes ht-pulse { 50% { transform: scale(1.25); } }
+@media (prefers-reduced-motion: reduce) { .ht-injury__mark--pending { animation: none; } }
+.ht-injury__pop { position: absolute; z-index: 2; width: 240px; margin-left: 14px; padding: 10px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: var(--shadow-pop); font-size: 13px; line-height: 18px; cursor: default; }
+.ht-injury__pop p { margin: 4px 0; color: var(--foreground); }
+.ht-injury__pop small { color: var(--muted); }
+.ht-injury__pop [data-sev="high"] { color: var(--danger-ink); font-weight: 600; }
+.ht-injury__pop [data-sev="mid"] { color: var(--warning-ink); font-weight: 600; }
+.ht-injury__legend { display: flex; flex-wrap: wrap; gap: 6px 16px; justify-content: center; font-size: 12px; color: var(--muted); }
+.ht-injury__legend span { display: inline-flex; align-items: center; gap: 6px; }
+.ht-injury__legend i { width: 10px; height: 10px; border-radius: 50%; background: var(--warning); }
+.ht-injury__legend i[data-sev="high"] { background: var(--danger); }
+.ht-injury__legend i[data-sev="mid"] { background: #f08c00; }
+.ht-injury__legend i[data-sev="low"] { background: var(--accent); }
+.ht-injury__legend i.pending { background: var(--surface); border: 2px dashed var(--primary); }
+.ht-injury-tools { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); box-shadow: var(--shadow-card); }
+.ht-injury-tools .ht-select, .ht-injury-tools .ht-input { height: 38px; }
+.ht-injury-tools .ht-input { flex: 1; min-width: 160px; }
+
+/* ---------- Case inbox ---------- */
+.ht-source { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 600; white-space: nowrap; }
+.ht-source .ht-icon { width: 14px; height: 14px; }
+.ht-source[data-src="SESSION_STOP"] { color: var(--danger-ink); }
+.ht-source[data-src="GROOM_REPORT"] { color: var(--warning-ink); }
+.ht-source[data-src="TRAINER_REQUEST"] { color: var(--info-ink); }
+.ht-sev { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; white-space: nowrap; }
+.ht-sev::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.ht-sev[data-sev="HIGH"] { color: var(--danger); }
+.ht-sev[data-sev="MEDIUM"] { color: #e8590c; }
+.ht-sev[data-sev="LOW"] { color: var(--success); }
+.ht-quote { padding: 12px 14px; border-radius: var(--radius-md); background: var(--bg); font-size: 13px; line-height: 20px; }
+.ht-quote .ht-overline { display: block; margin-bottom: 4px; }
+.ht-mini-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+.ht-mini-metrics > div { border: 1px solid var(--border); border-radius: var(--radius-md); padding: 8px 12px; font-size: 12px; color: var(--muted); }
+.ht-mini-metrics b { display: block; font: 600 20px/28px var(--font-sans); color: var(--foreground); }
+.ht-mini-metrics .is-danger { border-color: var(--danger-line); }
+.ht-mini-metrics .is-danger b { color: var(--danger); }
+.ht-actions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2); }
+.ht-actions-grid .ht-btn--block { grid-column: 1 / -1; }
+
+/* ---------- Protocol builder ---------- */
+.ht-proto-phase { border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow-card); }
+.ht-proto-phase__head { display: flex; align-items: center; gap: var(--space-3); padding: 16px 20px; }
+.ht-proto-phase__head h3 { margin: 0; font: 600 16px/22px var(--font-sans); flex: 1; }
+.ht-proto-phase__body { padding: 0 20px 18px; display: grid; gap: var(--space-3); }
+.ht-proto-phase__grid { display: grid; grid-template-columns: 2fr 1.2fr .8fr 2fr; gap: var(--space-3); }
+.ht-proto-phase__grid .ht-field { margin: 0; }
+.ht-proto-items { width: 100%; border-collapse: collapse; font-size: 14px; }
+.ht-proto-items th { text-align: left; font: 600 11px/16px var(--font-sans); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: 8px 6px; border-bottom: 1px solid var(--border); }
+.ht-proto-items td { padding: 8px 6px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.ht-proto-items .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ht-proto-items input { width: 72px; height: 34px; text-align: right; }
+.ht-proto-items tr.is-warn td { background: var(--warning-soft); }
+.ht-proto-add { display: flex; gap: var(--space-2); flex-wrap: wrap; align-items: center; }
+.ht-proto-add .ht-select { height: 36px; min-width: 240px; }
+.ht-dashed-btn { width: 100%; padding: 14px; border: 1.5px dashed var(--border-strong); border-radius: var(--radius-lg); background: transparent; color: var(--muted); font: 600 14px/20px var(--font-sans); cursor: pointer; display: inline-flex; justify-content: center; gap: 6px; align-items: center; }
+.ht-dashed-btn:hover { color: var(--primary); border-color: var(--primary); }
+.ht-sum { display: grid; grid-template-columns: 1fr auto; gap: 8px var(--space-3); font-size: 13px; margin: 0; }
+.ht-sum dt { color: var(--muted); }
+.ht-sum dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
+.ht-sum .total { font: 700 20px/28px var(--font-sans); color: var(--foreground); }
+
+/* Status path of a protocol */
+.ht-path { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 12px; }
+.ht-path span { padding: 3px 8px; border-radius: var(--radius-pill); background: var(--bg); border: 1px solid var(--border); color: var(--muted); font-family: var(--font-mono); }
+.ht-path span[data-state="done"] { background: var(--success-soft); border-color: transparent; color: var(--success-ink); }
+.ht-path span[data-state="current"] { background: var(--primary); border-color: var(--primary); color: var(--on-primary); }
+.ht-path span[data-state="alt"] { background: var(--danger-soft); border-color: var(--danger-line); color: var(--danger-ink); }
+.ht-path .ht-icon { width: 12px; height: 12px; color: var(--muted); }
+
+/* Diet card */
+.ht-meals { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-2); }
+.ht-meals > div { border: 1px solid var(--border); border-radius: var(--radius-md); padding: 8px 10px; font-size: 13px; line-height: 18px; }
+.ht-meals .ht-overline { display: block; margin-bottom: 2px; }
+
+@media (max-width: 960px) {
+  .ht-proto-phase__grid { grid-template-columns: 1fr 1fr; }
+  .ht-meals { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  .ht-proto-phase__grid, .ht-actions-grid, .ht-mini-metrics { grid-template-columns: 1fr; }
+  .ht-injury__pop { width: 180px; }
+}

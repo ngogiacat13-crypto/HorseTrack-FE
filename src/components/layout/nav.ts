@@ -31,18 +31,28 @@ export const NAV_BY_ROLE: Record<Role, NavGroup[]> = {
     ] },
   ],
   HeadTrainer: [
-    { title: 'Huấn luyện', items: [
+    { title: 'Đàn ngựa', items: [
       { path: '/trainer', icon: 'grid', label: 'Tổng quan đàn ngựa', end: true },
       { path: '/trainer/stable', icon: 'stable', label: 'Sơ đồ chuồng' },
-      { path: '/trainer/plans', icon: 'calendar', label: 'Giáo án huấn luyện' },
-      { path: '/trainer/sessions', icon: 'pulse', label: 'Phiên tập' },
+    ] },
+    { title: 'Huấn luyện', items: [
+      { path: '/trainer/plans', icon: 'calendar', label: 'Giáo án' },
+      { path: '/trainer/schedule', icon: 'pulse', label: 'Lịch tập', count: 1, tone: 'danger' },
+    ] },
+    { title: 'Thi đấu', items: [
+      { path: '/trainer/races', icon: 'trend', label: 'Giải đua & đề xuất', count: 1 },
     ] },
   ],
   Veterinarian: [
-    { title: 'Y tế', items: [
+    { title: 'Khám & điều trị', items: [
       { path: '/vet', icon: 'heart', label: 'Sức khỏe đàn ngựa', end: true },
-      { path: '/vet/cases', icon: 'clip', label: 'Hộp thư ca khám' },
-      { path: '/vet/protocols', icon: 'file', label: 'Phác đồ' },
+      { path: '/vet/cases', icon: 'clip', label: 'Hộp thư ca khám', count: 3, tone: 'danger' },
+      { path: '/vet/protocols', icon: 'file', label: 'Phác đồ điều trị', count: 4 },
+      { path: '/vet/medicines', icon: 'box', label: 'Danh mục thuốc' },
+    ] },
+    { title: 'Phòng bệnh', items: [
+      { path: '/vet/vaccinations', icon: 'calendar', label: 'Tiêm phòng & tẩy giun' },
+      { path: '/vet/race-exams', icon: 'trend', label: 'Khám trước thi đấu', count: 3 },
     ] },
   ],
   Groom: [

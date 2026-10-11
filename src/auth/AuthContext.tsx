@@ -63,5 +63,5 @@ export const useAuth = () => useContext(AuthContext);
 /** The current user as an audit-log actor. */
 export const useActor = () => {
   const { user } = useAuth();
-  return useMemo(() => ({ name: user?.fullname ?? 'Không rõ', role: user?.role ?? 'Unknown' }), [user]);
+  return useMemo(() => ({ id: user?.userId, name: user?.fullname ?? 'Không rõ', role: user?.role ?? 'Unknown' }), [user]);
 };

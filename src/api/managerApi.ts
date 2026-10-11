@@ -59,7 +59,7 @@ export interface AuditLog {
 }
 
 /** Who performs an action — written into the audit log (BR_10). */
-export interface Actor { name: string; role: string }
+export interface Actor { id?: string; name: string; role: string }
 
 /* Business rules shared by pages and API */
 export const GRACE_DAYS = 10;   // BR_12
@@ -68,7 +68,7 @@ export const SUSPEND_AT = 25;   // BR_13
 /* ---------------- Helpers ---------------- */
 const get = async <T,>(url: string, params?: Record<string, unknown>) => (await http.get<T>(url, { params })).data;
 
-const addAudit = (actor: Actor, e: Omit<AuditLog, 'id' | 'at' | 'who' | 'role' | 'ip'>) =>
+export const addAudit = (actor: Actor, e: Omit<AuditLog, 'id' | 'at' | 'who' | 'role' | 'ip'>) =>
   http.post<AuditLog>('/auditLogs', {
     id: Date.now(),
     at: `${DEMO_NOW.date} ${DEMO_NOW.time}:00`,
