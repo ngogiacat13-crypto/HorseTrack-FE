@@ -16,7 +16,7 @@ export const ManagerAuditLogs: React.FC = () => {
   const [sel, setSel] = useState<AuditLog | null>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
 
-  useEffect(() => { managerApi.getAuditLogs().then(setData); }, []);
+  useEffect(() => { managerApi.getAuditLogs().then((items) => setData({ total: items.length, items })); }, []);
   useEffect(() => {
     if (!sel) return;
     closeRef.current?.focus();

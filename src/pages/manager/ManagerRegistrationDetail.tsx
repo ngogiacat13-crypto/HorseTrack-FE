@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { managerApi, RegistrationDetail } from '../../api/managerApi';
+import { managerApi, Registration } from '../../api/managerApi';
+import { useActor } from '../../auth/AuthContext';
 import { Icon } from '../../components/ui/Icon';
 import { Badge, Dialog, Loading, PageHeader, Panel, ReasonField, Timeline, TimelineItem, useToast } from '../../components/ui/Ht';
 
 export const ManagerRegistrationDetail: React.FC = () => {
   const { id = 'REG-0019' } = useParams<{ id: string }>();
   const toast = useToast();
-  const [d, setD] = useState<RegistrationDetail | null>(null);
-  const [checks, setChecks] = useState<RegistrationDetail['checklist']>([]);
+  const actor = useActor();
+  const [d, setD] = useState<Registration | null>(null);
+  const [checks, setChecks] = useState<Registration['checklist']>([]);
   const [decision, setDecision] = useState<null | { kind: 'Approved' | 'Rejected'; at: string }>(null);
   const [history, setHistory] = useState<TimelineItem[]>([]);
   const [dlg, setDlg] = useState<null | 'approve' | 'reject'>(null);
@@ -19,7 +21,7 @@ export const ManagerRegistrationDetail: React.FC = () => {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    managerApi.getRegistrationDetail(id).then((r) => {
+    managerApi.getRegistration(id).then((r) => {
       setD(r);
       setChecks(r.checklist);
       setHistory(r.history.map((h) => ({ tone: h.tone, what: <><b>{h.who}</b> {h.text}</>, when: h.at })));
@@ -46,8 +48,8 @@ export const ManagerRegistrationDetail: React.FC = () => {
   const approve = async () => {
     setBusy(true);
     try {
-      await managerApi.approveRegistration(d.id, { note });
-      finish('Approved', <><b>Nguyễn Văn Minh</b> phê duyệt · chuyển <span className="ht-mono">APPROVED</span>{note && <>: “{note}”</>}</>);
+      await managerApi.approveRegistration(d, checks, note, actor);
+      finish('Approved', <><b>{actor.name}</b> phê duyệt · chuyển <span className="ht-mono">APPROVED</span>{note && <>: “{note}”</>}</>);
       toast(`Đã phê duyệt ${d.id} — ${d.horse.name} được thêm vào danh sách quản lý.`);
     } finally { setBusy(false); }
   };
@@ -56,8 +58,8 @@ export const ManagerRegistrationDetail: React.FC = () => {
     if (reason.trim().length < 10) { setReasonErr('Lý do từ chối phải có ít nhất 10 ký tự.'); return; }
     setBusy(true);
     try {
-      await managerApi.rejectRegistration(d.id, { reason: reason.trim(), allowResubmit });
-      finish('Rejected', <><b>Nguyễn Văn Minh</b> từ chối{allowResubmit ? ' · cho phép nộp lại' : ''}: “{reason.trim()}”</>);
+      await managerApi.rejectRegistration(d, checks, reason.trim(), allowResubmit, actor);
+      finish('Rejected', <><b>{actor.name}</b> từ chối{allowResubmit ? ' · cho phép nộp lại' : ''}: “{reason.trim()}”</>);
       toast(`Đã từ chối ${d.id} và gửi lý do cho chủ ngựa.`);
     } finally { setBusy(false); }
   };
@@ -131,9 +133,9 @@ export const ManagerRegistrationDetail: React.FC = () => {
                 <dt>Điện thoại</dt><dd className="ht-mono">{d.owner.phone}</dd>
               </dl>
               <dl className="ht-kv">
-                <dt>Mã số thuế</dt><dd className="ht-mono">{d.owner.taxCode}</dd>
-                <dt>Địa chỉ</dt><dd>{d.owner.billingAddress}</dd>
-                <dt>Ngựa đang gửi</dt><dd>{d.owner.otherHorses}</dd>
+                <dt>Mã số thuế</dt><dd className="ht-mono">{d.ownerExtra.taxCode}</dd>
+                <dt>Địa chỉ</dt><dd>{d.ownerExtra.billingAddress}</dd>
+                <dt>Ngựa đang gửi</dt><dd>{d.ownerExtra.otherHorses}</dd>
               </dl>
             </div>
           </Panel>

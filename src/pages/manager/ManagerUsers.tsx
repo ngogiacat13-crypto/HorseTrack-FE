@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ManagedUser, managerApi } from '../../api/managerApi';
+import { useActor, useAuth } from '../../auth/AuthContext';
 import { Icon } from '../../components/ui/Icon';
 import { Badge, Callout, Dialog, Loading, PageHeader, Panel, ReasonField, Tabs, useToast } from '../../components/ui/Ht';
 import { ROLE_LABEL } from '../../components/layout/nav';
@@ -29,6 +30,8 @@ const initials = (n: string) => n.trim().split(/\s+/).slice(-2).map((p) => p[0])
 
 export const ManagerUsers: React.FC = () => {
   const toast = useToast();
+  const { user: me } = useAuth();
+  const actor = useActor();
   const [users, setUsers] = useState<ManagedUser[] | null>(null);
   const [tab, setTab] = useState<'users' | 'rbac'>('users');
   const [q, setQ] = useState('');
@@ -63,15 +66,15 @@ export const ManagerUsers: React.FC = () => {
     try {
       const u = dlg.user;
       if (dlg.kind === 'role') {
-        await managerApi.changeRole(u.id, newRole, reason);
+        await managerApi.changeRole(u, newRole, reason, actor);
         setUsers((xs) => xs!.map((x) => (x.id === u.id ? { ...x, role: newRole, openTasks: 0 } : x)));
         toast(`Đã đổi vai trò ${u.fullName} → ${ROLE_LABEL[newRole]} · ghi Audit Log.`);
       } else if (dlg.kind === 'lock') {
-        await managerApi.lockUser(u.id, reason);
+        await managerApi.lockUser(u, reason, actor);
         setUsers((xs) => xs!.map((x) => (x.id === u.id ? { ...x, status: 'LOCKED', lockReason: reason.trim() } : x)));
         toast(`Đã khóa tài khoản ${u.username}.`);
       } else {
-        await managerApi.unlockUser(u.id, reason);
+        await managerApi.unlockUser(u, reason, actor);
         setUsers((xs) => xs!.map((x) => (x.id === u.id ? { ...x, status: 'ACTIVE' } : x)));
         toast(`Đã mở khóa tài khoản ${u.username}.`);
       }
@@ -115,7 +118,7 @@ export const ManagerUsers: React.FC = () => {
                   </td>
                   <td>
                     <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end', alignItems: 'center' }}>
-                      {u.isSelf ? <span style={{ fontSize: 12, color: 'var(--muted)' }}>Tài khoản của bạn</span> : <>
+                      {u.id === me?.userId ? <span style={{ fontSize: 12, color: 'var(--muted)' }}>Tài khoản của bạn</span> : <>
                         <button type="button" className="ht-btn ht-btn--ghost ht-btn--sm" disabled={u.status === 'LOCKED'} onClick={() => open('role', u)}><Icon name="usercog" />Đổi vai trò</button>
                         {u.status === 'ACTIVE'
                           ? <button type="button" className="ht-btn ht-btn--secondary ht-btn--sm" onClick={() => open('lock', u)}><Icon name="lock" />Khóa</button>

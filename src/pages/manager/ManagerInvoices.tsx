@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Invoice, InvoiceStatus, managerApi } from '../../api/managerApi';
+import { useActor } from '../../auth/AuthContext';
 import { Icon } from '../../components/ui/Icon';
 import { Badge, Callout, Dialog, Loading, PageHeader, Panel, Rules, StatCard, Tabs, money, useToast } from '../../components/ui/Ht';
 
@@ -36,15 +37,15 @@ const OverdueMeter: React.FC<{ inv: Invoice }> = ({ inv }) => {
 
 export const ManagerInvoices: React.FC = () => {
   const toast = useToast();
+  const actor = useActor();
   const [items, setItems] = useState<Invoice[] | null>(null);
-  const [summary, setSummary] = useState({ collectedSept: 0, overdue: 0, overdueCount: 0, pending: 0 });
   const [filter, setFilter] = useState<Filter>('all');
   const [q, setQ] = useState('');
   const [dlg, setDlg] = useState<null | { kind: 'suspend' | 'react'; inv: Invoice }>(null);
   const [reason, setReason] = useState('');
   const [busy, setBusy] = useState(false);
 
-  useEffect(() => { managerApi.getInvoices().then((r) => { setItems(r.items); setSummary(r.summary); }); }, []);
+  useEffect(() => { managerApi.getInvoices().then(setItems); }, []);
 
   const list = useMemo(() => (items ?? []).filter((i) => {
     const okF = filter === 'all'
@@ -59,6 +60,15 @@ export const ManagerInvoices: React.FC = () => {
 
   const suspendedOwners = new Set(items.filter((i) => i.status === 'SUSPENDED').map((i) => i.owner)).size;
   const reactPending = items.filter((i) => i.status === 'REACTIVATION_PENDING').length;
+  /* Tong hop tinh tu chinh danh sach hoa don, cung dinh nghia "no qua han" voi getFinanceReport. */
+  const isOverdue = (i: Invoice) => i.status === 'OVERDUE' || i.status === 'SUSPENDED';
+  const total = (pred: (i: Invoice) => boolean) => items.filter(pred).reduce((s, i) => s + i.amount, 0);
+  const summary = {
+    collectedSept: total((i) => (i.status === 'PAID' || i.status === 'ACTIVE') && i.period === '09/2026'),
+    overdue: total(isOverdue),
+    overdueCount: items.filter(isOverdue).length,
+    pending: total((i) => i.status === 'UNPAID'),
+  };
   const update = (id: string, patch: Partial<Invoice>) => setItems((xs) => xs!.map((x) => (x.id === id ? { ...x, ...patch } : x)));
 
   const openSuspend = (inv: Invoice) => {
@@ -71,11 +81,11 @@ export const ManagerInvoices: React.FC = () => {
     setBusy(true);
     try {
       if (dlg.kind === 'suspend') {
-        await managerApi.suspendService(dlg.inv.id, reason);
+        await managerApi.suspendService(dlg.inv, reason, actor);
         update(dlg.inv.id, { status: 'SUSPENDED', suspendedSince: '03/10' });
         toast(`Đã đình chỉ dịch vụ của ${dlg.inv.owner} · ghi Audit Log.`);
       } else {
-        await managerApi.reactivateService(dlg.inv.id);
+        await managerApi.reactivateService(dlg.inv, actor);
         update(dlg.inv.id, { status: 'ACTIVE' });
         toast(`Đã kích hoạt lại dịch vụ cho ${dlg.inv.owner}.`);
       }
@@ -87,7 +97,7 @@ export const ManagerInvoices: React.FC = () => {
     <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end', alignItems: 'center' }}>
       {i.status === 'OVERDUE' && i.overdueDays >= SUSPEND_AT && <button type="button" className="ht-btn ht-btn--danger ht-btn--sm" onClick={() => openSuspend(i)}>Đình chỉ</button>}
       {i.status === 'OVERDUE' && i.overdueDays < SUSPEND_AT && (
-        <button type="button" className="ht-btn ht-btn--ghost ht-btn--sm" onClick={async () => { await managerApi.sendReminder(i.id); toast(`Đã gửi nhắc thanh toán ${i.id} cho ${i.owner}.`); }}>Gửi nhắc</button>
+        <button type="button" className="ht-btn ht-btn--ghost ht-btn--sm" onClick={async () => { await managerApi.sendReminder(i, actor); toast(`Đã gửi nhắc thanh toán ${i.id} cho ${i.owner}.`); }}>Gửi nhắc</button>
       )}
       {i.status === 'SUSPENDED' && <button type="button" className="ht-btn ht-btn--secondary ht-btn--sm" disabled title="Chưa tất toán nợ, phí phạt và phí kích hoạt (BR_14)">Kích hoạt lại</button>}
       {i.status === 'REACTIVATION_PENDING' && <button type="button" className="ht-btn ht-btn--primary ht-btn--sm" onClick={() => setDlg({ kind: 'react', inv: i })}>Kích hoạt lại</button>}

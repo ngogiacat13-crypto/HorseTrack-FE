@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { managerApi } from '../../api/managerApi';
+import { useActor } from '../../auth/AuthContext';
 import { Icon } from '../../components/ui/Icon';
 import { Badge, Loading, PageHeader, Panel, StatCard, Timeline, money, useToast } from '../../components/ui/Ht';
 
@@ -16,6 +17,7 @@ export const ManagerDashboard: React.FC = () => {
   const [d, setD] = useState<Dash | null>(null);
   const navigate = useNavigate();
   const toast = useToast();
+  const actor = useActor();
 
   useEffect(() => { managerApi.getDashboard().then(setD); }, []);
   if (!d) return <div className="ht ht-page"><Loading /></div>;
@@ -30,7 +32,7 @@ export const ManagerDashboard: React.FC = () => {
     <div className="ht ht-page">
       <PageHeader
         title="Bảng điều khiển"
-        sub={<>Chào buổi sáng, {d.greeting.name} · {d.greeting.weekday}, <span className="ht-mono">{d.greeting.date}</span></>}
+        sub={<>Chào buổi sáng, {actor.name} · {d.greeting.weekday}, <span className="ht-mono">{d.greeting.date}</span></>}
         actions={<>
           <select className="ht-select" aria-label="Khoảng thời gian"><option>Hôm nay</option><option>7 ngày</option><option>Tháng này</option></select>
           <button className="ht-btn ht-btn--secondary" onClick={() => toast('Đang xuất báo cáo tổng quan (PDF)…')}><Icon name="download" />Xuất báo cáo</button>
