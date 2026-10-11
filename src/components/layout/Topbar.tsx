@@ -1,119 +1,56 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
-import './topbar.css';
-
-const ROLE_LABEL: Record<string, string> = {
-  ClubManager: 'QUẢN LÝ CLB',
-  HeadTrainer: 'HLV TRƯỞNG',
-  Veterinarian: 'BÁC SĨ THÚ Y',
-  Groom: 'NGƯỜI CHĂM NGỰA',
-  HorseOwner: 'CHỦ NGỰA',
-  WarehouseManager: 'QUẢN LÝ KHO',
-};
+import { ROLE_HOME } from '../../api/mockData';
+import { Icon } from '../ui/Icon';
+import { BrandMark, DemoClock } from '../ui/Ht';
+import { ROLE_LABEL, SEARCH_HINT } from './nav';
 
 export const Topbar: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const [showMenu, setShowMenu] = useState(false);
+  const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const onClickOutside = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setShowMenu(false);
-      }
-    };
-    document.addEventListener('mousedown', onClickOutside);
-    return () => document.removeEventListener('mousedown', onClickOutside);
+    const onDown = (e: MouseEvent) => { if (menuRef.current && !menuRef.current.contains(e.target as Node)) setOpen(false); };
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('keydown', onKey);
+    return () => { document.removeEventListener('mousedown', onDown); document.removeEventListener('keydown', onKey); };
   }, []);
 
-  const initial = user?.fullname?.trim().charAt(0).toUpperCase() ?? 'U';
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
+  if (!user) return null;
+  const initials = user.fullname.trim().split(/\s+/).slice(-2).map((p) => p[0]).join('').toUpperCase();
 
   return (
-    <header className="topbar">
-      {/* LEFT */}
-      <div className="topbar-left">
-        <Link to="/" className="topbar-brand">
-          <span className="topbar-brand-icon">🐴</span>
-          <span className="topbar-brand-text">HorseTrack</span>
-        </Link>
+    <header className="ht-app__bar">
+      <Link className="ht-brand" to={ROLE_HOME[user.role]}><BrandMark />HorseTrack</Link>
+      <DemoClock />
+      <label className="ht-search">
+        <Icon name="search" />
+        <input type="search" placeholder={SEARCH_HINT[user.role] ?? 'Tìm kiếm…'} aria-label="Tìm kiếm" />
+      </label>
 
-        <div className="topbar-demo-clock">
-          <span className="clock-icon">⏱</span>
-          <div className="clock-text">
-            <span className="clock-label">Đồng hồ demo · 03/10/2026 10:30</span>
-            <span className="clock-sub">Asia/Ho_Chi_Minh · chỉ khi trình diễn</span>
-          </div>
-        </div>
-
-        <button className="topbar-time-btn" title="Tua thời gian">
-          Tua thời gian
+      <div className="ht-user">
+        <button type="button" className="ht-iconbtn ht-bell" aria-label="Thông báo (4 mới)">
+          <Icon name="bell" size={18} /><span className="ht-count">4</span>
         </button>
 
-        <input
-          type="text"
-          className="topbar-search"
-          placeholder="Tìm ngựa, microchip, hóa đơn..."
-        />
-      </div>
-
-      {/* RIGHT */}
-      <div className="topbar-right">
-        <button className="topbar-bell" title="Thông báo">
-          🔔
-          <span className="topbar-bell-badge">1</span>
-        </button>
-
-        <div className="topbar-user" ref={menuRef}>
-          <button
-            className="topbar-user-btn"
-            onClick={() => setShowMenu((v) => !v)}
-          >
-            <div className="topbar-user-info">
-              <div className="topbar-user-name">{user?.fullname}</div>
-              <div className="topbar-user-role">
-                {ROLE_LABEL[user?.role ?? ''] ?? user?.role}
-              </div>
-            </div>
-            <div className="topbar-avatar">{initial}</div>
-            <span className="topbar-chevron">▾</span>
+        <div className="ht-usermenu" ref={menuRef}>
+          <button type="button" className="ht-usermenu__btn" aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
+            <span><b>{user.fullname}</b><small>{ROLE_LABEL[user.role]}</small></span>
+            <i className="ht-avatar" style={{ width: 34, height: 34 }}>{initials}</i>
+            <Icon name="down" size={14} style={{ color: 'var(--muted)' }} />
           </button>
-
-          {showMenu && (
-            <div className="topbar-dropdown">
-              <div className="topbar-dropdown-header">
-                <div className="topbar-avatar topbar-avatar-lg">{initial}</div>
-                <div>
-                  <div className="name">{user?.fullname}</div>
-                  <div className="email">{user?.email}</div>
-                </div>
-              </div>
-              <div className="topbar-dropdown-divider" />
-              <Link
-                to="/profile"
-                className="topbar-dropdown-item"
-                onClick={() => setShowMenu(false)}
-              >
-                <span className="icon">👤</span> Hồ sơ cá nhân
+          {open && (
+            <div className="ht-menu" role="menu">
+              <div className="ht-menu__head"><b>{user.fullname}</b><small>{user.email}</small></div>
+              <Link role="menuitem" className="ht-menu__item" to="/change-password" onClick={() => setOpen(false)}>
+                <Icon name="key" />Đổi mật khẩu
               </Link>
-              <Link
-                to="/change-password"
-                className="topbar-dropdown-item"
-                onClick={() => setShowMenu(false)}
-              >
-                <span className="icon">🔒</span> Đổi mật khẩu
-              </Link>
-              <div className="topbar-dropdown-divider" />
-              <button
-                className="topbar-dropdown-item topbar-dropdown-item-danger"
-                onClick={handleLogout}
-              >
-                <span className="icon">🚪</span> Đăng xuất
+              <button role="menuitem" type="button" className="ht-menu__item ht-menu__item--danger" onClick={() => { logout(); navigate('/login'); }}>
+                <Icon name="logout" />Đăng xuất
               </button>
             </div>
           )}

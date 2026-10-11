@@ -3,19 +3,14 @@ import { Outlet } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
 
-export const AppLayout: React.FC = () => {
-  return (
-    <div className="d-flex" style={{ height: '100vh', overflow: 'hidden' }}>
-      <Sidebar />
-      <div className="d-flex flex-column flex-grow-1" style={{ minWidth: 0 }}>
-        <Topbar />
-        <div
-          className="flex-grow-1"
-          style={{ overflowY: 'auto', backgroundColor: 'var(--bg)' }}
-        >
-          <Outlet />
-        </div>
-      </div>
+/* Logged-in frame: 64px top bar across, labelled sidebar on the left, scrolling content on the right.
+   New pages wrap their content in <div className="ht ht-page">; older pages render as before. */
+export const AppLayout: React.FC = () => (
+  <div className="ht ht-app ht-app--nav ht-app--fixed">
+    <Topbar />
+    <Sidebar />
+    <div className="ht-app__scroll">
+      <Outlet />
     </div>
-  );
-};
+  </div>
+);

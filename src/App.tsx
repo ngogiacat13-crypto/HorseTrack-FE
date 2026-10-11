@@ -2,7 +2,10 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './index.css';
+import './styles/tokens.css';
+import './styles/ht.css';
 import { AuthProvider, useAuth } from './auth/AuthContext';
+import { ToastProvider } from './components/ui/Ht';
 import { ROLE_HOME, Role } from './api/mockData';
 import { AppLayout } from './components/layout/AppLayout';
 import { Login } from './pages/Login';
@@ -14,9 +17,10 @@ import { ChangePassword } from './pages/ChangePassword';
 import { ManagerDashboard } from './pages/manager/Dashboard';
 import { ManagerRegistrationQueue } from './pages/manager/ManagerRegistrationQueue';
 import { ManagerRegistrationDetail } from './pages/manager/ManagerRegistrationDetail';
-import { ManagerProtocolQueue } from './pages/manager/ManagerProtocolQueue';
-import { ManagerProtocolDetail } from './pages/manager/ManagerProtocolDetail';
+import { ManagerMedicalMonitoring } from './pages/manager/ManagerMedicalMonitoring';
 import { ManagerInvoices } from './pages/manager/ManagerInvoices';
+import { ManagerFinanceReport } from './pages/manager/ManagerFinanceReport';
+import { ManagerUsers } from './pages/manager/ManagerUsers';
 import { ManagerAuditLogs } from './pages/manager/ManagerAuditLogs';
 import { TrainerHerdOverview } from './pages/trainer/HerdOverview';
 import { StableMap } from './pages/trainer/StableMap';
@@ -58,9 +62,11 @@ const AppRoutes: React.FC = () => {
         <Route path="/manager" element={<RoleGuard role="ClubManager"><ManagerDashboard /></RoleGuard>} />
         <Route path="/manager/registrations" element={<RoleGuard role="ClubManager"><ManagerRegistrationQueue /></RoleGuard>} />
         <Route path="/manager/registrations/:id" element={<RoleGuard role="ClubManager"><ManagerRegistrationDetail /></RoleGuard>} />
-        <Route path="/manager/protocols" element={<RoleGuard role="ClubManager"><ManagerProtocolQueue /></RoleGuard>} />
-        <Route path="/manager/protocols/:id" element={<RoleGuard role="ClubManager"><ManagerProtocolDetail /></RoleGuard>} />
+        <Route path="/manager/medical-monitoring" element={<RoleGuard role="ClubManager"><ManagerMedicalMonitoring /></RoleGuard>} />
+        <Route path="/manager/protocols/*" element={<Navigate to="/manager/medical-monitoring" replace />} />
         <Route path="/manager/invoices" element={<RoleGuard role="ClubManager"><ManagerInvoices /></RoleGuard>} />
+        <Route path="/manager/reports" element={<RoleGuard role="ClubManager"><ManagerFinanceReport /></RoleGuard>} />
+        <Route path="/manager/users" element={<RoleGuard role="ClubManager"><ManagerUsers /></RoleGuard>} />
         <Route path="/manager/audit-logs" element={<RoleGuard role="ClubManager"><ManagerAuditLogs /></RoleGuard>} />
 
         {/* Trainer */}
@@ -86,9 +92,11 @@ const AppRoutes: React.FC = () => {
 
 const App: React.FC = () => (
   <AuthProvider>
-    <BrowserRouter>
-      <AppRoutes />
-    </BrowserRouter>
+    <ToastProvider>
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
+    </ToastProvider>
   </AuthProvider>
 );
 

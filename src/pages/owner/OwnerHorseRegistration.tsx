@@ -69,7 +69,7 @@ export const OwnerHorseRegistration: React.FC = () => {
       healthStatus: form.healthStatus,
       isLocked: false,
       prizeSharePct: Number(form.prizeSharePct || 0),
-      ownerId: user.id,
+      ownerId: user.id ?? user.userId,
       stallId: form.stallId ? Number(form.stallId) : null,
       createdAt: new Date().toISOString(),
       registrationStatus: 'Registered',

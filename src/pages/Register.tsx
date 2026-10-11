@@ -1,234 +1,123 @@
-import React, { useState } from 'react';
-import { useFormik } from 'formik';
-import * as Yup from 'yup';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authApi } from '../api/mockData';
-import './auth.css';
+import { AuthShell } from '../components/auth/AuthShell';
+import { Icon } from '../components/ui/Icon';
+import { Busy, Callout, Field, PasswordInput, StrengthMeter, TextInput } from '../components/ui/Ht';
+import { useForm } from '../hooks/useForm';
+
+const PHONE_RE = /^(0|\+84)(\d{9,10})$/;
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const Register: React.FC = () => {
   const navigate = useNavigate();
-  const [isSuccess, setIsSuccess] = useState(false);
+  const [doneUser, setDoneUser] = useState<string | null>(null);
+  const [count, setCount] = useState(3);
 
-  const formik = useFormik({
-    initialValues: {
-      username: '',
-      password: '',
-      fullname: '',
-      email: '',
-      phone: '',
-    },
-    validationSchema: Yup.object({
-      username: Yup.string()
-        .required('Vui lòng nhập tên đăng nhập')
-        .min(4, 'Tối thiểu 4 ký tự'),
-      password: Yup.string()
-        .required('Vui lòng nhập mật khẩu')
-        .min(8, 'Mật khẩu tối thiểu 8 ký tự'),
-      fullname: Yup.string().required('Vui lòng nhập họ và tên'),
-      email: Yup.string()
-        .email('Email không hợp lệ')
-        .required('Vui lòng nhập email'),
-      phone: Yup.string()
-        .matches(/^(0|\+84)(\d{9,10})$/, 'Số điện thoại không hợp lệ')
-        .required('Vui lòng nhập số điện thoại'),
+  const form = useForm(
+    { fullname: '', username: '', phone: '', email: '', password: '' },
+    (v) => ({
+      fullname: v.fullname.trim() ? undefined : 'Vui lòng nhập họ và tên',
+      username: !v.username ? 'Vui lòng nhập tên đăng nhập' : v.username.length < 4 ? 'Tối thiểu 4 ký tự' : undefined,
+      phone: !v.phone ? 'Vui lòng nhập số điện thoại' : !PHONE_RE.test(v.phone.replace(/\s/g, '')) ? 'Số điện thoại không hợp lệ' : undefined,
+      email: !v.email ? 'Vui lòng nhập email' : !EMAIL_RE.test(v.email) ? 'Email không hợp lệ' : undefined,
+      password: !v.password ? 'Vui lòng nhập mật khẩu' : v.password.length < 8 ? 'Mật khẩu tối thiểu 8 ký tự' : undefined,
     }),
-    onSubmit: async (values, { setSubmitting, setErrors }) => {
-      try {
-        await authApi.register(values);
-        setIsSuccess(true);
-        setTimeout(() => navigate('/login'), 3000);
-      } catch (err: any) {
-        if (err.field) {
-          setErrors({ [err.field]: err.message });
-        } else {
-          setErrors({ email: 'Đã có lỗi xảy ra, vui lòng thử lại.' });
-        }
-      } finally {
-        setSubmitting(false);
-      }
-    },
-  });
+  );
 
-  /* ============ MÀN HÌNH ĐĂNG KÝ THÀNH CÔNG ============ */
-  if (isSuccess) {
-    return (
-      <div className="auth-page">
-        <div className="auth-card">
-          <div className="auth-success">
-            <div className="auth-success-icon">✓</div>
-            <h2 className="auth-success-title">Đăng ký thành công!</h2>
-            <p className="auth-success-msg">
-              Tài khoản <strong>Chủ ngựa</strong> của bạn đã được tạo.
-              <br />
-              Đang chuyển về trang đăng nhập sau 3 giây...
-            </p>
-            <Link
-              to="/login"
-              className="auth-btn"
-              style={{ textDecoration: 'none' }}
-            >
-              Về trang Đăng nhập ngay
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (!doneUser) return;
+    if (count <= 0) { navigate('/login'); return; }
+    const t = window.setTimeout(() => setCount((c) => c - 1), 1000);
+    return () => window.clearTimeout(t);
+  }, [doneUser, count, navigate]);
 
-  /* ============ FORM ĐĂNG KÝ ============ */
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.check()) return;
+    form.setSubmitting(true);
+    try {
+      const v = form.values;
+      await authApi.register({ ...v, phone: v.phone.replace(/\s/g, ''), fullname: v.fullname.trim() });
+      setDoneUser(v.username);
+    } catch (err: any) {
+      if (err?.field) form.setServerErrors({ [err.field]: err.message });
+      else form.setServerErrors({ email: 'Đã có lỗi xảy ra, vui lòng thử lại.' });
+    } finally {
+      form.setSubmitting(false);
+    }
+  };
+
   return (
-    <div className="auth-page">
-      <div className="auth-card">
-        {/* Header bước */}
-        <div className="auth-step-header">
-          <span className="auth-step-badge">BƯỚC 1/1</span>
-          <span className="auth-step-percent">100%</span>
-        </div>
-
-        {/* Progress bar */}
-        <div className="auth-progress">
-          <div className="auth-progress-fill" style={{ width: '100%' }} />
-        </div>
-
-        {/* Tiêu đề */}
-        <h1 className="auth-title" style={{ textAlign: 'left', fontSize: 22 }}>
-          Đăng ký tài khoản Chủ ngựa
-        </h1>
-        <p className="auth-sub" style={{ textAlign: 'left', marginBottom: 20 }}>
-          Tạo tài khoản để quản lý hồ sơ ngựa đua của bạn
-        </p>
-
-        {/* Info banner */}
-        <div className="auth-info-banner">
-          <strong>Vai trò mặc định:</strong> Chủ ngựa (Horse Owner).
-          Hệ thống sẽ tự động gán quyền sau khi đăng ký thành công.
-        </div>
-
-        {/* Form */}
-        <form onSubmit={formik.handleSubmit} noValidate>
-          {/* Row 1: username + password */}
-          <div className="auth-row">
-            <div className="auth-form-group">
-              <label className="auth-label">Tên đăng nhập *</label>
-              <input
-                type="text"
-                className={`auth-input ${
-                  formik.touched.username && formik.errors.username ? 'is-invalid' : ''
-                }`}
-                placeholder="vd: nguyenminh"
-                autoComplete="username"
-                {...formik.getFieldProps('username')}
-              />
-              {formik.touched.username && formik.errors.username && (
-                <div className="auth-error">{formik.errors.username}</div>
-              )}
-            </div>
-
-            <div className="auth-form-group">
-              <label className="auth-label">Mật khẩu *</label>
-              <input
-                type="password"
-                className={`auth-input ${
-                  formik.touched.password && formik.errors.password ? 'is-invalid' : ''
-                }`}
-                placeholder="Tối thiểu 8 ký tự"
-                autoComplete="new-password"
-                {...formik.getFieldProps('password')}
-              />
-              {formik.touched.password && formik.errors.password && (
-                <div className="auth-error">{formik.errors.password}</div>
-              )}
-            </div>
+    <AuthShell
+      narrow
+      logoHeight={60}
+      eyebrow="Dành cho Chủ ngựa"
+      headline="Theo dõi ngựa của bạn từ chuồng đến đường đua."
+      points={[
+        { step: 1, active: true, title: 'Tạo tài khoản', text: 'Mất khoảng 1 phút — bạn đang ở bước này.' },
+        { step: 2, title: 'Gửi hồ sơ ngựa', text: 'Giấy sở hữu, giấy sức khỏe và microchip nếu có.' },
+        { step: 3, title: 'Quản lý CLB duyệt', text: 'Hồ sơ hợp lệ sẽ được đưa vào danh sách quản lý.' },
+      ]}
+      foot="Vai trò: HorseOwner"
+      barRight={<span style={{ fontSize: 13, color: 'var(--muted)' }}>Đã có tài khoản? <Link className="ht-link" to="/login">Đăng nhập</Link></span>}
+    >
+      {doneUser ? (
+        <>
+          <div className="ht-done">
+            <span className="ht-done__icon"><Icon name="check" /></span>
+            <h1 className="ht-auth__title" style={{ fontSize: 24, lineHeight: '32px' }}>Đăng ký thành công!</h1>
+            <p className="ht-auth__sub" style={{ marginBottom: 20 }}>
+              Tài khoản <b style={{ color: 'var(--foreground)' }}>Chủ ngựa</b> <span className="ht-mono">@{doneUser}</span> đã được tạo.<br />
+              Đang chuyển về trang đăng nhập sau <b style={{ color: 'var(--foreground)' }}>{Math.max(count, 0)}</b> giây…
+            </p>
+            <Link className="ht-btn ht-btn--primary" to="/login">Về trang đăng nhập ngay</Link>
+            <div className="ht-progress"><i style={{ width: `${((3 - count) / 3) * 100}%`, transition: 'width 1s linear' }} /></div>
           </div>
+          <Callout tone="info" title="Bước tiếp theo" style={{ marginTop: 8 }}>
+            Đăng nhập, vào <b>Ngựa của tôi → Đăng ký ngựa mới</b> để gửi hồ sơ cho Quản lý CLB duyệt.
+          </Callout>
+        </>
+      ) : (
+        <>
+          <h1 className="ht-auth__title">Tạo tài khoản Chủ ngựa</h1>
+          <p className="ht-auth__sub">Thông tin dùng để đăng nhập và nhận thông báo hóa đơn, thi đấu.</p>
 
-          {/* Row 2: Họ và tên */}
-          <div className="auth-form-group">
-            <label className="auth-label">Họ và tên *</label>
-            <input
-              type="text"
-              className={`auth-input ${
-                formik.touched.fullname && formik.errors.fullname ? 'is-invalid' : ''
-              }`}
-              placeholder="Nguyễn Văn Minh"
-              autoComplete="name"
-              {...formik.getFieldProps('fullname')}
-            />
-            {formik.touched.fullname && formik.errors.fullname && (
-              <div className="auth-error">{formik.errors.fullname}</div>
-            )}
-          </div>
+          <Callout tone="info" title="Vai trò mặc định: Chủ ngựa" style={{ marginBottom: 20 }}>
+            Các vai trò nhân sự (HLV, Bác sĩ, Kho, Mã phu) do Quản lý CLB cấp.
+          </Callout>
 
-          {/* Row 3: Email + Phone */}
-          <div className="auth-row">
-            <div className="auth-form-group">
-              <label className="auth-label">Email *</label>
-              <input
-                type="email"
-                className={`auth-input ${
-                  formik.touched.email && formik.errors.email ? 'is-invalid' : ''
-                }`}
-                placeholder="you@example.com"
-                autoComplete="email"
-                {...formik.getFieldProps('email')}
-              />
-              {formik.touched.email && formik.errors.email && (
-                <div className="auth-error">{formik.errors.email}</div>
-              )}
+          <form onSubmit={onSubmit} noValidate>
+            <Field label="Họ và tên" htmlFor="fullname" required error={form.errors.fullname}>
+              <TextInput icon="user" autoComplete="name" placeholder="Nguyễn Văn Minh" {...form.field('fullname')} />
+            </Field>
+            <div className="ht-grid-2">
+              <Field label="Tên đăng nhập" htmlFor="username" required error={form.errors.username}>
+                <TextInput icon="at" autoComplete="username" placeholder="vd: nguyenminh" {...form.field('username')} />
+              </Field>
+              <Field label="Số điện thoại" htmlFor="phone" required error={form.errors.phone}>
+                <TextInput icon="phone" type="tel" autoComplete="tel" placeholder="090 123 4567" {...form.field('phone')} />
+              </Field>
             </div>
+            <Field label="Email" htmlFor="email" required error={form.errors.email}>
+              <TextInput icon="mail" type="email" autoComplete="email" placeholder="ban@vidu.vn" {...form.field('email')} />
+            </Field>
+            <Field label="Mật khẩu" htmlFor="password" required error={form.errors.password}>
+              <PasswordInput autoComplete="new-password" placeholder="Tối thiểu 8 ký tự" {...form.field('password')} />
+              <StrengthMeter value={form.values.password} showLabel={!form.errors.password} />
+            </Field>
 
-            <div className="auth-form-group">
-              <label className="auth-label">Số điện thoại *</label>
-              <input
-                type="tel"
-                className={`auth-input ${
-                  formik.touched.phone && formik.errors.phone ? 'is-invalid' : ''
-                }`}
-                placeholder="090 123 4567"
-                autoComplete="tel"
-                {...formik.getFieldProps('phone')}
-              />
-              {formik.touched.phone && formik.errors.phone && (
-                <div className="auth-error">{formik.errors.phone}</div>
-              )}
+            <div className="ht-row-between" style={{ marginTop: 8 }}>
+              <Link className="ht-btn ht-btn--secondary" to="/login"><Icon name="back" />Quay lại</Link>
+              <button type="submit" className="ht-btn ht-btn--primary" style={{ padding: '0 28px' }} disabled={form.submitting} aria-busy={form.submitting || undefined}>
+                <Busy busy={form.submitting} label="Đang xử lý…"><span>Tạo tài khoản</span><Icon name="arrow" /></Busy>
+              </button>
             </div>
-          </div>
+          </form>
 
-          {/* Buttons */}
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              gap: 12,
-              marginTop: 12,
-            }}
-          >
-            <Link
-              to="/login"
-              className="auth-btn auth-btn-secondary"
-              style={{ width: 'auto', padding: '13px 24px', textDecoration: 'none' }}
-            >
-              ← Quay lại
-            </Link>
-            <button
-              type="submit"
-              className="auth-btn"
-              style={{ width: 'auto', padding: '13px 32px' }}
-              disabled={formik.isSubmitting}
-            >
-              {formik.isSubmitting ? 'Đang xử lý...' : 'Đăng ký →'}
-            </button>
-          </div>
-        </form>
-
-        {/* Footer */}
-        <div className="auth-footer">
-          Đã có tài khoản?{' '}
-          <Link to="/login" className="auth-link">
-            Đăng nhập
-          </Link>
-        </div>
-      </div>
-    </div>
+          <div className="ht-auth__footer">Đã có tài khoản? <Link className="ht-link" to="/login">Đăng nhập</Link></div>
+        </>
+      )}
+    </AuthShell>
   );
 };

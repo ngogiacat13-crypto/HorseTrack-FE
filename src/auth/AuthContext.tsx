@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import { AuthUser, authApi } from '../api/mockData';
 
 interface AuthContextType {
@@ -10,15 +10,16 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType>(null as any);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<AuthUser | null>(null);
-
-  // Khôi phục phiên đăng nhập khi refresh trang
-  useEffect(() => {
-    const stored = localStorage.getItem('horsetrack_user');
-    if (stored) {
-      try { setUser(JSON.parse(stored)); } catch { localStorage.removeItem('horsetrack_user'); }
+  // Khôi phục phiên đăng nhập ngay ở lần render đầu, để F5 không bị đẩy về /login rồi về trang chủ vai trò
+  const [user, setUser] = useState<AuthUser | null>(() => {
+    try {
+      const stored = localStorage.getItem('horsetrack_user');
+      return stored ? (JSON.parse(stored) as AuthUser) : null;
+    } catch {
+      localStorage.removeItem('horsetrack_user');
+      return null;
     }
-  }, []);
+  });
 
   const login = async (username: string, password: string) => {
     const u = await authApi.login(username, password);

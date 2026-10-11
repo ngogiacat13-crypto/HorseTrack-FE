@@ -1,321 +1,161 @@
 import React, { useEffect, useState } from 'react';
-import { Spinner } from 'react-bootstrap';
-import { managerApi, ManagerDashboard as TDashboard } from '../../api/managerApi';
-import './manager.css';
+import { Link, useNavigate } from 'react-router-dom';
+import { managerApi } from '../../api/managerApi';
+import { Icon } from '../../components/ui/Icon';
+import { Badge, Loading, PageHeader, Panel, StatCard, Timeline, money, useToast } from '../../components/ui/Ht';
+
+type Dash = Awaited<ReturnType<typeof managerApi.getDashboard>>;
+
+const REG_BADGE = (status: string, issue?: string) =>
+  status === 'Approved' ? <Badge tone="success">Đã duyệt</Badge>
+  : status === 'Rejected' ? <Badge tone="danger">Đã từ chối</Badge>
+  : issue && issue.startsWith('Thiếu') ? <Badge tone="warning">Thiếu giấy tờ</Badge>
+  : <Badge tone="info">Chờ duyệt</Badge>;
 
 export const ManagerDashboard: React.FC = () => {
-  const [data, setData] = useState<TDashboard | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [d, setD] = useState<Dash | null>(null);
+  const navigate = useNavigate();
+  const toast = useToast();
 
-  useEffect(() => {
-    managerApi.getDashboard().then((res) => {
-      setData(res);
-      setLoading(false);
-    });
-  }, []);
+  useEffect(() => { managerApi.getDashboard().then(setD); }, []);
+  if (!d) return <div className="ht ht-page"><Loading /></div>;
 
-  if (loading || !data) {
-    return (
-      <div className="text-center py-5">
-        <Spinner animation="border" style={{ color: '#1b4332' }} />
-      </div>
-    );
-  }
-
-  const maxBar = Math.max(...data.monthlyCosts.chart.map((c) => c.value));
-
-  // ---- Sessions mở rộng cho 4 dòng ----
-  const sessions = [
-    { time: '08:00', horse: 'Bolt', plan: 'Tốc độ - P1', hlv: 'Trần Đức Hùng', status: 'Hoàn thành', pill: 'pill-green' },
-    { time: '10:00', horse: 'Galaxy', plan: 'Sức bền - P2', hlv: 'Trần Đức Hùng', status: 'Dừng — vượt ngưỡng', pill: 'pill-red', danger: true },
-    { time: '11:00', horse: 'Thunder', plan: 'Sức bền - P1', hlv: 'Trần Đức Hùng', status: 'Đang diễn ra', pill: 'pill-blue' },
-    { time: '14:00', horse: 'Star', plan: 'Phục hồi - P1', hlv: 'Trần Đức Hùng', status: 'Chưa bắt đầu', pill: 'pill-gray' },
-  ];
-
-  // ---- Registrations mở rộng ----
-  const registrations = [
-    { id: 'REG-0019', horse: 'Thunder Bay', owner: 'Hoàng Thị Lan', date: '01/10/2026', status: 'Chờ xử lý', pill: 'pill-blue' },
-    { id: 'REG-0018', horse: 'Silver Wind', owner: 'Đỗ Minh Quân', date: '30/09/2026', status: 'Chờ xử lý', pill: 'pill-blue' },
-    { id: 'REG-0017', horse: 'Red Comet', owner: 'Vũ Thị Mai', date: '29/09/2026', status: 'Chờ xử lý', pill: 'pill-blue' },
-    { id: 'REG-0016', horse: 'Lightning', owner: 'Vũ Thị Mai', date: '28/09/2026', status: 'Đã duyệt', pill: 'pill-green' },
-  ];
-
-  // ---- Tasks ----
-  const tasks = [
-    { title: 'Cho ăn sáng — Galaxy', over: '+52 phút', groom: 'Phạm Văn Toàn', time: '06:00' },
-    { title: 'Dọn chuồng — Thunder', over: '+2 giờ 15', groom: 'Phạm Văn Toàn', time: '07:30' },
-    { title: 'Chải lông — Flash', over: '+1 giờ 45', groom: 'Ngô Văn Sơn', time: '08:00' },
-  ];
+  const max = Math.max(...d.vetCost.map((c) => c.value));
+  const total = d.vetCost.reduce((s, c) => s + c.value, 0);
+  const last = d.vetCost[d.vetCost.length - 1], prev = d.vetCost[d.vetCost.length - 2];
+  const delta = Math.round(((last.value - prev.value) / prev.value) * 100);
+  const vn = (n: number) => n.toLocaleString('vi-VN', { maximumFractionDigits: 1 });
 
   return (
-    <div className="manager-page">
-      {/* ==================== HEADER ==================== */}
-      <div className="manager-header">
+    <div className="ht ht-page">
+      <PageHeader
+        title="Bảng điều khiển"
+        sub={<>Chào buổi sáng, {d.greeting.name} · {d.greeting.weekday}, <span className="ht-mono">{d.greeting.date}</span></>}
+        actions={<>
+          <select className="ht-select" aria-label="Khoảng thời gian"><option>Hôm nay</option><option>7 ngày</option><option>Tháng này</option></select>
+          <button className="ht-btn ht-btn--secondary" onClick={() => toast('Đang xuất báo cáo tổng quan (PDF)…')}><Icon name="download" />Xuất báo cáo</button>
+        </>}
+      />
+
+      <div className="ht-banner" role="alert">
+        <Icon name="alarm" />
         <div>
-          <h1>Bảng điều khiển</h1>
-          <p>{data.greeting.message}, {data.greeting.weekday}, {data.greeting.date}</p>
+          <b>Phiên tập <span className="ht-mono">{d.autoStop.session}</span> ({d.autoStop.horse}) đã tự dừng lúc <span className="ht-mono">{d.autoStop.at}</span> — nhịp tim {d.autoStop.hr} bpm, ngưỡng {d.autoStop.limit} (BR_02).</b>
+          <p>HLV trưởng {d.autoStop.decidedBy} đã dừng phiên và gửi ca khám <span className="ht-mono">{d.autoStop.caseId}</span> cho Bác sĩ lúc <span className="ht-mono">{d.autoStop.decidedAt}</span>. Bạn chỉ theo dõi.</p>
         </div>
-        <button className="btn-export">
-          <span>⬇</span>
-          <span>Xuất báo cáo</span>
-        </button>
+        <Link className="ht-more" to="/manager/audit-logs">Xem nhật ký <Icon name="arrow" /></Link>
       </div>
 
-      {/* ==================== TABS ==================== */}
-      <div className="manager-tabs">
-        {[
-          { id: 'overview', label: 'Tổng quan' },
-          { id: 'training', label: 'Huấn luyện' },
-          { id: 'medical', label: 'Y tế' },
-          { id: 'finance', label: 'Tài chính' },
-          { id: 'inventory', label: 'Kho' },
-        ].map((tab) => (
-          <button
-            key={tab.id}
-            className={`manager-tab ${activeTab === tab.id ? 'active' : ''}`}
-            onClick={() => setActiveTab(tab.id)}
+      <div className="ht-stats">
+        <StatCard icon="pulse" tone="brand" value={d.kpi.horses} label="Ngựa đang quản lý" meta={d.kpi.horsesTrend} metaTone="up" />
+        <StatCard icon="clip" tone="info" value={d.kpi.pendingRegs} label="Hồ sơ ngựa chờ duyệt" meta={`cũ nhất ${d.kpi.oldestPendingDays} ngày`} onClick={() => navigate('/manager/registrations')} />
+        <StatCard icon="heart" tone="gold" value={d.kpi.medicalWatch} label="Ca y tế cần theo dõi" meta="1 thiếu thuốc" onClick={() => navigate('/manager/medical-monitoring')} />
+        <StatCard icon="alarm" tone="danger" value={d.kpi.lateTasks} label="Việc trễ SLA > 45 phút" meta={`+${d.kpi.lateTasksToday} hôm nay`} metaTone="danger" alert />
+        <StatCard icon="truck" tone="warning" value={d.kpi.delayedShipments} label="Lô hàng kho bị trễ" meta={`ETA ${d.kpi.delayedEta}`} onClick={() => navigate('/manager/medical-monitoring')} />
+      </div>
+
+      <div className="ht-cols">
+        <div>
+          <Panel title="Đăng ký ngựa gần đây" sub={`${d.kpi.pendingRegs} hồ sơ đang chờ bạn duyệt`} right={<Link className="ht-more" to="/manager/registrations">Hàng đợi duyệt <Icon name="arrow" /></Link>}>
+            <table className="ht-table">
+              <thead><tr><th>Mã hồ sơ</th><th>Ngựa</th><th>Chủ ngựa</th><th>Ngày gửi</th><th>Trạng thái</th></tr></thead>
+              <tbody>
+                {d.recentRegistrations.map((r) => (
+                  <tr key={r.id} data-href tabIndex={0} onClick={() => navigate(`/manager/registrations/${r.id}`)} onKeyDown={(e) => e.key === 'Enter' && navigate(`/manager/registrations/${r.id}`)}>
+                    <td className="id">{r.id}</td><td className="strong">{r.horse.name}</td><td>{r.owner.fullName}</td>
+                    <td className="mono">{r.submittedAt.slice(0, 10)}</td><td>{REG_BADGE(r.status, r.firstIssue)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </Panel>
+
+          <Panel title="Phiên tập hôm nay" sub="Chỉ xem · quyết định thuộc HLV trưởng">
+            <table className="ht-table">
+              <thead><tr><th>Giờ</th><th>Ngựa</th><th>Kế hoạch</th><th>HLV</th><th>Trạng thái</th></tr></thead>
+              <tbody>
+                {d.sessions.map((s) => (
+                  <tr key={s.time} className={s.tone === 'danger' ? 'is-danger' : undefined}>
+                    <td className="mono">{s.time}</td><td className="strong">{s.horse}</td><td>{s.plan}</td><td>{s.trainer}</td>
+                    <td><Badge tone={s.tone}>{s.status}</Badge></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </Panel>
+
+          <Panel
+            title="Chi phí thú y theo tháng"
+            sub={<>6 tháng gần nhất · triệu ₫ · {last.month} tạm tính đến <span className="ht-mono">{d.greeting.date.slice(0, 5)}</span></>}
+            right={<div style={{ textAlign: 'right' }}>
+              <div style={{ font: '700 22px/28px var(--font-sans)' }}>{money(Math.round(total * 1_000_000))}</div>
+              <div style={{ fontSize: 12, color: delta > 0 ? 'var(--danger-ink)' : 'var(--success-ink)', fontWeight: 600 }}>{last.month} {delta > 0 ? '+' : ''}{delta}% so với {prev.month}</div>
+            </div>}
           >
-            {tab.label}
-          </button>
-        ))}
-      </div>
-
-      {/* ==================== KPI CARDS ==================== */}
-      <div className="kpi-grid">
-        {/* Card 1 - green */}
-        <div className="kpi-card">
-          <div className="kpi-icon green">🐎</div>
-          <div>
-            <div className="kpi-value">12</div>
-            <div className="kpi-label">Tổng ngựa đang quản lý</div>
-          </div>
-          <span className="kpi-trend up">↑ +2 tháng này</span>
-        </div>
-
-        {/* Card 2 - blue */}
-        <div className="kpi-card">
-          <div className="kpi-icon blue">📋</div>
-          <div>
-            <div className="kpi-value">3</div>
-            <div className="kpi-label">Đăng ký ngựa chờ duyệt</div>
-          </div>
-          <span className="kpi-trend neutral">cập nhật 3 ngày</span>
-        </div>
-
-        {/* Card 3 - cream */}
-        <div className="kpi-card">
-          <div className="kpi-icon cream">✎</div>
-          <div>
-            <div className="kpi-value">2</div>
-            <div className="kpi-label">Phác đồ chờ phê duyệt</div>
-          </div>
-          <span className="kpi-trend neutral">đ 8,400,000</span>
-        </div>
-
-        {/* Card 4 - red WITH BORDER */}
-        <div className="kpi-card danger-border">
-          <div className="kpi-icon red">🔔</div>
-          <div>
-            <div className="kpi-value">5</div>
-            <div className="kpi-label">Công việc quá hạn &gt; 45 phút</div>
-          </div>
-          <span className="kpi-trend danger">↑ +3 hôm nay</span>
-        </div>
-      </div>
-
-      {/* ==================== ROW 1 ==================== */}
-      <div className="row-2-col">
-        {/* Đăng ký ngựa gần đây */}
-        <div className="section-card">
-          <div className="section-header">
-            <h3>Đăng ký ngựa gần đây</h3>
-            <a href="/manager/registrations">Xem tất cả →</a>
-          </div>
-          <table className="mt-table">
-            <thead>
-              <tr>
-                <th>MÃ HỒ SƠ</th>
-                <th>NGỰA</th>
-                <th>CHỦ NGỰA</th>
-                <th>NGÀY GỬI</th>
-                <th>TRẠNG THÁI</th>
-              </tr>
-            </thead>
-            <tbody>
-              {registrations.map((r) => (
-                <tr key={r.id}>
-                  <td className="id">{r.id}</td>
-                  <td className="name">{r.horse}</td>
-                  <td>{r.owner}</td>
-                  <td className="date">{r.date}</td>
-                  <td><span className={`pill ${r.pill}`}>{r.status}</span></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Hóa đơn quá hạn */}
-        <div className="section-card">
-          <div className="section-header">
-            <h3>Hóa đơn quá hạn</h3>
-            <span className="pill pill-red">3</span>
-          </div>
-          <div className="invoice-list">
-            <div className="invoice-item">
-              <div className="inv-top">
-                <span className="inv-id">INV-0042</span>
-                <span className="pill pill-darkred">Đình chỉ</span>
-              </div>
-              <div className="inv-line-2">Galaxy — Hoàng Thị Lan</div>
-              <div className="inv-bottom">
-                <span className="inv-overdue">Quá hạn 22 ngày</span>
-                <span className="inv-amount">đ 15,000,000</span>
-              </div>
-            </div>
-            <div className="invoice-item">
-              <div className="inv-top">
-                <span className="inv-id">INV-0047</span>
-                <span className="pill pill-orange">Quá hạn</span>
-              </div>
-              <div className="inv-line-2">Storm — Đỗ Minh Quân</div>
-              <div className="inv-bottom">
-                <span className="inv-overdue">Quá hạn 8 ngày</span>
-                <span className="inv-amount">đ 6,000,000</span>
-              </div>
-            </div>
-            <div className="invoice-item">
-              <div className="inv-top">
-                <span className="inv-id">INV-0049</span>
-                <span className="pill pill-orange">Quá hạn</span>
-              </div>
-              <div className="inv-line-2">Star — Vũ Thị Mai</div>
-              <div className="inv-bottom">
-                <span className="inv-overdue">Quá hạn 2 ngày</span>
-                <span className="inv-amount">đ 12,500,000</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ==================== ROW 2 ==================== */}
-      <div className="row-2-col">
-        {/* Phiên tập hôm nay */}
-        <div className="section-card">
-          <div className="section-header">
-            <h3>Phiên tập hôm nay</h3>
-            <a href="/manager/sessions">Xem chi tiết →</a>
-          </div>
-          <table className="mt-table">
-            <thead>
-              <tr>
-                <th>GIỜ</th>
-                <th>NGỰA</th>
-                <th>KẾ HOẠCH</th>
-                <th>HLV</th>
-                <th>TRẠNG THÁI</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sessions.map((s, i) => (
-                <tr key={i} className={s.danger ? 'row-danger' : ''}>
-                  <td className="id">{s.time}</td>
-                  <td className="name">{s.horse}</td>
-                  <td>{s.plan}</td>
-                  <td>{s.hlv}</td>
-                  <td><span className={`pill ${s.pill}`}>{s.status}</span></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Công việc quá hạn */}
-        <div className="section-card">
-          <div className="section-header">
-            <h3>Công việc quá hạn</h3>
-            <span className="pill pill-red">BR_05</span>
-          </div>
-          <div className="task-list">
-            {tasks.map((t, i) => (
-              <div key={i} className="task-item">
-                <div className="task-top">
-                  <span className="task-title">{t.title}</span>
-                  <span className="task-over">{t.over}</span>
-                </div>
-                <div className="task-sub">{t.groom} · {t.time}</div>
-              </div>
-            ))}
-          </div>
-          <div className="task-footer">
-            <a href="#">Xem 2 việc khác →</a>
-          </div>
-        </div>
-      </div>
-
-      {/* ==================== ROW 3 ==================== */}
-      <div className="row-2-col">
-        {/* Chi phí thú y theo tháng */}
-        <div className="section-card">
-          <div className="chart-header">
-            <div>
-              <h3>Chi phí thú y theo tháng</h3>
-              <div className="chart-sub">6 tháng gần nhất - đơn vị triệu đ</div>
-            </div>
-            <div className="chart-total">
-              <div className="value">đ 42,600,000</div>
-              <div className="trend">+18% so với tháng 8</div>
-            </div>
-          </div>
-          <div className="bar-chart">
-            {data.monthlyCosts.chart.map((c) => {
-              let cls = 'light';
-              if (c.month === 'T9') cls = 'dark';
-              if (c.month === 'T10') cls = 'gold';
-              const h = (c.value / maxBar) * 100;
-              return (
-                <div key={c.month} className="bar-col">
-                  <div className="bar-value">{c.value}</div>
-                  <div className="bar-track">
-                    <div className={`bar-fill ${cls}`} style={{ height: `${h}%` }} />
+            <div className="ht-panel__body">
+              <div className="ht-bars" role="img" aria-label={'Chi phí thú y (triệu đồng): ' + d.vetCost.map((c) => `${c.month} ${vn(c.value)}`).join('; ')}>
+                {d.vetCost.map((c, i) => (
+                  <div key={c.month} className={`ht-bar${i === d.vetCost.length - 1 ? ' ht-bar--now' : i === d.vetCost.length - 2 ? ' ht-bar--prev' : ''}`}>
+                    <span>{vn(c.value)}</span><i style={{ height: `${(c.value / max) * 100}%` }} />
                   </div>
-                  <div className="bar-label">{c.month}</div>
-                </div>
-              );
-            })}
-          </div>
+                ))}
+              </div>
+              <div className="ht-bars-x">{d.vetCost.map((c, i) => i === d.vetCost.length - 1 ? <b key={c.month}>{c.month}</b> : <span key={c.month}>{c.month}</span>)}</div>
+            </div>
+          </Panel>
         </div>
 
-        {/* Nhật ký hệ thống */}
-        <div className="section-card">
-          <div className="section-header">
-            <h3>Nhật ký hệ thống</h3>
-          </div>
-          <div className="log-list">
-            <div className="log-item">
-              <div className="log-dot red" />
-              <div className="log-content">
-                <div className="log-msg">Hệ thống dừng phiên S-0023 (Galaxy)</div>
-                <div className="log-time">18:23 03/10/2026</div>
-              </div>
+        <div>
+          <Panel as="h3" title="Y tế cần theo dõi" right={<Link className="ht-more" to="/manager/medical-monitoring">Xem <Icon name="arrow" /></Link>}>
+            <ul className="ht-list">
+              {d.medicalWatch.map((p) => (
+                <li key={p.id} className={`ht-list-row${p.tone === 'danger' ? ' ht-list-row--danger' : ''}`}>
+                  <div className="r1"><span className="ht-mono" style={{ fontSize: 12, color: 'var(--muted)' }}>{p.id} · {p.horse}</span><Badge tone={p.tone}>{p.tone === 'danger' ? 'Thuốc về trễ' : p.label}</Badge></div>
+                  <div className="r2">{p.tone === 'danger' ? 'Bông gạc thiếu 12 cuộn' : `${p.diagnosis} · 1 giai đoạn`}</div>
+                  <div className="r3">
+                    <span style={{ fontSize: 12, color: 'var(--muted)' }}>{p.tone === 'danger' ? <>Cần <span className="ht-mono">08/10</span> · ETA <span className="ht-mono">10/10</span></> : p.note}</span>
+                    {p.tone === 'danger' && <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--danger-ink)' }}>Chờ BS đánh giá lại</span>}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </Panel>
+
+          <Panel as="h3" title="Hóa đơn quá hạn" right={<span className="ht-count ht-count--danger" style={{ margin: 0 }}>{d.overdueInvoices.length}</span>}
+            foot={<><span>+{d.overdueInvoices.filter((i) => i.overdueDays <= 10).length} hóa đơn trong ân hạn</span><Link className="ht-more" to="/manager/invoices">Tất cả <Icon name="arrow" /></Link></>}>
+            <ul className="ht-list">
+              {d.overdueInvoices.filter((i) => i.overdueDays > 10).map((i) => (
+                <li key={i.id} className="ht-list-row">
+                  <div className="r1">
+                    <span className="ht-mono" style={{ fontSize: 12, color: 'var(--muted)' }}>{i.id}</span>
+                    {i.status === 'SUSPENDED' ? <Badge tone="danger" plain>Đình chỉ</Badge>
+                      : i.overdueDays >= 25 ? <Badge tone="danger" plain>Đủ mốc đình chỉ</Badge>
+                      : <Badge tone="warning" plain>Còn {25 - i.overdueDays} ngày</Badge>}
+                  </div>
+                  <div className="r2">{i.horse} · {i.owner}</div>
+                  <div className="r3"><span className="late">Quá hạn {i.overdueDays} ngày</span><span className="money">{money(i.amount)}</span></div>
+                </li>
+              ))}
+            </ul>
+          </Panel>
+
+          <Panel as="h3" title="Công việc trễ SLA" right={<Badge tone="neutral" plain style={{ fontFamily: 'var(--font-mono)' }}>BR_05</Badge>}
+            foot={<span>+{d.moreLateTasks} việc khác</span>}>
+            <ul className="ht-list">
+              {d.lateTasks.map((t) => (
+                <li key={t.title} className="ht-list-row">
+                  <div className="r1"><span className="r2">{t.title}</span><span className="late">{t.late}</span></div>
+                  <span style={{ fontSize: 12, color: 'var(--muted)' }}>{t.groom} · hạn <span className="ht-mono">{t.due}</span>{t.doneAt && <> · xong <span className="ht-mono">{t.doneAt}</span></>}</span>
+                </li>
+              ))}
+            </ul>
+          </Panel>
+
+          <Panel as="h3" title="Nhật ký hệ thống" right={<Link className="ht-more" to="/manager/audit-logs">Mở <Icon name="arrow" /></Link>}>
+            <div className="ht-panel__body">
+              <Timeline items={d.log.map((l) => ({ tone: l.tone, what: <><b>{l.who}</b> {l.text}</>, when: l.at }))} />
             </div>
-            <div className="log-item">
-              <div className="log-dot orange" />
-              <div className="log-content">
-                <div className="log-msg">Lê Thị Hương gửi phác đồ PD-0011</div>
-                <div className="log-time">16:48 02/10/2026</div>
-              </div>
-            </div>
-            <div className="log-item">
-              <div className="log-dot green" />
-              <div className="log-content">
-                <div className="log-msg">Nguyễn Văn Minh duyệt hồ sơ REG-0016</div>
-                <div className="log-time">09:12 28/09/2026</div>
-              </div>
-            </div>
-          </div>
+          </Panel>
         </div>
       </div>
     </div>
