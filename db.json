@@ -1,0 +1,1326 @@
+{
+  "users": [
+    {
+      "id": "1",
+      "username": "admin",
+      "password": "password123",
+      "fullname": "Nguyễn Văn Minh",
+      "email": "minh@horsetrack.vn",
+      "phone": "0901234567",
+      "role": "ClubManager",
+      "lastLogin": "03/10 08:02",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "2",
+      "username": "duchung",
+      "password": "password123",
+      "fullname": "Trần Đức Hùng",
+      "email": "hung@horsetrack.vn",
+      "phone": "0912345678",
+      "role": "HeadTrainer",
+      "lastLogin": "03/10 07:45",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "3",
+      "username": "thihuong",
+      "password": "password123",
+      "fullname": "Lê Thị Hương",
+      "email": "huong@horsetrack.vn",
+      "phone": "0923456789",
+      "role": "Veterinarian",
+      "lastLogin": "03/10 09:58",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "4",
+      "username": "vantoan",
+      "password": "password123",
+      "fullname": "Phạm Văn Toàn",
+      "email": "toan@horsetrack.vn",
+      "phone": "0934567890",
+      "role": "Groom",
+      "lastLogin": "03/10 05:40",
+      "status": "ACTIVE",
+      "openTasks": 4
+    },
+    {
+      "id": "5",
+      "username": "hoanglan",
+      "password": "password123",
+      "fullname": "Hoàng Thị Lan",
+      "email": "lan@horsetrack.vn",
+      "phone": "0945678901",
+      "role": "HorseOwner",
+      "lastLogin": "01/10 09:15",
+      "status": "ACTIVE",
+      "horsesOwned": 3,
+      "serviceSuspended": true
+    },
+    {
+      "id": "6",
+      "username": "vankho",
+      "password": "password123",
+      "fullname": "Trần Văn Kho",
+      "email": "kho@horsetrack.vn",
+      "phone": "0956789012",
+      "role": "WarehouseManager",
+      "lastLogin": "02/10 17:05",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "7",
+      "username": "vandat",
+      "password": "password123",
+      "fullname": "Bùi Văn Đạt",
+      "email": "dat@horsetrack.vn",
+      "phone": "0967890123",
+      "role": "WarehouseManager",
+      "lastLogin": "12/09 16:30",
+      "status": "LOCKED",
+      "lockReason": "Nghỉ việc từ 15/09"
+    },
+    {
+      "id": "8",
+      "username": "vanson",
+      "password": "password123",
+      "fullname": "Ngô Văn Sơn",
+      "email": "son@horsetrack.vn",
+      "phone": "0978901234",
+      "role": "Groom",
+      "lastLogin": "03/10 06:10",
+      "status": "ACTIVE",
+      "openTasks": 3
+    },
+    {
+      "id": "9",
+      "username": "minhquan",
+      "password": "password123",
+      "fullname": "Đỗ Minh Quân",
+      "email": "quan@example.com",
+      "phone": "0912345670",
+      "role": "HorseOwner",
+      "lastLogin": "30/09 14:30",
+      "status": "ACTIVE",
+      "horsesOwned": 3
+    },
+    {
+      "id": "10",
+      "username": "thimai",
+      "password": "password123",
+      "fullname": "Vũ Thị Mai",
+      "email": "mai@example.com",
+      "phone": "0923456780",
+      "role": "HorseOwner",
+      "lastLogin": "29/09 10:00",
+      "status": "ACTIVE",
+      "horsesOwned": 3
+    }
+  ],
+  "registrations": [
+    {
+      "id": "REG-0017",
+      "horse": {
+        "name": "Red Comet",
+        "breed": "Thoroughbred",
+        "sex": "♂",
+        "age": 5,
+        "code": "VN-MC-9017"
+      },
+      "owner": {
+        "fullName": "Vũ Thị Mai",
+        "email": "mai@example.com",
+        "phone": "0923456780"
+      },
+      "submittedAt": "29/09/2026 10:00",
+      "waitingDays": 4,
+      "passed": 2,
+      "status": "Pending",
+      "firstIssue": "Thiếu giấy sức khỏe",
+      "ownerExtra": {
+        "taxCode": "0123456789",
+        "billingAddress": "123 Lê Lợi, Q.1, TP.HCM",
+        "otherHorses": "Galaxy, Thunder, Spirit"
+      },
+      "horseExtra": {
+        "color": "Bay (nâu đỏ)",
+        "height": "16.2 hands",
+        "weight": 480,
+        "microchip": "985141000012345",
+        "passport": "VN-PP-2024-0017",
+        "healthCert": "Chi cục Thú y TP.HCM · hết hạn 15/08/2027"
+      },
+      "checklist": [
+        {
+          "key": "identity",
+          "label": "Danh tính chủ ngựa",
+          "detail": "Họ tên, CCCD và email khớp tài khoản.",
+          "passed": true
+        },
+        {
+          "key": "health",
+          "label": "Giấy chứng nhận sức khỏe còn hiệu lực",
+          "detail": "Chưa tải giấy chứng nhận sức khỏe.",
+          "passed": false
+        },
+        {
+          "key": "microchip",
+          "label": "Microchip đã đăng ký",
+          "detail": "Số microchip chưa có trong cơ sở dữ liệu cơ quan.",
+          "passed": false
+        },
+        {
+          "key": "ownership",
+          "label": "Giấy tờ sở hữu hợp lệ",
+          "detail": "Bản gốc rõ, khớp tên chủ ngựa.",
+          "passed": true
+        }
+      ],
+      "attachments": [
+        {
+          "name": "Giấy chứng nhận sức khỏe",
+          "meta": "PDF · 1,2 MB · 29/09",
+          "problem": true
+        },
+        {
+          "name": "Giấy tờ sở hữu",
+          "meta": "PDF · 0,4 MB · 29/09",
+          "problem": false
+        },
+        {
+          "name": "Ảnh quét microchip",
+          "meta": "JPG · 2,8 MB · 29/09",
+          "problem": true
+        }
+      ],
+      "history": [
+        {
+          "who": "Hệ thống",
+          "text": "kiểm tra trường bắt buộc: đủ · chuyển PENDING_REVIEW",
+          "at": "29/09 10:00"
+        },
+        {
+          "who": "Vũ Thị Mai",
+          "text": "gửi hồ sơ",
+          "at": "29/09 10:00"
+        }
+      ]
+    },
+    {
+      "id": "REG-0018",
+      "horse": {
+        "name": "Silver Wind",
+        "breed": "Arabian",
+        "sex": "♀",
+        "age": 4,
+        "code": "VN-MC-9018"
+      },
+      "owner": {
+        "fullName": "Đỗ Minh Quân",
+        "email": "quan@example.com",
+        "phone": "0912345670"
+      },
+      "submittedAt": "30/09/2026 14:30",
+      "waitingDays": 3,
+      "passed": 4,
+      "status": "Pending",
+      "ownerExtra": {
+        "taxCode": "0123456789",
+        "billingAddress": "123 Lê Lợi, Q.1, TP.HCM",
+        "otherHorses": "Galaxy, Thunder, Spirit"
+      },
+      "horseExtra": {
+        "color": "Bay (nâu đỏ)",
+        "height": "16.2 hands",
+        "weight": 480,
+        "microchip": "985141000012345",
+        "passport": "VN-PP-2024-0018",
+        "healthCert": "Chi cục Thú y TP.HCM · hết hạn 15/08/2027"
+      },
+      "checklist": [
+        {
+          "key": "identity",
+          "label": "Danh tính chủ ngựa",
+          "detail": "Họ tên, CCCD và email khớp tài khoản.",
+          "passed": true
+        },
+        {
+          "key": "health",
+          "label": "Giấy chứng nhận sức khỏe còn hiệu lực",
+          "detail": "Chi cục Thú y TP.HCM · hết hạn 15/08/2027.",
+          "passed": true
+        },
+        {
+          "key": "microchip",
+          "label": "Microchip đã đăng ký",
+          "detail": "Số microchip khớp ảnh quét.",
+          "passed": true
+        },
+        {
+          "key": "ownership",
+          "label": "Giấy tờ sở hữu hợp lệ",
+          "detail": "Bản gốc rõ, khớp tên chủ ngựa.",
+          "passed": true
+        }
+      ],
+      "attachments": [
+        {
+          "name": "Giấy chứng nhận sức khỏe",
+          "meta": "PDF · 1,2 MB · 30/09",
+          "problem": false
+        },
+        {
+          "name": "Giấy tờ sở hữu",
+          "meta": "PDF · 0,4 MB · 30/09",
+          "problem": false
+        },
+        {
+          "name": "Ảnh quét microchip",
+          "meta": "JPG · 2,8 MB · 30/09",
+          "problem": false
+        }
+      ],
+      "history": [
+        {
+          "who": "Hệ thống",
+          "text": "kiểm tra trường bắt buộc: đủ · chuyển PENDING_REVIEW",
+          "at": "30/09 14:30"
+        },
+        {
+          "who": "Đỗ Minh Quân",
+          "text": "gửi hồ sơ",
+          "at": "30/09 14:30"
+        }
+      ]
+    },
+    {
+      "id": "REG-0019",
+      "horse": {
+        "name": "Thunder Bay",
+        "breed": "Thoroughbred",
+        "sex": "♂",
+        "age": 3,
+        "code": "VN-MC-9019"
+      },
+      "owner": {
+        "fullName": "Hoàng Thị Lan",
+        "email": "lan@horsetrack.vn",
+        "phone": "0945678901"
+      },
+      "submittedAt": "01/10/2026 09:15",
+      "waitingDays": 2,
+      "passed": 3,
+      "status": "Pending",
+      "firstIssue": "Giấy sở hữu bị mờ",
+      "ownerExtra": {
+        "taxCode": "0123456789",
+        "billingAddress": "123 Lê Lợi, Q.1, TP.HCM",
+        "otherHorses": "Galaxy, Thunder, Spirit"
+      },
+      "horseExtra": {
+        "color": "Bay (nâu đỏ)",
+        "height": "16.2 hands",
+        "weight": 480,
+        "microchip": "985141000012345",
+        "passport": "VN-PP-2024-0019",
+        "healthCert": "Chi cục Thú y TP.HCM · hết hạn 15/08/2027"
+      },
+      "checklist": [
+        {
+          "key": "identity",
+          "label": "Danh tính chủ ngựa",
+          "detail": "Họ tên, CCCD và email khớp tài khoản.",
+          "passed": true
+        },
+        {
+          "key": "health",
+          "label": "Giấy chứng nhận sức khỏe còn hiệu lực",
+          "detail": "Chi cục Thú y TP.HCM · hết hạn 15/08/2027.",
+          "passed": true
+        },
+        {
+          "key": "microchip",
+          "label": "Microchip đã đăng ký",
+          "detail": "Số microchip khớp ảnh quét.",
+          "passed": true
+        },
+        {
+          "key": "ownership",
+          "label": "Giấy tờ sở hữu hợp lệ",
+          "detail": "File PDF bị mờ, không đọc được số đăng ký.",
+          "passed": false
+        }
+      ],
+      "attachments": [
+        {
+          "name": "Giấy chứng nhận sức khỏe",
+          "meta": "PDF · 1,2 MB · 01/10",
+          "problem": false
+        },
+        {
+          "name": "Giấy tờ sở hữu",
+          "meta": "PDF · 0,4 MB · 01/10",
+          "problem": true
+        },
+        {
+          "name": "Ảnh quét microchip",
+          "meta": "JPG · 2,8 MB · 01/10",
+          "problem": false
+        }
+      ],
+      "history": [
+        {
+          "who": "Hệ thống",
+          "text": "kiểm tra trường bắt buộc: đủ · chuyển PENDING_REVIEW",
+          "at": "01/10 09:15"
+        },
+        {
+          "who": "Hoàng Thị Lan",
+          "text": "gửi hồ sơ",
+          "at": "01/10 09:15"
+        }
+      ]
+    },
+    {
+      "id": "REG-0016",
+      "horse": {
+        "name": "Lightning",
+        "breed": "Quarter Horse",
+        "sex": "♂",
+        "age": 4,
+        "code": "VN-MC-9016"
+      },
+      "owner": {
+        "fullName": "Vũ Thị Mai",
+        "email": "mai@example.com",
+        "phone": "0923456780"
+      },
+      "submittedAt": "28/09/2026 08:40",
+      "waitingDays": 0,
+      "passed": 4,
+      "status": "Approved",
+      "decidedNote": "Duyệt 28/09",
+      "ownerExtra": {
+        "taxCode": "0123456789",
+        "billingAddress": "123 Lê Lợi, Q.1, TP.HCM",
+        "otherHorses": "Galaxy, Thunder, Spirit"
+      },
+      "horseExtra": {
+        "color": "Bay (nâu đỏ)",
+        "height": "16.2 hands",
+        "weight": 480,
+        "microchip": "985141000012345",
+        "passport": "VN-PP-2024-0016",
+        "healthCert": "Chi cục Thú y TP.HCM · hết hạn 15/08/2027"
+      },
+      "checklist": [
+        {
+          "key": "identity",
+          "label": "Danh tính chủ ngựa",
+          "detail": "Họ tên, CCCD và email khớp tài khoản.",
+          "passed": true
+        },
+        {
+          "key": "health",
+          "label": "Giấy chứng nhận sức khỏe còn hiệu lực",
+          "detail": "Chi cục Thú y TP.HCM · hết hạn 15/08/2027.",
+          "passed": true
+        },
+        {
+          "key": "microchip",
+          "label": "Microchip đã đăng ký",
+          "detail": "Số microchip khớp ảnh quét.",
+          "passed": true
+        },
+        {
+          "key": "ownership",
+          "label": "Giấy tờ sở hữu hợp lệ",
+          "detail": "Bản gốc rõ, khớp tên chủ ngựa.",
+          "passed": true
+        }
+      ],
+      "attachments": [
+        {
+          "name": "Giấy chứng nhận sức khỏe",
+          "meta": "PDF · 1,2 MB · 28/09",
+          "problem": false
+        },
+        {
+          "name": "Giấy tờ sở hữu",
+          "meta": "PDF · 0,4 MB · 28/09",
+          "problem": false
+        },
+        {
+          "name": "Ảnh quét microchip",
+          "meta": "JPG · 2,8 MB · 28/09",
+          "problem": false
+        }
+      ],
+      "history": [
+        {
+          "who": "Hệ thống",
+          "text": "kiểm tra trường bắt buộc: đủ · chuyển PENDING_REVIEW",
+          "at": "28/09 08:40"
+        },
+        {
+          "who": "Vũ Thị Mai",
+          "text": "gửi hồ sơ",
+          "at": "28/09 08:40"
+        }
+      ]
+    },
+    {
+      "id": "REG-0015",
+      "horse": {
+        "name": "Night Owl",
+        "breed": "Akhal-Teke",
+        "sex": "♀",
+        "age": 6,
+        "code": "VN-MC-9015"
+      },
+      "owner": {
+        "fullName": "Đỗ Minh Quân",
+        "email": "quan@example.com",
+        "phone": "0912345670"
+      },
+      "submittedAt": "25/09/2026 11:20",
+      "waitingDays": 0,
+      "passed": 3,
+      "status": "Rejected",
+      "firstIssue": "Thiếu giấy sức khỏe",
+      "decidedNote": "Cho phép nộp lại",
+      "ownerExtra": {
+        "taxCode": "0123456789",
+        "billingAddress": "123 Lê Lợi, Q.1, TP.HCM",
+        "otherHorses": "Galaxy, Thunder, Spirit"
+      },
+      "horseExtra": {
+        "color": "Bay (nâu đỏ)",
+        "height": "16.2 hands",
+        "weight": 480,
+        "microchip": "985141000012345",
+        "passport": "VN-PP-2024-0015",
+        "healthCert": "Chi cục Thú y TP.HCM · hết hạn 15/08/2027"
+      },
+      "checklist": [
+        {
+          "key": "identity",
+          "label": "Danh tính chủ ngựa",
+          "detail": "Họ tên, CCCD và email khớp tài khoản.",
+          "passed": true
+        },
+        {
+          "key": "health",
+          "label": "Giấy chứng nhận sức khỏe còn hiệu lực",
+          "detail": "Giấy chứng nhận sức khỏe hết hạn từ 08/2026.",
+          "passed": false
+        },
+        {
+          "key": "microchip",
+          "label": "Microchip đã đăng ký",
+          "detail": "Số microchip khớp ảnh quét.",
+          "passed": true
+        },
+        {
+          "key": "ownership",
+          "label": "Giấy tờ sở hữu hợp lệ",
+          "detail": "Bản gốc rõ, khớp tên chủ ngựa.",
+          "passed": true
+        }
+      ],
+      "attachments": [
+        {
+          "name": "Giấy chứng nhận sức khỏe",
+          "meta": "PDF · 1,2 MB · 25/09",
+          "problem": true
+        },
+        {
+          "name": "Giấy tờ sở hữu",
+          "meta": "PDF · 0,4 MB · 25/09",
+          "problem": false
+        },
+        {
+          "name": "Ảnh quét microchip",
+          "meta": "JPG · 2,8 MB · 25/09",
+          "problem": false
+        }
+      ],
+      "history": [
+        {
+          "who": "Hệ thống",
+          "text": "kiểm tra trường bắt buộc: đủ · chuyển PENDING_REVIEW",
+          "at": "25/09 11:20"
+        },
+        {
+          "who": "Đỗ Minh Quân",
+          "text": "gửi hồ sơ",
+          "at": "25/09 11:20"
+        }
+      ]
+    },
+    {
+      "id": "REG-0014",
+      "horse": {
+        "name": "Spirit",
+        "breed": "Quarter Horse",
+        "sex": "♀",
+        "age": 5,
+        "code": "VN-MC-0024"
+      },
+      "owner": {
+        "fullName": "Hoàng Thị Lan",
+        "email": "lan@horsetrack.vn",
+        "phone": "0945678901"
+      },
+      "submittedAt": "15/09/2026 09:00",
+      "waitingDays": 0,
+      "passed": 4,
+      "status": "Approved",
+      "decidedNote": "Duyệt 16/09",
+      "ownerExtra": {
+        "taxCode": "0123456789",
+        "billingAddress": "123 Lê Lợi, Q.1, TP.HCM",
+        "otherHorses": "Galaxy, Thunder, Spirit"
+      },
+      "horseExtra": {
+        "color": "Bay (nâu đỏ)",
+        "height": "16.2 hands",
+        "weight": 480,
+        "microchip": "985141000012345",
+        "passport": "VN-PP-2024-0014",
+        "healthCert": "Chi cục Thú y TP.HCM · hết hạn 15/08/2027"
+      },
+      "checklist": [
+        {
+          "key": "identity",
+          "label": "Danh tính chủ ngựa",
+          "detail": "Họ tên, CCCD và email khớp tài khoản.",
+          "passed": true
+        },
+        {
+          "key": "health",
+          "label": "Giấy chứng nhận sức khỏe còn hiệu lực",
+          "detail": "Chi cục Thú y TP.HCM · hết hạn 15/08/2027.",
+          "passed": true
+        },
+        {
+          "key": "microchip",
+          "label": "Microchip đã đăng ký",
+          "detail": "Số microchip khớp ảnh quét.",
+          "passed": true
+        },
+        {
+          "key": "ownership",
+          "label": "Giấy tờ sở hữu hợp lệ",
+          "detail": "Bản gốc rõ, khớp tên chủ ngựa.",
+          "passed": true
+        }
+      ],
+      "attachments": [
+        {
+          "name": "Giấy chứng nhận sức khỏe",
+          "meta": "PDF · 1,2 MB · 15/09",
+          "problem": false
+        },
+        {
+          "name": "Giấy tờ sở hữu",
+          "meta": "PDF · 0,4 MB · 15/09",
+          "problem": false
+        },
+        {
+          "name": "Ảnh quét microchip",
+          "meta": "JPG · 2,8 MB · 15/09",
+          "problem": false
+        }
+      ],
+      "history": [
+        {
+          "who": "Hệ thống",
+          "text": "kiểm tra trường bắt buộc: đủ · chuyển PENDING_REVIEW",
+          "at": "15/09 09:00"
+        },
+        {
+          "who": "Hoàng Thị Lan",
+          "text": "gửi hồ sơ",
+          "at": "15/09 09:00"
+        }
+      ]
+    }
+  ],
+  "protocols": [
+    {
+      "id": "PD-0011",
+      "horse": "Storm",
+      "diagnosis": "Sưng gân gấp chân trước trái",
+      "vet": "Lê Thị Hương",
+      "state": "REQUIRES_VET_REVIEW",
+      "label": "Cần BS đánh giá lại",
+      "tone": "danger",
+      "cost": 8400000,
+      "trainingLocked": true,
+      "open": true,
+      "path": [
+        "DRAFT",
+        "WAITING_STOCK_CHECK",
+        "STOCK_SHORTAGE",
+        "WAITING_RESTOCK",
+        "REQUIRES_VET_REVIEW"
+      ],
+      "alertState": "REQUIRES_VET_REVIEW",
+      "materials": [
+        {
+          "item": "Thuốc ABC · 10 lọ",
+          "status": "Đủ · đã giữ 10",
+          "tone": "success"
+        },
+        {
+          "item": "Bông gạc · 20 cuộn",
+          "status": "Thiếu 12 · ETA 10/10",
+          "tone": "danger"
+        },
+        {
+          "item": "Thuốc XYZ · 30 viên (GĐ 2)",
+          "status": "Đủ",
+          "tone": "success"
+        }
+      ],
+      "note": "Cần thuốc 08/10 — lô SHIP-0024 về 10/10, trễ 2 ngày so với mốc. Hệ thống đã cảnh báo BS Lê Thị Hương.",
+      "log": [
+        {
+          "tone": "danger",
+          "who": "Hệ thống",
+          "text": "gắn DELAYED_MEDICINE, báo bác sĩ",
+          "at": "03/10 08:00"
+        },
+        {
+          "tone": "warning",
+          "who": "BS Lê Thị Hương",
+          "text": "chọn chờ hàng (ETA 07/10)",
+          "at": "02/10 17:40"
+        },
+        {
+          "tone": "warning",
+          "who": "Trần Văn Kho",
+          "text": "báo thiếu Bông gạc 12 cuộn",
+          "at": "02/10 17:05"
+        },
+        {
+          "who": "BS Lê Thị Hương",
+          "text": "gửi kiểm tồn · thay thế PD-0010",
+          "at": "02/10 16:48"
+        }
+      ]
+    },
+    {
+      "id": "PD-0012",
+      "horse": "Bolt",
+      "diagnosis": "Viêm khớp nhẹ",
+      "vet": "Lê Thị Hương",
+      "state": "WAITING_STOCK_CHECK",
+      "label": "Chờ kho kiểm tồn",
+      "tone": "info",
+      "cost": 2400000,
+      "open": true,
+      "path": [
+        "DRAFT",
+        "WAITING_STOCK_CHECK"
+      ],
+      "materials": [
+        {
+          "item": "Thuốc XYZ · 20 viên",
+          "status": "Đang kiểm",
+          "tone": "neutral"
+        }
+      ],
+      "note": "Gửi kho lúc 02/10 10:00.",
+      "log": [
+        {
+          "who": "BS Lê Thị Hương",
+          "text": "gửi kiểm tồn",
+          "at": "02/10 10:00"
+        }
+      ]
+    },
+    {
+      "id": "PD-0009",
+      "horse": "Wind",
+      "diagnosis": "Theo dõi hô hấp · cách ly",
+      "vet": "Lê Thị Hương",
+      "state": "IN_TREATMENT",
+      "label": "Đang điều trị · GĐ 1/2",
+      "tone": "success",
+      "cost": 3100000,
+      "trainingLocked": true,
+      "open": true,
+      "path": [
+        "DRAFT",
+        "WAITING_STOCK_CHECK",
+        "STOCK_AVAILABLE",
+        "VET_CONFIRMED",
+        "READY_FOR_DISPENSING",
+        "IN_TREATMENT"
+      ],
+      "materials": [
+        {
+          "item": "Kháng sinh K2 · 14 liều",
+          "status": "Đã cấp phát",
+          "tone": "success"
+        }
+      ],
+      "note": "Đánh giá lại 06/10.",
+      "log": [
+        {
+          "tone": "success",
+          "who": "Trần Văn Kho",
+          "text": "cấp phát lô L-0912",
+          "at": "27/09 08:10"
+        },
+        {
+          "tone": "success",
+          "who": "BS Lê Thị Hương",
+          "text": "xác nhận phác đồ",
+          "at": "26/09 15:00"
+        }
+      ]
+    },
+    {
+      "id": "PD-0008",
+      "horse": "Star",
+      "diagnosis": "Phục hồi sau mỏi cơ",
+      "vet": "Lê Thị Hương",
+      "state": "READY_FOR_DISPENSING",
+      "label": "Chờ cấp phát",
+      "tone": "info",
+      "cost": 1250000,
+      "open": true,
+      "path": [
+        "DRAFT",
+        "WAITING_STOCK_CHECK",
+        "STOCK_AVAILABLE",
+        "VET_CONFIRMED",
+        "READY_FOR_DISPENSING"
+      ],
+      "materials": [
+        {
+          "item": "Gel giảm đau · 2 tuýp",
+          "status": "Đã giữ",
+          "tone": "success"
+        }
+      ],
+      "note": "Kho chuẩn bị cấp trong ngày.",
+      "log": [
+        {
+          "tone": "success",
+          "who": "BS Lê Thị Hương",
+          "text": "xác nhận phác đồ",
+          "at": "03/10 09:05"
+        }
+      ]
+    },
+    {
+      "id": "PD-0010",
+      "horse": "Storm",
+      "diagnosis": "Sưng gân gấp (bản cũ)",
+      "vet": "Lê Thị Hương",
+      "state": "SUPERSEDED",
+      "label": "Đã thay thế",
+      "tone": "neutral",
+      "cost": 7900000,
+      "open": false,
+      "path": [
+        "DRAFT",
+        "WAITING_STOCK_CHECK",
+        "SUPERSEDED"
+      ],
+      "materials": [
+        {
+          "item": "Bông gạc · 25 cuộn",
+          "status": "Không cấp — bản đã bị thay",
+          "tone": "neutral"
+        }
+      ],
+      "note": "Được thay bằng PD-0011; kho không cấp theo bản này.",
+      "log": [
+        {
+          "who": "BS Lê Thị Hương",
+          "text": "tạo bản mới PD-0011",
+          "at": "02/10 16:48"
+        }
+      ]
+    },
+    {
+      "id": "PD-0007",
+      "horse": "Flash",
+      "diagnosis": "Trầy xước nhẹ chân sau",
+      "vet": "Lê Thị Hương",
+      "state": "COMPLETED",
+      "label": "Hoàn tất",
+      "tone": "success",
+      "cost": 650000,
+      "open": false,
+      "path": [
+        "DRAFT",
+        "WAITING_STOCK_CHECK",
+        "STOCK_AVAILABLE",
+        "VET_CONFIRMED",
+        "READY_FOR_DISPENSING",
+        "IN_TREATMENT",
+        "COMPLETED"
+      ],
+      "materials": [
+        {
+          "item": "Dung dịch sát khuẩn · 1 chai",
+          "status": "Đã cấp",
+          "tone": "success"
+        }
+      ],
+      "note": "Kết thúc 28/09.",
+      "log": [
+        {
+          "tone": "success",
+          "who": "BS Lê Thị Hương",
+          "text": "đóng ca",
+          "at": "28/09 16:00"
+        }
+      ]
+    }
+  ],
+  "shipments": [
+    {
+      "id": "SHIP-0024",
+      "item": "Bông gạc · 50 cuộn",
+      "status": "DELAYED",
+      "etaOld": "07/10",
+      "eta": "10/10",
+      "forRef": "PD-0011"
+    },
+    {
+      "id": "SHIP-0023",
+      "item": "Thuốc ABC · 30 lọ",
+      "status": "IN_TRANSIT",
+      "eta": "07/10",
+      "forRef": "bổ sung tồn"
+    }
+  ],
+  "invoices": [
+    {
+      "id": "INV-0042",
+      "horse": "Galaxy",
+      "owner": "Hoàng Thị Lan",
+      "period": "08/2026",
+      "dueDate": "05/09/2026",
+      "amount": 15000000,
+      "overdueDays": 28,
+      "status": "SUSPENDED",
+      "suspendedSince": "30/09"
+    },
+    {
+      "id": "INV-0038",
+      "horse": "Bolt",
+      "owner": "Vũ Thị Mai",
+      "period": "08/2026",
+      "dueDate": "07/09/2026",
+      "amount": 9000000,
+      "overdueDays": 26,
+      "status": "OVERDUE"
+    },
+    {
+      "id": "INV-0047",
+      "horse": "Storm",
+      "owner": "Đỗ Minh Quân",
+      "period": "09/2026",
+      "dueDate": "10/09/2026",
+      "amount": 6000000,
+      "overdueDays": 23,
+      "status": "OVERDUE"
+    },
+    {
+      "id": "INV-0049",
+      "horse": "Star",
+      "owner": "Vũ Thị Mai",
+      "period": "09/2026",
+      "dueDate": "01/10/2026",
+      "amount": 12500000,
+      "overdueDays": 2,
+      "status": "OVERDUE"
+    },
+    {
+      "id": "INV-0035",
+      "horse": "Comet",
+      "owner": "Lý Gia Hân",
+      "period": "07/2026",
+      "dueDate": "05/08/2026",
+      "amount": 11000000,
+      "overdueDays": 0,
+      "status": "REACTIVATION_PENDING",
+      "paidRef": "TXN-00061 · 02/10"
+    },
+    {
+      "id": "INV-0051",
+      "horse": "Arrow",
+      "owner": "Đỗ Minh Quân",
+      "period": "09/2026",
+      "dueDate": "10/10/2026",
+      "amount": 8000000,
+      "overdueDays": 0,
+      "status": "UNPAID",
+      "dueInDays": 7
+    },
+    {
+      "id": "INV-0050",
+      "horse": "Flash",
+      "owner": "Đỗ Minh Quân",
+      "period": "09/2026",
+      "dueDate": "10/09/2026",
+      "amount": 7500000,
+      "overdueDays": 0,
+      "status": "PAID",
+      "paidRef": "TXN-00052 · 08/09"
+    }
+  ],
+  "auditLogs": [
+    {
+      "id": 10250,
+      "at": "03/10/2026 10:26:12",
+      "who": "Trần Đức Hùng",
+      "role": "HeadTrainer",
+      "action": "STOP_SESSION_REQUEST_VET",
+      "label": "Dừng phiên, gửi ca khám",
+      "object": "S-0023 · Galaxy",
+      "area": "train",
+      "ip": "192.168.1.18",
+      "from": "PAUSED_PENDING_TRAINER",
+      "to": "STOPPED · tạo C-0015",
+      "reason": "Ngựa thở gấp sau vòng 3, bước chân trước phải hơi ngắn — nghi chấn thương chân."
+    },
+    {
+      "id": 10249,
+      "at": "03/10/2026 10:23:04",
+      "who": "Hệ thống",
+      "role": "System",
+      "action": "SESSION_AUTO_PAUSE",
+      "label": "Tự dừng phiên tập",
+      "object": "S-0023 · Galaxy",
+      "area": "train",
+      "ip": "—",
+      "from": "IN_PROGRESS",
+      "to": "PAUSED_PENDING_TRAINER",
+      "reason": "Nhịp tim 195 bpm vượt ngưỡng 180 (BR_02). Đã báo HLV trưởng."
+    },
+    {
+      "id": 10248,
+      "at": "03/10/2026 08:02:11",
+      "who": "Nguyễn Văn Minh",
+      "role": "ClubManager",
+      "action": "LOGIN",
+      "label": "Đăng nhập",
+      "object": "admin",
+      "area": "acct",
+      "ip": "192.168.1.15",
+      "isLogin": true
+    },
+    {
+      "id": 10247,
+      "at": "03/10/2026 08:00:00",
+      "who": "Hệ thống",
+      "role": "System",
+      "action": "FLAG_DELAYED_MEDICINE",
+      "label": "Gắn cảnh báo thuốc về trễ",
+      "object": "PD-0011 · Storm",
+      "area": "med",
+      "ip": "—",
+      "from": "WAITING_RESTOCK",
+      "to": "REQUIRES_VET_REVIEW",
+      "reason": "ETA SHIP-0024 (10/10) vượt ngày cần thuốc 08/10. Đã báo BS Lê Thị Hương và Quản lý kho."
+    },
+    {
+      "id": 10246,
+      "at": "02/10/2026 17:40:27",
+      "who": "Lê Thị Hương",
+      "role": "Veterinarian",
+      "action": "DECIDE_WAIT_RESTOCK",
+      "label": "Chọn chờ nhập hàng",
+      "object": "PD-0011 · Storm",
+      "area": "med",
+      "ip": "192.168.1.22",
+      "from": "STOCK_SHORTAGE",
+      "to": "WAITING_RESTOCK",
+      "reason": "Chờ Bông gạc, ETA 07/10, cần dùng 08/10."
+    },
+    {
+      "id": 10245,
+      "at": "02/10/2026 17:05:42",
+      "who": "Trần Văn Kho",
+      "role": "WarehouseManager",
+      "action": "REPORT_STOCK_SHORTAGE",
+      "label": "Báo thiếu vật tư",
+      "object": "PD-0011 · Storm",
+      "area": "med",
+      "ip": "192.168.1.30",
+      "from": "WAITING_STOCK_CHECK",
+      "to": "STOCK_SHORTAGE",
+      "reason": "Bông gạc: tồn 8/20 cuộn, thiếu 12. Liên kết SHIP-0024."
+    },
+    {
+      "id": 10244,
+      "at": "02/10/2026 16:48:03",
+      "who": "Lê Thị Hương",
+      "role": "Veterinarian",
+      "action": "CREATE_PROTOCOL_VERSION",
+      "label": "Tạo phiên bản phác đồ",
+      "object": "PD-0011 · Storm",
+      "area": "med",
+      "ip": "192.168.1.22",
+      "from": "PD-0010 (bản cũ)",
+      "to": "SUPERSEDED → PD-0011 DRAFT",
+      "reason": "Giảm Bông gạc từ 25 xuống 20 cuộn, thêm GĐ 2 phục hồi gân."
+    },
+    {
+      "id": 10243,
+      "at": "30/09/2026 08:15:30",
+      "who": "Nguyễn Văn Minh",
+      "role": "ClubManager",
+      "action": "SUSPEND_SERVICE",
+      "label": "Đình chỉ dịch vụ",
+      "object": "INV-0042 · Hoàng Thị Lan",
+      "area": "fin",
+      "ip": "192.168.1.15",
+      "from": "OVERDUE",
+      "to": "SUSPENDED",
+      "reason": "Hóa đơn INV-0042 quá hạn 25 ngày, chưa có thanh toán được xác minh (BR_13)."
+    },
+    {
+      "id": 10242,
+      "at": "29/09/2026 00:00:00",
+      "who": "Hệ thống",
+      "role": "System",
+      "action": "SEND_SUSPENSION_WARNING",
+      "label": "Gửi cảnh báo trước đình chỉ",
+      "object": "INV-0038 · Vũ Thị Mai",
+      "area": "fin",
+      "ip": "—",
+      "reason": "Còn 3 ngày đến mốc đình chỉ (BR_13)."
+    },
+    {
+      "id": 10241,
+      "at": "28/09/2026 09:12:08",
+      "who": "Nguyễn Văn Minh",
+      "role": "ClubManager",
+      "action": "APPROVE_REGISTRATION",
+      "label": "Phê duyệt hồ sơ ngựa",
+      "object": "REG-0016 · Lightning",
+      "area": "reg",
+      "ip": "192.168.1.15",
+      "from": "PENDING_REVIEW",
+      "to": "APPROVED",
+      "reason": "Checklist 4/4 đạt."
+    },
+    {
+      "id": 10240,
+      "at": "28/09/2026 08:03:55",
+      "who": "Lê Thị Hương",
+      "role": "Veterinarian",
+      "action": "LOCK_TRAINING",
+      "label": "Khóa huấn luyện",
+      "object": "Storm · VN-MC-0042",
+      "area": "train",
+      "ip": "192.168.1.22",
+      "from": "Được tập",
+      "to": "KHÓA TẬP",
+      "reason": "Chấn thương chân trước trái (BR_01)."
+    },
+    {
+      "id": 10239,
+      "at": "25/09/2026 15:20:16",
+      "who": "Nguyễn Văn Minh",
+      "role": "ClubManager",
+      "action": "REJECT_REGISTRATION",
+      "label": "Từ chối hồ sơ ngựa",
+      "object": "REG-0015 · Night Owl",
+      "area": "reg",
+      "ip": "192.168.1.15",
+      "from": "PENDING_REVIEW",
+      "to": "REJECTED · cho phép nộp lại",
+      "reason": "Giấy chứng nhận sức khỏe hết hạn từ 08/2026."
+    },
+    {
+      "id": 10238,
+      "at": "15/09/2026 16:32:47",
+      "who": "Nguyễn Văn Minh",
+      "role": "ClubManager",
+      "action": "LOCK_ACCOUNT",
+      "label": "Khóa tài khoản",
+      "object": "vandat · Bùi Văn Đạt",
+      "area": "acct",
+      "ip": "192.168.1.15",
+      "from": "ACTIVE",
+      "to": "LOCKED",
+      "reason": "Nghỉ việc từ 15/09."
+    }
+  ],
+  "dashboard": {
+    "greeting": {
+      "weekday": "Thứ Bảy",
+      "date": "03/10/2026"
+    },
+    "autoStop": {
+      "session": "S-0023",
+      "horse": "Galaxy",
+      "at": "10:23",
+      "hr": 195,
+      "limit": 180,
+      "decidedBy": "Trần Đức Hùng",
+      "caseId": "C-0015",
+      "decidedAt": "10:26"
+    },
+    "kpi": {
+      "horses": 12,
+      "horsesTrend": "+2 tháng này",
+      "lateTasks": 5,
+      "lateTasksToday": 3
+    },
+    "sessions": [
+      {
+        "time": "08:00",
+        "horse": "Bolt",
+        "plan": "Tốc độ · P1",
+        "trainer": "Trần Đức Hùng",
+        "status": "Hoàn thành",
+        "tone": "success"
+      },
+      {
+        "time": "10:00",
+        "horse": "Galaxy",
+        "plan": "Sức bền · P2",
+        "trainer": "Trần Đức Hùng",
+        "status": "Đã dừng — vượt ngưỡng",
+        "tone": "danger"
+      },
+      {
+        "time": "11:00",
+        "horse": "Thunder",
+        "plan": "Sức bền · P1",
+        "trainer": "Trần Đức Hùng",
+        "status": "Sắp diễn ra",
+        "tone": "info"
+      },
+      {
+        "time": "14:00",
+        "horse": "Star",
+        "plan": "Phục hồi · P1",
+        "trainer": "Trần Đức Hùng",
+        "status": "Chưa bắt đầu",
+        "tone": "neutral"
+      }
+    ],
+    "lateTasks": [
+      {
+        "title": "Cho ăn sáng — Galaxy",
+        "groom": "Phạm Văn Toàn",
+        "due": "06:45",
+        "doneAt": "07:37",
+        "late": "+52 phút"
+      },
+      {
+        "title": "Dọn chuồng — Thunder",
+        "groom": "Phạm Văn Toàn",
+        "due": "08:15",
+        "late": "+2 giờ 15"
+      },
+      {
+        "title": "Chải lông — Flash",
+        "groom": "Ngô Văn Sơn",
+        "due": "08:45",
+        "late": "+1 giờ 45"
+      }
+    ],
+    "moreLateTasks": 2,
+    "vetCost": [
+      {
+        "month": "T5",
+        "value": 5.2
+      },
+      {
+        "month": "T6",
+        "value": 6.8
+      },
+      {
+        "month": "T7",
+        "value": 5.9
+      },
+      {
+        "month": "T8",
+        "value": 7.4
+      },
+      {
+        "month": "T9",
+        "value": 7.6
+      },
+      {
+        "month": "T10",
+        "value": 9.8
+      }
+    ]
+  },
+  "financeReport": {
+    "period": "Q3/2026",
+    "collected": 128.4,
+    "billed": 171.9,
+    "billedCount": 21,
+    "rate": 74.7,
+    "rateDelta": -20,
+    "months": [
+      {
+        "m": "T4",
+        "billed": 52,
+        "collected": 50.1,
+        "q": false
+      },
+      {
+        "m": "T5",
+        "billed": 55,
+        "collected": 52.3,
+        "q": false
+      },
+      {
+        "m": "T6",
+        "billed": 54.5,
+        "collected": 51,
+        "q": false
+      },
+      {
+        "m": "T7",
+        "billed": 56,
+        "collected": 46,
+        "q": true
+      },
+      {
+        "m": "T8",
+        "billed": 57,
+        "collected": 41,
+        "q": true
+      },
+      {
+        "m": "T9",
+        "billed": 58.9,
+        "collected": 41.4,
+        "q": true
+      }
+    ],
+    "byService": [
+      {
+        "name": "Huấn luyện",
+        "amount": 108000000
+      },
+      {
+        "name": "Lưu chuồng · chăm sóc",
+        "amount": 45000000
+      },
+      {
+        "name": "Y tế · thuốc",
+        "amount": 18900000
+      }
+    ]
+  }
+}

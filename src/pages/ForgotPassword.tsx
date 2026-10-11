@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { authApi } from '../api/mockData';
+import { authApi } from '../api/authApi';
 import { AuthShell } from '../components/auth/AuthShell';
 import { Icon } from '../components/ui/Icon';
 import { Busy, Callout, Field, PasswordInput, StrengthMeter, TextInput } from '../components/ui/Ht';

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../auth/AuthContext';
-import { authApi } from '../api/mockData';
+import { authApi } from '../api/authApi';
 import { Icon } from '../components/ui/Icon';
 import { Badge, Busy, Callout, Field, PageHeader, PasswordInput, Rules, StrengthMeter, TextInput } from '../components/ui/Ht';
 import { useForm } from '../hooks/useForm';
