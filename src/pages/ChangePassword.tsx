@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../auth/AuthContext';
 import { authApi } from '../api/authApi';
+import type { ApiError } from '../api/http';
 import { Icon } from '../components/ui/Icon';
 import { Badge, Busy, Callout, Field, PageHeader, PasswordInput, Rules, StrengthMeter, TextInput } from '../components/ui/Ht';
 import { useForm } from '../hooks/useForm';
@@ -31,8 +32,8 @@ export const ChangePassword: React.FC = () => {
       await authApi.changePassword(user.userId, v.oldPassword, v.newPassword);
       setStatus({ tone: 'success', msg: <><b>Đổi mật khẩu thành công!</b> Dùng mật khẩu mới cho lần đăng nhập sau.</> });
       form.reset();
-    } catch (err: any) {
-      const msg = err?.message || 'Đổi mật khẩu thất bại.';
+    } catch (err) {
+      const msg = (err as ApiError)?.message || 'Đổi mật khẩu thất bại.';
       setStatus({ tone: 'danger', msg });
       if (/hiện tại/.test(msg)) form.setServerErrors({ oldPassword: 'Kiểm tra lại mật khẩu đang dùng' });
     } finally {

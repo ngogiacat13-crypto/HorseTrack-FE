@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authApi } from '../api/authApi';
+import type { ApiError } from '../api/http';
 import { AuthShell } from '../components/auth/AuthShell';
 import { Icon } from '../components/ui/Icon';
 import { Busy, Callout, Field, PasswordInput, StrengthMeter, TextInput } from '../components/ui/Ht';
@@ -88,8 +89,8 @@ export const ForgotPassword: React.FC = () => {
       setStep(2);
       setResendIn(RESEND_SECONDS);
       window.setTimeout(() => firstOtp.current?.querySelector('input')?.focus(), 0);
-    } catch (err: any) {
-      setServerError(err?.message || 'Không thể gửi OTP, vui lòng thử lại.');
+    } catch (err) {
+      setServerError((err as ApiError)?.message || 'Không thể gửi OTP, vui lòng thử lại.');
     } finally {
       form1.setSubmitting(false);
     }
@@ -108,8 +109,8 @@ export const ForgotPassword: React.FC = () => {
     try {
       await authApi.resetPassword(contact, form2.values.otp, form2.values.newPassword);
       setStep(3);
-    } catch (err: any) {
-      setServerError(err?.message || 'Đặt lại mật khẩu thất bại.');
+    } catch (err) {
+      setServerError((err as ApiError)?.message || 'Đặt lại mật khẩu thất bại.');
       form2.setServerErrors({ otp: ' ' });
     } finally {
       form2.setSubmitting(false);

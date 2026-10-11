@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { ROLE_HOME } from '../api/mockData';
+import type { ApiError } from '../api/http';
 import { AuthShell } from '../components/auth/AuthShell';
 import { Icon } from '../components/ui/Icon';
 import { Busy, Callout, Field, PasswordInput, TextInput } from '../components/ui/Ht';
@@ -37,8 +38,8 @@ export const Login: React.FC = () => {
     try {
       const user = await login(form.values.username.trim(), form.values.password);
       navigate(ROLE_HOME[user.role], { replace: true });
-    } catch (err: any) {
-      setServerError(err?.message || 'Đăng nhập thất bại');
+    } catch (err) {
+      setServerError((err as ApiError)?.message || 'Đăng nhập thất bại');
       form.setSubmitting(false);
     }
   };

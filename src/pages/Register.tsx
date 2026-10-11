@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authApi } from '../api/authApi';
+import type { ApiError } from '../api/http';
 import { AuthShell } from '../components/auth/AuthShell';
 import { Icon } from '../components/ui/Icon';
 import { Busy, Callout, Field, PasswordInput, StrengthMeter, TextInput } from '../components/ui/Ht';
@@ -40,8 +41,9 @@ export const Register: React.FC = () => {
       const v = form.values;
       await authApi.register({ ...v, phone: v.phone.replace(/\s/g, ''), fullname: v.fullname.trim() });
       setDoneUser(v.username);
-    } catch (err: any) {
-      if (err?.field) form.setServerErrors({ [err.field]: err.message });
+    } catch (err) {
+      const e = err as ApiError;
+      if (e?.field) form.setServerErrors({ [e.field]: e.message ?? 'Giá trị không hợp lệ.' });
       else form.setServerErrors({ email: 'Đã có lỗi xảy ra, vui lòng thử lại.' });
     } finally {
       form.setSubmitting(false);
