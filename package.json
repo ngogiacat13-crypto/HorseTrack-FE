@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "server": "json-server db.json --port 9999",
+    "dev:all": "concurrently -k -n api,web -c blue,green \"npm:server\" \"npm:dev\"",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "lint": "eslint .",
