@@ -27,9 +27,8 @@ http.interceptors.response.use(
   },
 );
 
-/* Loi nem ra tu authApi: hoac Error (chi co message),
-   hoac object { field, message } khi trung du lieu dang ky. */
-export type ApiError = { message?: string; field?: string };
+/* Lỗi ném ra từ authApi: lỗi đơn, hoặc nhiều lỗi theo từng field khi đăng ký. */
+export type ApiError = { message?: string; field?: string; fields?: Record<string, string> };
 
 /* Demo clock used across the app (03/10/2026 10:30). */
 export const DEMO_NOW = { date: '03/10/2026', time: '10:31', short: '03/10 10:31' };

@@ -51,9 +51,11 @@ export const authApi = {
       findBy('phone', payload.phone),
       findBy('username', payload.username),
     ]);
-    if (dupEmail) throw { field: 'email', message: 'Email này đã được đăng ký.' };
-    if (dupPhone) throw { field: 'phone', message: 'Số điện thoại này đã được đăng ký.' };
-    if (dupUsername) throw { field: 'username', message: 'Tên đăng nhập đã tồn tại.' };
+    const duplicateFields: Record<string, string> = {};
+    if (dupEmail) duplicateFields.email = 'Email này đã được đăng ký.';
+    if (dupPhone) duplicateFields.phone = 'Số điện thoại này đã được đăng ký.';
+    if (dupUsername) duplicateFields.username = 'Tên đăng nhập đã tồn tại.';
+    if (Object.keys(duplicateFields).length > 0) throw { fields: duplicateFields };
     const { data } = await http.post<UserRecord>('/users', {
       ...payload,
       role: 'HorseOwner',
