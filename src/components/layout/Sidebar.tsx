@@ -24,6 +24,7 @@ export const Sidebar: React.FC = () => {
         </React.Fragment>
       ))}
       <span className="ht-side__spacer" />
+      <NavLink to="/my-profile" className="ht-side__item"><Icon name="usercircle" /><span>Hồ sơ cá nhân</span></NavLink>
       <NavLink to="/change-password" className="ht-side__item"><Icon name="key" /><span>Đổi mật khẩu</span></NavLink>
     </nav>
   );

@@ -146,6 +146,19 @@
 .ht-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-card); padding: var(--space-6); }
 .ht-card__title { margin: 0 0 4px; font: 600 17px/24px var(--font-sans); }
 .ht-card__sub { margin: 0; font-size: 13px; line-height: 18px; color: var(--muted); }
+.ht-card__title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-4); }
+.ht-profile-layout { max-width: 1080px; display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: var(--space-6); align-items: start; }
+.ht-profile-hero { display: flex; flex-direction: column; align-items: center; text-align: center; min-height: 260px; }
+.ht-profile-hero h2 { margin: 14px 0 6px; font: 700 20px/28px var(--font-sans); }
+.ht-avatar--profile { width: 76px; height: 76px; font-size: 22px; }
+.ht-profile-username { margin: 10px 0 14px; color: var(--muted); font: 400 13px/18px var(--font-mono); }
+.ht-profile-status { display: inline-flex; align-items: center; gap: 6px; color: var(--success-ink); font-size: 12px; font-weight: 600; }
+.ht-profile-status i { width: 7px; height: 7px; border-radius: 50%; background: var(--success); }
+.ht-profile-details { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 0 var(--space-4); margin: var(--space-5) 0 0; }
+.ht-profile-details dt, .ht-profile-details dd { padding: 13px 0; border-top: 1px solid var(--border); font-size: 14px; }
+.ht-profile-details dt { color: var(--muted); }
+.ht-profile-details dd { margin: 0; font-weight: 500; overflow-wrap: anywhere; }
+.ht-profile-security { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); }
 .ht-divider { height: 1px; background: var(--border); margin: var(--space-5) 0; border: 0; }
 .ht-overline { font: 600 11px/16px var(--font-sans); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 
@@ -501,4 +514,14 @@ a.ht-stat:hover { border-color: var(--border-strong); }
   .ht-cols { grid-template-columns: 1fr; }
   .ht-page { padding: var(--space-4); }
   .ht-app__bar .ht-search, .ht-app__bar .ht-clock { display: none; }
+  .ht-profile-layout { grid-template-columns: 1fr; }
+  .ht-profile-hero { min-height: 0; }
+  .ht-profile-security { grid-column: auto; }
+}
+
+@media (max-width: 560px) {
+  .ht-profile-details { grid-template-columns: 1fr; gap: 0; }
+  .ht-profile-details dt { border-top: 0; padding-bottom: 2px; }
+  .ht-profile-details dd { padding-top: 0; }
+  .ht-profile-security { align-items: flex-start; flex-direction: column; }
 }

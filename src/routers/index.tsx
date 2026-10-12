@@ -10,6 +10,7 @@ import { Login } from '../pages/auth/Login';
 import { Register } from '../pages/auth/Register';
 import { ForgotPassword } from '../pages/auth/ForgotPassword';
 import { ChangePassword } from '../pages/auth/ChangePassword';
+import { MyProfile } from '../pages/auth/MyProfile';
 import { HorseProfile } from '../pages/shared/HorseProfile';
 
 import { ManagerDashboard } from '../pages/manager/ManagerDashboard';
@@ -106,6 +107,7 @@ export const AppRoutes: React.FC = () => {
       {/* App (signed in) */}
       <Route element={user ? <AppLayout /> : <Navigate to={PATH.login} replace />}>
         <Route path={PATH.horseProfile} element={<HorseProfile />} />
+        <Route path={PATH.myProfile} element={<MyProfile />} />
         <Route path={PATH.changePassword} element={<ChangePassword />} />
         <Route path={PATH.manager.oldProtocols} element={<Navigate to={PATH.manager.medicalMonitoring} replace />} />
         {ROLE_ROUTES.flatMap(({ role, routes }) => routes.map(([path, element]) => (

@@ -3,6 +3,7 @@ export const PATH = {
   login: '/login',
   register: '/register',
   forgotPassword: '/forgot-password',
+  myProfile: '/my-profile',
   changePassword: '/change-password',
   horseProfile: '/horses/:id',
 

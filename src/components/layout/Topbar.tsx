@@ -46,6 +46,9 @@ export const Topbar: React.FC = () => {
           {open && (
             <div className="ht-menu" role="menu">
               <div className="ht-menu__head"><b>{user.fullname}</b><small>{user.email}</small></div>
+              <Link role="menuitem" className="ht-menu__item" to="/my-profile" onClick={() => setOpen(false)}>
+                <Icon name="usercircle" />Hồ sơ cá nhân
+              </Link>
               <Link role="menuitem" className="ht-menu__item" to="/change-password" onClick={() => setOpen(false)}>
                 <Icon name="key" />Đổi mật khẩu
               </Link>
