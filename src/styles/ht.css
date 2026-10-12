@@ -290,7 +290,7 @@ a.ht-stat:hover { border-color: var(--border-strong); }
 /* ---------- Panels / layout grids ---------- */
 .ht-cols { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: var(--space-6); align-items: start; }
 .ht-cols > div { display: grid; gap: var(--space-6); min-width: 0; }
-.ht-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-card); min-width: 0; overflow: hidden; }
+.ht-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-card); min-width: 0; overflow: hidden; container-type: inline-size; }
 .ht-panel__head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); padding: var(--space-5) var(--space-6) var(--space-4); }
 .ht-panel__head h2, .ht-panel__head h3 { margin: 0; font: 600 17px/24px var(--font-sans); }
 .ht-panel__head p { margin: 2px 0 0; font-size: 13px; color: var(--muted); }

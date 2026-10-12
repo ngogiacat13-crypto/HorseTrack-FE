@@ -78,9 +78,10 @@
 .ht-phase { border: 1px solid var(--border); border-radius: var(--radius-md); padding: 14px 16px; display: grid; gap: 12px; }
 .ht-phase__head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .ht-phase__no { width: 28px; height: 28px; border-radius: var(--radius-sm); background: var(--accent-soft); color: var(--accent-ink); display: inline-flex; align-items: center; justify-content: center; font: 700 13px/1 var(--font-mono); }
-.ht-phase__grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr; gap: var(--space-3); }
+.ht-phase__grid { display: grid; grid-template-columns: minmax(0, 2fr) repeat(5, minmax(0, 1fr)); gap: var(--space-3); }
 .ht-phase__grid .ht-field { margin: 0; }
 .ht-phase__grid .ht-input, .ht-phase__grid .ht-select { height: 38px; width: 100%; }
+.ht-phase__grid .ht-label { min-height: 36px; overflow-wrap: anywhere; }
 .ht-phase-bar { display: flex; gap: 3px; }
 .ht-phase-bar span { flex: 1; height: 6px; border-radius: 3px; background: var(--border); }
 .ht-phase-bar span[data-state="done"] { background: var(--primary-light); }
@@ -106,4 +107,29 @@
   .ht-metrics, .ht-choices { grid-template-columns: 1fr; }
   .ht-phase__grid { grid-template-columns: 1fr 1fr; }
   .ht-week { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* The phase editor can become much narrower than the viewport because it
+   shares the page with the summary panel. Keep labels and controls aligned
+   before they become too narrow to read. */
+@media (max-width: 1200px) and (min-width: 961px) {
+  .ht-phase__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (max-width: 560px) {
+  .ht-phase__grid { grid-template-columns: 1fr; }
+}
+
+/* The left panel can be narrow even on a wide viewport because it shares
+   space with the summary panel. Respond to the panel width itself. */
+@container (max-width: 760px) {
+  .ht-phase__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@container (max-width: 520px) {
+  .ht-phase__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@container (max-width: 360px) {
+  .ht-phase__grid { grid-template-columns: 1fr; }
 }
