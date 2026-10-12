@@ -31,7 +31,7 @@ export const SessionSide: React.FC<{ session: TrainingSession; horse: Horse; pla
         <hr className="ht-divider" />
         <dl className="ht-kv">
           <dt>Chủ ngựa</dt><dd>{horse.owner}</dd>
-          <dt>Giáo án</dt><dd>{plan.type} · P{s.phaseNo} <span className="ht-mono" style={{ color: 'var(--muted)' }}>{plan.id}</span></dd>
+          <dt>Giáo án</dt><dd>{plan.name} · P{s.phaseNo} <span className="ht-mono" style={{ color: 'var(--muted)' }}>{plan.id}</span></dd>
           <dt>Phiên trước</dt><dd className="ht-mono">{previousMax ? `Max ${previousMax} bpm` : '—'}</dd>
         </dl>
       </div>

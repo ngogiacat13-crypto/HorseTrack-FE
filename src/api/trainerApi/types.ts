@@ -15,7 +15,10 @@ export type Intensity = 'Nhẹ' | 'Vừa' | 'Cao';
 export interface PlanPhase { no: number; name: string; weeks: number; intensity: Intensity; distanceM: number; sessionsPerWeek: number; hrLimit: number }
 export type PlanStatus = 'ACTIVE' | 'PAUSED' | 'COMPLETED' | 'REPLACED';
 export interface TrainingPlan {
-  id: string; horseId: string; horseName: string; type: string; goal: string; phases: PlanPhase[];
+  id: string; horseId: string; horseName: string;
+  /** Name given by the trainer, e.g. “Giáo án tăng sức bền cự ly dài”. */
+  name: string;
+  type: string; goal: string; phases: PlanPhase[];
   currentPhase: number; week: number; status: PlanStatus; startDate: string; createdBy: string; pausedReason?: string;
 }
 

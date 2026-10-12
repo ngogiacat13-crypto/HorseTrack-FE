@@ -21,7 +21,7 @@ export const OverviewTab: React.FC<{ horse: Horse; plan?: TrainingPlan; recent: 
             {plan && phase ? (
               <div style={{ display: 'grid', gap: 12 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-                  <span><b>{plan.type}</b> · <span className="ht-mono">{plan.id}</span> · {plan.goal}</span>
+                  <span><b>{plan.name}</b> · <span className="ht-mono">{plan.id}</span> · {plan.type} · {plan.goal}</span>
                   <span style={{ fontSize: 13, color: 'var(--muted)' }}>GĐ {plan.currentPhase}/{plan.phases.length} · tuần {plan.week}/{phase.weeks}</span>
                 </div>
                 <PhaseBar phases={plan.phases} current={plan.currentPhase} />
@@ -108,7 +108,7 @@ export const TrainingTab: React.FC<{ history: TrainingSession[]; plans: Training
           {plans.map((p) => (
             <tr key={p.id}>
               <td className="id">{p.id}</td>
-              <td><span className="strong">{p.type}</span><span className="sub">{p.goal}</span></td>
+              <td><span className="strong">{p.name}</span><span className="sub">{p.type} · {p.goal}</span></td>
               <td style={{ minWidth: 140 }}><PhaseBar phases={p.phases} current={p.currentPhase} /><span className="sub">GĐ {p.currentPhase}/{p.phases.length}</span></td>
               <td className="mono">{p.startDate}</td>
               <td><Badge tone={PLAN_LABEL[p.status][1]}>{PLAN_LABEL[p.status][0]}</Badge></td>

@@ -20,6 +20,7 @@ export const TrainerPlanCreate: React.FC = () => {
   const { data, loading, error, reload } = useFetch(() => trainerApi.getPlans(actor), [actor]);
 
   const [horseId, setHorseId] = useState(params.get('horse') ?? '');
+  const [name, setName] = useState('');
   const [type, setType] = useState<PlanType>('Sức bền');
   const [goal, setGoal] = useState('');
   const [startDate, setStartDate] = useState('2026-10-05');
@@ -36,11 +37,12 @@ export const TrainerPlanCreate: React.FC = () => {
 
   const block = horse ? trainingBlock(horse) : null;
   const errors = {
+    name: name.trim().length < 5 ? 'Tên giáo án ít nhất 5 ký tự' : name.trim().length > 80 ? 'Tên giáo án tối đa 80 ký tự' : '',
     horse: !horseId ? 'Chọn ngựa' : block ?? '',
     goal: goal.trim().length < 5 ? 'Mục tiêu ít nhất 5 ký tự' : '',
     phases: phases.length === 0 ? 'Cần ít nhất 1 giai đoạn' : phases.some((p) => !validPhase(p)) ? 'Kiểm tra lại các giai đoạn: tuần 1–12, quãng đường 200–4000 m, 1–7 buổi/tuần, ngưỡng 120–200 bpm' : '',
   };
-  const valid = !errors.horse && !errors.goal && !errors.phases;
+  const valid = !errors.name && !errors.horse && !errors.goal && !errors.phases;
 
   const setPhase = (i: number, patch: Partial<PhaseDraft>) => setPhases((ps) => ps.map((p, k) => (k === i ? { ...p, ...patch } : p)));
   const applyTemplate = (t: PlanType) => { setType(t); setPhases(TEMPLATES[t].map((p) => ({ ...p }))); };
@@ -53,8 +55,8 @@ export const TrainerPlanCreate: React.FC = () => {
     setBusy(true);
     try {
       const d = startDate.split('-').reverse().join('/');
-      const plan = await trainerApi.createPlan({ horseId, type, goal: goal.trim(), startDate: d, phases: phases.map((p, i) => ({ ...p, name: p.name.trim(), no: i + 1 })) }, actor);
-      toast(`Đã tạo giáo án ${plan.id} cho ${plan.horseName}.`);
+      const plan = await trainerApi.createPlan({ horseId, name: name.trim(), type, goal: goal.trim(), startDate: d, phases: phases.map((p, i) => ({ ...p, name: p.name.trim(), no: i + 1 })) }, actor);
+      toast(`Đã tạo giáo án ${plan.id} “${plan.name}” cho ${plan.horseName}.`);
       navigate('/trainer/plans');
     } catch (err) {
       setServerError((err as ApiError).message ?? 'Tạo giáo án thất bại.');
@@ -75,8 +77,17 @@ export const TrainerPlanCreate: React.FC = () => {
 
       <div className="ht-cols">
         <div>
-          <Panel title="Ngựa & mục tiêu">
+          <Panel title="Thông tin giáo án">
             <div className="ht-panel__body">
+              <div className="ht-field">
+                <div className="ht-field__top">
+                  <label className="ht-label" htmlFor="plan-name">Tên giáo án<span className="ht-req">*</span></label>
+                  <span className="ht-counter" data-ok={name.trim().length >= 5 && name.trim().length <= 80}>{name.trim().length}/80</span>
+                </div>
+                <input id="plan-name" className="ht-input" value={name} maxLength={80} onChange={(e) => setName(e.target.value)}
+                  placeholder="VD: Giáo án tăng sức bền cự ly dài" aria-invalid={(tried && !!errors.name) || undefined} />
+                {fieldError(errors.name)}
+              </div>
               <div className="ht-grid-2">
                 <div className="ht-field">
                   <label className="ht-label" htmlFor="horse">Ngựa<span className="ht-req">*</span></label>
@@ -92,7 +103,7 @@ export const TrainerPlanCreate: React.FC = () => {
                 </div>
               </div>
               {horse && <div style={{ margin: '-4px 0 16px' }}><HorseBadges horse={horse} /></div>}
-              {running && !block && <Callout tone="demo" icon="warn" style={{ marginBottom: 16 }}>{horse?.name} đang có giáo án <b className="ht-mono">{running.id}</b> ({running.type}). Lưu giáo án mới sẽ chuyển giáo án cũ sang “Đã thay thế”.</Callout>}
+              {running && !block && <Callout tone="demo" icon="warn" style={{ marginBottom: 16 }}>{horse?.name} đang có giáo án <b className="ht-mono">{running.id}</b> “{running.name}”. Lưu giáo án mới sẽ chuyển giáo án cũ sang “Đã thay thế”.</Callout>}
 
               <div className="ht-field">
                 <span className="ht-label">Loại giáo án</span>
@@ -121,7 +132,7 @@ export const TrainerPlanCreate: React.FC = () => {
           </Panel>
         </div>
 
-        <div><PlanSummary horse={horse} type={type} startDate={startDate} phases={phases} busy={busy} disabled={tried && !valid} block={block} /></div>
+        <div><PlanSummary name={name.trim()} horse={horse} type={type} startDate={startDate} phases={phases} busy={busy} disabled={tried && !valid} block={block} /></div>
       </div>
     </form>
   );

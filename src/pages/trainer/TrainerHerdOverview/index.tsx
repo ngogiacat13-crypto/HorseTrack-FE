@@ -102,7 +102,7 @@ export const TrainerHerdOverview: React.FC = () => {
                     <span>
                       KH:{' '}
                       {h.trainingLocked ? <b style={{ color: 'var(--danger-ink)' }}>Tạm dừng do khóa tập</b>
-                        : plan ? <b>{plan.type} · Giai đoạn {plan.currentPhase}{plan.status === 'PAUSED' && <span style={{ color: 'var(--warning-ink)' }}> · tạm dừng</span>}</b>
+                        : plan ? <b title={plan.name}>{plan.type} · Giai đoạn {plan.currentPhase}{plan.status === 'PAUSED' && <span style={{ color: 'var(--warning-ink)' }}> · tạm dừng</span>}</b>
                         : <i>Chưa có giáo án</i>}
                     </span>
                   </div>

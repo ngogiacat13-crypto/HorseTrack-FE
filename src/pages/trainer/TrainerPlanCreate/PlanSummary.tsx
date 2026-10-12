@@ -5,7 +5,7 @@ import { Badge, Busy, Callout, Panel } from '../../../components/ui/Ht';
 import type { PhaseDraft, PlanType } from './templates';
 
 /** Totals + submit button. The submit button belongs to the page form (type="submit"). */
-export const PlanSummary: React.FC<{ horse?: Horse; type: PlanType; startDate: string; phases: PhaseDraft[]; busy: boolean; disabled: boolean; block: string | null }> = ({ horse, type, startDate, phases, busy, disabled, block }) => {
+export const PlanSummary: React.FC<{ name: string; horse?: Horse; type: PlanType; startDate: string; phases: PhaseDraft[]; busy: boolean; disabled: boolean; block: string | null }> = ({ name, horse, type, startDate, phases, busy, disabled, block }) => {
   const totalWeeks = phases.reduce((s, p) => s + (p.weeks || 0), 0);
   const totalSessions = phases.reduce((s, p) => s + (p.weeks || 0) * (p.sessionsPerWeek || 0), 0);
   return (
@@ -13,6 +13,7 @@ export const PlanSummary: React.FC<{ horse?: Horse; type: PlanType; startDate: s
       <Panel as="h3" title="Tóm tắt giáo án">
         <div className="ht-panel__body">
           <dl className="ht-kv">
+            <dt>Tên giáo án</dt><dd>{name || <i style={{ color: 'var(--muted)', fontWeight: 400 }}>chưa đặt tên</i>}</dd>
             <dt>Ngựa</dt><dd>{horse ? horse.name : '—'}</dd>
             <dt>Loại</dt><dd>{type}</dd>
             <dt>Bắt đầu</dt><dd className="ht-mono">{startDate.split('-').reverse().join('/')}</dd>

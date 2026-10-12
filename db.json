@@ -2291,6 +2291,7 @@
       "id": "KH-0012",
       "horseId": "h-galaxy",
       "horseName": "Galaxy",
+      "name": "Giáo án tăng sức bền · Galaxy",
       "type": "Sức bền",
       "phases": [
         {
@@ -2333,6 +2334,7 @@
       "id": "KH-0011",
       "horseId": "h-storm",
       "horseName": "Storm",
+      "name": "Giáo án tăng sức bền · Storm",
       "type": "Sức bền",
       "phases": [
         {
@@ -2375,6 +2377,7 @@
       "id": "KH-0013",
       "horseId": "h-bolt",
       "horseName": "Bolt",
+      "name": "Giáo án bứt tốc · Bolt",
       "type": "Tốc độ",
       "phases": [
         {
@@ -2416,6 +2419,7 @@
       "id": "KH-0014",
       "horseId": "h-thunder",
       "horseName": "Thunder",
+      "name": "Giáo án tăng sức bền · Thunder",
       "type": "Sức bền",
       "phases": [
         {
@@ -2457,6 +2461,7 @@
       "id": "KH-0015",
       "horseId": "h-star",
       "horseName": "Star",
+      "name": "Giáo án phục hồi thể lực · Star",
       "type": "Phục hồi",
       "phases": [
         {
@@ -2489,6 +2494,7 @@
       "id": "KH-0010",
       "horseId": "h-flash",
       "horseName": "Flash",
+      "name": "Giáo án bứt tốc · Flash",
       "type": "Tốc độ",
       "phases": [
         {
@@ -2530,6 +2536,7 @@
       "id": "KH-0009",
       "horseId": "h-spirit",
       "horseName": "Spirit",
+      "name": "Giáo án tăng sức bền · Spirit",
       "type": "Sức bền",
       "phases": [
         {
@@ -2571,6 +2578,7 @@
       "id": "KH-0016",
       "horseId": "h-comet",
       "horseName": "Comet",
+      "name": "Giáo án tăng sức bền · Comet",
       "type": "Sức bền",
       "phases": [
         {
@@ -2612,6 +2620,7 @@
       "id": "KH-0017",
       "horseId": "h-lightning",
       "horseName": "Lightning",
+      "name": "Giáo án bứt tốc · Lightning",
       "type": "Tốc độ",
       "phases": [
         {
@@ -2653,6 +2662,7 @@
       "id": "KH-0008",
       "horseId": "h-galaxy",
       "horseName": "Galaxy",
+      "name": "Giáo án phục hồi thể lực · Galaxy",
       "type": "Phục hồi",
       "phases": [
         {

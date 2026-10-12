@@ -48,7 +48,7 @@ export const TrainerPlans: React.FC = () => {
         <div>
           <Panel>
             <table className="ht-table">
-              <thead><tr><th>Mã</th><th>Ngựa</th><th>Loại · mục tiêu</th><th>Tiến độ</th><th>Giai đoạn hiện tại</th><th>Trạng thái</th></tr></thead>
+              <thead><tr><th>Mã</th><th>Ngựa</th><th>Tên giáo án</th><th>Tiến độ</th><th>Giai đoạn hiện tại</th><th>Trạng thái</th></tr></thead>
               <tbody>
                 {list.map((p) => {
                   const ph = p.phases.find((x) => x.no === p.currentPhase);
@@ -56,7 +56,7 @@ export const TrainerPlans: React.FC = () => {
                     <tr key={p.id}>
                       <td className="id">{p.id}</td>
                       <td><Link className="strong" to={`/trainer/horses/${p.horseId}`}>{p.horseName}</Link><span className="sub">từ <span className="ht-mono">{p.startDate}</span></span></td>
-                      <td><span className="strong">{p.type}</span><span className="sub">{p.goal}</span></td>
+                      <td><span className="strong">{p.name}</span><span className="sub">{p.type} · {p.goal}</span></td>
                       <td style={{ minWidth: 140 }}><PhaseBar phases={p.phases} current={p.currentPhase} /><span className="sub">GĐ {p.currentPhase}/{p.phases.length} · tuần {p.week}</span></td>
                       <td>{ph ? <>{ph.name}<span className="sub">{ph.intensity} · {ph.distanceM} m · ≤ {ph.hrLimit} bpm</span></> : '—'}</td>
                       <td><Badge tone={PLAN_LABEL[p.status][1]}>{PLAN_LABEL[p.status][0]}</Badge>{p.pausedReason && <span className="sub" style={{ maxWidth: 220 }}>{p.pausedReason}</span>}</td>
