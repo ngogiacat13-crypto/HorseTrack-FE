@@ -1,53 +1,81 @@
-import React from 'react';
-import { Container, Card, Table, Alert } from 'react-bootstrap';
-import { MOCK_INVOICES } from '../../../api/mockData';
-import { StatusBadge } from '../../../components/ui/StatusBadge';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { invoiceLabel, ownerApi, POLICY, type InvoiceDue } from '../../../api/ownerApi';
+import { useActor } from '../../../auth/AuthContext';
+import { useFetch } from '../../../hooks/useFetch';
+import { PATH, toPath } from '../../../routers/routerPath';
+import { Icon } from '../../../components/ui/Icon';
+import { Badge, money, PageHeader, Panel, StatCard, Tabs } from '../../../components/ui/Ht';
+import { LoadState } from '../../../components/trainer/TrainerParts';
 
+type Tab = 'ALL' | InvoiceDue['group'];
+
+/* 2.1 Danh sách hóa đơn — Chờ thanh toán / Đã thanh toán / Quá hạn / Đình chỉ · 2.5 cảnh báo quá hạn (BR_12, BR_13) */
 export const OwnerInvoices: React.FC = () => {
-  return (
-    <Container fluid>
-      <nav className="page-tabs mb-3"><span>Ngựa của tôi</span><span>Giải đua</span><span className="active">Hóa đơn</span><span>Bảng kê chi phí</span></nav>
-      <Alert variant="danger" className="d-flex align-items-center mb-4 border-0 shadow-sm">
-        <span className="fs-4 me-3">⚠️</span>
-        <div><strong>HỢP ĐỒNG ĐÌNH CHỈ</strong> — Vui lòng thanh toán để khôi phục dịch vụ. Bạn vẫn có thể xem hóa đơn và thanh toán.</div>
-      </Alert>
+  const actor = useActor();
+  const { data, loading, error, reload } = useFetch(() => ownerApi.getMyInvoices(actor), [actor]);
+  const [tab, setTab] = useState<Tab>('ALL');
+  if (!data) return <LoadState loading={loading} error={error} onRetry={reload} />;
 
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <div><h2 className="fw-bold mb-1" style={{ color: '#1B4332' }}>Hóa đơn của tôi</h2><p className="text-muted small mb-0">Lịch sử hóa đơn và trạng thái thanh toán của ngựa.</p></div>
+  const rows = data.invoices.filter((x) => tab === 'ALL' || x.due.group === tab);
+  const count = (g: InvoiceDue['group']) => data.invoices.filter((x) => x.due.group === g).length;
+  const open = data.invoices.filter((x) => x.due.group !== 'PAID');
+  const owed = open.reduce((s, x) => s + x.due.total, 0);
+  const late = data.invoices.filter((x) => x.due.group === 'OVERDUE' || x.due.group === 'SUSPENDED');
+  const pending = data.payments.filter((p) => p.status === 'PENDING_VERIFY');
+
+  return (
+    <div className="ht ht-page">
+      <PageHeader title="Hóa đơn" sub={`Dịch vụ huấn luyện, lưu chuồng và y tế cho ngựa của ${actor.name}`} />
+      {late.map(({ invoice: i, due }) => (
+        <div key={i.id} className="ht-banner" role="alert">
+          <Icon name={due.group === 'SUSPENDED' ? 'lock' : 'alarm'} />
+          <div>
+            <b>{i.id} · {i.horse} — {due.group === 'SUSPENDED' ? 'dịch vụ đang bị đình chỉ' : `quá hạn ${due.overdueDays} ngày`}</b>
+            <p>{due.group === 'SUSPENDED'
+              ? `Cần tất toán nợ + phạt + phí kích hoạt lại ${money(POLICY.reactivationFee)} (BR_14); Quản lý CLB xác nhận rồi mới mở lại.`
+              : due.penalty > 0 ? `Đã quá ${POLICY.graceDays} ngày ân hạn — phát sinh phí phạt ${money(due.penalty)} (BR_12). Đạt ${POLICY.suspendDays} ngày có thể bị đình chỉ dịch vụ (BR_13), còn ${Math.max(0, POLICY.suspendDays - due.overdueDays)} ngày.`
+                : `Trong ${POLICY.graceDays} ngày ân hạn — chưa tính phí phạt.`}</p>
+          </div>
+          <Link className="ht-more" to={toPath(PATH.owner.invoice, { id: i.id })}>Thanh toán <Icon name="arrow" /></Link>
+        </div>
+      ))}
+
+      <div className="ht-stats">
+        <StatCard icon="receipt" tone="brand" value={money(owed)} label="Tổng phải trả" meta={`${open.length} hóa đơn chưa thanh toán`} />
+        <StatCard icon="alarm" tone="danger" value={late.length} label="Quá hạn / đình chỉ" alert={late.length > 0} />
+        <StatCard icon="clock" tone="warning" value={pending.length} label="Giao dịch chờ xác minh" />
+        <StatCard icon="check" tone="info" value={count('PAID')} label="Đã thanh toán" />
       </div>
 
-      <Card className="shadow-sm border-0">
-        <Card.Body className="p-0">
-          <Table hover responsive className="mb-0 align-middle">
-            <thead style={{ backgroundColor: '#F8F9FA' }}>
-              <tr>
-                <th>Mã hóa đơn</th>
-                <th>Ngựa</th>
-                <th>Số tiền</th>
-                <th>Hạn thanh toán</th>
-                <th>Trạng thái</th>
-                <th>Thao tác</th>
-              </tr>
-            </thead>
+      <Tabs<Tab> value={tab} onChange={setTab} items={[
+        { value: 'ALL', label: 'Tất cả', count: data.invoices.length }, { value: 'UNPAID', label: 'Chờ thanh toán', count: count('UNPAID') },
+        { value: 'OVERDUE', label: 'Quá hạn', count: count('OVERDUE') }, { value: 'SUSPENDED', label: 'Đình chỉ', count: count('SUSPENDED') }, { value: 'PAID', label: 'Đã thanh toán', count: count('PAID') },
+      ]} />
+      <Panel>
+        <div style={{ overflowX: 'auto' }}>
+          <table className="ht-table">
+            <thead><tr><th>Hóa đơn</th><th>Ngựa</th><th>Kỳ</th><th>Hạn thanh toán</th><th style={{ textAlign: 'right' }}>Số tiền</th><th style={{ textAlign: 'right' }}>Phải trả</th><th>Trạng thái</th><th /></tr></thead>
             <tbody>
-              {MOCK_INVOICES.map((inv) => (
-                <tr key={inv.id}>
-                  <td className="fw-bold" style={{ fontFamily: 'Roboto Mono, monospace' }}>{inv.id}</td>
-                  <td>{inv.horseName}</td>
-                  <td className="fw-semibold">{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(inv.amount)}</td>
-                  <td>{inv.dueDate}</td>
-                  <td><StatusBadge status={inv.status} /></td>
-                  <td>
-                    <Link to={`/owner/invoices/${inv.id}`} className="btn btn-sm btn-outline-primary me-2">Chi tiết</Link>
-                    <Link to={`/owner/vnpay?invoice=${inv.id}`} className={`btn btn-sm btn-primary${inv.status === 'Paid' ? ' disabled' : ''}`} aria-disabled={inv.status === 'Paid'} onClick={inv.status === 'Paid' ? (event) => event.preventDefault() : undefined}>Thanh toán</Link>
-                  </td>
-                </tr>
-              ))}
+              {rows.map(({ invoice: i, due }) => {
+                const [label, tone] = invoiceLabel(i);
+                return (
+                  <tr key={i.id}>
+                    <td className="ht-mono">{i.id}</td><td><b>{i.horse}</b><div style={{ fontSize: 12, color: 'var(--muted)' }}>{i.service}</div></td>
+                    <td className="ht-mono">{i.period}</td>
+                    <td className="ht-mono">{i.dueDate}{due.overdueDays > 0 && <div style={{ fontSize: 12, color: 'var(--danger)' }}>quá {due.overdueDays} ngày</div>}</td>
+                    <td className="ht-mono" style={{ textAlign: 'right' }}>{money(i.amount)}</td>
+                    <td className="ht-mono" style={{ textAlign: 'right', fontWeight: 600 }}>{due.group === 'PAID' ? '—' : money(due.total)}</td>
+                    <td><Badge tone={tone}>{label}</Badge></td>
+                    <td><Link className="ht-more" to={toPath(PATH.owner.invoice, { id: i.id })}>{due.group === 'PAID' ? 'Xem' : 'Thanh toán'} <Icon name="arrow" /></Link></td>
+                  </tr>
+                );
+              })}
+              {rows.length === 0 && <tr><td colSpan={8} className="ht-empty">Không có hóa đơn.</td></tr>}
             </tbody>
-          </Table>
-        </Card.Body>
-      </Card>
-    </Container>
+          </table>
+        </div>
+      </Panel>
+    </div>
   );
 };

@@ -1,5 +1,6 @@
 /* Every URL of the app in one place. Use these instead of hard-coded strings in routes and menus. */
 export const PATH = {
+  landing: '/',
   login: '/login',
   register: '/register',
   forgotPassword: '/forgot-password',
@@ -40,8 +41,26 @@ export const PATH = {
     vaccinations: '/vet/vaccinations',
     raceExams: '/vet/race-exams',
   },
-  groom: { home: '/groom', stable: '/groom/stable' },
-  owner: { home: '/owner', horses: '/owner/horses' },
+  groom: {
+    home: '/groom',
+    stable: '/groom/stable',
+    sessions: '/groom/sessions',
+    session: '/groom/sessions/:id',
+    incidents: '/groom/incidents',
+    requests: '/groom/requests',
+  },
+  owner: {
+    home: '/owner',
+    horse: '/owner/horses/:id',
+    races: '/owner/races',
+    invoices: '/owner/invoices',
+    invoice: '/owner/invoices/:id',
+    payments: '/owner/payments',
+    registrations: '/owner/registrations',
+    registrationCreate: '/owner/registrations/new',
+  },
+  /** VNPay sandbox MOCK — full-page, outside the app layout. */
+  vnpay: '/payment/vnpay/:id',
   warehouse: {
     home: '/warehouse',
     medical: '/warehouse/medical',

@@ -1817,7 +1817,24 @@
       "amount": 15000000,
       "overdueDays": 28,
       "status": "SUSPENDED",
-      "suspendedSince": "30/09"
+      "suspendedSince": "30/09",
+      "horseId": "h-galaxy",
+      "issuedAt": "01/09/2026",
+      "service": "Huấn luyện · lưu chuồng",
+      "lines": [
+        {
+          "label": "Huấn luyện — Galaxy",
+          "kind": "TRAIN",
+          "period": "08/2026",
+          "amount": 9000000
+        },
+        {
+          "label": "Lưu chuồng · chăm sóc hằng ngày",
+          "kind": "STABLE",
+          "period": "08/2026",
+          "amount": 6000000
+        }
+      ]
     },
     {
       "id": "INV-0038",
@@ -1827,7 +1844,24 @@
       "dueDate": "07/09/2026",
       "amount": 9000000,
       "overdueDays": 26,
-      "status": "OVERDUE"
+      "status": "OVERDUE",
+      "horseId": "h-bolt",
+      "issuedAt": "01/09/2026",
+      "service": "Huấn luyện · lưu chuồng",
+      "lines": [
+        {
+          "label": "Huấn luyện — Bolt",
+          "kind": "TRAIN",
+          "period": "08/2026",
+          "amount": 5400000
+        },
+        {
+          "label": "Lưu chuồng · chăm sóc hằng ngày",
+          "kind": "STABLE",
+          "period": "08/2026",
+          "amount": 3600000
+        }
+      ]
     },
     {
       "id": "INV-0047",
@@ -1837,7 +1871,30 @@
       "dueDate": "10/09/2026",
       "amount": 6000000,
       "overdueDays": 23,
-      "status": "OVERDUE"
+      "status": "OVERDUE",
+      "horseId": "h-storm",
+      "issuedAt": "01/09/2026",
+      "service": "Huấn luyện · lưu chuồng · y tế",
+      "lines": [
+        {
+          "label": "Huấn luyện — Storm",
+          "kind": "TRAIN",
+          "period": "09/2026",
+          "amount": 2700000
+        },
+        {
+          "label": "Lưu chuồng · chăm sóc hằng ngày",
+          "kind": "STABLE",
+          "period": "09/2026",
+          "amount": 1800000
+        },
+        {
+          "label": "Phác đồ PD-0010 · Storm (viêm gân GĐ1)",
+          "kind": "MED",
+          "period": "09/2026",
+          "amount": 1500000
+        }
+      ]
     },
     {
       "id": "INV-0049",
@@ -1847,7 +1904,30 @@
       "dueDate": "01/10/2026",
       "amount": 12500000,
       "overdueDays": 2,
-      "status": "OVERDUE"
+      "status": "OVERDUE",
+      "horseId": "h-star",
+      "issuedAt": "01/10/2026",
+      "service": "Huấn luyện · lưu chuồng · y tế",
+      "lines": [
+        {
+          "label": "Huấn luyện — Star",
+          "kind": "TRAIN",
+          "period": "09/2026",
+          "amount": 6000000
+        },
+        {
+          "label": "Lưu chuồng · chăm sóc hằng ngày",
+          "kind": "STABLE",
+          "period": "09/2026",
+          "amount": 4000000
+        },
+        {
+          "label": "Phác đồ PD-0008 · Star",
+          "kind": "MED",
+          "period": "09/2026",
+          "amount": 2500000
+        }
+      ]
     },
     {
       "id": "INV-0035",
@@ -1858,7 +1938,24 @@
       "amount": 11000000,
       "overdueDays": 0,
       "status": "REACTIVATION_PENDING",
-      "paidRef": "TXN-00061 · 02/10"
+      "paidRef": "TXN-00035",
+      "horseId": "h-comet",
+      "issuedAt": "01/08/2026",
+      "service": "Huấn luyện · lưu chuồng",
+      "lines": [
+        {
+          "label": "Huấn luyện — Comet",
+          "kind": "TRAIN",
+          "period": "07/2026",
+          "amount": 6600000
+        },
+        {
+          "label": "Lưu chuồng · chăm sóc hằng ngày",
+          "kind": "STABLE",
+          "period": "07/2026",
+          "amount": 4400000
+        }
+      ]
     },
     {
       "id": "INV-0051",
@@ -1869,7 +1966,24 @@
       "amount": 8000000,
       "overdueDays": 0,
       "status": "UNPAID",
-      "dueInDays": 7
+      "dueInDays": 7,
+      "horseId": "h-arrow",
+      "issuedAt": "01/10/2026",
+      "service": "Huấn luyện · lưu chuồng",
+      "lines": [
+        {
+          "label": "Huấn luyện — Arrow",
+          "kind": "TRAIN",
+          "period": "09/2026",
+          "amount": 4800000
+        },
+        {
+          "label": "Lưu chuồng · chăm sóc hằng ngày",
+          "kind": "STABLE",
+          "period": "09/2026",
+          "amount": 3200000
+        }
+      ]
     },
     {
       "id": "INV-0050",
@@ -1880,7 +1994,86 @@
       "amount": 7500000,
       "overdueDays": 0,
       "status": "PAID",
-      "paidRef": "TXN-00052 · 08/09"
+      "paidRef": "TXN-00050",
+      "horseId": "h-flash",
+      "issuedAt": "01/09/2026",
+      "service": "Huấn luyện · lưu chuồng",
+      "lines": [
+        {
+          "label": "Huấn luyện — Flash",
+          "kind": "TRAIN",
+          "period": "09/2026",
+          "amount": 4500000
+        },
+        {
+          "label": "Lưu chuồng · chăm sóc hằng ngày",
+          "kind": "STABLE",
+          "period": "09/2026",
+          "amount": 3000000
+        }
+      ]
+    },
+    {
+      "id": "INV-0039",
+      "horse": "Thunder",
+      "owner": "Hoàng Thị Lan",
+      "period": "08/2026",
+      "dueDate": "10/09/2026",
+      "amount": 9200000,
+      "overdueDays": 0,
+      "status": "PAID",
+      "paidRef": "TXN-00039",
+      "horseId": "h-thunder",
+      "issuedAt": "01/09/2026",
+      "service": "Huấn luyện · lưu chuồng · y tế",
+      "lines": [
+        {
+          "label": "Huấn luyện — Thunder",
+          "kind": "TRAIN",
+          "period": "08/2026",
+          "amount": 5100000
+        },
+        {
+          "label": "Lưu chuồng · chăm sóc hằng ngày",
+          "kind": "STABLE",
+          "period": "08/2026",
+          "amount": 3400000
+        },
+        {
+          "label": "Tiêm phòng cúm ngựa · Thunder",
+          "kind": "MED",
+          "period": "08/2026",
+          "amount": 700000
+        }
+      ]
+    },
+    {
+      "id": "INV-0052",
+      "horse": "Spirit",
+      "owner": "Hoàng Thị Lan",
+      "period": "09/2026",
+      "dueDate": "10/10/2026",
+      "amount": 10500000,
+      "overdueDays": 0,
+      "status": "UNPAID",
+      "dueInDays": 7,
+      "horseId": "h-spirit",
+      "issuedAt": "01/10/2026",
+      "service": "Huấn luyện · lưu chuồng",
+      "lines": [
+        {
+          "label": "Huấn luyện — Spirit",
+          "kind": "TRAIN",
+          "period": "09/2026",
+          "amount": 6300000
+        },
+        {
+          "label": "Lưu chuồng · chăm sóc hằng ngày",
+          "kind": "STABLE",
+          "period": "09/2026",
+          "amount": 4200000
+        }
+      ]
     }
   ],
   "auditLogs": [
@@ -2269,7 +2462,41 @@
           "tone": "success"
         }
       ],
-      "medicalDiet": null
+      "medicalDiet": null,
+      "raceResults": [
+        {
+          "date": "14/09/2026",
+          "race": "Cúp Phú Thọ mùa thu 2026",
+          "distance": "1600 m",
+          "rank": 2,
+          "field": 10,
+          "time": "1:38.42"
+        },
+        {
+          "date": "20/07/2026",
+          "race": "Giải Đại Nam mùa hè",
+          "distance": "1400 m",
+          "rank": 1,
+          "field": 9,
+          "time": "1:24.10"
+        },
+        {
+          "date": "11/05/2026",
+          "race": "Giải Mở rộng Bình Dương",
+          "distance": "1200 m",
+          "rank": 3,
+          "field": 12,
+          "time": "1:12.55"
+        },
+        {
+          "date": "02/03/2026",
+          "race": "Giải khai xuân Phú Thọ",
+          "distance": "1200 m",
+          "rank": 5,
+          "field": 11,
+          "time": "1:13.30"
+        }
+      ]
     },
     {
       "id": "h-storm",
@@ -2345,7 +2572,25 @@
         "evening": "2 kg cám + 1 kg cỏ khô",
         "special": "Bột nghệ chống viêm 30 g/ngày",
         "note": "Giảm năng lượng trong thời gian khóa tập."
-      }
+      },
+      "raceResults": [
+        {
+          "date": "14/09/2026",
+          "race": "Cúp Phú Thọ mùa thu 2026",
+          "distance": "1600 m",
+          "rank": 6,
+          "field": 10,
+          "time": "1:40.12"
+        },
+        {
+          "date": "20/07/2026",
+          "race": "Giải Đại Nam mùa hè",
+          "distance": "1400 m",
+          "rank": 2,
+          "field": 9,
+          "time": "1:24.45"
+        }
+      ]
     },
     {
       "id": "h-bolt",
@@ -2375,7 +2620,17 @@
           "tone": "warning"
         }
       ],
-      "medicalDiet": null
+      "medicalDiet": null,
+      "raceResults": [
+        {
+          "date": "13/07/2026",
+          "race": "Giải Đại Nam mùa hè",
+          "distance": "1400 m",
+          "rank": 7,
+          "field": 9,
+          "time": "1:26.40"
+        }
+      ]
     },
     {
       "id": "h-thunder",
@@ -2394,7 +2649,25 @@
       "lock": null,
       "injuries": [],
       "medicalHistory": [],
-      "medicalDiet": null
+      "medicalDiet": null,
+      "raceResults": [
+        {
+          "date": "27/07/2026",
+          "race": "Giải Đại Nam mùa hè",
+          "distance": "1400 m",
+          "rank": 4,
+          "field": 9,
+          "time": "1:25.02"
+        },
+        {
+          "date": "18/05/2026",
+          "race": "Giải Tam Đảo",
+          "distance": "1600 m",
+          "rank": 2,
+          "field": 8,
+          "time": "1:39.88"
+        }
+      ]
     },
     {
       "id": "h-star",
@@ -2419,7 +2692,17 @@
           "tone": "warning"
         }
       ],
-      "medicalDiet": null
+      "medicalDiet": null,
+      "raceResults": [
+        {
+          "date": "01/06/2026",
+          "race": "Giải tân binh Phú Thọ",
+          "distance": "1000 m",
+          "rank": 4,
+          "field": 10,
+          "time": "1:00.85"
+        }
+      ]
     },
     {
       "id": "h-flash",
@@ -2438,7 +2721,33 @@
       "lock": null,
       "injuries": [],
       "medicalHistory": [],
-      "medicalDiet": null
+      "medicalDiet": null,
+      "raceResults": [
+        {
+          "date": "24/08/2026",
+          "race": "Giải nước rút Long An",
+          "distance": "1000 m",
+          "rank": 1,
+          "field": 8,
+          "time": "0:58.90"
+        },
+        {
+          "date": "15/06/2026",
+          "race": "Giải Mở rộng Bình Dương",
+          "distance": "1200 m",
+          "rank": 3,
+          "field": 12,
+          "time": "1:12.80"
+        },
+        {
+          "date": "06/04/2026",
+          "race": "Giải khai xuân Phú Thọ",
+          "distance": "1200 m",
+          "rank": 2,
+          "field": 11,
+          "time": "1:12.95"
+        }
+      ]
     },
     {
       "id": "h-wind",
@@ -2505,7 +2814,17 @@
       "lock": null,
       "injuries": [],
       "medicalHistory": [],
-      "medicalDiet": null
+      "medicalDiet": null,
+      "raceResults": [
+        {
+          "date": "10/08/2026",
+          "race": "Giải tân binh Phú Thọ",
+          "distance": "1000 m",
+          "rank": 1,
+          "field": 10,
+          "time": "0:59.70"
+        }
+      ]
     },
     {
       "id": "h-arrow",
@@ -2524,7 +2843,8 @@
       "lock": null,
       "injuries": [],
       "medicalHistory": [],
-      "medicalDiet": null
+      "medicalDiet": null,
+      "raceResults": []
     },
     {
       "id": "h-comet",
@@ -5702,6 +6022,38 @@
           "text": "gửi yêu cầu"
         }
       ]
+    },
+    {
+      "id": "RQ-0004",
+      "by": "Phạm Văn Toàn",
+      "zone": "Khu A",
+      "itemId": "VT-0058",
+      "item": "Dây dắt ngựa",
+      "unit": "sợi",
+      "qty": 2,
+      "reason": "Thay dụng cụ hỏng ở dãy chuồng A-01 — A-05.",
+      "at": "01/10 08:10",
+      "neededBy": "03/10/2026",
+      "status": "ISSUED",
+      "issued": {
+        "qty": 2,
+        "to": "Phạm Văn Toàn",
+        "at": "03/10 08:05",
+        "by": "Trần Văn Kho"
+      },
+      "history": [
+        {
+          "at": "03/10 08:05",
+          "who": "Trần Văn Kho",
+          "text": "cấp phát 2 sợi cho Phạm Văn Toàn",
+          "tone": "success"
+        },
+        {
+          "at": "01/10 08:10",
+          "who": "Phạm Văn Toàn",
+          "text": "gửi yêu cầu"
+        }
+      ]
     }
   ],
   "stockTx": [
@@ -5837,6 +6189,340 @@
           "reason": ""
         }
       ]
+    }
+  ],
+  "tasks": [
+    {
+      "id": "TK-0301",
+      "date": "03/10/2026",
+      "groom": "Phạm Văn Toàn",
+      "zone": "Khu A",
+      "type": "FEED",
+      "title": "Cho ăn sáng",
+      "horseId": "h-galaxy",
+      "horse": "Galaxy",
+      "stall": "A-01",
+      "time": "06:00",
+      "sla": "06:45",
+      "status": "TODO",
+      "doneAt": null,
+      "note": "",
+      "photo": null,
+      "instructions": [
+        "Cho ăn sau khi kiểm tra nước uống.",
+        "Ghi lại nếu ngựa bỏ dở khẩu phần."
+      ],
+      "diet": "3 kg cám + 2 kg cỏ khô"
+    },
+    {
+      "id": "TK-0302",
+      "date": "03/10/2026",
+      "groom": "Phạm Văn Toàn",
+      "zone": "Khu A",
+      "type": "CLEAN",
+      "title": "Dọn chuồng",
+      "horseId": "h-storm",
+      "horse": "Storm",
+      "stall": "A-02",
+      "time": "06:15",
+      "sla": "07:00",
+      "status": "TODO",
+      "doneAt": null,
+      "note": "",
+      "photo": null,
+      "instructions": [
+        "Thay lớp lót bẩn, thu gom vào vị trí quy định.",
+        "Làm sạch máng ăn và kiểm tra nước uống.",
+        "Giữ lối đi khô, không để vật tư cản cửa chuồng."
+      ],
+      "warning": "Storm đang khóa huấn luyện (chấn thương chân trước). Khẩu phần do Bác sĩ kiểm soát — chỉ xem, không chỉnh sửa."
+    },
+    {
+      "id": "TK-0303",
+      "date": "03/10/2026",
+      "groom": "Phạm Văn Toàn",
+      "zone": "Khu A",
+      "type": "GROOM",
+      "title": "Chải lông",
+      "horseId": "h-bolt",
+      "horse": "Bolt",
+      "stall": "A-03",
+      "time": "06:30",
+      "sla": "07:15",
+      "status": "DONE",
+      "doneAt": "06:28",
+      "note": "Lông mượt, không phát hiện vết xước.",
+      "photo": null,
+      "instructions": []
+    },
+    {
+      "id": "TK-0304",
+      "date": "03/10/2026",
+      "groom": "Phạm Văn Toàn",
+      "zone": "Khu A",
+      "type": "FEED",
+      "title": "Cho ăn trưa",
+      "horseId": "h-storm",
+      "horse": "Storm",
+      "stall": "A-02",
+      "time": "11:30",
+      "sla": "12:15",
+      "status": "TODO",
+      "doneAt": null,
+      "note": "",
+      "photo": null,
+      "instructions": [
+        "Theo khẩu phần y tế của Bác sĩ — có bột nghệ chống viêm."
+      ],
+      "medicalDiet": true
+    },
+    {
+      "id": "TK-0305",
+      "date": "03/10/2026",
+      "groom": "Phạm Văn Toàn",
+      "zone": "Khu A",
+      "type": "FEED",
+      "title": "Cho ăn chiều",
+      "horseId": "h-bolt",
+      "horse": "Bolt",
+      "stall": "A-03",
+      "time": "12:00",
+      "sla": "12:45",
+      "status": "TODO",
+      "doneAt": null,
+      "note": "",
+      "photo": null,
+      "instructions": [],
+      "diet": "2 kg cám + 1 kg cỏ khô"
+    },
+    {
+      "id": "TK-0306",
+      "date": "03/10/2026",
+      "groom": "Phạm Văn Toàn",
+      "zone": "Khu A",
+      "type": "COOL",
+      "title": "Chườm lạnh",
+      "horseId": "h-galaxy",
+      "horse": "Galaxy",
+      "stall": "A-01",
+      "time": "14:00",
+      "sla": "14:45",
+      "status": "TODO",
+      "doneAt": null,
+      "note": "",
+      "photo": null,
+      "instructions": [
+        "Chườm lạnh chân trước 15 phút.",
+        "Chỉ thực hiện theo chỉ định Bác sĩ."
+      ],
+      "warning": "Liên quan phiên tập S-0023 đã dừng do vượt ngưỡng."
+    },
+    {
+      "id": "TK-0307",
+      "date": "03/10/2026",
+      "groom": "Phạm Văn Toàn",
+      "zone": "Khu A",
+      "type": "CLEAN",
+      "title": "Dọn chuồng",
+      "horseId": "h-galaxy",
+      "horse": "Galaxy",
+      "stall": "A-01",
+      "time": "05:45",
+      "sla": "06:30",
+      "status": "DONE",
+      "doneAt": "06:20",
+      "note": "Chuồng A-01, Galaxy nghỉ ngơi sau phiên dừng.",
+      "photo": null,
+      "instructions": []
+    },
+    {
+      "id": "TK-0311",
+      "date": "03/10/2026",
+      "groom": "Ngô Văn Sơn",
+      "zone": "Khu B",
+      "type": "FEED",
+      "title": "Cho ăn sáng",
+      "horseId": "h-thunder",
+      "horse": "Thunder",
+      "stall": "B-01",
+      "time": "06:00",
+      "sla": "06:45",
+      "status": "DONE",
+      "doneAt": "06:10",
+      "note": "",
+      "photo": null,
+      "instructions": [],
+      "diet": "3 kg cám + 2 kg cỏ khô"
+    },
+    {
+      "id": "TK-0312",
+      "date": "03/10/2026",
+      "groom": "Ngô Văn Sơn",
+      "zone": "Khu B",
+      "type": "GROOM",
+      "title": "Chải lông",
+      "horseId": "h-flash",
+      "horse": "Flash",
+      "stall": "B-02",
+      "time": "08:00",
+      "sla": "08:45",
+      "status": "DONE",
+      "doneAt": "09:45",
+      "note": "Làm muộn do hỗ trợ phiên tập của Flash.",
+      "photo": null,
+      "instructions": []
+    },
+    {
+      "id": "TK-0313",
+      "date": "03/10/2026",
+      "groom": "Ngô Văn Sơn",
+      "zone": "Khu B",
+      "type": "CLEAN",
+      "title": "Dọn chuồng cách ly",
+      "horseId": "h-wind",
+      "horse": "Wind",
+      "stall": "B-03",
+      "time": "07:30",
+      "sla": "08:15",
+      "status": "TODO",
+      "doneAt": null,
+      "note": "",
+      "photo": null,
+      "instructions": [
+        "Mặc đồ bảo hộ, dùng dụng cụ riêng của chuồng cách ly.",
+        "Khử trùng ủng trước khi rời chuồng."
+      ],
+      "warning": "Wind đang cách ly hô hấp — không dùng chung dụng cụ với chuồng khác."
+    },
+    {
+      "id": "TK-0314",
+      "date": "03/10/2026",
+      "groom": "Ngô Văn Sơn",
+      "zone": "Khu B",
+      "type": "FEED",
+      "title": "Cho ăn trưa",
+      "horseId": "h-spirit",
+      "horse": "Spirit",
+      "stall": "B-04",
+      "time": "13:00",
+      "sla": "13:45",
+      "status": "TODO",
+      "doneAt": null,
+      "note": "",
+      "photo": null,
+      "instructions": [],
+      "diet": "2 kg cám + 1,5 kg cỏ khô"
+    },
+    {
+      "id": "TK-0321",
+      "date": "03/10/2026",
+      "groom": "Đỗ Văn Cường",
+      "zone": "Khu C",
+      "type": "FEED",
+      "title": "Cho ăn sáng",
+      "horseId": "h-comet",
+      "horse": "Comet",
+      "stall": "C-01",
+      "time": "06:00",
+      "sla": "06:45",
+      "status": "DONE",
+      "doneAt": "06:05",
+      "note": "",
+      "photo": null,
+      "instructions": [],
+      "diet": "3 kg cám + 2 kg cỏ khô"
+    },
+    {
+      "id": "TK-0322",
+      "date": "03/10/2026",
+      "groom": "Đỗ Văn Cường",
+      "zone": "Khu C",
+      "type": "CLEAN",
+      "title": "Dọn chuồng",
+      "horseId": "h-lightning",
+      "horse": "Lightning",
+      "stall": "C-02",
+      "time": "07:00",
+      "sla": "07:45",
+      "status": "TODO",
+      "doneAt": null,
+      "note": "",
+      "photo": null,
+      "instructions": [
+        "Thay lớp lót, kiểm tra máng nước."
+      ]
+    },
+    {
+      "id": "TK-0323",
+      "date": "03/10/2026",
+      "groom": "Đỗ Văn Cường",
+      "zone": "Khu C",
+      "type": "GROOM",
+      "title": "Chải lông",
+      "horseId": "h-blaze",
+      "horse": "Blaze",
+      "stall": "C-03",
+      "time": "15:00",
+      "sla": "15:45",
+      "status": "TODO",
+      "doneAt": null,
+      "note": "",
+      "photo": null,
+      "instructions": []
+    }
+  ],
+  "payments": [
+    {
+      "id": "TXN-00035",
+      "invoiceId": "INV-0035",
+      "owner": "Lý Gia Hân",
+      "horse": "Comet",
+      "amount": 11000000,
+      "method": "VNPay",
+      "status": "VERIFIED",
+      "createdAt": "28/09 09:12",
+      "verifiedAt": "28/09 09:13",
+      "bankRef": "VNP14598321",
+      "note": "Tất toán nợ quá hạn"
+    },
+    {
+      "id": "TXN-00039",
+      "invoiceId": "INV-0039",
+      "owner": "Hoàng Thị Lan",
+      "horse": "Thunder",
+      "amount": 9200000,
+      "method": "VNPay",
+      "status": "VERIFIED",
+      "createdAt": "08/09 20:41",
+      "verifiedAt": "08/09 20:42",
+      "bankRef": "VNP14422107",
+      "note": ""
+    },
+    {
+      "id": "TXN-00050",
+      "invoiceId": "INV-0050",
+      "owner": "Đỗ Minh Quân",
+      "horse": "Flash",
+      "amount": 7500000,
+      "method": "VNPay",
+      "status": "VERIFIED",
+      "createdAt": "09/09 08:05",
+      "verifiedAt": "09/09 08:06",
+      "bankRef": "VNP14430958",
+      "note": ""
+    },
+    {
+      "id": "TXN-00057",
+      "invoiceId": "INV-0047",
+      "owner": "Đỗ Minh Quân",
+      "horse": "Storm",
+      "amount": 6000000,
+      "method": "VNPay",
+      "status": "FAILED",
+      "createdAt": "01/10 21:15",
+      "verifiedAt": null,
+      "bankRef": null,
+      "note": "Khách hủy giao dịch tại cổng VNPay"
     }
   ]
 }
