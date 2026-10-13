@@ -36,7 +36,7 @@ export interface ProtocolWatch {
   note: string;
   log: { tone?: 'danger' | 'warning' | 'success'; who: string; text: string; at: string }[];
 }
-export interface Shipment { id: string; item: string; status: 'DELAYED' | 'IN_TRANSIT'; etaOld?: string; eta: string; forRef: string }
+export interface Shipment { id: string; item: string; status: 'ORDERED' | 'IN_TRANSIT' | 'DELAYED' | 'RECEIVED' | 'CANCELLED'; etaOld?: string; eta: string; forRef: string }
 
 export type InvoiceStatus = 'UNPAID' | 'OVERDUE' | 'SUSPENDED' | 'REACTIVATION_PENDING' | 'PAID' | 'ACTIVE';
 export interface Invoice {
@@ -48,7 +48,7 @@ export type UserRole = 'ClubManager' | 'HeadTrainer' | 'Veterinarian' | 'Warehou
 export interface ManagedUser {
   id: string; fullName: string; username: string; email: string; role: UserRole;
   lastLogin: string; status: 'ACTIVE' | 'LOCKED'; lockReason?: string;
-  openTasks?: number; horsesOwned?: number; serviceSuspended?: boolean;
+  openTasks?: number; horsesOwned?: number; serviceSuspended?: boolean; avatarUrl?: string | null;
 }
 export interface RoleCheck { level: 'pass' | 'warn' | 'fail'; text: string }
 
@@ -95,6 +95,7 @@ export const managerApi = {
     ]);
     const pending = regs.filter((r) => r.status === 'Pending');
     const delayed = shipments.filter((s) => s.status === 'DELAYED');
+    // ETA is stored as dd/mm/yyyy; the dashboard shows dd/mm.
     const AREA_TONE: Record<AuditArea, 'danger' | 'warning' | 'success' | 'info'> = { train: 'danger', med: 'warning', reg: 'success', fin: 'info', acct: 'info' };
     return {
       ...dash,
@@ -104,7 +105,7 @@ export const managerApi = {
         oldestPendingDays: Math.max(0, ...pending.map((r) => r.waitingDays)),
         medicalWatch: protocols.filter((p) => p.state === 'REQUIRES_VET_REVIEW' || p.state === 'WAITING_STOCK_CHECK').length,
         delayedShipments: delayed.length,
-        delayedEta: delayed[0]?.eta ?? '—',
+        delayedEta: delayed[0]?.eta.slice(0, 5) ?? '—',
       },
       recentRegistrations: regs.filter((r) => r.id >= 'REG-0016').sort((a, b) => b.id.localeCompare(a.id)).slice(0, 4),
       medicalWatch: protocols.filter((p) => p.state === 'REQUIRES_VET_REVIEW' || p.state === 'WAITING_STOCK_CHECK'),

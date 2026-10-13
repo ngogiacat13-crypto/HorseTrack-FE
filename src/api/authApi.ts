@@ -13,6 +13,7 @@ interface UserRecord {
   role: Role;
   status?: 'ACTIVE' | 'LOCKED';
   lockReason?: string;
+  avatarUrl?: string | null;
 }
 
 const toAuthUser = ({ password: _pw, ...u }: UserRecord): AuthUser => ({
@@ -25,6 +26,7 @@ const toAuthUser = ({ password: _pw, ...u }: UserRecord): AuthUser => ({
   phone: u.phone,
   role: u.role,
   avatar: u.fullname.charAt(0).toUpperCase(),
+  avatarUrl: u.avatarUrl ?? undefined,
 });
 
 const findBy = async (field: 'username' | 'email' | 'phone', value: string) => {
@@ -83,5 +85,13 @@ export const authApi = {
     const { data: user } = await http.get<UserRecord>(`/users/${userId}`);
     if (user.password !== oldPassword) throw new Error('Mật khẩu hiện tại không đúng.');
     await http.patch(`/users/${userId}`, { password: newPassword });
+  },
+
+  /** Set or remove (null) the profile picture of the signed-in user. */
+  async updateAvatar(userId: string, avatarUrl: string | null): Promise<AuthUser> {
+    if (avatarUrl && !/^data:image\/(png|jpeg|webp);base64,/.test(avatarUrl)) throw new Error('Ảnh đại diện không hợp lệ.');
+    if (avatarUrl && avatarUrl.length > 400_000) throw new Error('Ảnh quá lớn sau khi nén — hãy chọn ảnh khác.');
+    const { data } = await http.patch<UserRecord>(`/users/${userId}`, { avatarUrl });
+    return toAuthUser(data);
   },
 };

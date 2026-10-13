@@ -40,7 +40,7 @@ export interface Protocol {
   alertState?: ProtocolState; materials: { item: string; status: string; tone: 'success' | 'danger' | 'neutral' }[]; note: string;
   log: { tone?: 'danger' | 'warning' | 'success'; who: string; text: string; at: string }[];
 }
-export interface Shipment { id: string; item: string; status: 'DELAYED' | 'IN_TRANSIT'; etaOld?: string; eta: string; forRef: string }
+export interface Shipment { id: string; item: string; status: 'ORDERED' | 'IN_TRANSIT' | 'DELAYED' | 'RECEIVED' | 'CANCELLED'; etaOld?: string; eta: string; forRef: string }
 export interface MedicalDiet { by: string; at: string; morning: string; noon: string; evening: string; special: string; note: string }
 export interface FeedRequest {
   id: string; horseId: string; horse: string; item: string; reason: string; by: string; at: string;

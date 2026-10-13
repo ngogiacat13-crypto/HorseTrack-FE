@@ -71,8 +71,15 @@ export const NAV_BY_ROLE: Record<Role, NavGroup[]> = {
   WarehouseManager: [
     { title: 'Kho', items: [
       { path: PATH.warehouse.home, icon: 'box', label: 'Tồn kho', end: true },
-      { path: PATH.warehouse.requisitions, icon: 'send', label: 'Yêu cầu cấp phát' },
-      { path: PATH.warehouse.shipments, icon: 'truck', label: 'Đơn nhập hàng' },
+      { path: PATH.warehouse.check, icon: 'clip', label: 'Kiểm kê tháng' },
+      { path: PATH.warehouse.log, icon: 'file', label: 'Nhật ký kho' },
+    ] },
+    { title: 'Yêu cầu', items: [
+      { path: PATH.warehouse.medical, icon: 'heart', label: 'Thuốc theo phác đồ', count: 3, tone: 'danger' },
+      { path: PATH.warehouse.requisitions, icon: 'send', label: 'Vật tư từ Mã phu', count: 3 },
+    ] },
+    { title: 'Nhập hàng', items: [
+      { path: PATH.warehouse.shipments, icon: 'truck', label: 'Đơn nhập hàng', count: 1, tone: 'danger' },
     ] },
   ],
 };

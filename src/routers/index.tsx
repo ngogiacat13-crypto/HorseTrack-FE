@@ -42,15 +42,17 @@ import { VetMedicines } from '../pages/vet/VetMedicines';
 import { VetVaccinations } from '../pages/vet/VetVaccinations';
 import { VetRaceExams } from '../pages/vet/VetRaceExams';
 
+import { WarehouseInventory } from '../pages/warehouse/WarehouseInventory';
+import { WarehouseMedical } from '../pages/warehouse/WarehouseMedical';
+import { WarehouseMedicalDetail } from '../pages/warehouse/WarehouseMedicalDetail';
+import { WarehouseShipments } from '../pages/warehouse/WarehouseShipments';
+import { WarehouseRequisitions } from '../pages/warehouse/WarehouseRequisitions';
+import { WarehouseStockCheck } from '../pages/warehouse/WarehouseStockCheck';
+import { WarehouseLog } from '../pages/warehouse/WarehouseLog';
+
 import { GroomTodayTasks } from '../pages/groom/GroomTodayTasks';
 import { OwnerInvoices } from '../pages/owner/OwnerInvoices';
 
-const Placeholder: React.FC<{ title: string }> = ({ title }) => (
-  <div className="text-center mt-5">
-    <h2 className="text-muted">{title}</h2>
-    <p>Màn hình này đang được phát triển.</p>
-  </div>
-);
 
 /* Pages of each role — every one of them is wrapped in RoleGuard below. */
 const ROLE_ROUTES: { role: Role; routes: [path: string, element: React.ReactElement][] }[] = [
@@ -88,7 +90,15 @@ const ROLE_ROUTES: { role: Role; routes: [path: string, element: React.ReactElem
   ] },
   { role: 'Groom', routes: [[PATH.groom.home, <GroomTodayTasks />]] },
   { role: 'HorseOwner', routes: [[PATH.owner.home, <OwnerInvoices />]] },
-  { role: 'WarehouseManager', routes: [[PATH.warehouse.home, <Placeholder title="Danh sách tồn kho" />]] },
+  { role: 'WarehouseManager', routes: [
+    [PATH.warehouse.home, <WarehouseInventory />],
+    [PATH.warehouse.medical, <WarehouseMedical />],
+    [PATH.warehouse.medicalDetail, <WarehouseMedicalDetail />],
+    [PATH.warehouse.requisitions, <WarehouseRequisitions />],
+    [PATH.warehouse.shipments, <WarehouseShipments />],
+    [PATH.warehouse.check, <WarehouseStockCheck />],
+    [PATH.warehouse.log, <WarehouseLog />],
+  ] },
 ];
 
 export const AppRoutes: React.FC = () => {

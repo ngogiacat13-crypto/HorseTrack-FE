@@ -42,7 +42,15 @@ export const PATH = {
   },
   groom: { home: '/groom', stable: '/groom/stable' },
   owner: { home: '/owner', horses: '/owner/horses' },
-  warehouse: { home: '/warehouse', requisitions: '/warehouse/requisitions', shipments: '/warehouse/shipments' },
+  warehouse: {
+    home: '/warehouse',
+    medical: '/warehouse/medical',
+    medicalDetail: '/warehouse/medical/:id',
+    requisitions: '/warehouse/requisitions',
+    shipments: '/warehouse/shipments',
+    check: '/warehouse/check',
+    log: '/warehouse/log',
+  },
 } as const;
 
 /** Fill a path pattern, e.g. toPath(PATH.vet.horse, { id: 'h-storm' }) → /vet/horses/h-storm */

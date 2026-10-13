@@ -672,6 +672,164 @@
   ],
   "protocols": [
     {
+      "version": 1,
+      "replaces": null,
+      "supersededBy": null,
+      "vet": "Lê Thị Hương",
+      "state": "WAITING_STOCK_CHECK",
+      "path": [
+        "DRAFT",
+        "WAITING_STOCK_CHECK"
+      ],
+      "stock": null,
+      "wait": null,
+      "delayed": false,
+      "progress": [],
+      "outcome": null,
+      "label": "Chờ kho kiểm tồn",
+      "tone": "info",
+      "trainingLocked": false,
+      "open": true,
+      "note": "Đã gửi kho kiểm tra tồn, chờ phản hồi.",
+      "id": "PD-0014",
+      "horse": "Bolt",
+      "horseId": "h-bolt",
+      "caseId": "C-0014",
+      "diagnosis": "Đau bụng co thắt nhẹ",
+      "createdAt": "03/10/2026",
+      "requiredBy": "03/10/2026",
+      "phases": [
+        {
+          "no": 1,
+          "name": "Giảm co thắt",
+          "startDate": "03/10/2026",
+          "days": 3,
+          "goal": "Hết đau bụng",
+          "items": [
+            {
+              "itemId": "VT-0023",
+              "name": "Butylscopolamine 20 mg/ml",
+              "unit": "lọ",
+              "unitPrice": 290000,
+              "qty": 2
+            },
+            {
+              "itemId": "VT-0025",
+              "name": "Men vi sinh tiêu hóa",
+              "unit": "gói",
+              "unitPrice": 45000,
+              "qty": 6
+            },
+            {
+              "itemId": "VT-0024",
+              "name": "Dầu khoáng (mineral oil)",
+              "unit": "lít",
+              "unitPrice": 85000,
+              "qty": 4
+            }
+          ]
+        }
+      ],
+      "log": [
+        {
+          "who": "BS Lê Thị Hương",
+          "text": "gửi kiểm tồn · cần ngay hôm nay",
+          "at": "03/10 08:20"
+        }
+      ],
+      "cost": 1190000,
+      "materials": [
+        {
+          "item": "Butylscopolamine 20 mg/ml · 2 lọ",
+          "status": "Đang kiểm",
+          "tone": "neutral"
+        },
+        {
+          "item": "Men vi sinh tiêu hóa · 6 gói",
+          "status": "Đang kiểm",
+          "tone": "neutral"
+        },
+        {
+          "item": "Dầu khoáng (mineral oil) · 4 lít",
+          "status": "Đang kiểm",
+          "tone": "neutral"
+        }
+      ]
+    },
+    {
+      "version": 1,
+      "replaces": null,
+      "supersededBy": null,
+      "vet": "Lê Thị Hương",
+      "state": "WAITING_STOCK_CHECK",
+      "path": [
+        "DRAFT",
+        "WAITING_STOCK_CHECK"
+      ],
+      "stock": null,
+      "wait": null,
+      "delayed": false,
+      "progress": [],
+      "outcome": null,
+      "label": "Chờ kho kiểm tồn",
+      "tone": "info",
+      "trainingLocked": false,
+      "open": true,
+      "note": "Đã gửi kho kiểm tra tồn, chờ phản hồi.",
+      "id": "PD-0015",
+      "horse": "Star",
+      "horseId": "h-star",
+      "caseId": "C-0013",
+      "diagnosis": "Nghi viêm loét dạ dày",
+      "createdAt": "02/10/2026",
+      "requiredBy": "04/10/2026",
+      "phases": [
+        {
+          "no": 1,
+          "name": "Bảo vệ dạ dày",
+          "startDate": "04/10/2026",
+          "days": 14,
+          "goal": "Ăn uống bình thường",
+          "items": [
+            {
+              "itemId": "VT-0022",
+              "name": "Omeprazole 37% paste",
+              "unit": "ống",
+              "unitPrice": 780000,
+              "qty": 14
+            },
+            {
+              "itemId": "VT-0011",
+              "name": "Vitamin E + Selen",
+              "unit": "lọ",
+              "unitPrice": 180000,
+              "qty": 2
+            }
+          ]
+        }
+      ],
+      "log": [
+        {
+          "who": "BS Lê Thị Hương",
+          "text": "gửi kiểm tồn",
+          "at": "02/10 15:45"
+        }
+      ],
+      "cost": 11280000,
+      "materials": [
+        {
+          "item": "Omeprazole 37% paste · 14 ống",
+          "status": "Đang kiểm",
+          "tone": "neutral"
+        },
+        {
+          "item": "Vitamin E + Selen · 2 lọ",
+          "status": "Đang kiểm",
+          "tone": "neutral"
+        }
+      ]
+    },
+    {
       "version": 2,
       "replaces": "PD-0010",
       "supersededBy": null,
@@ -804,7 +962,7 @@
             "short": 0,
             "eta": null,
             "lot": "L-ABC-0907",
-            "expiry": "09/2027"
+            "expiry": "03/2027"
           },
           {
             "itemId": "VT-0004",
@@ -829,7 +987,7 @@
             "short": 0,
             "eta": null,
             "lot": "L-XYZ-0925",
-            "expiry": "03/2027"
+            "expiry": "04/2027"
           }
         ]
       }
@@ -913,7 +1071,7 @@
             "short": 0,
             "eta": null,
             "lot": "L-XYZ-0925",
-            "expiry": "03/2027"
+            "expiry": "04/2027"
           }
         ]
       }
@@ -1000,7 +1158,7 @@
             "short": 0,
             "eta": null,
             "lot": "L-K2-0820",
-            "expiry": "08/2027"
+            "expiry": "02/2027"
           },
           {
             "itemId": "VT-0011",
@@ -1025,7 +1183,7 @@
             "short": 0,
             "eta": null,
             "lot": "L-BT-0901",
-            "expiry": "—"
+            "expiry": "03/2027"
           }
         ]
       },
@@ -1165,7 +1323,7 @@
             "short": 0,
             "eta": null,
             "lot": "L-K2-0820",
-            "expiry": "08/2027"
+            "expiry": "02/2027"
           }
         ]
       }
@@ -1246,7 +1404,7 @@
             "short": 0,
             "eta": null,
             "lot": "L-GEL-0811",
-            "expiry": "11/2027"
+            "expiry": "08/2027"
           }
         ]
       }
@@ -1469,26 +1627,184 @@
   ],
   "shipments": [
     {
-      "id": "SHIP-0024",
-      "item": "Bông gạc · 50 cuộn",
-      "status": "DELAYED",
-      "etaOld": "07/10",
-      "eta": "10/10",
-      "forRef": "PD-0011"
-    },
-    {
-      "id": "SHIP-0023",
-      "item": "Phenylbutazone 20% · 30 lọ",
-      "status": "IN_TRANSIT",
-      "eta": "07/10",
-      "forRef": "bổ sung tồn"
+      "id": "SHIP-0027",
+      "supplier": "Cửa hàng Yên cương Phú Thọ",
+      "orderedAt": "02/10/2026",
+      "status": "ORDERED",
+      "eta": "12/10/2026",
+      "forRef": "RQ-0007",
+      "lines": [
+        {
+          "itemId": "VT-0057",
+          "name": "Cào móng",
+          "unit": "cái",
+          "qty": 10,
+          "received": null,
+          "lot": null,
+          "expiry": null
+        },
+        {
+          "itemId": "VT-0060",
+          "name": "Chăn phủ ngựa",
+          "unit": "cái",
+          "qty": 4,
+          "received": null,
+          "lot": null,
+          "expiry": null
+        }
+      ],
+      "history": [
+        {
+          "at": "02/10 17:10",
+          "who": "Trần Văn Kho",
+          "text": "tạo đơn nhập · liên kết RQ-0007"
+        }
+      ],
+      "item": "Cào móng · 10 cái, Chăn phủ ngựa · 4 cái"
     },
     {
       "id": "SHIP-0026",
-      "item": "Vitamin E + Selen · 20 lọ",
+      "supplier": "Công ty Dược thú y Sài Gòn",
+      "orderedAt": "30/09/2026",
       "status": "IN_TRANSIT",
-      "eta": "15/10",
-      "forRef": "PD-0013"
+      "eta": "15/10/2026",
+      "forRef": "PD-0013",
+      "requiredBy": "04/10/2026",
+      "lines": [
+        {
+          "itemId": "VT-0011",
+          "name": "Vitamin E + Selen",
+          "unit": "lọ",
+          "qty": 20,
+          "received": null,
+          "lot": null,
+          "expiry": null
+        }
+      ],
+      "history": [
+        {
+          "at": "01/10 09:00",
+          "who": "Trần Văn Kho",
+          "text": "nhà cung cấp xác nhận giao 15/10"
+        },
+        {
+          "at": "30/09 16:00",
+          "who": "Trần Văn Kho",
+          "text": "tạo đơn nhập · liên kết PD-0013"
+        }
+      ],
+      "item": "Vitamin E + Selen · 20 lọ"
+    },
+    {
+      "id": "SHIP-0024",
+      "supplier": "Công ty Vật tư Thú y Phương Nam",
+      "orderedAt": "28/09/2026",
+      "status": "DELAYED",
+      "etaOld": "07/10/2026",
+      "eta": "10/10/2026",
+      "forRef": "PD-0011",
+      "requiredBy": "08/10/2026",
+      "lines": [
+        {
+          "itemId": "VT-0004",
+          "name": "Bông gạc",
+          "unit": "cuộn",
+          "qty": 50,
+          "received": null,
+          "lot": null,
+          "expiry": null
+        }
+      ],
+      "history": [
+        {
+          "at": "03/10 08:00",
+          "who": "Hệ thống",
+          "text": "gắn DELAYED_MEDICINE · báo BS Lê Thị Hương",
+          "tone": "danger"
+        },
+        {
+          "at": "02/10 16:30",
+          "who": "Trần Văn Kho",
+          "text": "cập nhật ETA 07/10 → 10/10 (nhà cung cấp báo trễ)",
+          "tone": "warning"
+        },
+        {
+          "at": "28/09 10:00",
+          "who": "Trần Văn Kho",
+          "text": "tạo đơn nhập · liên kết PD-0011"
+        }
+      ],
+      "item": "Bông gạc · 50 cuộn"
+    },
+    {
+      "id": "SHIP-0023",
+      "supplier": "Công ty Dược thú y Sài Gòn",
+      "orderedAt": "27/09/2026",
+      "status": "IN_TRANSIT",
+      "eta": "07/10/2026",
+      "forRef": "bổ sung tồn",
+      "lines": [
+        {
+          "itemId": "VT-0002",
+          "name": "Phenylbutazone 20%",
+          "unit": "lọ",
+          "qty": 30,
+          "received": null,
+          "lot": null,
+          "expiry": null
+        }
+      ],
+      "history": [
+        {
+          "at": "27/09 14:00",
+          "who": "Trần Văn Kho",
+          "text": "tạo đơn nhập · tồn dưới ngưỡng"
+        }
+      ],
+      "item": "Phenylbutazone 20% · 30 lọ"
+    },
+    {
+      "id": "SHIP-0021",
+      "supplier": "Đại lý Thức ăn Chăn nuôi Bình Dương",
+      "orderedAt": "22/09/2026",
+      "status": "RECEIVED",
+      "eta": "28/09/2026",
+      "forRef": "bổ sung tồn",
+      "receivedAt": "28/09/2026",
+      "lines": [
+        {
+          "itemId": "VT-0001",
+          "name": "Cám ngựa",
+          "unit": "kg",
+          "qty": 200,
+          "received": 200,
+          "lot": null,
+          "expiry": null
+        },
+        {
+          "itemId": "VT-0005",
+          "name": "Cỏ khô",
+          "unit": "kg",
+          "qty": 300,
+          "received": 300,
+          "lot": null,
+          "expiry": null
+        }
+      ],
+      "history": [
+        {
+          "at": "28/09 08:40",
+          "who": "Trần Văn Kho",
+          "text": "nhận đủ hàng, nhập kho",
+          "tone": "success"
+        },
+        {
+          "at": "22/09 09:00",
+          "who": "Trần Văn Kho",
+          "text": "tạo đơn nhập"
+        }
+      ],
+      "item": "Cám ngựa · 200 kg, Cỏ khô · 300 kg"
     }
   ],
   "invoices": [
@@ -3134,12 +3450,20 @@
       "source": "GROOM_REPORT",
       "type": "Đau bụng",
       "severity": "MEDIUM",
-      "status": "NEW",
+      "status": "MONITORING",
       "sender": "Phạm Văn Toàn",
       "at": "02/10 16:40",
       "note": "Bolt nằm lăn nhiều sau bữa chiều, ăn ít hơn bình thường, phân khô.",
-      "exam": null,
-      "protocolId": null
+      "exam": {
+        "symptoms": "Lăn nằm nhiều, nhu động ruột giảm, nhịp tim 52.",
+        "diagnosis": "Đau bụng co thắt nhẹ",
+        "severity": "MEDIUM",
+        "plan": "Giảm co thắt, bù dầu khoáng, theo dõi 24 giờ.",
+        "health": "WATCH",
+        "by": "Lê Thị Hương",
+        "at": "03/10 08:10"
+      },
+      "protocolId": "PD-0014"
     },
     {
       "id": "C-0013",
@@ -3148,12 +3472,20 @@
       "source": "GROOM_REPORT",
       "type": "Chán ăn",
       "severity": "LOW",
-      "status": "NEW",
+      "status": "MONITORING",
       "sender": "Phạm Văn Toàn",
       "at": "01/10 07:15",
       "note": "Star bỏ gần nửa khẩu phần sáng 2 ngày liên tiếp, vẫn uống nước bình thường.",
-      "exam": null,
-      "protocolId": null
+      "exam": {
+        "symptoms": "Chán ăn 2 ngày, đau khi ấn vùng bụng trước.",
+        "diagnosis": "Nghi viêm loét dạ dày",
+        "severity": "LOW",
+        "plan": "Omeprazole 14 ngày, bổ sung vitamin.",
+        "health": "WATCH",
+        "by": "Lê Thị Hương",
+        "at": "02/10 15:30"
+      },
+      "protocolId": "PD-0015"
     },
     {
       "id": "C-0012",
@@ -3888,7 +4220,14 @@
       "brand": "Equipalazone, Butasyl",
       "doseRef": "2,2–4,4 mg/kg/ngày",
       "detectionHours": 168,
-      "rx": true
+      "rx": true,
+      "lots": [
+        {
+          "lot": "L-ABC-0907",
+          "expiry": "03/2027",
+          "qty": 15
+        }
+      ]
     },
     {
       "id": "VT-0003",
@@ -3905,7 +4244,14 @@
       "brand": "Equioxx",
       "doseRef": "0,1 mg/kg/ngày",
       "detectionHours": 336,
-      "rx": true
+      "rx": true,
+      "lots": [
+        {
+          "lot": "L-XYZ-0925",
+          "expiry": "04/2027",
+          "qty": 95
+        }
+      ]
     },
     {
       "id": "VT-0013",
@@ -3922,7 +4268,19 @@
       "brand": "Finadyne, Banamine",
       "doseRef": "1,1 mg/kg/ngày",
       "detectionHours": 144,
-      "rx": true
+      "rx": true,
+      "lots": [
+        {
+          "lot": "L-0013-0526",
+          "expiry": "05/2027",
+          "qty": 8
+        },
+        {
+          "lot": "L-0013-0526B",
+          "expiry": "10/2027",
+          "qty": 4
+        }
+      ]
     },
     {
       "id": "VT-0014",
@@ -3937,7 +4295,19 @@
       "safety": 2,
       "brand": "Ketofen",
       "doseRef": "2,2 mg/kg/ngày",
-      "rx": true
+      "rx": true,
+      "lots": [
+        {
+          "lot": "L-0014-0626",
+          "expiry": "06/2027",
+          "qty": 4
+        },
+        {
+          "lot": "L-0014-0626B",
+          "expiry": "11/2027",
+          "qty": 2
+        }
+      ]
     },
     {
       "id": "VT-0015",
@@ -3952,7 +4322,19 @@
       "safety": 2,
       "brand": "Metacam",
       "doseRef": "0,6 mg/kg/ngày",
-      "rx": true
+      "rx": true,
+      "lots": [
+        {
+          "lot": "L-0015-0726",
+          "expiry": "07/2027",
+          "qty": 5
+        },
+        {
+          "lot": "L-0015-0726B",
+          "expiry": "10/2027",
+          "qty": 3
+        }
+      ]
     },
     {
       "id": "VT-0007",
@@ -3967,7 +4349,14 @@
       "safety": 2,
       "brand": "Surpass",
       "doseRef": "dải 12 cm, 2 lần/ngày",
-      "rx": true
+      "rx": true,
+      "lots": [
+        {
+          "lot": "L-GEL-0811",
+          "expiry": "08/2027",
+          "qty": 6
+        }
+      ]
     },
     {
       "id": "VT-0016",
@@ -3983,7 +4372,19 @@
       "brand": "Azium",
       "doseRef": "0,02–0,1 mg/kg",
       "detectionHours": 48,
-      "rx": true
+      "rx": true,
+      "lots": [
+        {
+          "lot": "L-0016-0926",
+          "expiry": "11/2026",
+          "qty": 6
+        },
+        {
+          "lot": "L-0016-0926B",
+          "expiry": "10/2027",
+          "qty": 4
+        }
+      ]
     },
     {
       "id": "VT-0017",
@@ -3998,7 +4399,14 @@
       "safety": 1,
       "brand": "Kenalog-Vet",
       "doseRef": "6–18 mg/khớp",
-      "rx": true
+      "rx": true,
+      "lots": [
+        {
+          "lot": "L-0017-0126",
+          "expiry": "01/2027",
+          "qty": 4
+        }
+      ]
     },
     {
       "id": "VT-0006",
@@ -4014,7 +4422,14 @@
       "note": "hô hấp, mô mềm",
       "brand": "Naxcel, Excenel",
       "doseRef": "2,2–4,4 mg/kg/ngày",
-      "rx": true
+      "rx": true,
+      "lots": [
+        {
+          "lot": "L-K2-0820",
+          "expiry": "02/2027",
+          "qty": 26
+        }
+      ]
     },
     {
       "id": "VT-0018",
@@ -4028,7 +4443,19 @@
       "held": 0,
       "safety": 4,
       "doseRef": "22.000 IU/kg, 12 giờ/lần",
-      "rx": true
+      "rx": true,
+      "lots": [
+        {
+          "lot": "L-0018-0326",
+          "expiry": "04/2027",
+          "qty": 9
+        },
+        {
+          "lot": "L-0018-0326B",
+          "expiry": "11/2027",
+          "qty": 5
+        }
+      ]
     },
     {
       "id": "VT-0019",
@@ -4042,7 +4469,19 @@
       "held": 0,
       "safety": 3,
       "doseRef": "6,6 mg/kg/ngày",
-      "rx": true
+      "rx": true,
+      "lots": [
+        {
+          "lot": "L-0019-0426",
+          "expiry": "05/2027",
+          "qty": 6
+        },
+        {
+          "lot": "L-0019-0426B",
+          "expiry": "10/2027",
+          "qty": 3
+        }
+      ]
     },
     {
       "id": "VT-0020",
@@ -4058,7 +4497,19 @@
       "note": "bột uống",
       "brand": "Uniprim",
       "doseRef": "25–30 mg/kg, 12 giờ/lần",
-      "rx": true
+      "rx": true,
+      "lots": [
+        {
+          "lot": "L-0020-0526",
+          "expiry": "06/2027",
+          "qty": 24
+        },
+        {
+          "lot": "L-0020-0526B",
+          "expiry": "11/2027",
+          "qty": 16
+        }
+      ]
     },
     {
       "id": "VT-0021",
@@ -4072,7 +4523,19 @@
       "held": 0,
       "safety": 60,
       "doseRef": "15–25 mg/kg, 8–12 giờ/lần",
-      "rx": true
+      "rx": true,
+      "lots": [
+        {
+          "lot": "L-0021-0626",
+          "expiry": "07/2027",
+          "qty": 120
+        },
+        {
+          "lot": "L-0021-0626B",
+          "expiry": "10/2027",
+          "qty": 80
+        }
+      ]
     },
     {
       "id": "VT-0022",
@@ -4088,7 +4551,19 @@
       "note": "loét dạ dày",
       "brand": "GastroGard",
       "doseRef": "4 mg/kg/ngày (điều trị)",
-      "rx": true
+      "rx": true,
+      "lots": [
+        {
+          "lot": "L-0022-0726",
+          "expiry": "08/2027",
+          "qty": 6
+        },
+        {
+          "lot": "L-0022-0726B",
+          "expiry": "11/2027",
+          "qty": 4
+        }
+      ]
     },
     {
       "id": "VT-0023",
@@ -4104,7 +4579,19 @@
       "note": "đau bụng co thắt",
       "brand": "Buscopan",
       "doseRef": "0,3 mg/kg",
-      "rx": true
+      "rx": true,
+      "lots": [
+        {
+          "lot": "L-0023-0826",
+          "expiry": "12/2026",
+          "qty": 3
+        },
+        {
+          "lot": "L-0023-0826B",
+          "expiry": "10/2027",
+          "qty": 2
+        }
+      ]
     },
     {
       "id": "VT-0024",
@@ -4117,7 +4604,19 @@
       "onHand": 20,
       "held": 0,
       "safety": 5,
-      "note": "tắc ruột do phân"
+      "note": "tắc ruột do phân",
+      "lots": [
+        {
+          "lot": "L-0024-0926",
+          "expiry": "02/2027",
+          "qty": 12
+        },
+        {
+          "lot": "L-0024-0926B",
+          "expiry": "11/2027",
+          "qty": 8
+        }
+      ]
     },
     {
       "id": "VT-0025",
@@ -4130,7 +4629,19 @@
       "onHand": 30,
       "held": 0,
       "safety": 10,
-      "note": "50 g/gói"
+      "note": "50 g/gói",
+      "lots": [
+        {
+          "lot": "L-0025-0126",
+          "expiry": "03/2027",
+          "qty": 18
+        },
+        {
+          "lot": "L-0025-0126B",
+          "expiry": "10/2027",
+          "qty": 12
+        }
+      ]
     },
     {
       "id": "VT-0026",
@@ -4144,7 +4655,19 @@
       "held": 0,
       "safety": 2,
       "doseRef": "0,02–0,05 mg/kg",
-      "rx": true
+      "rx": true,
+      "lots": [
+        {
+          "lot": "L-0026-0226",
+          "expiry": "04/2027",
+          "qty": 4
+        },
+        {
+          "lot": "L-0026-0226B",
+          "expiry": "11/2027",
+          "qty": 2
+        }
+      ]
     },
     {
       "id": "VT-0027",
@@ -4159,7 +4682,19 @@
       "safety": 2,
       "brand": "Rompun",
       "doseRef": "0,5–1,1 mg/kg",
-      "rx": true
+      "rx": true,
+      "lots": [
+        {
+          "lot": "L-0027-0326",
+          "expiry": "05/2027",
+          "qty": 4
+        },
+        {
+          "lot": "L-0027-0326B",
+          "expiry": "10/2027",
+          "qty": 2
+        }
+      ]
     },
     {
       "id": "VT-0028",
@@ -4174,7 +4709,14 @@
       "safety": 1,
       "brand": "Domosedan",
       "doseRef": "0,01–0,02 mg/kg",
-      "rx": true
+      "rx": true,
+      "lots": [
+        {
+          "lot": "L-0028-0426",
+          "expiry": "04/2027",
+          "qty": 4
+        }
+      ]
     },
     {
       "id": "VT-0029",
@@ -4190,7 +4732,14 @@
       "brand": "Torbugesic",
       "doseRef": "0,01–0,02 mg/kg",
       "rx": true,
-      "controlled": true
+      "controlled": true,
+      "lots": [
+        {
+          "lot": "L-0029-0526",
+          "expiry": "05/2027",
+          "qty": 3
+        }
+      ]
     },
     {
       "id": "VT-0030",
@@ -4204,7 +4753,19 @@
       "held": 0,
       "safety": 5,
       "note": "gây tê tại chỗ",
-      "rx": true
+      "rx": true,
+      "lots": [
+        {
+          "lot": "L-0030-0626",
+          "expiry": "08/2027",
+          "qty": 9
+        },
+        {
+          "lot": "L-0030-0626B",
+          "expiry": "11/2027",
+          "qty": 6
+        }
+      ]
     },
     {
       "id": "VT-0031",
@@ -4220,7 +4781,19 @@
       "note": "xuất huyết phổi do vận động",
       "brand": "Lasix, Salix",
       "doseRef": "0,5–1 mg/kg",
-      "rx": true
+      "rx": true,
+      "lots": [
+        {
+          "lot": "L-0031-0726",
+          "expiry": "01/2027",
+          "qty": 6
+        },
+        {
+          "lot": "L-0031-0726B",
+          "expiry": "10/2027",
+          "qty": 4
+        }
+      ]
     },
     {
       "id": "VT-0032",
@@ -4236,7 +4809,14 @@
       "note": "giãn phế quản",
       "brand": "Ventipulmin",
       "doseRef": "0,8 µg/kg, 12 giờ/lần",
-      "rx": true
+      "rx": true,
+      "lots": [
+        {
+          "lot": "L-0032-0826",
+          "expiry": "08/2027",
+          "qty": 3
+        }
+      ]
     },
     {
       "id": "VT-0033",
@@ -4252,7 +4832,14 @@
       "note": "ống 4 ml",
       "brand": "Legend, Hyonate",
       "doseRef": "40 mg IV",
-      "rx": true
+      "rx": true,
+      "lots": [
+        {
+          "lot": "L-0033-0926",
+          "expiry": "09/2027",
+          "qty": 4
+        }
+      ]
     },
     {
       "id": "VT-0034",
@@ -4268,7 +4855,19 @@
       "note": "ống 5 ml",
       "brand": "Adequan",
       "doseRef": "500 mg mỗi 4 ngày × 7 lần",
-      "rx": true
+      "rx": true,
+      "lots": [
+        {
+          "lot": "L-0034-0126",
+          "expiry": "04/2027",
+          "qty": 4
+        },
+        {
+          "lot": "L-0034-0126B",
+          "expiry": "11/2027",
+          "qty": 2
+        }
+      ]
     },
     {
       "id": "VT-0009",
@@ -4283,7 +4882,19 @@
       "safety": 10,
       "note": "tẩy giun",
       "brand": "Eqvalan",
-      "doseRef": "0,2 mg/kg"
+      "doseRef": "0,2 mg/kg",
+      "lots": [
+        {
+          "lot": "L-0009-0226",
+          "expiry": "05/2027",
+          "qty": 18
+        },
+        {
+          "lot": "L-0009-0226B",
+          "expiry": "10/2027",
+          "qty": 12
+        }
+      ]
     },
     {
       "id": "VT-0035",
@@ -4298,7 +4909,19 @@
       "safety": 6,
       "note": "giun + sán dây",
       "brand": "Equest Pramox",
-      "doseRef": "0,4 mg/kg + 2,5 mg/kg"
+      "doseRef": "0,4 mg/kg + 2,5 mg/kg",
+      "lots": [
+        {
+          "lot": "L-0035-0326",
+          "expiry": "06/2027",
+          "qty": 12
+        },
+        {
+          "lot": "L-0035-0326B",
+          "expiry": "11/2027",
+          "qty": 8
+        }
+      ]
     },
     {
       "id": "VT-0036",
@@ -4312,7 +4935,19 @@
       "held": 0,
       "safety": 6,
       "brand": "Strongid-P",
-      "doseRef": "6,6 mg/kg"
+      "doseRef": "6,6 mg/kg",
+      "lots": [
+        {
+          "lot": "L-0036-0426",
+          "expiry": "07/2027",
+          "qty": 10
+        },
+        {
+          "lot": "L-0036-0426B",
+          "expiry": "10/2027",
+          "qty": 6
+        }
+      ]
     },
     {
       "id": "VT-0037",
@@ -4326,7 +4961,19 @@
       "held": 0,
       "safety": 3,
       "brand": "Panacur",
-      "doseRef": "10 mg/kg/ngày × 5 ngày"
+      "doseRef": "10 mg/kg/ngày × 5 ngày",
+      "lots": [
+        {
+          "lot": "L-0037-0526",
+          "expiry": "08/2027",
+          "qty": 5
+        },
+        {
+          "lot": "L-0037-0526B",
+          "expiry": "11/2027",
+          "qty": 3
+        }
+      ]
     },
     {
       "id": "VT-0010",
@@ -4339,7 +4986,19 @@
       "onHand": 10,
       "held": 0,
       "safety": 4,
-      "note": "nhóm theo nguy cơ"
+      "note": "nhóm theo nguy cơ",
+      "lots": [
+        {
+          "lot": "L-0010-0626",
+          "expiry": "01/2027",
+          "qty": 6
+        },
+        {
+          "lot": "L-0010-0626B",
+          "expiry": "10/2027",
+          "qty": 4
+        }
+      ]
     },
     {
       "id": "VT-0038",
@@ -4352,7 +5011,19 @@
       "onHand": 12,
       "held": 0,
       "safety": 4,
-      "note": "vaccine cốt lõi"
+      "note": "vaccine cốt lõi",
+      "lots": [
+        {
+          "lot": "L-0038-0726",
+          "expiry": "02/2027",
+          "qty": 8
+        },
+        {
+          "lot": "L-0038-0726B",
+          "expiry": "11/2027",
+          "qty": 4
+        }
+      ]
     },
     {
       "id": "VT-0039",
@@ -4365,7 +5036,19 @@
       "onHand": 10,
       "held": 0,
       "safety": 4,
-      "note": "vaccine cốt lõi"
+      "note": "vaccine cốt lõi",
+      "lots": [
+        {
+          "lot": "L-0039-0826",
+          "expiry": "03/2027",
+          "qty": 6
+        },
+        {
+          "lot": "L-0039-0826B",
+          "expiry": "10/2027",
+          "qty": 4
+        }
+      ]
     },
     {
       "id": "VT-0040",
@@ -4377,7 +5060,19 @@
       "unitPrice": 260000,
       "onHand": 8,
       "held": 0,
-      "safety": 4
+      "safety": 4,
+      "lots": [
+        {
+          "lot": "L-0040-0926",
+          "expiry": "04/2027",
+          "qty": 5
+        },
+        {
+          "lot": "L-0040-0926B",
+          "expiry": "11/2027",
+          "qty": 3
+        }
+      ]
     },
     {
       "id": "VT-0041",
@@ -4390,7 +5085,19 @@
       "onHand": 6,
       "held": 0,
       "safety": 2,
-      "note": "nhóm theo nguy cơ"
+      "note": "nhóm theo nguy cơ",
+      "lots": [
+        {
+          "lot": "L-0041-0126",
+          "expiry": "05/2027",
+          "qty": 4
+        },
+        {
+          "lot": "L-0041-0126B",
+          "expiry": "10/2027",
+          "qty": 2
+        }
+      ]
     },
     {
       "id": "VT-0042",
@@ -4403,7 +5110,14 @@
       "onHand": 4,
       "held": 0,
       "safety": 2,
-      "note": "nhóm theo nguy cơ"
+      "note": "nhóm theo nguy cơ",
+      "lots": [
+        {
+          "lot": "L-0042-0226",
+          "expiry": "02/2027",
+          "qty": 4
+        }
+      ]
     },
     {
       "id": "VT-0011",
@@ -4418,7 +5132,19 @@
       "safety": 6,
       "note": "phục hồi cơ",
       "brand": "E-SE",
-      "rx": true
+      "rx": true,
+      "lots": [
+        {
+          "lot": "L-0011-0326",
+          "expiry": "07/2027",
+          "qty": 9
+        },
+        {
+          "lot": "L-0011-0326B",
+          "expiry": "10/2027",
+          "qty": 5
+        }
+      ]
     },
     {
       "id": "VT-0043",
@@ -4431,7 +5157,19 @@
       "onHand": 60,
       "held": 0,
       "safety": 20,
-      "note": "bù nước sau tập/nắng nóng"
+      "note": "bù nước sau tập/nắng nóng",
+      "lots": [
+        {
+          "lot": "L-0043-0426",
+          "expiry": "08/2027",
+          "qty": 36
+        },
+        {
+          "lot": "L-0043-0426B",
+          "expiry": "11/2027",
+          "qty": 24
+        }
+      ]
     },
     {
       "id": "VT-0044",
@@ -4444,7 +5182,19 @@
       "onHand": 5,
       "held": 0,
       "safety": 2,
-      "note": "20 mg/ngày"
+      "note": "20 mg/ngày",
+      "lots": [
+        {
+          "lot": "L-0044-0526",
+          "expiry": "01/2027",
+          "qty": 3
+        },
+        {
+          "lot": "L-0044-0526B",
+          "expiry": "10/2027",
+          "qty": 2
+        }
+      ]
     },
     {
       "id": "VT-0008",
@@ -4457,7 +5207,19 @@
       "onHand": 12,
       "held": 0,
       "safety": 4,
-      "brand": "Betadine"
+      "brand": "Betadine",
+      "lots": [
+        {
+          "lot": "L-0008-0626",
+          "expiry": "02/2027",
+          "qty": 8
+        },
+        {
+          "lot": "L-0008-0626B",
+          "expiry": "11/2027",
+          "qty": 4
+        }
+      ]
     },
     {
       "id": "VT-0045",
@@ -4469,7 +5231,19 @@
       "unitPrice": 70000,
       "onHand": 10,
       "held": 0,
-      "safety": 4
+      "safety": 4,
+      "lots": [
+        {
+          "lot": "L-0045-0726",
+          "expiry": "03/2027",
+          "qty": 6
+        },
+        {
+          "lot": "L-0045-0726B",
+          "expiry": "10/2027",
+          "qty": 4
+        }
+      ]
     },
     {
       "id": "VT-0046",
@@ -4482,7 +5256,19 @@
       "onHand": 8,
       "held": 0,
       "safety": 3,
-      "note": "vết thương, bỏng"
+      "note": "vết thương, bỏng",
+      "lots": [
+        {
+          "lot": "L-0046-0826",
+          "expiry": "04/2027",
+          "qty": 5
+        },
+        {
+          "lot": "L-0046-0826B",
+          "expiry": "11/2027",
+          "qty": 3
+        }
+      ]
     },
     {
       "id": "VT-0047",
@@ -4496,7 +5282,19 @@
       "held": 0,
       "safety": 2,
       "note": "giảm phù nề tại chỗ",
-      "rx": true
+      "rx": true,
+      "lots": [
+        {
+          "lot": "L-0047-0926",
+          "expiry": "05/2027",
+          "qty": 3
+        },
+        {
+          "lot": "L-0047-0926B",
+          "expiry": "10/2027",
+          "qty": 2
+        }
+      ]
     },
     {
       "id": "VT-0048",
@@ -4509,7 +5307,19 @@
       "onHand": 6,
       "held": 0,
       "safety": 2,
-      "note": "áp xe móng"
+      "note": "áp xe móng",
+      "lots": [
+        {
+          "lot": "L-0048-0126",
+          "expiry": "06/2027",
+          "qty": 4
+        },
+        {
+          "lot": "L-0048-0126B",
+          "expiry": "11/2027",
+          "qty": 2
+        }
+      ]
     },
     {
       "id": "VT-0004",
@@ -4535,7 +5345,14 @@
       "onHand": 25,
       "held": 6,
       "safety": 10,
-      "brand": "Vetrap"
+      "brand": "Vetrap",
+      "lots": [
+        {
+          "lot": "L-BT-0901",
+          "expiry": "03/2027",
+          "qty": 25
+        }
+      ]
     },
     {
       "id": "VT-0049",
@@ -4587,6 +5404,126 @@
       "held": 0,
       "safety": 5,
       "note": "hộp 50 cái"
+    },
+    {
+      "id": "VT-0053",
+      "name": "Móng sắt (bộ 4)",
+      "category": "Vật tư chuồng trại",
+      "group": "Móng & đóng móng",
+      "route": "—",
+      "unit": "bộ",
+      "unitPrice": 280000,
+      "onHand": 24,
+      "held": 0,
+      "safety": 8
+    },
+    {
+      "id": "VT-0054",
+      "name": "Đinh đóng móng",
+      "category": "Vật tư chuồng trại",
+      "group": "Móng & đóng móng",
+      "route": "—",
+      "unit": "hộp",
+      "unitPrice": 120000,
+      "onHand": 6,
+      "held": 0,
+      "safety": 3
+    },
+    {
+      "id": "VT-0055",
+      "name": "Mùn cưa lót chuồng",
+      "category": "Vật tư chuồng trại",
+      "group": "Lót chuồng & vệ sinh",
+      "route": "—",
+      "unit": "bao",
+      "unitPrice": 85000,
+      "onHand": 40,
+      "held": 0,
+      "safety": 20
+    },
+    {
+      "id": "VT-0056",
+      "name": "Bàn chải lông ngựa",
+      "category": "Vật tư chuồng trại",
+      "group": "Dụng cụ chăm sóc",
+      "route": "—",
+      "unit": "cái",
+      "unitPrice": 95000,
+      "onHand": 10,
+      "held": 0,
+      "safety": 5
+    },
+    {
+      "id": "VT-0057",
+      "name": "Cào móng",
+      "category": "Vật tư chuồng trại",
+      "group": "Dụng cụ chăm sóc",
+      "route": "—",
+      "unit": "cái",
+      "unitPrice": 45000,
+      "onHand": 1,
+      "held": 0,
+      "safety": 5
+    },
+    {
+      "id": "VT-0058",
+      "name": "Dây dắt ngựa",
+      "category": "Vật tư chuồng trại",
+      "group": "Yên cương",
+      "route": "—",
+      "unit": "sợi",
+      "unitPrice": 150000,
+      "onHand": 10,
+      "held": 0,
+      "safety": 4
+    },
+    {
+      "id": "VT-0059",
+      "name": "Xô nhựa 15 L",
+      "category": "Vật tư chuồng trại",
+      "group": "Lót chuồng & vệ sinh",
+      "route": "—",
+      "unit": "cái",
+      "unitPrice": 70000,
+      "onHand": 8,
+      "held": 0,
+      "safety": 4
+    },
+    {
+      "id": "VT-0060",
+      "name": "Chăn phủ ngựa",
+      "category": "Vật tư chuồng trại",
+      "group": "Dụng cụ chăm sóc",
+      "route": "—",
+      "unit": "cái",
+      "unitPrice": 650000,
+      "onHand": 2,
+      "held": 0,
+      "safety": 3
+    },
+    {
+      "id": "VT-0061",
+      "name": "Yên tập luyện",
+      "category": "Vật tư chuồng trại",
+      "group": "Yên cương",
+      "route": "—",
+      "unit": "cái",
+      "unitPrice": 4500000,
+      "onHand": 3,
+      "held": 0,
+      "safety": 1
+    },
+    {
+      "id": "VT-0062",
+      "name": "Xẻng hót phân",
+      "category": "Vật tư chuồng trại",
+      "group": "Lót chuồng & vệ sinh",
+      "route": "—",
+      "unit": "cái",
+      "unitPrice": 110000,
+      "onHand": 6,
+      "held": 0,
+      "safety": 2
     }
   ],
   "feedRequests": [
@@ -4612,6 +5549,294 @@
       "vetNote": "Đồng ý, đã đưa vào khẩu phần y tế.",
       "decidedBy": "Lê Thị Hương",
       "decidedAt": "28/09 10:00"
+    }
+  ],
+  "requisitions": [
+    {
+      "id": "RQ-0010",
+      "by": "Đỗ Văn Cường",
+      "zone": "Khu C",
+      "itemId": "VT-0061",
+      "item": "Yên tập luyện",
+      "unit": "cái",
+      "qty": 1,
+      "reason": "Yên tập cũ của Comet bị rách đai, không an toàn khi tập.",
+      "at": "03/10 07:40",
+      "neededBy": "06/10/2026",
+      "status": "SUBMITTED",
+      "history": [
+        {
+          "at": "03/10 07:40",
+          "who": "Đỗ Văn Cường",
+          "text": "gửi yêu cầu"
+        }
+      ]
+    },
+    {
+      "id": "RQ-0009",
+      "by": "Phạm Văn Toàn",
+      "zone": "Khu A",
+      "itemId": "VT-0055",
+      "item": "Mùn cưa lót chuồng",
+      "unit": "bao",
+      "qty": 6,
+      "reason": "Thay lót chuồng định kỳ A-01 → A-05.",
+      "at": "03/10 07:20",
+      "neededBy": "04/10/2026",
+      "status": "SUBMITTED",
+      "history": [
+        {
+          "at": "03/10 07:20",
+          "who": "Phạm Văn Toàn",
+          "text": "gửi yêu cầu"
+        }
+      ]
+    },
+    {
+      "id": "RQ-0008",
+      "by": "Ngô Văn Sơn",
+      "zone": "Khu B",
+      "itemId": "VT-0053",
+      "item": "Móng sắt (bộ 4)",
+      "unit": "bộ",
+      "qty": 2,
+      "reason": "Thay móng cho Flash và Spirit trước tuần tập tốc độ.",
+      "at": "02/10 16:00",
+      "neededBy": "05/10/2026",
+      "status": "CHECKING_STOCK",
+      "history": [
+        {
+          "at": "02/10 16:30",
+          "who": "Trần Văn Kho",
+          "text": "đang kiểm tồn"
+        },
+        {
+          "at": "02/10 16:00",
+          "who": "Ngô Văn Sơn",
+          "text": "gửi yêu cầu"
+        }
+      ]
+    },
+    {
+      "id": "RQ-0007",
+      "by": "Đỗ Văn Cường",
+      "zone": "Khu C",
+      "itemId": "VT-0057",
+      "item": "Cào móng",
+      "unit": "cái",
+      "qty": 3,
+      "reason": "Cào móng khu C bị gãy 2 cái, thiếu dụng cụ vệ sinh móng.",
+      "at": "02/10 15:00",
+      "neededBy": "05/10/2026",
+      "status": "WAITING_RESTOCK",
+      "shipmentId": "SHIP-0027",
+      "history": [
+        {
+          "at": "02/10 17:10",
+          "who": "Trần Văn Kho",
+          "text": "thiếu 2 cái · chờ đơn nhập SHIP-0027 (ETA 12/10)",
+          "tone": "warning"
+        },
+        {
+          "at": "02/10 15:00",
+          "who": "Đỗ Văn Cường",
+          "text": "gửi yêu cầu"
+        }
+      ]
+    },
+    {
+      "id": "RQ-0006",
+      "by": "Phạm Văn Toàn",
+      "zone": "Khu A",
+      "itemId": "VT-0060",
+      "item": "Chăn phủ ngựa",
+      "unit": "cái",
+      "qty": 2,
+      "reason": "Trời lạnh về đêm, xin thêm chăn phủ.",
+      "at": "01/10 18:00",
+      "neededBy": "02/10/2026",
+      "status": "REJECTED",
+      "rejectReason": "Đã cấp 2 chăn cho Khu A ngày 20/09; dùng luân phiên trong khu, sẽ cấp thêm khi SHIP-0027 về.",
+      "history": [
+        {
+          "at": "02/10 08:00",
+          "who": "Trần Văn Kho",
+          "text": "từ chối: đã cấp 2 chăn ngày 20/09",
+          "tone": "danger"
+        },
+        {
+          "at": "01/10 18:00",
+          "who": "Phạm Văn Toàn",
+          "text": "gửi yêu cầu"
+        }
+      ]
+    },
+    {
+      "id": "RQ-0005",
+      "by": "Ngô Văn Sơn",
+      "zone": "Khu B",
+      "itemId": "VT-0056",
+      "item": "Bàn chải lông ngựa",
+      "unit": "cái",
+      "qty": 2,
+      "reason": "Bàn chải cũ mòn lông.",
+      "at": "30/09 07:00",
+      "neededBy": "01/10/2026",
+      "status": "ISSUED",
+      "issued": {
+        "qty": 2,
+        "to": "Ngô Văn Sơn",
+        "at": "01/10 07:30",
+        "by": "Trần Văn Kho"
+      },
+      "history": [
+        {
+          "at": "01/10 07:30",
+          "who": "Trần Văn Kho",
+          "text": "cấp phát 2 cái cho Ngô Văn Sơn",
+          "tone": "success"
+        },
+        {
+          "at": "30/09 07:00",
+          "who": "Ngô Văn Sơn",
+          "text": "gửi yêu cầu"
+        }
+      ]
+    }
+  ],
+  "stockTx": [
+    {
+      "id": "TX-0108",
+      "at": "03/10 09:15",
+      "type": "HOLD",
+      "itemId": "VT-0003",
+      "item": "Firocoxib 57 mg",
+      "qty": 20,
+      "ref": "PD-0012",
+      "by": "Trần Văn Kho",
+      "note": "Giữ cho phác đồ PD-0012",
+      "balance": 95
+    },
+    {
+      "id": "TX-0107",
+      "at": "02/10 17:05",
+      "type": "HOLD",
+      "itemId": "VT-0004",
+      "item": "Bông gạc",
+      "qty": 8,
+      "ref": "PD-0011",
+      "by": "Trần Văn Kho",
+      "note": "Giữ phần có sẵn, thiếu 12 cuộn",
+      "balance": 8
+    },
+    {
+      "id": "TX-0106",
+      "at": "02/10 15:30",
+      "type": "HOLD",
+      "itemId": "VT-0011",
+      "item": "Vitamin E + Selen",
+      "qty": 14,
+      "ref": "PD-0013",
+      "by": "Trần Văn Kho",
+      "note": "Giữ toàn bộ tồn, thiếu 6 lọ",
+      "balance": 14
+    },
+    {
+      "id": "TX-0105",
+      "at": "01/10 07:30",
+      "type": "ISSUE",
+      "itemId": "VT-0056",
+      "item": "Bàn chải lông ngựa",
+      "qty": -2,
+      "ref": "RQ-0005",
+      "by": "Trần Văn Kho",
+      "note": "Cấp cho Ngô Văn Sơn",
+      "balance": 10
+    },
+    {
+      "id": "TX-0104",
+      "at": "30/09 17:20",
+      "type": "ADJUST",
+      "itemId": "VT-0057",
+      "item": "Cào móng",
+      "qty": -2,
+      "ref": "KK-2026-09",
+      "by": "Trần Văn Kho",
+      "note": "Kiểm kê: 2 cái gãy, thanh lý",
+      "balance": 1
+    },
+    {
+      "id": "TX-0103",
+      "at": "28/09 08:40",
+      "type": "RECEIVE",
+      "itemId": "VT-0005",
+      "item": "Cỏ khô",
+      "qty": 300,
+      "ref": "SHIP-0021",
+      "by": "Trần Văn Kho",
+      "note": "Nhận đủ theo đơn",
+      "balance": 500
+    },
+    {
+      "id": "TX-0102",
+      "at": "28/09 08:40",
+      "type": "RECEIVE",
+      "itemId": "VT-0001",
+      "item": "Cám ngựa",
+      "qty": 200,
+      "ref": "SHIP-0021",
+      "by": "Trần Văn Kho",
+      "note": "Nhận đủ theo đơn",
+      "balance": 120
+    },
+    {
+      "id": "TX-0101",
+      "at": "27/09 10:00",
+      "type": "ISSUE",
+      "itemId": "VT-0006",
+      "item": "Ceftiofur 1 g",
+      "qty": -10,
+      "lot": "L-K2-0820",
+      "ref": "PD-0009",
+      "by": "Trần Văn Kho",
+      "note": "Cấp cho Ngô Văn Sơn theo phác đồ Wind",
+      "balance": 26
+    }
+  ],
+  "stockChecks": [
+    {
+      "id": "KK-2026-09",
+      "month": "09/2026",
+      "at": "30/09/2026 17:20",
+      "by": "Trần Văn Kho",
+      "status": "DONE",
+      "note": "Kiểm kê cuối tháng 9",
+      "lines": [
+        {
+          "itemId": "VT-0057",
+          "item": "Cào móng",
+          "unit": "cái",
+          "system": 3,
+          "counted": 1,
+          "reason": "2 cái gãy, thanh lý"
+        },
+        {
+          "itemId": "VT-0055",
+          "item": "Mùn cưa lót chuồng",
+          "unit": "bao",
+          "system": 40,
+          "counted": 40,
+          "reason": ""
+        },
+        {
+          "itemId": "VT-0004",
+          "item": "Bông gạc",
+          "unit": "cuộn",
+          "system": 8,
+          "counted": 8,
+          "reason": ""
+        }
+      ]
     }
   ]
 }

@@ -9,8 +9,8 @@ import seed from '../../db.json';
 type Row = Record<string, unknown>;
 type Db = Record<string, Row[] | Row>;
 
-const STORAGE_KEY = 'horsetrack_mockdb_v9';
-const LATENCY_MS = 150;
+const STORAGE_KEY = 'horsetrack_mockdb_v11';
+const LATENCY_MS = 60;
 
 const load = (): Db => {
   try {

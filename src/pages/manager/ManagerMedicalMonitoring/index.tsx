@@ -97,14 +97,14 @@ export const ManagerMedicalMonitoring: React.FC = () => {
 
           <Panel as="h3" title="Lô hàng y tế" right={<span className="ht-mono" style={{ fontSize: 12, color: 'var(--muted)' }}>Kho · chỉ xem</span>}>
             <ul className="ht-list">
-              {data.shipments.map((s) => (
+              {data.shipments.filter((s) => s.status === 'ORDERED' || s.status === 'IN_TRANSIT' || s.status === 'DELAYED').map((s) => (
                 <li key={s.id} className={`ht-list-row${s.status === 'DELAYED' ? ' ht-list-row--danger' : ''}`}>
                   <div className="r1"><span className="ht-mono" style={{ fontSize: 12, color: 'var(--muted)' }}>{s.id}</span>
-                    {s.status === 'DELAYED' ? <Badge tone="danger">Bị trễ</Badge> : <Badge tone="info">Đang giao</Badge>}</div>
+                    {s.status === 'DELAYED' ? <Badge tone="danger">Bị trễ</Badge> : s.status === 'ORDERED' ? <Badge tone="neutral">Đã đặt</Badge> : <Badge tone="info">Đang giao</Badge>}</div>
                   <div className="r2">{s.item}</div>
                   <div className="r3">
-                    <span style={{ fontSize: 12, color: 'var(--muted)' }}>ETA {s.etaOld && <><s className="ht-mono">{s.etaOld}</s> → </>}
-                      <b className="ht-mono" style={s.status === 'DELAYED' ? { color: 'var(--danger-ink)' } : undefined}>{s.eta}</b></span>
+                    <span style={{ fontSize: 12, color: 'var(--muted)' }}>ETA {s.etaOld && <><s className="ht-mono">{s.etaOld.slice(0, 5)}</s> → </>}
+                      <b className="ht-mono" style={s.status === 'DELAYED' ? { color: 'var(--danger-ink)' } : undefined}>{s.eta.slice(0, 5)}</b></span>
                     <span style={{ fontSize: 12, color: 'var(--muted)' }}>cho <span className="ht-mono">{s.forRef}</span></span>
                   </div>
                 </li>
