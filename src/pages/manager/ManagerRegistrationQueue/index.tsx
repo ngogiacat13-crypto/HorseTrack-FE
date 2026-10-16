@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { managerApi, Registration, RegStatus } from '../../../api/managerApi';
 import { Icon } from '../../../components/ui/Icon';
 import { Badge, Loading, PageHeader, Panel, Tabs } from '../../../components/ui/Ht';
+import { useDebounce } from '../../../hooks/useDebounce';
+import { useLocalStorage } from '../../../hooks/useLocalStorage';
 
 type Filter = 'Pending' | 'Approved' | 'Rejected' | 'All';
 const BADGE: Record<RegStatus, JSX.Element> = {
@@ -16,18 +18,19 @@ export const ManagerRegistrationQueue: React.FC = () => {
   const [items, setItems] = useState<Registration[] | null>(null);
   const [filter, setFilter] = useState<Filter>('Pending');
   const [q, setQ] = useState('');
-  const [oldestFirst, setOldestFirst] = useState(true);
+  const query = useDebounce(q); // filter after the user pauses typing
+  const [oldestFirst, setOldestFirst] = useLocalStorage('ht.regQueue.oldestFirst', true); // remembered after F5
 
   useEffect(() => { managerApi.getRegistrations().then(setItems); }, []);
 
   const list = useMemo(() => {
     if (!items) return [];
-    const s = q.trim().toLowerCase();
+    const s = query.trim().toLowerCase();
     const out = items.filter((r) => (filter === 'All' || r.status === filter) &&
       (r.id + r.horse.name + r.owner.fullName + r.horse.code).toLowerCase().includes(s));
     const key = (r: Registration) => r.submittedAt.slice(6, 10) + r.submittedAt.slice(3, 5) + r.submittedAt.slice(0, 2) + r.submittedAt.slice(11);
     return out.sort((a, b) => (oldestFirst ? 1 : -1) * key(a).localeCompare(key(b)));
-  }, [items, filter, q, oldestFirst]);
+  }, [items, filter, query, oldestFirst]);
 
   if (!items) return <div className="ht ht-page"><Loading /></div>;
   const count = (s: RegStatus) => items.filter((r) => r.status === s).length;

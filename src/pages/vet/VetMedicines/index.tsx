@@ -4,6 +4,7 @@ import { useFetch } from '../../../hooks/useFetch';
 import { Icon } from '../../../components/ui/Icon';
 import { Badge, Callout, money, PageHeader, Panel } from '../../../components/ui/Ht';
 import { LoadState } from '../../../components/trainer/TrainerParts';
+import { useDebounce } from '../../../hooks/useDebounce';
 
 const avail = (i: InventoryItem) => Math.max(0, i.onHand - i.held);
 const days = (h: number) => (h % 24 === 0 ? `${h / 24} ngày` : `${h} giờ`);
@@ -13,6 +14,7 @@ export const VetMedicines: React.FC = () => {
   const { data, loading, error, reload } = useFetch(() => vetApi.getMedicines());
   const [group, setGroup] = useState('');
   const [q, setQ] = useState('');
+  const query = useDebounce(q); // filter after the user pauses typing
   const [flag, setFlag] = useState<'' | 'detect' | 'rx' | 'low'>('');
 
   const items = useMemo(() => data ?? [], [data]);
@@ -20,7 +22,7 @@ export const VetMedicines: React.FC = () => {
   const list = useMemo(() => items.filter((i) =>
     (!group || i.group === group) &&
     (!flag || (flag === 'detect' ? !!i.detectionHours : flag === 'rx' ? i.rx : avail(i) < i.safety)) &&
-    `${i.name} ${i.brand ?? ''} ${i.note ?? ''} ${i.id}`.toLowerCase().includes(q.trim().toLowerCase())), [items, group, flag, q]);
+    `${i.name} ${i.brand ?? ''} ${i.note ?? ''} ${i.id}`.toLowerCase().includes(query.trim().toLowerCase())), [items, group, flag, query]);
 
   if (!data) return <LoadState loading={loading} error={error} onRetry={reload} />;
   const shown = groups.filter((g) => list.some((i) => i.group === g));

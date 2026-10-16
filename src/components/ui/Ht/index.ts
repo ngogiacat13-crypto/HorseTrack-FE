@@ -16,6 +16,8 @@ export { PageHeader } from './PageHeader';
 export { StatCard } from './StatCard';
 export { Panel } from './Panel';
 export { Tabs, Segmented } from './Tabs';
+export { DataTable, type Column } from './DataTable';
+export { BackButton } from './BackButton';
 export { Dialog } from './Dialog';
 export { ReasonField } from './ReasonField';
 export { Rules } from './Rules';

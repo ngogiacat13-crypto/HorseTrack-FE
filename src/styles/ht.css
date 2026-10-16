@@ -281,6 +281,7 @@
 .ht-pagehead .ht-page-sub { margin-bottom: 0; }
 .ht-actions { display: flex; gap: var(--space-3); align-items: center; flex-wrap: wrap; }
 .ht-back { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--primary-light); text-decoration: none; }
+button.ht-back { background: none; border: 0; padding: 0; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
 
 /* ---------- Tabs ---------- */
 .ht-tabs { display: flex; gap: var(--space-6); border-bottom: 1px solid var(--border); margin-bottom: var(--space-6); }
@@ -517,7 +518,7 @@ a.ht-stat:hover { border-color: var(--border-strong); }
 .ht-loading .ht-spinner { color: var(--primary-light); }
 .ht h1, .ht h2, .ht h3 { color: inherit; }
 .ht dl, .ht ul, .ht ol { margin-bottom: 0; }
-.ht a.ht-link, .ht a.ht-more, .ht a.ht-back { color: var(--primary-light); }
+.ht a.ht-link, .ht a.ht-more, .ht a.ht-back, .ht button.ht-back { color: var(--primary-light); }
 .ht a.ht-btn--primary { color: var(--on-primary); }
 .ht a.ht-btn--secondary { color: var(--foreground); }
 
@@ -538,3 +539,10 @@ a.ht-stat:hover { border-color: var(--border-strong); }
   .ht-profile-details dd { padding-top: 0; }
   .ht-profile-security { align-items: flex-start; flex-direction: column; }
 }
+
+/* ---------- 404 page ---------- */
+.ht-notfound { min-height: 100vh; display: grid; place-items: center; padding: 24px 16px; background: var(--bg); }
+.ht-notfound__box { max-width: 480px; text-align: center; display: grid; justify-items: center; gap: 8px; }
+.ht-notfound__code { font: 700 72px/1 var(--font-mono); color: var(--primary-light); opacity: 0.35; margin-top: 16px; letter-spacing: -0.02em; }
+.ht-notfound__box .ht-page-sub { overflow-wrap: anywhere; }
+.ht-notfound__actions { display: flex; gap: 16px; align-items: center; margin-top: 12px; flex-wrap: wrap; justify-content: center; }

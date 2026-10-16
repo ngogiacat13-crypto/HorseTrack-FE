@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ownerApi } from '../../../api/ownerApi';
 import { useActor } from '../../../auth/AuthContext';
@@ -9,14 +9,11 @@ import { HorseBadges, LoadState, PhaseBar } from '../../../components/trainer/Tr
 import { HealthTab } from './HealthTab';
 import { PerformanceTab } from './PerformanceTab';
 
-type Tab = 'INFO' | 'HEALTH' | 'PERF' | 'COST';
-
 /* 1.2 Hồ sơ chi tiết ngựa · 1.3 Phong độ · 4.1–4.3 Thông tin y tế chỉ xem (BR_09) */
 export const OwnerHorseDetail: React.FC = () => {
   const { id = '' } = useParams();
   const actor = useActor();
   const { data, loading, error, reload } = useFetch(() => ownerApi.getMyHorse(id, actor), [id, actor]);
-  const [tab, setTab] = useState<Tab>('INFO');
   if (!data) return <LoadState loading={loading} error={error} onRetry={reload} />;
   const { horse: h, plan, sessions, medicalCost } = data;
   const billedTotal = medicalCost.billed.reduce((s, l) => s + l.amount, 0);
@@ -27,12 +24,15 @@ export const OwnerHorseDetail: React.FC = () => {
       <PageHeader crumbs={<Link to={PATH.owner.home}>Ngựa của tôi</Link>} title={h.name}
         sub={<>{h.breed} · {h.sex === '♂' ? 'Đực' : 'Cái'} · {h.age} tuổi · microchip <span className="ht-mono">{h.microchip}</span> · chuồng {h.stall}</>}
         badge={<HorseBadges horse={h} compact />} />
-      <Tabs<Tab> value={tab} onChange={setTab} items={[
-        { value: 'INFO', label: 'Tổng quan' }, { value: 'HEALTH', label: 'Sức khỏe & điều trị', count: data.protocols.length || undefined },
-        { value: 'PERF', label: 'Phong độ & thi đấu', count: data.stats.starts || undefined }, { value: 'COST', label: 'Chi phí y tế' },
-      ]} />
+      <Tabs.Group defaultValue="INFO">
+      <Tabs.List label="Hồ sơ ngựa">
+        <Tabs.Tab value="INFO">Tổng quan</Tabs.Tab>
+        <Tabs.Tab value="HEALTH" count={data.protocols.length || undefined}>Sức khỏe & điều trị</Tabs.Tab>
+        <Tabs.Tab value="PERF" count={data.stats.starts || undefined}>Phong độ & thi đấu</Tabs.Tab>
+        <Tabs.Tab value="COST">Chi phí y tế</Tabs.Tab>
+      </Tabs.List>
 
-      {tab === 'INFO' && (
+      <Tabs.Panel value="INFO">
         <div className="ht-cols">
           <div>
             <Panel title="Tình trạng huấn luyện" right={plan ? <Badge tone={h.trainingLocked ? 'danger' : 'success'}>{h.trainingLocked ? 'Tạm khóa' : 'Đang tập'}</Badge> : undefined}>
@@ -76,12 +76,12 @@ export const OwnerHorseDetail: React.FC = () => {
             <Callout tone="info" title="Phạm vi xem (BR_09)">Bạn xem được hồ sơ, sức khỏe, phác đồ và chi phí của ngựa thuộc sở hữu của mình. Chỉ Bác sĩ thú y và HLV mới chỉnh sửa chuyên môn.</Callout>
           </div>
         </div>
-      )}
+      </Tabs.Panel>
 
-      {tab === 'HEALTH' && <HealthTab horse={h} protocols={data.protocols} cases={data.cases} vaccinations={data.vaccinations} />}
-      {tab === 'PERF' && <PerformanceTab results={data.results} stats={data.stats} proposals={data.proposals} />}
+      <Tabs.Panel value="HEALTH"><HealthTab horse={h} protocols={data.protocols} cases={data.cases} vaccinations={data.vaccinations} /></Tabs.Panel>
+      <Tabs.Panel value="PERF"><PerformanceTab results={data.results} stats={data.stats} proposals={data.proposals} /></Tabs.Panel>
 
-      {tab === 'COST' && (
+      <Tabs.Panel value="COST">
         <div className="ht-cols">
           <Panel title="Chi phí y tế đã vào hóa đơn" sub={`Tổng ${money(billedTotal)}`}>
             <div style={{ overflowX: 'auto' }}>
@@ -109,7 +109,8 @@ export const OwnerHorseDetail: React.FC = () => {
             </Panel>
           </div>
         </div>
-      )}
+      </Tabs.Panel>
+      </Tabs.Group>
     </div>
   );
 };

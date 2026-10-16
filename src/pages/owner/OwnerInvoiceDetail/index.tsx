@@ -1,12 +1,12 @@
 import React from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { invoiceLabel, ownerApi, PAYMENT_LABEL, POLICY } from '../../../api/ownerApi';
 import { addDays, daysFromToday } from '../../../api/vetApi';
 import { useActor } from '../../../auth/AuthContext';
 import { useFetch } from '../../../hooks/useFetch';
 import { PATH } from '../../../routers/routerPath';
 import { Icon } from '../../../components/ui/Icon';
-import { Badge, Callout, money, PageHeader, Panel } from '../../../components/ui/Ht';
+import { BackButton, Badge, Callout, money, PageHeader, Panel } from '../../../components/ui/Ht';
 import { LoadState } from '../../../components/trainer/TrainerParts';
 import { PayPanel } from './PayPanel';
 
@@ -33,7 +33,7 @@ export const OwnerInvoiceDetail: React.FC = () => {
 
   return (
     <div className="ht ht-page">
-      <PageHeader crumbs={<Link to={PATH.owner.invoices}>Hóa đơn</Link>} title="Chi tiết hóa đơn" sub={`${i.horse} · ${i.service} tháng ${i.period}`} badge={<Badge tone={tone}>{label}</Badge>} />
+      <PageHeader crumbs={<BackButton fallback={PATH.owner.invoices} />} title="Chi tiết hóa đơn" sub={`${i.horse} · ${i.service} tháng ${i.period}`} badge={<Badge tone={tone}>{label}</Badge>} />
 
       {suspended && (
         <div className="ht-banner" role="alert">

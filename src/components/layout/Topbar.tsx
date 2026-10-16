@@ -1,6 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
+import { useClickOutside } from '../../hooks/useClickOutside';
 import { ROLE_HOME } from '../../api/mockData';
 import { Icon } from '../ui/Icon';
 import { Avatar, BrandMark, DemoClock } from '../ui/Ht';
@@ -12,13 +13,7 @@ export const Topbar: React.FC = () => {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const onDown = (e: MouseEvent) => { if (menuRef.current && !menuRef.current.contains(e.target as Node)) setOpen(false); };
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
-    document.addEventListener('mousedown', onDown);
-    document.addEventListener('keydown', onKey);
-    return () => { document.removeEventListener('mousedown', onDown); document.removeEventListener('keydown', onKey); };
-  }, []);
+  useClickOutside(menuRef, () => setOpen(false), open);
 
   if (!user) return null;
 

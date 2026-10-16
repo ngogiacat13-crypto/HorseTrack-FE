@@ -12,6 +12,7 @@ import { ForgotPassword } from '../pages/auth/ForgotPassword';
 import { ChangePassword } from '../pages/auth/ChangePassword';
 import { MyProfile } from '../pages/auth/MyProfile';
 import { HorseProfile } from '../pages/shared/HorseProfile';
+import { NotFound } from '../pages/shared/NotFound';
 
 import { ManagerDashboard } from '../pages/manager/ManagerDashboard';
 import { ManagerRegistrationQueue } from '../pages/manager/ManagerRegistrationQueue';
@@ -162,7 +163,8 @@ export const AppRoutes: React.FC = () => {
         )))}
       </Route>
 
-      <Route path="*" element={<Navigate to={home} replace />} />
+      {/* 404: unknown address */}
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 };
