@@ -1,0 +1,45 @@
+/* Owner billing policy + display labels. */
+import { daysFromToday } from '../vetApi/dates';
+import type { InvoiceDue, OwnerInvoice, PaymentStatus } from './types';
+
+type Tone = 'success' | 'info' | 'warning' | 'danger' | 'neutral';
+
+/** Club configuration used by BR_12 / BR_13 / BR_14 (demo values). */
+export const POLICY = {
+  /** BR_12 — no penalty during the first 10 days after the due date. */
+  graceDays: 10,
+  /** BR_12 — penalty rate on the invoice amount once the grace period has passed. */
+  penaltyRate: 0.05,
+  /** BR_13 — the club manager may suspend the service at 25 days overdue. */
+  suspendDays: 25,
+  /** BR_14 — fee to reopen a suspended service, paid with the debt. */
+  reactivationFee: 1_000_000,
+};
+
+const PAID_STATES = ['PAID', 'ACTIVE', 'REACTIVATION_PENDING'];
+export const isPaid = (i: Pick<OwnerInvoice, 'status'>) => PAID_STATES.includes(i.status);
+
+/** Amount due today for one invoice, from the demo clock. */
+export const invoiceDue = (i: OwnerInvoice): InvoiceDue => {
+  if (isPaid(i)) return { overdueDays: 0, penalty: 0, reactivationFee: 0, total: i.amount, group: 'PAID' };
+  const overdueDays = Math.max(0, -daysFromToday(i.dueDate));
+  const penalty = overdueDays > POLICY.graceDays ? Math.round((i.amount * POLICY.penaltyRate) / 1000) * 1000 : 0;
+  const suspended = i.status === 'SUSPENDED';
+  const reactivationFee = suspended ? POLICY.reactivationFee : 0;
+  return {
+    overdueDays, penalty, reactivationFee, total: i.amount + penalty + reactivationFee,
+    group: suspended ? 'SUSPENDED' : overdueDays > 0 ? 'OVERDUE' : 'UNPAID',
+  };
+};
+
+export const DUE_LABEL: Record<InvoiceDue['group'], [string, Tone]> = {
+  UNPAID: ['Chờ thanh toán', 'warning'], OVERDUE: ['Quá hạn', 'danger'], SUSPENDED: ['Đình chỉ', 'danger'], PAID: ['Đã thanh toán', 'success'],
+};
+/** Finer label for the paid side (reactivation still waits for the manager). */
+export const invoiceLabel = (i: OwnerInvoice): [string, Tone] =>
+  i.status === 'REACTIVATION_PENDING' ? ['Đã thanh toán · chờ kích hoạt lại', 'info'] : DUE_LABEL[invoiceDue(i).group];
+
+export const PAYMENT_LABEL: Record<PaymentStatus, [string, Tone]> = {
+  INIT: ['Khởi tạo', 'neutral'], PROCESSING: ['Đang xử lý', 'info'], PENDING_VERIFY: ['Chờ xác minh', 'warning'],
+  VERIFIED: ['Đã xác minh', 'success'], FAILED: ['Thất bại', 'danger'],
+};

@@ -1,22 +1,23 @@
 import React, { useMemo, useState } from 'react';
 import type { ManagedUser } from '../../../api/managerApi';
 import { Icon } from '../../../components/ui/Icon';
-import { Badge, Panel } from '../../../components/ui/Ht';
+import { Avatar, Badge, Panel } from '../../../components/ui/Ht';
 import { ROLE_LABEL } from '../../../components/layout/nav';
+import { useDebounce } from '../../../hooks/useDebounce';
 
 type Role = ManagedUser['role'];
 export type UserAction = 'role' | 'lock' | 'unlock';
 const ROLES = Object.keys(ROLE_LABEL) as Role[];
-const initials = (n: string) => n.trim().split(/\s+/).slice(-2).map((p) => p[0]).join('').toUpperCase();
 
 /* 5.1 — users with search + role/status filters. The signed-in manager cannot act on their own account. */
 export const UserTable: React.FC<{ users: ManagedUser[]; meId?: string; onAction: (kind: UserAction, u: ManagedUser) => void }> = ({ users, meId, onAction }) => {
   const [q, setQ] = useState('');
+  const query = useDebounce(q); // filter after the user pauses typing
   const [roleF, setRoleF] = useState('');
   const [stF, setStF] = useState('');
   const list = useMemo(() => users.filter((u) =>
-    (u.fullName + u.username + u.email).toLowerCase().includes(q.trim().toLowerCase()) &&
-    (!roleF || u.role === roleF) && (!stF || u.status === stF)), [users, q, roleF, stF]);
+    (u.fullName + u.username + u.email).toLowerCase().includes(query.trim().toLowerCase()) &&
+    (!roleF || u.role === roleF) && (!stF || u.status === stF)), [users, query, roleF, stF]);
 
   return (
     <Panel headStyle={{ paddingBottom: 16, justifyContent: 'flex-start', flexWrap: 'wrap' }} right={<>
@@ -35,7 +36,7 @@ export const UserTable: React.FC<{ users: ManagedUser[]; meId?: string; onAction
             <tr key={u.id}>
               <td>
                 <div style={{ display: 'flex', gap: 10, alignItems: 'center', whiteSpace: 'nowrap' }}>
-                  <i className={`ht-avatar${u.status === 'LOCKED' ? ' ht-avatar--muted' : ''}`}>{initials(u.fullName)}</i>
+                  <Avatar name={u.fullName} src={u.avatarUrl} size={32} muted={u.status === 'LOCKED' && !u.avatarUrl} />
                   <span><span className="strong">{u.fullName}</span><span className="sub">{u.email}</span></span>
                 </div>
               </td>

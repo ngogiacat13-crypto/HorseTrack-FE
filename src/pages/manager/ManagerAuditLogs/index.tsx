@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { AuditArea, AuditLog, managerApi } from '../../../api/managerApi';
 import { Icon } from '../../../components/ui/Icon';
 import { Badge, Callout, Loading, PageHeader, Panel, useToast } from '../../../components/ui/Ht';
+import { useDebounce } from '../../../hooks/useDebounce';
 
 const AREA_TONE: Record<AuditArea, React.ComponentProps<typeof Badge>['tone']> = { reg: 'success', med: 'warning', train: 'danger', fin: 'info', acct: 'neutral' };
 const AREA_LABEL: Record<AuditArea, string> = { reg: 'Hồ sơ ngựa', med: 'Y tế · kho', train: 'Phiên tập', fin: 'Tài chính', acct: 'Tài khoản' };
@@ -10,6 +11,7 @@ export const ManagerAuditLogs: React.FC = () => {
   const toast = useToast();
   const [data, setData] = useState<{ total: number; items: AuditLog[] } | null>(null);
   const [q, setQ] = useState('');
+  const query = useDebounce(q); // filter after the user pauses typing
   const [who, setWho] = useState('');
   const [area, setArea] = useState<'' | AuditArea>('');
   const [logins, setLogins] = useState(false);
@@ -28,7 +30,7 @@ export const ManagerAuditLogs: React.FC = () => {
   const people = useMemo(() => Array.from(new Set((data?.items ?? []).map((l) => l.who))), [data]);
   const list = useMemo(() => (data?.items ?? []).filter((l) =>
     (logins || !l.isLogin) && (!who || l.who === who) && (!area || l.area === area) &&
-    (l.object + l.action + l.label).toLowerCase().includes(q.trim().toLowerCase())), [data, q, who, area, logins]);
+    (l.object + l.action + l.label).toLowerCase().includes(query.trim().toLowerCase())), [data, query, who, area, logins]);
 
   if (!data) return <div className="ht ht-page"><Loading /></div>;
 

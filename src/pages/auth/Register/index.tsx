@@ -14,6 +14,7 @@ export const Register: React.FC = () => {
   const navigate = useNavigate();
   const [doneUser, setDoneUser] = useState<string | null>(null);
   const [count, setCount] = useState(3);
+  const [submitAttempted, setSubmitAttempted] = useState(false);
 
   const form = useForm(
     { fullname: '', username: '', phone: '', email: '', password: '' },
@@ -35,6 +36,7 @@ export const Register: React.FC = () => {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitAttempted(true);
     if (!form.check()) return;
     form.setSubmitting(true);
     try {
@@ -43,7 +45,8 @@ export const Register: React.FC = () => {
       setDoneUser(v.username);
     } catch (err) {
       const e = err as ApiError;
-      if (e?.field) form.setServerErrors({ [e.field]: e.message ?? 'Giá trị không hợp lệ.' });
+      if (e?.fields) form.setServerErrors(e.fields);
+      else if (e?.field) form.setServerErrors({ [e.field]: e.message ?? 'Giá trị không hợp lệ.' });
       else form.setServerErrors({ email: 'Đã có lỗi xảy ra, vui lòng thử lại.' });
     } finally {
       form.setSubmitting(false);
@@ -88,6 +91,14 @@ export const Register: React.FC = () => {
           <Callout tone="info" title="Vai trò mặc định: Chủ ngựa" style={{ marginBottom: 20 }}>
             Các vai trò nhân sự (HLV, Bác sĩ, Kho, Mã phu) do Quản lý CLB cấp.
           </Callout>
+
+          {submitAttempted && Object.keys(form.errors).length > 0 && (
+            <Callout tone="danger" title={`Vui lòng kiểm tra ${Object.keys(form.errors).length} lỗi trước khi đăng ký`} style={{ marginBottom: 20 }}>
+              <ul className="ht-form-error-list">
+                {Object.entries(form.errors).map(([field, message]) => <li key={field}>{message}</li>)}
+              </ul>
+            </Callout>
+          )}
 
           <form onSubmit={onSubmit} noValidate>
             <Field label="Họ và tên" htmlFor="fullname" required error={form.errors.fullname}>

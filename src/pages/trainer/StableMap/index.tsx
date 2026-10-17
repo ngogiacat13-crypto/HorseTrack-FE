@@ -6,6 +6,7 @@ import { useFetch } from '../../../hooks/useFetch';
 import { Icon } from '../../../components/ui/Icon';
 import { Badge, Callout, PageHeader, Panel, StatCard } from '../../../components/ui/Ht';
 import { HorseBadges, LoadState } from '../../../components/trainer/TrainerParts';
+import { useDebounce } from '../../../hooks/useDebounce';
 
 const STALL_LABEL: Record<Stall['status'], [string, 'success' | 'warning' | 'danger']> = {
   CLEAN: ['Sạch', 'success'], NEEDS_CLEANING: ['Cần dọn', 'warning'], MAINTENANCE: ['Bảo trì', 'danger'],
@@ -18,9 +19,10 @@ export const StableMap: React.FC = () => {
   const [sel, setSel] = useState('A-02');
   const [zone, setZone] = useState('');
   const [q, setQ] = useState('');
+  const query = useDebounce(q); // filter after the user pauses typing
 
   const stalls = useMemo(() => data?.stalls ?? [], [data]);
-  const visible = useMemo(() => stalls.filter((s) => (!zone || s.zone === zone) && `${s.id} ${s.horse ?? ''}`.toLowerCase().includes(q.trim().toLowerCase())), [stalls, zone, q]);
+  const visible = useMemo(() => stalls.filter((s) => (!zone || s.zone === zone) && `${s.id} ${s.horse ?? ''}`.toLowerCase().includes(query.trim().toLowerCase())), [stalls, zone, query]);
   if (!data) return <LoadState loading={loading} error={error} onRetry={reload} />;
 
   const horseOf = (s: Stall) => data.horses.find((h) => h.id === s.horseId);

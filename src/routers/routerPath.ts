@@ -1,8 +1,10 @@
 /* Every URL of the app in one place. Use these instead of hard-coded strings in routes and menus. */
 export const PATH = {
+  landing: '/',
   login: '/login',
   register: '/register',
   forgotPassword: '/forgot-password',
+  myProfile: '/my-profile',
   changePassword: '/change-password',
   horseProfile: '/horses/:id',
 
@@ -39,9 +41,35 @@ export const PATH = {
     vaccinations: '/vet/vaccinations',
     raceExams: '/vet/race-exams',
   },
-  groom: { home: '/groom', stable: '/groom/stable' },
-  owner: { home: '/owner', horses: '/owner/horses' },
-  warehouse: { home: '/warehouse', requisitions: '/warehouse/requisitions', shipments: '/warehouse/shipments' },
+  groom: {
+    home: '/groom',
+    stable: '/groom/stable',
+    sessions: '/groom/sessions',
+    session: '/groom/sessions/:id',
+    incidents: '/groom/incidents',
+    requests: '/groom/requests',
+  },
+  owner: {
+    home: '/owner',
+    horse: '/owner/horses/:id',
+    races: '/owner/races',
+    invoices: '/owner/invoices',
+    invoice: '/owner/invoices/:id',
+    payments: '/owner/payments',
+    registrations: '/owner/registrations',
+    registrationCreate: '/owner/registrations/new',
+  },
+  /** VNPay sandbox MOCK — full-page, outside the app layout. */
+  vnpay: '/payment/vnpay/:id',
+  warehouse: {
+    home: '/warehouse',
+    medical: '/warehouse/medical',
+    medicalDetail: '/warehouse/medical/:id',
+    requisitions: '/warehouse/requisitions',
+    shipments: '/warehouse/shipments',
+    check: '/warehouse/check',
+    log: '/warehouse/log',
+  },
 } as const;
 
 /** Fill a path pattern, e.g. toPath(PATH.vet.horse, { id: 'h-storm' }) → /vet/horses/h-storm */

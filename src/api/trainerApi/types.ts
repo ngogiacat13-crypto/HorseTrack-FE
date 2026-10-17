@@ -9,6 +9,8 @@ export interface Horse {
   lock: { by: string; at: string; reason: string; review: string } | null;
   injuries: Injury[];
   medicalHistory: { date: string; title: string; tone: 'danger' | 'warning' | 'success' }[];
+  /** Race results entered after each race (owner performance view). */
+  raceResults?: { date: string; race: string; distance: string; rank: number; field: number; time: string }[];
 }
 
 export type Intensity = 'Nhẹ' | 'Vừa' | 'Cao';

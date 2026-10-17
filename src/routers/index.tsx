@@ -10,7 +10,9 @@ import { Login } from '../pages/auth/Login';
 import { Register } from '../pages/auth/Register';
 import { ForgotPassword } from '../pages/auth/ForgotPassword';
 import { ChangePassword } from '../pages/auth/ChangePassword';
+import { MyProfile } from '../pages/auth/MyProfile';
 import { HorseProfile } from '../pages/shared/HorseProfile';
+import { NotFound } from '../pages/shared/NotFound';
 
 import { ManagerDashboard } from '../pages/manager/ManagerDashboard';
 import { ManagerRegistrationQueue } from '../pages/manager/ManagerRegistrationQueue';
@@ -41,15 +43,31 @@ import { VetMedicines } from '../pages/vet/VetMedicines';
 import { VetVaccinations } from '../pages/vet/VetVaccinations';
 import { VetRaceExams } from '../pages/vet/VetRaceExams';
 
-import { GroomTodayTasks } from '../pages/groom/GroomTodayTasks';
-import { OwnerInvoices } from '../pages/owner/OwnerInvoices';
+import { WarehouseInventory } from '../pages/warehouse/WarehouseInventory';
+import { WarehouseMedical } from '../pages/warehouse/WarehouseMedical';
+import { WarehouseMedicalDetail } from '../pages/warehouse/WarehouseMedicalDetail';
+import { WarehouseShipments } from '../pages/warehouse/WarehouseShipments';
+import { WarehouseRequisitions } from '../pages/warehouse/WarehouseRequisitions';
+import { WarehouseStockCheck } from '../pages/warehouse/WarehouseStockCheck';
+import { WarehouseLog } from '../pages/warehouse/WarehouseLog';
 
-const Placeholder: React.FC<{ title: string }> = ({ title }) => (
-  <div className="text-center mt-5">
-    <h2 className="text-muted">{title}</h2>
-    <p>Màn hình này đang được phát triển.</p>
-  </div>
-);
+import { GroomTodayTasks } from '../pages/groom/GroomTodayTasks';
+import { GroomStable } from '../pages/groom/GroomStable';
+import { GroomSessions } from '../pages/groom/GroomSessions';
+import { GroomSessionRun } from '../pages/groom/GroomSessionRun';
+import { GroomIncidents } from '../pages/groom/GroomIncidents';
+import { GroomRequests } from '../pages/groom/GroomRequests';
+import { Landing } from '../pages/public/Landing';
+import { OwnerHorses } from '../pages/owner/OwnerHorses';
+import { OwnerHorseDetail } from '../pages/owner/OwnerHorseDetail';
+import { OwnerRaces } from '../pages/owner/OwnerRaces';
+import { OwnerInvoices } from '../pages/owner/OwnerInvoices';
+import { OwnerInvoiceDetail } from '../pages/owner/OwnerInvoiceDetail';
+import { OwnerPayments } from '../pages/owner/OwnerPayments';
+import { OwnerRegistrations } from '../pages/owner/OwnerRegistrations';
+import { OwnerRegistrationCreate } from '../pages/owner/OwnerRegistrationCreate';
+import { VNPayMock } from '../pages/owner/VNPayMock';
+
 
 /* Pages of each role — every one of them is wrapped in RoleGuard below. */
 const ROLE_ROUTES: { role: Role; routes: [path: string, element: React.ReactElement][] }[] = [
@@ -85,27 +103,59 @@ const ROLE_ROUTES: { role: Role; routes: [path: string, element: React.ReactElem
     [PATH.vet.vaccinations, <VetVaccinations />],
     [PATH.vet.raceExams, <VetRaceExams />],
   ] },
-  { role: 'Groom', routes: [[PATH.groom.home, <GroomTodayTasks />]] },
-  { role: 'HorseOwner', routes: [[PATH.owner.home, <OwnerInvoices />]] },
-  { role: 'WarehouseManager', routes: [[PATH.warehouse.home, <Placeholder title="Danh sách tồn kho" />]] },
+  {
+    role: 'Groom',
+    routes: [
+      [PATH.groom.home, <GroomTodayTasks />],
+      [PATH.groom.stable, <GroomStable />],
+      [PATH.groom.sessions, <GroomSessions />],
+      [PATH.groom.session, <GroomSessionRun />],
+      [PATH.groom.incidents, <GroomIncidents />],
+      [PATH.groom.requests, <GroomRequests />],
+    ],
+  },
+  { role: 'HorseOwner', routes: [
+    [PATH.owner.home, <OwnerHorses />],
+    [PATH.owner.horse, <OwnerHorseDetail />],
+    [PATH.owner.races, <OwnerRaces />],
+    [PATH.owner.invoices, <OwnerInvoices />],
+    [PATH.owner.invoice, <OwnerInvoiceDetail />],
+    [PATH.owner.payments, <OwnerPayments />],
+    [PATH.owner.registrations, <OwnerRegistrations />],
+    [PATH.owner.registrationCreate, <OwnerRegistrationCreate />],
+  ] },
+  { role: 'WarehouseManager', routes: [
+    [PATH.warehouse.home, <WarehouseInventory />],
+    [PATH.warehouse.medical, <WarehouseMedical />],
+    [PATH.warehouse.medicalDetail, <WarehouseMedicalDetail />],
+    [PATH.warehouse.requisitions, <WarehouseRequisitions />],
+    [PATH.warehouse.shipments, <WarehouseShipments />],
+    [PATH.warehouse.check, <WarehouseStockCheck />],
+    [PATH.warehouse.log, <WarehouseLog />],
+  ] },
 ];
 
 export const AppRoutes: React.FC = () => {
   const { user } = useAuth();
-  const home = user ? ROLE_HOME[user.role] : PATH.login;
+  const home = user ? ROLE_HOME[user.role] : PATH.landing;
   // Public pages bounce a signed-in user back to their home page.
   const publicOnly = (page: React.ReactElement) => (user ? <Navigate to={home} replace /> : page);
 
   return (
     <Routes>
-      {/* Auth (public) */}
+      {/* Public */}
+      <Route path={PATH.landing} element={<Landing />} />
       <Route path={PATH.login} element={publicOnly(<Login />)} />
       <Route path={PATH.register} element={publicOnly(<Register />)} />
       <Route path={PATH.forgotPassword} element={publicOnly(<ForgotPassword />)} />
 
+      {/* VNPay sandbox MOCK — full page, outside the app layout */}
+      <Route path={PATH.vnpay} element={user ? <RoleGuard role="HorseOwner"><VNPayMock /></RoleGuard> : <Navigate to={PATH.login} replace />} />
+
       {/* App (signed in) */}
       <Route element={user ? <AppLayout /> : <Navigate to={PATH.login} replace />}>
         <Route path={PATH.horseProfile} element={<HorseProfile />} />
+        <Route path={PATH.myProfile} element={<MyProfile />} />
         <Route path={PATH.changePassword} element={<ChangePassword />} />
         <Route path={PATH.manager.oldProtocols} element={<Navigate to={PATH.manager.medicalMonitoring} replace />} />
         {ROLE_ROUTES.flatMap(({ role, routes }) => routes.map(([path, element]) => (
@@ -113,7 +163,8 @@ export const AppRoutes: React.FC = () => {
         )))}
       </Route>
 
-      <Route path="*" element={<Navigate to={home} replace />} />
+      {/* 404: unknown address */}
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 };

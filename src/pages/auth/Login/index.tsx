@@ -5,8 +5,10 @@ import { ROLE_HOME } from '../../../api/mockData';
 import type { ApiError } from '../../../api/http';
 import { AuthShell } from '../../../components/auth/AuthShell';
 import { Icon } from '../../../components/ui/Icon';
-import { Busy, Callout, Field, PasswordInput, TextInput } from '../../../components/ui/Ht';
-import { useForm } from '../../../hooks/useForm';
+import { FormikProvider, useFormik } from 'formik';
+import * as Yup from 'yup';
+import { Busy, Callout } from '../../../components/ui/Ht';
+import { FocusFirstError, FormikField } from '../../../components/form/FormikField';
 
 const SHOW_DEMO = import.meta.env.DEV || import.meta.env.VITE_DEMO === 'true';
 
@@ -19,33 +21,35 @@ const DEMO_ACCOUNTS = [
   { username: 'vankho', role: 'Quản lý kho', initials: 'QK' },
 ];
 
+const schema = Yup.object({
+  username: Yup.string().trim().required('Vui lòng nhập tên đăng nhập / email / SĐT'),
+  password: Yup.string().required('Vui lòng nhập mật khẩu'),
+});
+
 export const Login: React.FC = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
   const [serverError, setServerError] = useState('');
   const passwordRef = useRef<HTMLDivElement>(null);
 
-  const form = useForm({ username: '', password: '' }, (v) => ({
-    username: v.username.trim() ? undefined : 'Vui lòng nhập tên đăng nhập / email / SĐT',
-    password: v.password ? undefined : 'Vui lòng nhập mật khẩu',
-  }));
-
-  const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setServerError('');
-    if (!form.check()) return;
-    form.setSubmitting(true);
-    try {
-      const user = await login(form.values.username.trim(), form.values.password);
-      navigate(ROLE_HOME[user.role], { replace: true });
-    } catch (err) {
-      setServerError((err as ApiError)?.message || 'Đăng nhập thất bại');
-      form.setSubmitting(false);
-    }
-  };
+  // useFormik = the hook form of <Formik>; used here because the demo buttons outside the <form> also fill it.
+  const formik = useFormik({
+    initialValues: { username: '', password: '' },
+    validationSchema: schema,
+    onSubmit: async (v) => {
+      setServerError('');
+      try {
+        const user = await login(v.username.trim(), v.password);
+        navigate(ROLE_HOME[user.role], { replace: true });
+      } catch (err) {
+        setServerError((err as ApiError)?.message || 'Đăng nhập thất bại');
+      }
+    },
+  });
+  const submitting = formik.isSubmitting;
 
   const pickDemo = (username: string) => {
-    form.reset({ username, password: 'password123' });
+    formik.resetForm({ values: { username, password: 'password123' } });
     setServerError('');
     passwordRef.current?.querySelector('input')?.focus();
   };
@@ -68,24 +72,23 @@ export const Login: React.FC = () => {
 
       {serverError && <Callout tone="danger" style={{ marginBottom: 16 }}>{serverError}</Callout>}
 
-      <form onSubmit={onSubmit} noValidate>
-        <Field label="Tên đăng nhập / Email / SĐT" htmlFor="username" error={form.errors.username}>
-          <TextInput icon="user" autoComplete="username" placeholder="vd: nguyenminh" {...form.field('username')} />
-        </Field>
+      <FormikProvider value={formik}>
+      <form onSubmit={formik.handleSubmit} noValidate>
+        <FocusFirstError />
+        <FormikField name="username" label="Tên đăng nhập / Email / SĐT" icon="user" autoComplete="username" placeholder="vd: nguyenminh" />
 
         <div ref={passwordRef}>
-          <Field label="Mật khẩu" htmlFor="password" error={form.errors.password}>
-            <PasswordInput autoComplete="current-password" placeholder="Nhập mật khẩu" {...form.field('password')} />
-          </Field>
+          <FormikField name="password" label="Mật khẩu" password autoComplete="current-password" placeholder="Nhập mật khẩu" />
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: -4 }}>
             <Link className="ht-link" to="/forgot-password" style={{ fontSize: 13 }}>Quên mật khẩu?</Link>
           </div>
         </div>
 
-        <button type="submit" className="ht-btn ht-btn--primary ht-btn--block" style={{ marginTop: 8 }} disabled={form.submitting} aria-busy={form.submitting || undefined}>
-          <Busy busy={form.submitting} label="Đang đăng nhập…"><span>Đăng nhập</span><Icon name="arrow" /></Busy>
+        <button type="submit" className="ht-btn ht-btn--primary ht-btn--block" style={{ marginTop: 8 }} disabled={submitting} aria-busy={submitting || undefined}>
+          <Busy busy={submitting} label="Đang đăng nhập…"><span>Đăng nhập</span><Icon name="arrow" /></Busy>
         </button>
       </form>
+      </FormikProvider>
 
       {SHOW_DEMO && (
         <div className="ht-demo" aria-label="Tài khoản demo">

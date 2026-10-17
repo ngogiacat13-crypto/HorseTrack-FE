@@ -61,18 +61,37 @@ export const NAV_BY_ROLE: Record<Role, NavGroup[]> = {
       { path: PATH.groom.home, icon: 'task', label: 'Công việc hôm nay', end: true },
       { path: PATH.groom.stable, icon: 'stable', label: 'Sơ đồ chuồng' },
     ] },
+    { title: 'Huấn luyện', items: [
+      { path: PATH.groom.sessions, icon: 'pulse', label: 'Phiên tập được giao' },
+    ] },
+    { title: 'Báo cáo & yêu cầu', items: [
+      { path: PATH.groom.incidents, icon: 'alert', label: 'Báo cáo sự cố' },
+      { path: PATH.groom.requests, icon: 'box', label: 'Yêu cầu vật tư' },
+    ] },
   ],
   HorseOwner: [
-    { title: 'Của tôi', items: [
-      { path: PATH.owner.home, icon: 'receipt', label: 'Hóa đơn', end: true },
-      { path: PATH.owner.horses, icon: 'pulse', label: 'Ngựa của tôi' },
+    { title: 'Ngựa', items: [
+      { path: PATH.owner.home, icon: 'stable', label: 'Ngựa của tôi', end: true },
+      { path: PATH.owner.races, icon: 'trend', label: 'Xác nhận thi đấu' },
+      { path: PATH.owner.registrations, icon: 'file', label: 'Đăng ký ngựa mới' },
+    ] },
+    { title: 'Tài chính', items: [
+      { path: PATH.owner.invoices, icon: 'receipt', label: 'Hóa đơn' },
+      { path: PATH.owner.payments, icon: 'card', label: 'Lịch sử thanh toán' },
     ] },
   ],
   WarehouseManager: [
     { title: 'Kho', items: [
       { path: PATH.warehouse.home, icon: 'box', label: 'Tồn kho', end: true },
-      { path: PATH.warehouse.requisitions, icon: 'send', label: 'Yêu cầu cấp phát' },
-      { path: PATH.warehouse.shipments, icon: 'truck', label: 'Đơn nhập hàng' },
+      { path: PATH.warehouse.check, icon: 'clip', label: 'Kiểm kê tháng' },
+      { path: PATH.warehouse.log, icon: 'file', label: 'Nhật ký kho' },
+    ] },
+    { title: 'Yêu cầu', items: [
+      { path: PATH.warehouse.medical, icon: 'heart', label: 'Thuốc theo phác đồ', count: 3, tone: 'danger' },
+      { path: PATH.warehouse.requisitions, icon: 'send', label: 'Vật tư từ Mã phu', count: 3 },
+    ] },
+    { title: 'Nhập hàng', items: [
+      { path: PATH.warehouse.shipments, icon: 'truck', label: 'Đơn nhập hàng', count: 1, tone: 'danger' },
     ] },
   ],
 };

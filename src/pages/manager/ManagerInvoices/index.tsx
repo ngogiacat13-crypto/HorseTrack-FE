@@ -4,6 +4,7 @@ import { Icon } from '../../../components/ui/Icon';
 import { Loading, PageHeader, StatCard, Tabs, useToast } from '../../../components/ui/Ht';
 import { InvoiceTable } from './InvoiceTable';
 import { ReactivateDialog, SuspendDialog } from './InvoiceDialogs';
+import { useDebounce } from '../../../hooks/useDebounce';
 
 type Filter = 'all' | 'unpaid' | 'overdue' | 'suspended' | 'paid';
 const isOverdue = (i: Invoice) => i.status === 'OVERDUE' || i.status === 'SUSPENDED';
@@ -14,6 +15,7 @@ export const ManagerInvoices: React.FC = () => {
   const [items, setItems] = useState<Invoice[] | null>(null);
   const [filter, setFilter] = useState<Filter>('all');
   const [q, setQ] = useState('');
+  const query = useDebounce(q); // filter after the user pauses typing
   const [dlg, setDlg] = useState<null | { kind: 'suspend' | 'react'; inv: Invoice }>(null);
 
   useEffect(() => { managerApi.getInvoices().then(setItems); }, []);
@@ -24,8 +26,8 @@ export const ManagerInvoices: React.FC = () => {
       || (filter === 'paid' && (i.status === 'PAID' || i.status === 'ACTIVE'))
       || (filter === 'overdue' && i.status === 'OVERDUE')
       || (filter === 'unpaid' && i.status === 'UNPAID');
-    return okF && (i.id + i.horse + i.owner).toLowerCase().includes(q.trim().toLowerCase());
-  }), [items, filter, q]);
+    return okF && (i.id + i.horse + i.owner).toLowerCase().includes(query.trim().toLowerCase());
+  }), [items, filter, query]);
 
   if (!items) return <div className="ht ht-page"><Loading /></div>;
 

@@ -1,0 +1,48 @@
+/* ============================================================
+   Groom + Horse owner screens — task cards, session runner, owner horse cards.
+   ============================================================ */
+
+/* ---------- Task card (view-8) ---------- */
+.ht-tasks { display: grid; gap: var(--space-3); }
+.ht-task { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 14px; align-items: start; padding: 16px 20px; border: 1px solid var(--border); border-left-width: 4px; border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow-card); }
+.ht-task[data-state="late"] { border-color: var(--danger-line); border-left-color: var(--danger); background: var(--danger-soft); }
+.ht-task[data-state="soon"] { border-color: var(--warning-line); border-left-color: var(--warning); }
+.ht-task[data-state="done"] { border-color: var(--success-soft); border-left-color: var(--success); }
+.ht-task[data-state="done"] .ht-task__title { text-decoration: line-through; color: var(--muted); }
+.ht-task__check { width: 24px; height: 24px; margin-top: 2px; border-radius: 6px; border: 2px solid var(--border-strong); background: var(--surface); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; color: var(--on-primary); padding: 0; }
+.ht-task__check:hover { border-color: var(--primary); }
+.ht-task__check[aria-checked="true"] { background: var(--success); border-color: var(--success); cursor: default; }
+.ht-task__check:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.ht-task__title { margin: 0; font: 600 16px/22px var(--font-sans); }
+.ht-task__title span { font-weight: 400; color: var(--muted); }
+.ht-task__meta { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 6px; font-size: 13px; color: var(--muted); }
+.ht-task__meta .is-late { color: var(--danger-ink); font-weight: 600; }
+.ht-task__meta .is-soon { color: var(--warning-ink); font-weight: 600; }
+.ht-task__meta .is-ok { color: var(--success-ink); font-weight: 600; }
+.ht-task__body { display: grid; gap: 8px; margin-top: 10px; font-size: 13px; }
+.ht-sla { height: 4px; border-radius: 2px; background: var(--border); overflow: hidden; }
+.ht-sla i { display: block; height: 100%; background: var(--warning); }
+.ht-quick { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3); }
+.ht-quick a { display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); color: inherit; text-decoration: none; font-size: 13px; }
+.ht-quick a:hover { border-color: var(--primary); }
+.ht-quick a b { display: block; font-size: 14px; }
+.ht-quick a small { color: var(--muted); }
+.ht-photo-pick { display: flex; gap: 12px; align-items: center; }
+.ht-photo-pick img { width: 72px; height: 72px; border-radius: var(--radius-md); object-fit: cover; border: 1px solid var(--border); }
+
+/* ---------- Session runner ---------- */
+.ht-reading-form { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: var(--space-3); align-items: end; }
+.ht-reading-form .ht-field { margin: 0; }
+
+/* ---------- Owner horse card ---------- */
+.ht-owner-horses { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: var(--space-4); }
+
+@media (max-width: 760px) {
+  .ht-quick, .ht-reading-form { grid-template-columns: 1fr; }
+}
+
+/* Quick-pick chips (incident type) */
+.ht-chip { border: 1px solid var(--border); background: var(--surface); color: var(--foreground); border-radius: 999px; padding: 5px 12px; font-size: 13px; cursor: pointer; }
+.ht-chip:hover { border-color: var(--primary-light); }
+.ht-chip[aria-pressed="true"] { border-color: var(--primary); background: var(--primary-soft); color: var(--primary); font-weight: 600; }
+.ht-report { display: grid; gap: 6px; padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--radius-md, 10px); background: var(--surface); }

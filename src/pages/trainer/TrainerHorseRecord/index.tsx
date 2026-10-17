@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { horseInitials, raceBlock, trainerApi, trainingBlock } from '../../../api/trainerApi';
 import { useActor } from '../../../auth/AuthContext';
@@ -8,7 +8,6 @@ import { PageHeader, Tabs } from '../../../components/ui/Ht';
 import { HorseBadges, LoadState } from '../../../components/trainer/TrainerParts';
 import { HealthTab, OverviewTab, RacesTab, TrainingTab } from './RecordTabs';
 
-type Tab = 'overview' | 'health' | 'training' | 'races';
 const sortKey = (s: { date: string; time: string }) => s.date.split('/').reverse().join('') + s.time;
 
 /* 1.5 lịch sử huấn luyện · 4.1 hồ sơ sức khỏe (chỉ xem) · 4.2 khóa tập · 4.3 lịch tiêm */
@@ -16,7 +15,6 @@ export const TrainerHorseRecord: React.FC = () => {
   const { id = '' } = useParams<{ id: string }>();
   const actor = useActor();
   const { data, loading, error, reload } = useFetch(() => trainerApi.getHorse(id, actor), [id, actor]);
-  const [tab, setTab] = useState<Tab>('overview');
 
   if (!data) return <LoadState loading={loading} error={error} onRetry={reload} />;
   const { horse, plans, sessions, vaccinations, proposals, tournaments } = data;
@@ -30,6 +28,7 @@ export const TrainerHorseRecord: React.FC = () => {
   return (
     <div className="ht ht-page">
       <PageHeader
+        docTitle={horse.name}
         crumbs={<><Link className="ht-back" to="/trainer"><Icon name="back" size={14} />Tổng quan đàn ngựa</Link><Icon name="chev" size={14} /><b>{horse.name}</b></>}
         title={<span style={{ display: 'inline-flex', gap: 12, alignItems: 'center' }}><i className="ht-avatar ht-avatar--xl">{horseInitials(horse.name)}</i>{horse.name}</span>}
         badge={<HorseBadges horse={horse} />}
@@ -54,17 +53,18 @@ export const TrainerHorseRecord: React.FC = () => {
         </div>
       )}
 
-      <Tabs<Tab> value={tab} onChange={setTab} items={[
-        { value: 'overview', label: 'Tổng quan' },
-        { value: 'health', label: 'Sức khỏe' },
-        { value: 'training', label: 'Huấn luyện', count: sessions.length },
-        { value: 'races', label: 'Thi đấu', count: proposals.length },
-      ]} />
-
-      {tab === 'overview' && <OverviewTab horse={horse} plan={plan} recent={history.slice(0, 4)} avg={avg} vaccinations={vaccinations} block={block} />}
-      {tab === 'health' && <HealthTab horse={horse} />}
-      {tab === 'training' && <TrainingTab history={history} plans={plans} scored={scored.length} avg={avg} />}
-      {tab === 'races' && <RacesTab proposals={proposals} tournaments={tournaments} />}
+      <Tabs.Group defaultValue="overview">
+        <Tabs.List label="Hồ sơ ngựa">
+          <Tabs.Tab value="overview">Tổng quan</Tabs.Tab>
+          <Tabs.Tab value="health">Sức khỏe</Tabs.Tab>
+          <Tabs.Tab value="training" count={sessions.length}>Huấn luyện</Tabs.Tab>
+          <Tabs.Tab value="races" count={proposals.length}>Thi đấu</Tabs.Tab>
+        </Tabs.List>
+        <Tabs.Panel value="overview"><OverviewTab horse={horse} plan={plan} recent={history.slice(0, 4)} avg={avg} vaccinations={vaccinations} block={block} /></Tabs.Panel>
+        <Tabs.Panel value="health"><HealthTab horse={horse} /></Tabs.Panel>
+        <Tabs.Panel value="training"><TrainingTab history={history} plans={plans} scored={scored.length} avg={avg} /></Tabs.Panel>
+        <Tabs.Panel value="races"><RacesTab proposals={proposals} tournaments={tournaments} /></Tabs.Panel>
+      </Tabs.Group>
     </div>
   );
 };

@@ -6,6 +6,7 @@ import { useFetch } from '../../../hooks/useFetch';
 import { Icon } from '../../../components/ui/Icon';
 import { Badge, PageHeader, Panel, Tabs, Timeline } from '../../../components/ui/Ht';
 import { HorseBadges, LoadState } from '../../../components/trainer/TrainerParts';
+import { useDebounce } from '../../../hooks/useDebounce';
 
 type HealthTab = 'ALL' | HealthStatus;
 
@@ -18,6 +19,7 @@ export const TrainerHerdOverview: React.FC = () => {
   const [lockF, setLockF] = useState<'all' | 'locked' | 'free'>('all');
   const [breed, setBreed] = useState('');
   const [q, setQ] = useState('');
+  const query = useDebounce(q); // filter after the user pauses typing
 
   const horses = useMemo(() => data?.horses ?? [], [data]);
   const activePlan = useMemo(() => {
@@ -30,7 +32,7 @@ export const TrainerHerdOverview: React.FC = () => {
     (tab === 'ALL' || h.health === tab) &&
     (lockF === 'all' || (lockF === 'locked' ? h.trainingLocked : !h.trainingLocked)) &&
     (!breed || h.breed === breed) &&
-    `${h.name} ${h.microchip} ${h.owner}`.toLowerCase().includes(q.trim().toLowerCase())), [horses, tab, lockF, breed, q]);
+    `${h.name} ${h.microchip} ${h.owner}`.toLowerCase().includes(query.trim().toLowerCase())), [horses, tab, lockF, breed, query]);
 
   if (!data) return <LoadState loading={loading} error={error} onRetry={reload} />;
 

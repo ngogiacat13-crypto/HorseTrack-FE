@@ -7,6 +7,7 @@ import { Icon } from '../../../components/ui/Icon';
 import { PageHeader, Panel, StatCard, Tabs } from '../../../components/ui/Ht';
 import { HorseBadges, LoadState } from '../../../components/trainer/TrainerParts';
 import { ProtocolBadge } from '../../../components/vet/VetParts';
+import { useDebounce } from '../../../hooks/useDebounce';
 
 type HealthTab = 'ALL' | HealthStatus;
 
@@ -16,10 +17,11 @@ export const VetHerd: React.FC = () => {
   const { data, loading, error, reload } = useFetch(() => vetApi.getOverview());
   const [tab, setTab] = useState<HealthTab>('ALL');
   const [q, setQ] = useState('');
+  const query = useDebounce(q); // filter after the user pauses typing
 
   const horses = useMemo(() => data?.horses ?? [], [data]);
   const list = useMemo(() => horses.filter((h) => (tab === 'ALL' || h.health === tab) &&
-    `${h.name} ${h.microchip} ${h.owner} ${h.stall}`.toLowerCase().includes(q.trim().toLowerCase())), [horses, tab, q]);
+    `${h.name} ${h.microchip} ${h.owner} ${h.stall}`.toLowerCase().includes(query.trim().toLowerCase())), [horses, tab, query]);
 
   if (!data) return <LoadState loading={loading} error={error} onRetry={reload} />;
 
