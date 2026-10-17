@@ -11,7 +11,7 @@ export const ROLES: { icon: IconName; name: string; en: string; text: string; it
 ];
 
 export const FLOWS: { title: string; who: string; steps: string[] }[] = [
-  { title: 'Đăng ký ngựa mới', who: 'Chủ ngựa → Quản lý CLB', steps: ['Nộp hồ sơ + giấy tờ', 'PENDING_REVIEW', 'Checklist 4 mục', 'APPROVED / REJECTED'] },
+  { title: 'Đăng ký ngựa mới', who: 'Chủ ngựa → Quản lý CLB', steps: ['Nộp hồ sơ + giấy tờ', 'PENDING_REVIEW', 'Checklist 3 mục', 'APPROVED / REJECTED'] },
   { title: 'Phiên tập vượt ngưỡng', who: 'Mã phu → HLV → Bác sĩ', steps: ['Nhập chỉ số', 'Tự tạm dừng (BR_02)', 'HLV quyết định', 'Tiếp tục / chuyển Bác sĩ'] },
   { title: 'Phác đồ & thuốc', who: 'Bác sĩ ↔ Quản lý kho', steps: ['Lập phác đồ', 'Kho kiểm tồn', 'Giữ hàng / chờ ETA', 'Bác sĩ xác nhận → cấp thuốc'] },
   { title: 'Thi đấu', who: 'HLV → Bác sĩ → Chủ ngựa', steps: ['Đề xuất', 'Khám trước thi đấu', 'Chủ ngựa đồng ý', 'READY_TO_SUBMIT'] },

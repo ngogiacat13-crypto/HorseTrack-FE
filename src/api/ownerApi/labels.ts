@@ -33,7 +33,7 @@ export const invoiceDue = (i: OwnerInvoice): InvoiceDue => {
 };
 
 export const DUE_LABEL: Record<InvoiceDue['group'], [string, Tone]> = {
-  UNPAID: ['Chờ thanh toán', 'warning'], OVERDUE: ['Quá hạn', 'danger'], SUSPENDED: ['Đình chỉ', 'danger'], PAID: ['Đã thanh toán', 'success'],
+  UNPAID: ['Chưa thanh toán', 'warning'], OVERDUE: ['Quá hạn', 'danger'], SUSPENDED: ['Đình chỉ', 'danger'], PAID: ['Đã thanh toán', 'success'],
 };
 /** Finer label for the paid side (reactivation still waits for the manager). */
 export const invoiceLabel = (i: OwnerInvoice): [string, Tone] =>
@@ -42,4 +42,10 @@ export const invoiceLabel = (i: OwnerInvoice): [string, Tone] =>
 export const PAYMENT_LABEL: Record<PaymentStatus, [string, Tone]> = {
   INIT: ['Khởi tạo', 'neutral'], PROCESSING: ['Đang xử lý', 'info'], PENDING_VERIFY: ['Chờ xác minh', 'warning'],
   VERIFIED: ['Đã xác minh', 'success'], FAILED: ['Thất bại', 'danger'],
+};
+
+/** Payment history shows only finished transactions: verified by the server, or failed. */
+export const isFinishedPayment = (p: { status: PaymentStatus }) => p.status === 'VERIFIED' || p.status === 'FAILED';
+export const HISTORY_LABEL: Record<'VERIFIED' | 'FAILED', [string, Tone]> = {
+  VERIFIED: ['Thanh toán thành công', 'success'], FAILED: ['Thất bại', 'danger'],
 };

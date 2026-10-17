@@ -1,6 +1,6 @@
 import { http } from '../http';
 import { addAudit, type Actor } from '../managerApi';
-import { invoiceDue, isPaid } from './labels';
+import { invoiceDue, isFinishedPayment, isPaid } from './labels';
 import { DENIED, get, nextId, now, SYSTEM } from './shared';
 import type { OwnerInvoice, Payment } from './types';
 
@@ -20,12 +20,18 @@ export const financeApi = {
     return { invoice: inv, due: invoiceDue(inv), payments };
   },
 
-  /** 2.4 — totals paid / still owed and every transaction. */
+  /** 2.1 — open invoices only (unpaid, overdue, suspended). Paid ones are reached from the payment history. */
+  async getOpenInvoices(actor: Actor) {
+    const { invoices, payments } = await financeApi.getMyInvoices(actor);
+    return { invoices: invoices.filter((x) => x.due.group !== 'PAID'), payments };
+  },
+
+  /** 2.4 — totals paid / still owed and the finished transactions (successful or failed). */
   async getPaymentHistory(actor: Actor) {
     const { invoices, payments } = await financeApi.getMyInvoices(actor);
     const verified = payments.filter((p) => p.status === 'VERIFIED');
     return {
-      payments: payments.sort((a, b) => b.id.localeCompare(a.id)),
+      payments: payments.filter(isFinishedPayment).sort((a, b) => b.id.localeCompare(a.id)),
       paid: verified.reduce((s, p) => s + p.amount, 0),
       owed: invoices.filter((x) => x.due.group !== 'PAID').reduce((s, x) => s + x.due.total, 0),
       invoices,

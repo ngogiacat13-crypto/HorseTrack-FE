@@ -13,12 +13,12 @@ export interface Registration {
   owner: { fullName: string; email: string; phone: string };
   submittedAt: string; // dd/MM/yyyy HH:mm
   waitingDays: number;
-  passed: number; // checklist items passed out of 4
+  passed: number; // checklist items passed (identity, health, ownership)
   firstIssue?: string;
   status: RegStatus;
   decidedNote?: string;
   ownerExtra: { taxCode: string; billingAddress: string; otherHorses: string };
-  horseExtra: { color: string; height: string; weight: number; microchip: string; passport: string; healthCert: string };
+  horseExtra: { color: string; height: string; weight: number; passport: string; healthCert: string };
   checklist: ChecklistItem[];
   attachments: { name: string; meta: string; problem?: boolean }[];
   history: HistoryItem[];

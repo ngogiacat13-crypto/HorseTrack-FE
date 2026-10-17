@@ -1,6 +1,9 @@
 /* Every URL of the app in one place. Use these instead of hard-coded strings in routes and menus. */
 export const PATH = {
-  landing: '/',
+  /** "/" only redirects: guest → login, signed in → their workspace. */
+  root: '/',
+  /** Public intro page. */
+  landing: '/gioi-thieu',
   login: '/login',
   register: '/register',
   forgotPassword: '/forgot-password',

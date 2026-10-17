@@ -9,6 +9,7 @@ import { FormikProvider, useFormik } from 'formik';
 import * as Yup from 'yup';
 import { Busy, Callout } from '../../../components/ui/Ht';
 import { FocusFirstError, FormikField } from '../../../components/form/FormikField';
+import { PATH } from '../../../routers/routerPath';
 
 const SHOW_DEMO = import.meta.env.DEV || import.meta.env.VITE_DEMO === 'true';
 
@@ -107,7 +108,7 @@ export const Login: React.FC = () => {
         </div>
       )}
 
-      <div className="ht-auth__footer">Bạn là chủ ngựa mới? <Link className="ht-link" to="/register">Đăng ký tài khoản</Link></div>
+      <div className="ht-auth__footer">Bạn là chủ ngựa mới? <Link className="ht-link" to="/register">Đăng ký tài khoản</Link> · <Link className="ht-link" to={PATH.landing}>Giới thiệu HorseTrack</Link></div>
     </AuthShell>
   );
 };

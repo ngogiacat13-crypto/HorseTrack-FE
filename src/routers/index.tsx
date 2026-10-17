@@ -143,6 +143,9 @@ export const AppRoutes: React.FC = () => {
 
   return (
     <Routes>
+      {/* Opening localhost goes straight to the login page (or the workspace when already signed in). */}
+      <Route path={PATH.root} element={<Navigate to={user ? home : PATH.login} replace />} />
+
       {/* Public */}
       <Route path={PATH.landing} element={<Landing />} />
       <Route path={PATH.login} element={publicOnly(<Login />)} />

@@ -19,7 +19,6 @@ export const HorseInfo: React.FC<{ reg: Registration }> = ({ reg: d }) => (
       <dl className="ht-kv">
         <dt>Cân nặng</dt><dd>{d.horseExtra.weight} kg</dd>
         <dt>Mã ngựa</dt><dd className="ht-mono">{d.horse.code}</dd>
-        <dt>Microchip</dt><dd className="ht-mono">{d.horseExtra.microchip}</dd>
         <dt>Hộ chiếu</dt><dd className="ht-mono">{d.horseExtra.passport}</dd>
         <dt>GCN sức khỏe</dt><dd>{d.horseExtra.healthCert}</dd>
       </dl>
