@@ -21,7 +21,7 @@ export const VetHerd: React.FC = () => {
 
   const horses = useMemo(() => data?.horses ?? [], [data]);
   const list = useMemo(() => horses.filter((h) => (tab === 'ALL' || h.health === tab) &&
-    `${h.name} ${h.microchip} ${h.owner} ${h.stall}`.toLowerCase().includes(query.trim().toLowerCase())), [horses, tab, query]);
+    `${h.name} ${h.owner} ${h.stall}`.toLowerCase().includes(query.trim().toLowerCase())), [horses, tab, query]);
 
   if (!data) return <LoadState loading={loading} error={error} onRetry={reload} />;
 
@@ -62,7 +62,7 @@ export const VetHerd: React.FC = () => {
       <div className="ht-cols">
         <div>
           <Panel title="Đàn ngựa" right={
-            <div className="ht-search-input"><Icon name="search" /><input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Tìm tên, microchip, chủ ngựa…" aria-label="Tìm ngựa" /></div>}>
+            <div className="ht-search-input"><Icon name="search" /><input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Tìm tên, chủ ngựa, chuồng…" aria-label="Tìm ngựa" /></div>}>
             <div style={{ padding: '0 24px' }}>
               <Tabs<HealthTab> value={tab} onChange={setTab} items={[
                 { value: 'ALL', label: 'Tất cả', count: horses.length },
@@ -85,7 +85,7 @@ export const VetHerd: React.FC = () => {
                         <td>
                           <span style={{ display: 'inline-flex', gap: 10, alignItems: 'center' }}>
                             <i className="ht-avatar">{horseInitials(h.name)}</i>
-                            <span><span className="strong">{h.name}</span><span className="sub mono">{h.stall} · {h.microchip}</span></span>
+                            <span><span className="strong">{h.name}</span><span className="sub mono">{h.stall}</span></span>
                           </span>
                         </td>
                         <td><HorseBadges horse={h} /></td>

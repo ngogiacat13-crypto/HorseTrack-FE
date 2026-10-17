@@ -2,7 +2,7 @@
 export type HealthStatus = 'HEALTHY' | 'WATCH' | 'INJURED' | 'QUARANTINE';
 export interface Injury { id?: string; part: string; severity: string; date: string; vet: string; note: string; x: number; y: number; caseId?: string }
 export interface Horse {
-  id: string; name: string; breed: string; sex: '♂' | '♀'; age: number; microchip: string; owner: string; stall: string;
+  id: string; name: string; breed: string; sex: '♂' | '♀'; age: number; owner: string; stall: string;
   /** User id of the HeadTrainer in charge — a trainer only sees their own horses. */
   trainerId: string;
   health: HealthStatus; trainingLocked: boolean; form: 'GOOD' | null; pendingCase: string | null;

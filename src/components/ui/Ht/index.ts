@@ -26,3 +26,4 @@ export { ToastProvider } from './Toast';
 export { useToast } from './toastContext';
 export { BrandMark, DemoClock } from './Brand';
 export { Avatar } from './Avatar';
+export { CopyText } from './CopyText';

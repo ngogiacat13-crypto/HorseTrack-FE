@@ -38,7 +38,7 @@ export const ManagerRegistrationQueue: React.FC = () => {
 
   return (
     <div className="ht ht-page">
-      <PageHeader title="Đăng ký ngựa" sub="Kiểm tra giấy tờ, microchip và danh tính trước khi đưa ngựa vào danh sách quản lý." />
+      <PageHeader title="Đăng ký ngựa" sub="Kiểm tra giấy tờ và danh tính trước khi đưa ngựa vào danh sách quản lý." />
 
       <Tabs<Filter> value={filter} onChange={setFilter} items={[
         { value: 'Pending', label: 'Chờ duyệt', count: count('Pending') },
@@ -52,7 +52,7 @@ export const ManagerRegistrationQueue: React.FC = () => {
         right={<>
           <div className="ht-search-input" style={{ maxWidth: 360 }}>
             <Icon name="search" />
-            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Tìm mã hồ sơ, tên ngựa, chủ ngựa, microchip…" aria-label="Tìm hồ sơ" />
+            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Tìm mã hồ sơ, tên ngựa, chủ ngựa…" aria-label="Tìm hồ sơ" />
           </div>
           <select className="ht-select" aria-label="Sắp xếp" value={oldestFirst ? 'old' : 'new'} onChange={(e) => setOldestFirst(e.target.value === 'old')}>
             <option value="old">Cũ nhất trước</option><option value="new">Mới nhất trước</option>
@@ -76,7 +76,7 @@ export const ManagerRegistrationQueue: React.FC = () => {
                 </td>
                 <td>
                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, color: r.passed === 4 ? 'var(--success-ink)' : 'var(--warning-ink)' }}>
-                    <Icon name={r.passed === 4 ? 'check' : 'warn'} />{r.passed}/4 mục
+                    <Icon name={r.passed === r.checklist.length ? 'check' : 'warn'} />{r.passed}/{r.checklist.length} mục
                   </span>
                   {r.firstIssue && <span className="sub">{r.firstIssue}</span>}
                 </td>

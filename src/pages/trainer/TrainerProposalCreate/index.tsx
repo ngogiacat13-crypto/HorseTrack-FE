@@ -96,7 +96,7 @@ export const TrainerProposalCreate: React.FC = () => {
                     <input type="radio" name="horse" checked={horseId === h.id} disabled={!!why} onChange={() => setHorseId(h.id)} />
                     <span style={{ display: 'grid', flex: 1 }}>
                       <b style={{ fontWeight: 600 }}>{h.name}</b>
-                      <span style={{ fontSize: 12, color: why ? 'var(--danger-ink)' : 'var(--muted)' }}>{why ?? <><span className="ht-mono">{h.microchip}</span> · {h.breed} · {h.sex} {h.age} tuổi · chủ {h.owner}</>}</span>
+                      <span style={{ fontSize: 12, color: why ? 'var(--danger-ink)' : 'var(--muted)' }}>{why ?? <>{h.breed} · {h.sex} {h.age} tuổi · chủ {h.owner}</>}</span>
                     </span>
                     <Badge tone={ht}>{hl}</Badge>
                   </label>

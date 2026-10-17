@@ -4,7 +4,7 @@ import { DENIED, get, min, myHorses, nextId, now } from './shared';
 import type { NewRegistration, UploadedDoc } from './types';
 
 const CHECKS: [ChecklistItem['key'], string][] = [
-  ['identity', 'Danh tính chủ ngựa'], ['health', 'Giấy chứng nhận sức khỏe còn hiệu lực'], ['microchip', 'Microchip đã đăng ký'], ['ownership', 'Giấy tờ sở hữu hợp lệ'],
+  ['identity', 'Danh tính chủ ngựa'], ['health', 'Giấy chứng nhận sức khỏe còn hiệu lực'], ['ownership', 'Giấy tờ sở hữu hợp lệ'],
 ];
 const docMeta = (d: UploadedDoc) => `${(d.name.split('.').pop() ?? '').toUpperCase()} · ${(d.size / 1048576).toFixed(1).replace('.', ',')} MB · ${DEMO_NOW.date.slice(0, 5)}`;
 
@@ -14,13 +14,11 @@ const validate = (r: NewRegistration) => {
   min(r.breed, 2, 'Giống');
   if (!Number.isInteger(r.age) || r.age < 2 || r.age > 25) throw new Error('Tuổi phải là số nguyên 2–25.');
   min(r.color, 2, 'Màu lông');
-  if (r.microchip && !/^\d{15}$/.test(r.microchip)) throw new Error('Số microchip gồm đúng 15 chữ số (ISO 11784).');
   min(r.passport, 4, 'Số hộ chiếu ngựa');
   if (!/^0\d{9}$/.test(r.phone)) throw new Error('Số điện thoại gồm 10 chữ số, bắt đầu bằng 0.');
   min(r.billingAddress, 10, 'Địa chỉ thanh toán');
   if (!r.files.ownership) throw new Error('Tải lên giấy tờ sở hữu.');
   if (!r.files.health) throw new Error('Tải lên giấy chứng nhận sức khỏe.');
-  if (r.microchip && !r.files.microchip) throw new Error('Đã nhập microchip — tải ảnh quét microchip.');
 };
 
 /* 1.4 Đăng ký ngựa mới → hàng chờ duyệt của Quản lý CLB (PENDING_REVIEW). */
@@ -42,14 +40,14 @@ export const registrationsApi = {
     const horses = await myHorses(actor);
     const all = await get<Registration[]>('/registrations');
     const id = resubmit?.id ?? nextId(all.map((r) => r.id), 'REG-');
-    const docs: [string, UploadedDoc | null][] = [['Giấy tờ sở hữu', input.files.ownership], ['Giấy chứng nhận sức khỏe', input.files.health], ['Ảnh quét microchip', input.files.microchip]];
+    const docs: [string, UploadedDoc | null][] = [['Giấy tờ sở hữu', input.files.ownership], ['Giấy chứng nhận sức khỏe', input.files.health]];
     const reg: Registration = {
       id,
-      horse: { name: input.name.trim(), breed: input.breed.trim(), sex: input.sex, age: input.age, code: `VN-MC-${id.slice(-4)}` },
+      horse: { name: input.name.trim(), breed: input.breed.trim(), sex: input.sex, age: input.age, code: `HT-${id.slice(-4)}` },
       owner: { fullName: actor.name, email: actor.email ?? '', phone: input.phone },
       submittedAt: `${DEMO_NOW.date} ${DEMO_NOW.time}`, waitingDays: 0, passed: 0, status: 'Pending', firstIssue: undefined,
       ownerExtra: { taxCode: input.taxCode.trim() || '—', billingAddress: input.billingAddress.trim(), otherHorses: horses.map((h) => h.name).join(', ') || '—' },
-      horseExtra: { color: input.color.trim(), height: input.height.trim() || '—', weight: input.weight || 0, microchip: input.microchip || 'Chưa có', passport: input.passport.trim(), healthCert: input.healthCert.trim() || '—' },
+      horseExtra: { color: input.color.trim(), height: input.height.trim() || '—', weight: input.weight || 0, passport: input.passport.trim(), healthCert: input.healthCert.trim() || '—' },
       checklist: CHECKS.map(([key, label]) => ({ key, label, detail: 'Chờ Quản lý CLB kiểm tra.', passed: false })),
       attachments: docs.filter(([, d]) => d).map(([name, d]) => ({ name, meta: docMeta(d as UploadedDoc) })),
       history: [

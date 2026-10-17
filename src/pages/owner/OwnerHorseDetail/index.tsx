@@ -22,7 +22,7 @@ export const OwnerHorseDetail: React.FC = () => {
   return (
     <div className="ht ht-page">
       <PageHeader crumbs={<Link to={PATH.owner.home}>Ngựa của tôi</Link>} title={h.name}
-        sub={<>{h.breed} · {h.sex === '♂' ? 'Đực' : 'Cái'} · {h.age} tuổi · microchip <span className="ht-mono">{h.microchip}</span> · chuồng {h.stall}</>}
+        sub={<>{h.breed} · {h.sex === '♂' ? 'Đực' : 'Cái'} · {h.age} tuổi · chuồng {h.stall}</>}
         badge={<HorseBadges horse={h} compact />} />
       <Tabs.Group defaultValue="INFO">
       <Tabs.List label="Hồ sơ ngựa">
@@ -69,7 +69,7 @@ export const OwnerHorseDetail: React.FC = () => {
               <div className="ht-panel__body">
                 <dl className="ht-kv">
                   <dt>Giống</dt><dd>{h.breed}</dd><dt>Giới tính</dt><dd>{h.sex === '♂' ? 'Đực' : 'Cái'}</dd><dt>Tuổi</dt><dd>{h.age}</dd>
-                  <dt>Microchip</dt><dd className="ht-mono">{h.microchip}</dd><dt>Chuồng</dt><dd>{h.stall}</dd><dt>Chủ sở hữu</dt><dd>{h.owner}</dd>
+                  <dt>Chuồng</dt><dd>{h.stall}</dd><dt>Chủ sở hữu</dt><dd>{h.owner}</dd>
                 </dl>
               </div>
             </Panel>

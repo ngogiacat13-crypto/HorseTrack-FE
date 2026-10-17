@@ -50,3 +50,9 @@
   .ht-vnpay__card { margin: 16px; padding: 20px; }
   .ht-steps { grid-template-columns: 1fr; }
 }
+
+/* Plain text with a copy button (payment history: invoice code) */
+.ht-copy { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.ht-copy__btn { display: inline-grid; place-items: center; width: 26px; height: 26px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); color: var(--muted); cursor: pointer; }
+.ht-copy__btn:hover { color: var(--primary); border-color: var(--primary-light); }
+.ht-copy__btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }

@@ -20,7 +20,7 @@ export const ApproveDialog: React.FC<{ reg: Registration; checks: Check[]; onClo
       confirmLabel="Xác nhận phê duyệt" onConfirm={confirm} busy={busy}>
       {error && <Callout tone="danger" style={{ marginBottom: 14 }}>{error}</Callout>}
       <label className="ht-label" htmlFor="ap-note" style={{ display: 'block', marginBottom: 6 }}>Ghi chú (không bắt buộc)</label>
-      <textarea id="ap-note" className="ht-textarea" value={note} onChange={(e) => setNote(e.target.value)} placeholder="VD: Đã đối chiếu microchip tại chuồng A-03." />
+      <textarea id="ap-note" className="ht-textarea" value={note} onChange={(e) => setNote(e.target.value)} placeholder="VD: Đã đối chiếu giấy tờ gốc với chủ ngựa." />
     </Dialog>
   );
 };

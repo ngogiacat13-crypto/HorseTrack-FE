@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Icon, IconName } from '../ui/Icon';
 import { BrandMark, DemoClock } from '../ui/Ht';
+import { PATH } from '../../routers/routerPath';
 
 export interface AuthPoint { icon?: IconName; step?: number; active?: boolean; title: string; text: string }
 
@@ -22,7 +23,7 @@ export const AuthShell: React.FC<Props> = ({ eyebrow, headline, lede, points, fo
   <div className="ht ht-auth" style={{ minHeight: '100vh' }}>
     <header className="ht-auth__bar">
       <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-        <Link className="ht-brand" to="/"><BrandMark />HorseTrack</Link>
+        <Link className="ht-brand" to={PATH.landing}><BrandMark />HorseTrack</Link>
         <DemoClock />
       </div>
       {barRight}

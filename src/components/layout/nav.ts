@@ -97,8 +97,8 @@ export const NAV_BY_ROLE: Record<Role, NavGroup[]> = {
 };
 
 export const SEARCH_HINT: Partial<Record<Role, string>> = {
-  ClubManager: 'Tìm ngựa, microchip, hóa đơn…',
-  HeadTrainer: 'Tìm ngựa, microchip, kế hoạch…',
+  ClubManager: 'Tìm ngựa, hồ sơ, hóa đơn…',
+  HeadTrainer: 'Tìm ngựa, giáo án, lịch tập…',
   Veterinarian: 'Tìm ngựa, ca khám, phác đồ…',
   Groom: 'Tìm công việc, ngựa, chuồng…',
   HorseOwner: 'Tìm ngựa của tôi, hóa đơn…',

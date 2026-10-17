@@ -32,7 +32,7 @@ export const TrainerHerdOverview: React.FC = () => {
     (tab === 'ALL' || h.health === tab) &&
     (lockF === 'all' || (lockF === 'locked' ? h.trainingLocked : !h.trainingLocked)) &&
     (!breed || h.breed === breed) &&
-    `${h.name} ${h.microchip} ${h.owner}`.toLowerCase().includes(query.trim().toLowerCase())), [horses, tab, lockF, breed, query]);
+    `${h.name} ${h.owner}`.toLowerCase().includes(query.trim().toLowerCase())), [horses, tab, lockF, breed, query]);
 
   if (!data) return <LoadState loading={loading} error={error} onRetry={reload} />;
 
@@ -81,7 +81,7 @@ export const TrainerHerdOverview: React.FC = () => {
             </select>
             <div className="ht-search-input" style={{ marginLeft: 'auto' }}>
               <Icon name="search" />
-              <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Tìm tên ngựa, microchip, chủ ngựa…" aria-label="Tìm ngựa" />
+              <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Tìm tên ngựa, chủ ngựa…" aria-label="Tìm ngựa" />
             </div>
           </div>
 
@@ -95,7 +95,7 @@ export const TrainerHerdOverview: React.FC = () => {
                     <div>
                       <b>{h.name}</b>
                       <small>{h.breed}</small>
-                      <span className="ht-mono">{h.sex} {h.age} tuổi · {h.microchip}</span>
+                      <span className="ht-mono">{h.sex} {h.age} tuổi · {h.stall}</span>
                     </div>
                   </div>
                   <HorseBadges horse={h} />

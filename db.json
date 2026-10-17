@@ -148,7 +148,7 @@
         "breed": "Thoroughbred",
         "sex": "♂",
         "age": 5,
-        "code": "VN-MC-9017"
+        "code": "HT-9017"
       },
       "owner": {
         "fullName": "Vũ Thị Mai",
@@ -169,7 +169,6 @@
         "color": "Bay (nâu đỏ)",
         "height": "16.2 hands",
         "weight": 480,
-        "microchip": "985141000012345",
         "passport": "VN-PP-2024-0017",
         "healthCert": "Chi cục Thú y TP.HCM · hết hạn 15/08/2027"
       },
@@ -184,12 +183,6 @@
           "key": "health",
           "label": "Giấy chứng nhận sức khỏe còn hiệu lực",
           "detail": "Chưa tải giấy chứng nhận sức khỏe.",
-          "passed": false
-        },
-        {
-          "key": "microchip",
-          "label": "Microchip đã đăng ký",
-          "detail": "Số microchip chưa có trong cơ sở dữ liệu cơ quan.",
           "passed": false
         },
         {
@@ -209,11 +202,6 @@
           "name": "Giấy tờ sở hữu",
           "meta": "PDF · 0,4 MB · 29/09",
           "problem": false
-        },
-        {
-          "name": "Ảnh quét microchip",
-          "meta": "JPG · 2,8 MB · 29/09",
-          "problem": true
         }
       ],
       "history": [
@@ -236,7 +224,7 @@
         "breed": "Arabian",
         "sex": "♀",
         "age": 4,
-        "code": "VN-MC-9018"
+        "code": "HT-9018"
       },
       "owner": {
         "fullName": "Đỗ Minh Quân",
@@ -245,7 +233,7 @@
       },
       "submittedAt": "30/09/2026 14:30",
       "waitingDays": 3,
-      "passed": 4,
+      "passed": 3,
       "status": "Pending",
       "ownerExtra": {
         "taxCode": "0123456789",
@@ -256,7 +244,6 @@
         "color": "Bay (nâu đỏ)",
         "height": "16.2 hands",
         "weight": 480,
-        "microchip": "985141000012345",
         "passport": "VN-PP-2024-0018",
         "healthCert": "Chi cục Thú y TP.HCM · hết hạn 15/08/2027"
       },
@@ -271,12 +258,6 @@
           "key": "health",
           "label": "Giấy chứng nhận sức khỏe còn hiệu lực",
           "detail": "Chi cục Thú y TP.HCM · hết hạn 15/08/2027.",
-          "passed": true
-        },
-        {
-          "key": "microchip",
-          "label": "Microchip đã đăng ký",
-          "detail": "Số microchip khớp ảnh quét.",
           "passed": true
         },
         {
@@ -295,11 +276,6 @@
         {
           "name": "Giấy tờ sở hữu",
           "meta": "PDF · 0,4 MB · 30/09",
-          "problem": false
-        },
-        {
-          "name": "Ảnh quét microchip",
-          "meta": "JPG · 2,8 MB · 30/09",
           "problem": false
         }
       ],
@@ -323,7 +299,7 @@
         "breed": "Thoroughbred",
         "sex": "♂",
         "age": 3,
-        "code": "VN-MC-9019"
+        "code": "HT-9019"
       },
       "owner": {
         "fullName": "Hoàng Thị Lan",
@@ -332,7 +308,7 @@
       },
       "submittedAt": "01/10/2026 09:15",
       "waitingDays": 2,
-      "passed": 3,
+      "passed": 2,
       "status": "Pending",
       "firstIssue": "Giấy sở hữu bị mờ",
       "ownerExtra": {
@@ -344,7 +320,6 @@
         "color": "Bay (nâu đỏ)",
         "height": "16.2 hands",
         "weight": 480,
-        "microchip": "985141000012345",
         "passport": "VN-PP-2024-0019",
         "healthCert": "Chi cục Thú y TP.HCM · hết hạn 15/08/2027"
       },
@@ -359,12 +334,6 @@
           "key": "health",
           "label": "Giấy chứng nhận sức khỏe còn hiệu lực",
           "detail": "Chi cục Thú y TP.HCM · hết hạn 15/08/2027.",
-          "passed": true
-        },
-        {
-          "key": "microchip",
-          "label": "Microchip đã đăng ký",
-          "detail": "Số microchip khớp ảnh quét.",
           "passed": true
         },
         {
@@ -384,11 +353,6 @@
           "name": "Giấy tờ sở hữu",
           "meta": "PDF · 0,4 MB · 01/10",
           "problem": true
-        },
-        {
-          "name": "Ảnh quét microchip",
-          "meta": "JPG · 2,8 MB · 01/10",
-          "problem": false
         }
       ],
       "history": [
@@ -411,7 +375,7 @@
         "breed": "Quarter Horse",
         "sex": "♂",
         "age": 4,
-        "code": "VN-MC-9016"
+        "code": "HT-9016"
       },
       "owner": {
         "fullName": "Vũ Thị Mai",
@@ -420,7 +384,7 @@
       },
       "submittedAt": "28/09/2026 08:40",
       "waitingDays": 0,
-      "passed": 4,
+      "passed": 3,
       "status": "Approved",
       "decidedNote": "Duyệt 28/09",
       "ownerExtra": {
@@ -432,7 +396,6 @@
         "color": "Bay (nâu đỏ)",
         "height": "16.2 hands",
         "weight": 480,
-        "microchip": "985141000012345",
         "passport": "VN-PP-2024-0016",
         "healthCert": "Chi cục Thú y TP.HCM · hết hạn 15/08/2027"
       },
@@ -447,12 +410,6 @@
           "key": "health",
           "label": "Giấy chứng nhận sức khỏe còn hiệu lực",
           "detail": "Chi cục Thú y TP.HCM · hết hạn 15/08/2027.",
-          "passed": true
-        },
-        {
-          "key": "microchip",
-          "label": "Microchip đã đăng ký",
-          "detail": "Số microchip khớp ảnh quét.",
           "passed": true
         },
         {
@@ -471,11 +428,6 @@
         {
           "name": "Giấy tờ sở hữu",
           "meta": "PDF · 0,4 MB · 28/09",
-          "problem": false
-        },
-        {
-          "name": "Ảnh quét microchip",
-          "meta": "JPG · 2,8 MB · 28/09",
           "problem": false
         }
       ],
@@ -499,7 +451,7 @@
         "breed": "Akhal-Teke",
         "sex": "♀",
         "age": 6,
-        "code": "VN-MC-9015"
+        "code": "HT-9015"
       },
       "owner": {
         "fullName": "Đỗ Minh Quân",
@@ -508,7 +460,7 @@
       },
       "submittedAt": "25/09/2026 11:20",
       "waitingDays": 0,
-      "passed": 3,
+      "passed": 2,
       "status": "Rejected",
       "firstIssue": "Thiếu giấy sức khỏe",
       "decidedNote": "Cho phép nộp lại",
@@ -521,7 +473,6 @@
         "color": "Bay (nâu đỏ)",
         "height": "16.2 hands",
         "weight": 480,
-        "microchip": "985141000012345",
         "passport": "VN-PP-2024-0015",
         "healthCert": "Chi cục Thú y TP.HCM · hết hạn 15/08/2027"
       },
@@ -539,12 +490,6 @@
           "passed": false
         },
         {
-          "key": "microchip",
-          "label": "Microchip đã đăng ký",
-          "detail": "Số microchip khớp ảnh quét.",
-          "passed": true
-        },
-        {
           "key": "ownership",
           "label": "Giấy tờ sở hữu hợp lệ",
           "detail": "Bản gốc rõ, khớp tên chủ ngựa.",
@@ -560,11 +505,6 @@
         {
           "name": "Giấy tờ sở hữu",
           "meta": "PDF · 0,4 MB · 25/09",
-          "problem": false
-        },
-        {
-          "name": "Ảnh quét microchip",
-          "meta": "JPG · 2,8 MB · 25/09",
           "problem": false
         }
       ],
@@ -588,7 +528,7 @@
         "breed": "Quarter Horse",
         "sex": "♀",
         "age": 5,
-        "code": "VN-MC-0024"
+        "code": "HT-0024"
       },
       "owner": {
         "fullName": "Hoàng Thị Lan",
@@ -597,7 +537,7 @@
       },
       "submittedAt": "15/09/2026 09:00",
       "waitingDays": 0,
-      "passed": 4,
+      "passed": 3,
       "status": "Approved",
       "decidedNote": "Duyệt 16/09",
       "ownerExtra": {
@@ -609,7 +549,6 @@
         "color": "Bay (nâu đỏ)",
         "height": "16.2 hands",
         "weight": 480,
-        "microchip": "985141000012345",
         "passport": "VN-PP-2024-0014",
         "healthCert": "Chi cục Thú y TP.HCM · hết hạn 15/08/2027"
       },
@@ -624,12 +563,6 @@
           "key": "health",
           "label": "Giấy chứng nhận sức khỏe còn hiệu lực",
           "detail": "Chi cục Thú y TP.HCM · hết hạn 15/08/2027.",
-          "passed": true
-        },
-        {
-          "key": "microchip",
-          "label": "Microchip đã đăng ký",
-          "detail": "Số microchip khớp ảnh quét.",
           "passed": true
         },
         {
@@ -648,11 +581,6 @@
         {
           "name": "Giấy tờ sở hữu",
           "meta": "PDF · 0,4 MB · 15/09",
-          "problem": false
-        },
-        {
-          "name": "Ảnh quét microchip",
-          "meta": "JPG · 2,8 MB · 15/09",
           "problem": false
         }
       ],
@@ -2220,7 +2148,7 @@
       "role": "Veterinarian",
       "action": "LOCK_TRAINING",
       "label": "Khóa huấn luyện",
-      "object": "Storm · VN-MC-0042",
+      "object": "Storm",
       "area": "train",
       "ip": "192.168.1.22",
       "from": "Được tập",
@@ -2435,7 +2363,6 @@
       "breed": "Thoroughbred",
       "sex": "♂",
       "age": 4,
-      "microchip": "VN-MC-0031",
       "owner": "Hoàng Thị Lan",
       "stall": "A-01",
       "trainerId": "2",
@@ -2504,7 +2431,6 @@
       "breed": "Arabian",
       "sex": "♂",
       "age": 3,
-      "microchip": "VN-MC-0042",
       "owner": "Đỗ Minh Quân",
       "stall": "A-02",
       "trainerId": "11",
@@ -2598,7 +2524,6 @@
       "breed": "Quarter Horse",
       "sex": "♂",
       "age": 5,
-      "microchip": "VN-MC-0027",
       "owner": "Vũ Thị Mai",
       "stall": "A-03",
       "trainerId": "2",
@@ -2638,7 +2563,6 @@
       "breed": "Thoroughbred",
       "sex": "♂",
       "age": 4,
-      "microchip": "VN-MC-0035",
       "owner": "Hoàng Thị Lan",
       "stall": "B-01",
       "trainerId": "11",
@@ -2675,7 +2599,6 @@
       "breed": "Arabian",
       "sex": "♀",
       "age": 3,
-      "microchip": "VN-MC-0044",
       "owner": "Vũ Thị Mai",
       "stall": "A-05",
       "trainerId": "11",
@@ -2710,7 +2633,6 @@
       "breed": "Thoroughbred",
       "sex": "♀",
       "age": 4,
-      "microchip": "VN-MC-0038",
       "owner": "Đỗ Minh Quân",
       "stall": "B-02",
       "trainerId": "2",
@@ -2755,7 +2677,6 @@
       "breed": "Akhal-Teke",
       "sex": "♂",
       "age": 6,
-      "microchip": "VN-MC-0019",
       "owner": "Vũ Thị Mai",
       "stall": "B-03",
       "trainerId": "11",
@@ -2803,7 +2724,6 @@
       "breed": "Quarter Horse",
       "sex": "♀",
       "age": 5,
-      "microchip": "VN-MC-0024",
       "owner": "Hoàng Thị Lan",
       "stall": "B-04",
       "trainerId": "11",
@@ -2832,7 +2752,6 @@
       "breed": "Thoroughbred",
       "sex": "♂",
       "age": 3,
-      "microchip": "VN-MC-0047",
       "owner": "Đỗ Minh Quân",
       "stall": "B-05",
       "trainerId": "11",
@@ -2852,7 +2771,6 @@
       "breed": "Arabian",
       "sex": "♂",
       "age": 5,
-      "microchip": "VN-MC-0051",
       "owner": "Lý Gia Hân",
       "stall": "C-01",
       "trainerId": "2",
@@ -2889,7 +2807,6 @@
       "breed": "Quarter Horse",
       "sex": "♂",
       "age": 4,
-      "microchip": "VN-MC-9016",
       "owner": "Vũ Thị Mai",
       "stall": "C-02",
       "trainerId": "11",
@@ -2908,7 +2825,6 @@
       "breed": "Thoroughbred",
       "sex": "♀",
       "age": 3,
-      "microchip": "VN-MC-0055",
       "owner": "Lý Gia Hân",
       "stall": "C-03",
       "trainerId": "11",

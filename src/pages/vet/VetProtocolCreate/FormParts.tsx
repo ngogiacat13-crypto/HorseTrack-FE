@@ -52,7 +52,7 @@ export const SummaryPanel: React.FC<SummaryProps> = ({ horse, vetCase, phases, e
     <Panel as="h3" title="Tóm tắt phác đồ">
       <div className="ht-panel__body" style={{ display: 'grid', gap: 14 }}>
         <dl className="ht-kv" style={{ gridTemplateColumns: '100px 1fr' }}>
-          <dt>Ngựa</dt><dd>{horse ? <>{horse.name} <span className="ht-mono" style={{ color: 'var(--muted)', fontSize: 12 }}>{horse.microchip}</span></> : '—'}</dd>
+          <dt>Ngựa</dt><dd>{horse ? horse.name : '—'}</dd>
           <dt>Ca khám</dt><dd className="ht-mono">{vetCase ? vetCase.id : '—'}</dd>
           <dt>Khóa tập</dt><dd>{horse ? (horse.trainingLocked ? <b style={{ color: 'var(--danger-ink)' }}>ĐANG KHÓA</b> : 'Không') : '—'}</dd>
           <dt>Số giai đoạn</dt><dd>{phases.length}</dd>

@@ -61,7 +61,7 @@ export const Register: React.FC = () => {
       headline="Theo dõi ngựa của bạn từ chuồng đến đường đua."
       points={[
         { step: 1, active: true, title: 'Tạo tài khoản', text: 'Mất khoảng 1 phút — bạn đang ở bước này.' },
-        { step: 2, title: 'Gửi hồ sơ ngựa', text: 'Giấy sở hữu, giấy sức khỏe và microchip nếu có.' },
+        { step: 2, title: 'Gửi hồ sơ ngựa', text: 'Giấy sở hữu và giấy chứng nhận sức khỏe.' },
         { step: 3, title: 'Quản lý CLB duyệt', text: 'Hồ sơ hợp lệ sẽ được đưa vào danh sách quản lý.' },
       ]}
       foot="Vai trò: HorseOwner"

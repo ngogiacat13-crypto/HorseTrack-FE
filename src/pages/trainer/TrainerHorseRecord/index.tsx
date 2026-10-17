@@ -32,7 +32,7 @@ export const TrainerHorseRecord: React.FC = () => {
         crumbs={<><Link className="ht-back" to="/trainer"><Icon name="back" size={14} />Tổng quan đàn ngựa</Link><Icon name="chev" size={14} /><b>{horse.name}</b></>}
         title={<span style={{ display: 'inline-flex', gap: 12, alignItems: 'center' }}><i className="ht-avatar ht-avatar--xl">{horseInitials(horse.name)}</i>{horse.name}</span>}
         badge={<HorseBadges horse={horse} />}
-        sub={<><span className="ht-mono">{horse.microchip}</span> · {horse.breed} · {horse.sex} {horse.age} tuổi · Chuồng <b>{horse.stall}</b> · Chủ: <b>{horse.owner}</b></>}
+        sub={<>{horse.breed} · {horse.sex} {horse.age} tuổi · Chuồng <b>{horse.stall}</b> · Chủ: <b>{horse.owner}</b></>}
         actions={<>
           {raceNo
             ? <button type="button" className="ht-btn ht-btn--secondary" disabled title={raceNo}><Icon name="send" />Đề xuất thi đấu</button>

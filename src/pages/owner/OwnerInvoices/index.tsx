@@ -8,19 +8,19 @@ import { Icon } from '../../../components/ui/Icon';
 import { Badge, money, PageHeader, Panel, StatCard, Tabs } from '../../../components/ui/Ht';
 import { LoadState } from '../../../components/trainer/TrainerParts';
 
-type Tab = 'ALL' | InvoiceDue['group'];
+type Tab = 'ALL' | Exclude<InvoiceDue['group'], 'PAID'>;
 
-/* 2.1 Danh sách hóa đơn — Chờ thanh toán / Đã thanh toán / Quá hạn / Đình chỉ · 2.5 cảnh báo quá hạn (BR_12, BR_13) */
+/* 2.1 Danh sách hóa đơn cần xử lý — Chưa thanh toán / Quá hạn / Đình chỉ · 2.5 cảnh báo quá hạn (BR_12, BR_13).
+   Hóa đơn đã thanh toán xem từ Lịch sử thanh toán → “Xem chi tiết hóa đơn”. */
 export const OwnerInvoices: React.FC = () => {
   const actor = useActor();
-  const { data, loading, error, reload } = useFetch(() => ownerApi.getMyInvoices(actor), [actor]);
+  const { data, loading, error, reload } = useFetch(() => ownerApi.getOpenInvoices(actor), [actor]);
   const [tab, setTab] = useState<Tab>('ALL');
   if (!data) return <LoadState loading={loading} error={error} onRetry={reload} />;
 
   const rows = data.invoices.filter((x) => tab === 'ALL' || x.due.group === tab);
   const count = (g: InvoiceDue['group']) => data.invoices.filter((x) => x.due.group === g).length;
-  const open = data.invoices.filter((x) => x.due.group !== 'PAID');
-  const owed = open.reduce((s, x) => s + x.due.total, 0);
+  const owed = data.invoices.reduce((s, x) => s + x.due.total, 0);
   const late = data.invoices.filter((x) => x.due.group === 'OVERDUE' || x.due.group === 'SUSPENDED');
   const pending = data.payments.filter((p) => p.status === 'PENDING_VERIFY');
 
@@ -42,15 +42,15 @@ export const OwnerInvoices: React.FC = () => {
       ))}
 
       <div className="ht-stats">
-        <StatCard icon="receipt" tone="brand" value={money(owed)} label="Tổng phải trả" meta={`${open.length} hóa đơn chưa thanh toán`} />
+        <StatCard icon="receipt" tone="brand" value={money(owed)} label="Tổng phải trả" meta={`${data.invoices.length} hóa đơn cần thanh toán`} />
         <StatCard icon="alarm" tone="danger" value={late.length} label="Quá hạn / đình chỉ" alert={late.length > 0} />
         <StatCard icon="clock" tone="warning" value={pending.length} label="Giao dịch chờ xác minh" />
-        <StatCard icon="check" tone="info" value={count('PAID')} label="Đã thanh toán" />
+        <StatCard icon="file" tone="info" value={count('UNPAID')} label="Chưa thanh toán" />
       </div>
 
       <Tabs<Tab> value={tab} onChange={setTab} items={[
-        { value: 'ALL', label: 'Tất cả', count: data.invoices.length }, { value: 'UNPAID', label: 'Chờ thanh toán', count: count('UNPAID') },
-        { value: 'OVERDUE', label: 'Quá hạn', count: count('OVERDUE') }, { value: 'SUSPENDED', label: 'Đình chỉ', count: count('SUSPENDED') }, { value: 'PAID', label: 'Đã thanh toán', count: count('PAID') },
+        { value: 'ALL', label: 'Tất cả', count: data.invoices.length }, { value: 'UNPAID', label: 'Chưa thanh toán', count: count('UNPAID') },
+        { value: 'OVERDUE', label: 'Quá hạn', count: count('OVERDUE') }, { value: 'SUSPENDED', label: 'Đình chỉ', count: count('SUSPENDED') },
       ]} />
       <Panel>
         <div style={{ overflowX: 'auto' }}>
@@ -65,13 +65,13 @@ export const OwnerInvoices: React.FC = () => {
                     <td className="ht-mono">{i.period}</td>
                     <td className="ht-mono">{i.dueDate}{due.overdueDays > 0 && <div style={{ fontSize: 12, color: 'var(--danger)' }}>quá {due.overdueDays} ngày</div>}</td>
                     <td className="ht-mono" style={{ textAlign: 'right' }}>{money(i.amount)}</td>
-                    <td className="ht-mono" style={{ textAlign: 'right', fontWeight: 600 }}>{due.group === 'PAID' ? '—' : money(due.total)}</td>
+                    <td className="ht-mono" style={{ textAlign: 'right', fontWeight: 600 }}>{money(due.total)}</td>
                     <td><Badge tone={tone}>{label}</Badge></td>
-                    <td><Link className="ht-more" to={toPath(PATH.owner.invoice, { id: i.id })}>{due.group === 'PAID' ? 'Xem' : 'Thanh toán'} <Icon name="arrow" /></Link></td>
+                    <td><Link className="ht-more" to={toPath(PATH.owner.invoice, { id: i.id })}>Thanh toán <Icon name="arrow" /></Link></td>
                   </tr>
                 );
               })}
-              {rows.length === 0 && <tr><td colSpan={8} className="ht-empty">Không có hóa đơn.</td></tr>}
+              {rows.length === 0 && <tr><td colSpan={8} className="ht-empty">Không có hóa đơn cần thanh toán.</td></tr>}
             </tbody>
           </table>
         </div>
