@@ -5,7 +5,7 @@ import { useActor } from '../../../auth/AuthContext';
 import { useFetch } from '../../../hooks/useFetch';
 import { PATH, toPath } from '../../../routers/routerPath';
 import { Icon } from '../../../components/ui/Icon';
-import { Badge, CopyText, DataTable, money, PageHeader, Panel, StatCard, type Column } from '../../../components/ui/Ht';
+import { Badge, DataTable, money, PageHeader, Panel, StatCard, type Column } from '../../../components/ui/Ht';
 import { Async } from '../../../components/ui/Async';
 
 const sub: React.CSSProperties = { fontSize: 12, color: 'var(--muted)' };
@@ -14,7 +14,7 @@ const sub: React.CSSProperties = { fontSize: 12, color: 'var(--muted)' };
    The history only holds finished transactions, so the status is VERIFIED or FAILED. */
 const COLUMNS: Column<Payment>[] = [
   { header: 'Mã giao dịch', render: (p) => p.id, className: 'ht-mono' },
-  { header: 'Hóa đơn', render: (p) => <CopyText text={p.invoiceId} label="mã hóa đơn" /> },
+  { header: 'Hóa đơn', render: (p) => <span className="ht-mono">{p.invoiceId}</span> },
   { header: 'Ngựa', render: (p) => p.horse },
   { header: 'Thời gian', render: (p) => <>{p.createdAt}{p.verifiedAt && <div style={sub}>xác minh {p.verifiedAt}</div>}</>, className: 'ht-mono' },
   { header: 'Mã ngân hàng', render: (p) => p.bankRef ?? '—', className: 'ht-mono' },
