@@ -6,10 +6,10 @@ import { Badge, Callout, Panel, Timeline } from '../../../components/ui/Ht';
 export type ProposalDialog = 'submit' | 'reject' | 'result';
 
 /* BR_04 pipeline shown as 5 steps. */
-const STEPS = ['Đề xuất', 'Khám trước thi đấu', 'Chủ ngựa đồng ý', 'Gửi ban tổ chức', 'Kết quả'] as const;
+const STEPS = ['Đề xuất', 'Chủ ngựa đồng ý', 'Khám sức khỏe', 'Gửi ban tổ chức', 'Kết quả'] as const;
 const stepOf = (s: ProposalStatus): { at: number; failed: boolean } => ({
-  PROPOSED: { at: 0, failed: false }, WAITING_VET_EXAM: { at: 1, failed: false }, VET_FAILED: { at: 1, failed: true },
-  WAITING_OWNER: { at: 2, failed: false }, OWNER_DECLINED: { at: 2, failed: true }, READY_TO_SUBMIT: { at: 3, failed: false },
+  PROPOSED: { at: 0, failed: false }, WAITING_OWNER: { at: 1, failed: false }, OWNER_DECLINED: { at: 1, failed: true },
+  WAITING_VET_EXAM: { at: 2, failed: false }, VET_FAILED: { at: 2, failed: true }, READY_TO_SUBMIT: { at: 3, failed: false },
   SUBMITTED: { at: 4, failed: false }, REJECTED_BY_ORGANIZER: { at: 3, failed: true }, RESULT_RECORDED: { at: 5, failed: false },
 }[s]);
 
@@ -60,7 +60,7 @@ export const ProposalDetail: React.FC<{ proposal: RaceProposal; tournament?: Tou
         </div>
       )}
       {(p.status === 'WAITING_VET_EXAM' || p.status === 'WAITING_OWNER') && (
-        <Callout tone="info">{p.status === 'WAITING_VET_EXAM' ? 'Đang chờ Bác sĩ thú y khám trước thi đấu.' : 'Bác sĩ đã xác nhận ĐẠT. Đang chờ chủ ngựa đồng ý.'} Bạn chỉ theo dõi ở bước này.</Callout>
+        <Callout tone="info">{p.status === 'WAITING_VET_EXAM' ? 'Chủ ngựa đã đồng ý. Đang chờ Bác sĩ thú y khám trước thi đấu.' : 'Đang chờ chủ ngựa đồng ý trước khi chuyển sang khám sức khỏe.'} Bạn chỉ theo dõi ở bước này.</Callout>
       )}
 
       <div>

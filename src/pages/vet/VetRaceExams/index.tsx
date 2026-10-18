@@ -59,7 +59,7 @@ export const VetRaceExams: React.FC = () => {
 
   return (
     <div className="ht ht-page">
-      <PageHeader title="Khám trước thi đấu" sub="Yêu cầu phát sinh từ đề xuất của HLV trưởng. ĐẠT → chủ ngựa xác nhận; KHÔNG ĐẠT → dừng quy trình đăng ký nội bộ (BR_04)." />
+      <PageHeader title="Khám trước thi đấu" sub="Yêu cầu phát sinh sau khi chủ ngựa đồng ý đề xuất. ĐẠT → sẵn sàng gửi BTC; KHÔNG ĐẠT → dừng quy trình đăng ký nội bộ (BR_04)." />
       <Tabs<Tab> value={tab} onChange={setTab} items={[{ value: 'waiting', label: 'Chờ khám', count: waiting.length }, { value: 'done', label: 'Đã có kết quả', count: done.length }]} />
       <Panel>
         <div style={{ overflowX: 'auto' }}>
