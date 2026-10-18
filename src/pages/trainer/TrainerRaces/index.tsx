@@ -32,7 +32,7 @@ export const TrainerRaces: React.FC = () => {
 
   return (
     <div className="ht ht-page">
-      <PageHeader title="Giải đua & đề xuất thi đấu" sub="HLV đề xuất → Bác sĩ khám trước thi đấu → Chủ ngựa đồng ý → gửi hồ sơ cho ban tổ chức (BR_04)."
+      <PageHeader title="Giải đua & đề xuất thi đấu" sub="HLV đề xuất → Chủ ngựa đồng ý → Bác sĩ khám sức khỏe → gửi hồ sơ cho ban tổ chức (BR_04)."
         actions={<Link className="ht-btn ht-btn--primary" to="/trainer/races/new"><Icon name="send" />Tạo đề xuất</Link>} />
 
       <div className="ht-stats">

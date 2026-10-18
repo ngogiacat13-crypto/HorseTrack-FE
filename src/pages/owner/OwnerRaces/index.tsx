@@ -8,7 +8,7 @@ import { Badge, Callout, PageHeader, Panel, Timeline } from '../../../components
 import { LoadState } from '../../../components/trainer/TrainerParts';
 import { RespondDialog } from './RespondDialog';
 
-/* 3.1 Nhận đề xuất · 3.2 Thông tin giải · 3.3 Kết quả khám · 3.4 Đồng ý / từ chối · 3.5 Kết quả thi đấu (BR_04) */
+/* 3.1 Nhận đề xuất · 3.2 Đồng ý / từ chối · 3.3 Kết quả khám · 3.4 Kết quả thi đấu (BR_04) */
 export const OwnerRaces: React.FC = () => {
   const actor = useActor();
   const { data, loading, error, reload } = useFetch(() => ownerApi.getMyProposals(actor), [actor]);
@@ -23,7 +23,7 @@ export const OwnerRaces: React.FC = () => {
 
   return (
     <div className="ht ht-page">
-      <PageHeader title="Xác nhận thi đấu" sub="HLV trưởng đề xuất → Bác sĩ khám trước thi đấu → bạn đồng ý hoặc từ chối"
+      <PageHeader title="Xác nhận thi đấu" sub="HLV trưởng đề xuất → bạn đồng ý hoặc từ chối → Bác sĩ khám sức khỏe"
         actions={waiting > 0 ? <Badge tone="warning">{waiting} chờ bạn trả lời</Badge> : undefined} />
       <div className="ht-cols" style={{ gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1.2fr)' }}>
         <Panel title="Đề xuất thi đấu" sub={`${data.length} đề xuất cho ngựa của bạn`}>
@@ -62,7 +62,7 @@ export const OwnerRaces: React.FC = () => {
                       <div style={{ fontSize: 13 }}>{p.vetResult.note}</div>
                       {p.vetResult.conditions && <div style={{ fontSize: 13 }}><b>Điều kiện:</b> {p.vetResult.conditions}</div>}
                     </>
-                  ) : <span style={{ fontSize: 13, color: 'var(--muted)' }}>Đang chờ Bác sĩ thú y khám — bạn chưa thể xác nhận.</span>}
+                  ) : <span style={{ fontSize: 13, color: 'var(--muted)' }}>Chủ ngựa đồng ý trước, sau đó Bác sĩ thú y sẽ khám sức khỏe.</span>}
                 </div>
 
                 {p.status === 'WAITING_OWNER' && (

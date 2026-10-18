@@ -3935,14 +3935,14 @@
       "horseName": "Bolt",
       "owner": "Vũ Thị Mai",
       "tournamentId": "T-2026-BD",
-      "status": "WAITING_VET_EXAM",
+      "status": "WAITING_OWNER",
       "createdAt": "03/10/2026",
       "createdBy": "Trần Đức Hùng",
       "history": [
         {
           "at": "03/10 08:40",
           "who": "Trần Đức Hùng",
-          "text": "tạo đề xuất · gửi yêu cầu khám trước thi đấu"
+          "text": "tạo đề xuất · chờ chủ ngựa đồng ý"
         }
       ],
       "vetResult": null,
@@ -3955,14 +3955,14 @@
       "horseName": "Comet",
       "owner": "Lý Gia Hân",
       "tournamentId": "T-2026-BD",
-      "status": "WAITING_VET_EXAM",
+      "status": "WAITING_OWNER",
       "createdAt": "02/10/2026",
       "createdBy": "Trần Đức Hùng",
       "history": [
         {
           "at": "02/10 11:00",
           "who": "Trần Đức Hùng",
-          "text": "tạo đề xuất · gửi yêu cầu khám trước thi đấu"
+          "text": "tạo đề xuất · chờ chủ ngựa đồng ý"
         }
       ],
       "vetResult": null,
@@ -3975,14 +3975,14 @@
       "horseName": "Thunder",
       "owner": "Hoàng Thị Lan",
       "tournamentId": "T-2026-DV",
-      "status": "WAITING_VET_EXAM",
+      "status": "WAITING_OWNER",
       "createdAt": "01/10/2026",
       "createdBy": "Lê Minh Tâm",
       "history": [
         {
           "at": "01/10 15:20",
           "who": "Lê Minh Tâm",
-          "text": "tạo đề xuất · gửi yêu cầu khám trước thi đấu"
+          "text": "tạo đề xuất · chờ chủ ngựa đồng ý"
         }
       ],
       "vetResult": null,
@@ -4008,7 +4008,7 @@
         {
           "at": "28/09 09:00",
           "who": "Trần Đức Hùng",
-          "text": "tạo đề xuất · gửi yêu cầu khám trước thi đấu"
+          "text": "tạo đề xuất · chờ chủ ngựa đồng ý"
         }
       ],
       "vetResult": {
@@ -4045,7 +4045,7 @@
         {
           "at": "25/09 08:40",
           "who": "Lê Minh Tâm",
-          "text": "tạo đề xuất · gửi yêu cầu khám trước thi đấu"
+          "text": "tạo đề xuất · chờ chủ ngựa đồng ý"
         }
       ],
       "vetResult": {
@@ -4079,7 +4079,7 @@
         {
           "at": "26/09 16:15",
           "who": "Trần Đức Hùng",
-          "text": "tạo đề xuất · gửi yêu cầu khám trước thi đấu"
+          "text": "tạo đề xuất · chờ chủ ngựa đồng ý"
         }
       ],
       "vetResult": {

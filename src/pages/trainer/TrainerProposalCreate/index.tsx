@@ -37,7 +37,7 @@ export const TrainerProposalCreate: React.FC = () => {
     setBusy(true);
     try {
       const p = await trainerApi.createProposal({ horseId, tournamentId, note }, actor);
-      toast(`Đã tạo đề xuất ${p.id} · gửi yêu cầu khám cho Bác sĩ thú y.`);
+      toast(`Đã tạo đề xuất ${p.id} · đang chờ chủ ngựa đồng ý.`);
       navigate(`/trainer/races?p=${p.id}`);
     } catch (err) {
       setServerError((err as ApiError).message ?? 'Tạo đề xuất thất bại.');
@@ -51,15 +51,15 @@ export const TrainerProposalCreate: React.FC = () => {
       <PageHeader
         crumbs={<><Link className="ht-back" to="/trainer/races"><Icon name="back" size={14} />Giải đua</Link><Icon name="chev" size={14} /><b>Tạo đề xuất</b></>}
         title="Đề xuất ngựa thi đấu"
-        sub="Tạo hồ sơ nội bộ: gửi yêu cầu khám trước thi đấu cho Bác sĩ, sau đó chủ ngựa xác nhận. Chưa phải đăng ký với ban tổ chức."
+        sub="Tạo hồ sơ nội bộ: chủ ngựa đồng ý trước, sau đó Bác sĩ khám sức khỏe. Chưa phải đăng ký với ban tổ chức."
       />
 
       <Panel>
         <div className="ht-panel__body" style={{ paddingTop: 20 }}>
           <ol className="ht-stepper" aria-label="Quy trình BR_04">
             <li className="ht-step" data-state="current"><span className="ht-step__dot">1</span>HLV đề xuất</li><li className="ht-step-line" aria-hidden="true" />
-            <li className="ht-step"><span className="ht-step__dot">2</span>Bác sĩ khám</li><li className="ht-step-line" aria-hidden="true" />
-            <li className="ht-step"><span className="ht-step__dot">3</span>Chủ ngựa đồng ý</li><li className="ht-step-line" aria-hidden="true" />
+            <li className="ht-step"><span className="ht-step__dot">2</span>Chủ ngựa đồng ý</li><li className="ht-step-line" aria-hidden="true" />
+            <li className="ht-step"><span className="ht-step__dot">3</span>Khám sức khỏe</li><li className="ht-step-line" aria-hidden="true" />
             <li className="ht-step"><span className="ht-step__dot">4</span>Gửi ban tổ chức</li>
           </ol>
         </div>
@@ -120,7 +120,7 @@ export const TrainerProposalCreate: React.FC = () => {
               <label className="ht-label" htmlFor="pr-note" style={{ display: 'block', margin: '16px 0 6px' }}>Ghi chú cho Bác sĩ (không bắt buộc)</label>
               <textarea id="pr-note" className="ht-textarea" style={{ minHeight: 72 }} value={note} onChange={(e) => setNote(e.target.value)} placeholder="VD: Theo dõi nhịp tim khi bứt tốc." />
               <button type="button" className="ht-btn ht-btn--primary ht-btn--block" style={{ marginTop: 16 }} onClick={submit} disabled={busy} aria-busy={busy || undefined}>
-                <Busy busy={busy} label="Đang gửi…"><Icon name="send" />Gửi đề xuất & yêu cầu khám</Busy>
+                <Busy busy={busy} label="Đang gửi…"><Icon name="send" />Gửi đề xuất</Busy>
               </button>
             </div>
           </Panel>

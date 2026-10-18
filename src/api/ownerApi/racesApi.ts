@@ -3,7 +3,7 @@ import { addAudit, type Actor } from '../managerApi';
 import type { RaceProposal, Tournament } from '../trainerApi';
 import { get, min, now, DENIED } from './shared';
 
-/* 3.1–3.5 Xác nhận thi đấu (BR_04): the owner answers only after a PASS from the vet. */
+/* 3.1–3.5 Xác nhận thi đấu (BR_04): the owner answers before the pre-race vet exam. */
 export const racesApi = {
   async getMyProposals(actor: Actor) {
     const [proposals, tournaments] = await Promise.all([get<RaceProposal[]>('/raceProposals'), get<Tournament[]>('/tournaments')]);
@@ -13,13 +13,12 @@ export const racesApi = {
       .map((p) => ({ proposal: p, tournament: tournaments.find((t) => t.id === p.tournamentId) }));
   },
 
-  /** 3.4 — agree → READY_TO_SUBMIT (not "sent to the organizer"); decline → OWNER_DECLINED with a reason. */
+  /** 3.2 — agree → WAITING_VET_EXAM; decline → OWNER_DECLINED with a reason. */
   async respondProposal(p: RaceProposal, agree: boolean, note: string, actor: Actor) {
     if (p.owner !== actor.name) throw new Error(DENIED);
     if (p.status !== 'WAITING_OWNER') throw new Error('Đề xuất không ở bước chờ chủ ngựa xác nhận.');
-    if (!p.vetResult?.pass) throw new Error('Chỉ xác nhận khi kết quả khám trước thi đấu ĐẠT (BR_04).');
     const reason = agree ? note.trim() : min(note, 10, 'Lý do từ chối');
-    const to = agree ? 'READY_TO_SUBMIT' : 'OWNER_DECLINED';
+    const to = agree ? 'WAITING_VET_EXAM' : 'OWNER_DECLINED';
     const ownerResponse: RaceProposal['ownerResponse'] = { agree, at: `${DEMO_NOW.date} ${DEMO_NOW.time}`, reason: reason || undefined };
     const { data } = await http.patch<RaceProposal>(`/raceProposals/${p.id}`, {
       status: to, ownerResponse,
