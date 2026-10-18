@@ -9,8 +9,8 @@ import { ProtocolBadge } from '../../../components/vet/VetParts';
 const muted: React.CSSProperties = { margin: 0, fontSize: 13, color: 'var(--muted)' };
 
 /** Health + training lock at a glance. */
-export const StatusPanel: React.FC<{ horse: VetHorse }> = ({ horse }) => (
-  <Panel as="h3" title="Trạng thái hiện tại">
+export const StatusPanel: React.FC<{ horse: VetHorse; onEdit: () => void }> = ({ horse, onEdit }) => (
+  <Panel as="h3" title="Trạng thái hiện tại" right={<button type="button" className="ht-more" onClick={onEdit}>Cập nhật <Icon name="arrow" size={14} /></button>}>
     <div className="ht-panel__body">
       <dl className="ht-kv" style={{ gridTemplateColumns: '100px 1fr' }}>
         <dt>Sức khỏe</dt><dd><Badge tone={HEALTH_LABEL[horse.health][1]}>{HEALTH_LABEL[horse.health][0]}</Badge></dd>

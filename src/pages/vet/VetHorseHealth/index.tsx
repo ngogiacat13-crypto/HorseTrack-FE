@@ -6,7 +6,7 @@ import { useFetch } from '../../../hooks/useFetch';
 import { Icon } from '../../../components/ui/Icon';
 import { PageHeader, Tabs } from '../../../components/ui/Ht';
 import { HorseBadges, LoadState } from '../../../components/trainer/TrainerParts';
-import { LockDialog, UnlockDialog } from '../../../components/vet/VetDialogs';
+import { HealthStatusDialog, LockDialog, UnlockDialog } from '../../../components/vet/VetDialogs';
 import { InjuryPanel } from './InjuryPanel';
 import { DietPanel } from './DietPanel';
 import { ActiveProtocolPanel, HistoryPanel, StatusPanel } from './SidePanels';
@@ -21,6 +21,7 @@ export const VetHorseHealth: React.FC = () => {
   const [tab, setTab] = useState<Tab>('health');
   const [lockOpen, setLockOpen] = useState(false);
   const [unlockOpen, setUnlockOpen] = useState(false);
+  const [healthOpen, setHealthOpen] = useState(false);
 
   if (!data) return <LoadState loading={loading} error={error} onRetry={reload} />;
   const { horse, cases, protocols, vaccinations, proposals, feedRequests } = data;
@@ -68,7 +69,7 @@ export const VetHorseHealth: React.FC = () => {
         <div className="ht-cols">
           <div><InjuryPanel horse={horse} onChanged={reload} /></div>
           <div>
-            <StatusPanel horse={horse} />
+            <StatusPanel horse={horse} onEdit={() => setHealthOpen(true)} />
             <DietPanel horse={horse} pendingFeeds={feedRequests.filter((f) => f.status === 'PENDING')} onChanged={reload} />
             <ActiveProtocolPanel protocol={activeProto} />
             <HistoryPanel horse={horse} />
@@ -81,6 +82,7 @@ export const VetHorseHealth: React.FC = () => {
 
       <LockDialog horse={lockOpen ? horse : null} onClose={() => setLockOpen(false)} onDone={() => { setLockOpen(false); reload(); }} />
       <UnlockDialog horse={unlockOpen ? horse : null} onClose={() => setUnlockOpen(false)} onDone={() => { setUnlockOpen(false); reload(); }} />
+      <HealthStatusDialog horse={healthOpen ? horse : null} onClose={() => setHealthOpen(false)} onDone={() => { setHealthOpen(false); reload(); }} />
     </div>
   );
 };

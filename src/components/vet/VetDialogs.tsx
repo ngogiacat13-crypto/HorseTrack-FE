@@ -11,6 +11,46 @@ import { Callout, Dialog, ReasonField, Segmented, useToast } from '../ui/Ht';
 type ExamProps = { vetCase: VetCase | null; horse?: Horse; onClose: () => void; onDone: () => void };
 export const ExamDialog: React.FC<ExamProps> = (props) => (props.vetCase ? <ExamForm key={props.vetCase.id} {...props} vetCase={props.vetCase} /> : null);
 
+type HealthStatusProps = { horse: Horse | null; onClose: () => void; onDone: () => void };
+export const HealthStatusDialog: React.FC<HealthStatusProps> = (props) => (props.horse ? <HealthStatusForm key={props.horse.id} {...props} horse={props.horse} /> : null);
+
+const HealthStatusForm: React.FC<HealthStatusProps & { horse: Horse }> = ({ horse, onClose, onDone }) => {
+  const actor = useActor();
+  const toast = useToast();
+  const [health, setHealth] = useState<HealthStatus>(horse.health);
+  const [reason, setReason] = useState('');
+  const [err, setErr] = useState('');
+  const [busy, setBusy] = useState(false);
+  const save = async () => {
+    setBusy(true);
+    try {
+      await vetApi.setHealthStatus(horse, health, reason, actor);
+      toast(`Đã cập nhật trạng thái sức khỏe của ${horse.name}.`);
+      onDone();
+    } catch (e) {
+      setErr((e as ApiError).message ?? 'Cập nhật thất bại.');
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <Dialog open={!!horse} onClose={onClose} icon="heart" tone="brand" busy={busy} busyLabel="Đang lưu…" width={560}
+      title={`Cập nhật sức khỏe · ${horse.name}`} sub="Thay đổi này được ghi vào lịch sử y tế và Audit Log."
+      confirmLabel="Lưu trạng thái" onConfirm={save}>
+      {err && <Callout tone="danger" style={{ marginBottom: 14 }}>{err}</Callout>}
+      <div style={{ display: 'grid', gap: 14 }}>
+        <div className="ht-field" style={{ margin: 0 }}>
+          <label className="ht-label" htmlFor="health-status">Trạng thái sức khỏe</label>
+          <select id="health-status" className="ht-select" value={health} onChange={(e) => setHealth(e.target.value as HealthStatus)}>
+            {(Object.keys(HEALTH_LABEL) as HealthStatus[]).map((h) => <option key={h} value={h}>{HEALTH_LABEL[h][0]}</option>)}
+          </select>
+        </div>
+        <ReasonField id="health-reason" label="Lý do cập nhật" value={reason} onChange={setReason} placeholder="VD: Đã hết đau, kết quả khám lại ổn định." minHeight={72} />
+      </div>
+    </Dialog>
+  );
+};
+
 // Mounted only while open, so the form starts from the case every time.
 const ExamForm: React.FC<ExamProps & { vetCase: VetCase }> = ({ vetCase, horse, onClose, onDone }) => {
   const actor = useActor();

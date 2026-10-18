@@ -15,6 +15,15 @@ export const healthApi = {
     return { horse, cases, protocols, vaccinations, proposals, feedRequests };
   },
 
+  async setHealthStatus(horse: Horse, health: Horse['health'], reason: string, actor: Actor) {
+    const why = min(reason, 5, 'Lý do cập nhật sức khỏe');
+    if (horse.health === health) throw new Error('Trạng thái mới trùng với trạng thái hiện tại.');
+    const { data } = await http.patch<VetHorse>(`/horses/${horse.id}`, { health });
+    await addHistory({ ...horse, ...data }, `Cập nhật sức khỏe: ${health}`, 'warning');
+    await addAudit(actor, { action: 'UPDATE_HEALTH_STATUS', label: 'Cập nhật trạng thái sức khỏe', object: horse.name, area: 'med', from: horse.health, to: health, reason: why });
+    return data;
+  },
+
   async addInjury(horse: Horse, input: { part: string; severity: string; note: string; x: number; y: number; caseId?: string }, actor: Actor) {
     if (!input.part.trim()) throw new Error('Chọn bộ phận bị ảnh hưởng.');
     if (!(INJURY_SEVERITIES as readonly string[]).includes(input.severity)) throw new Error('Chọn mức độ.');
