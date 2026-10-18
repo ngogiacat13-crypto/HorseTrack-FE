@@ -19,8 +19,7 @@ export const OwnerHorses: React.FC = () => {
 
   return (
     <div className="ht ht-page">
-      <PageHeader title="Ngựa của tôi" sub={`${data.horses.length} ngựa thuộc sở hữu của ${actor.name}`}
-        actions={<Link className="ht-btn ht-btn--primary" to={PATH.owner.registrationCreate}><Icon name="file" size={16} />Đăng ký ngựa mới</Link>} />
+      <PageHeader title="Ngựa của tôi" sub={`${data.horses.length} ngựa thuộc sở hữu của ${actor.name}`} />
 
       {suspended && (
         <div className="ht-banner" role="alert">
