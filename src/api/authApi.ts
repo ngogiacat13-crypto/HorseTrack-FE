@@ -78,12 +78,14 @@ export const authApi = {
     if (otp !== '123456') throw new Error('Mã OTP không đúng. Vui lòng thử lại với 123456.');
     const user = (await findBy('email', contact)) ?? (await findBy('phone', contact));
     if (!user) throw new Error('Không tìm thấy tài khoản.');
+    if (user.password === newPassword) throw new Error('Mật khẩu mới không được trùng mật khẩu cũ.');
     await http.patch(`/users/${user.id}`, { password: newPassword });
   },
 
   async changePassword(userId: string, oldPassword: string, newPassword: string): Promise<void> {
     const { data: user } = await http.get<UserRecord>(`/users/${userId}`);
     if (user.password !== oldPassword) throw new Error('Mật khẩu hiện tại không đúng.');
+    if (user.password === newPassword) throw new Error('Mật khẩu mới không được trùng mật khẩu cũ.');
     await http.patch(`/users/${userId}`, { password: newPassword });
   },
 
