@@ -55,10 +55,10 @@ export const ManagerRegistrationQueue: React.FC = () => {
             <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Tìm mã hồ sơ, tên ngựa, chủ ngựa…" aria-label="Tìm hồ sơ" />
           </div>
           <select className="ht-select" aria-label="Sắp xếp" value={oldestFirst ? 'old' : 'new'} onChange={(e) => setOldestFirst(e.target.value === 'old')}>
-            <option value="old">Cũ nhất trước</option><option value="new">Mới nhất trước</option>
+            <option value="old">Ngày gửi: Cũ nhất</option><option value="new">Ngày gửi: Mới nhất</option>
           </select>
         </>}
-        foot={<><span>Hiển thị {list.length} / {items.length} hồ sơ</span><span>Thứ tự xử lý: hồ sơ gửi sớm nhất trước</span></>}
+        foot={<><span>Hiển thị {list.length} / {items.length} hồ sơ</span><span>Đang sắp xếp: {oldestFirst ? 'Ngày gửi: Cũ nhất' : 'Ngày gửi: Mới nhất'}</span></>}
       >
         <table className="ht-table">
           <thead><tr><th>Mã hồ sơ</th><th>Ngựa</th><th>Chủ ngựa</th><th>Ngày gửi</th><th>Kiểm tra</th><th>Trạng thái</th><th /></tr></thead>

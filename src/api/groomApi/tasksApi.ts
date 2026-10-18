@@ -29,6 +29,23 @@ export const tasksApi = {
     const late = Math.max(0, toMin(doneAt) - toMin(t.sla));
     if (late > 0) min(input.note, 5, 'Việc trễ SLA — ghi chú lý do');
     const { data } = await http.patch<CareTask>(`/tasks/${t.id}`, { status: 'DONE', doneAt, note: input.note.trim(), photo: input.photo });
+    // Hoàn thành việc dọn chuồng phải đồng bộ trạng thái vệ sinh trên sơ đồ chuồng.
+    // Các loại việc chăm sóc khác không làm thay đổi trạng thái này.
+    if (t.type === 'CLEAN' && t.stall) {
+      const stall = await get<Stall>(`/stalls/${t.stall}`);
+      if (stall.groom === actor.name && stall.status !== 'MAINTENANCE') {
+        await http.patch<Stall>(`/stalls/${t.stall}`, { status: 'CLEAN' });
+        await addAudit(actor, {
+          action: 'MARK_STALL_CLEAN',
+          label: 'Cập nhật trạng thái chuồng',
+          object: t.stall,
+          area: 'train',
+          from: stall.status,
+          to: 'CLEAN',
+          reason: `Hoàn thành công việc ${t.id}`,
+        });
+      }
+    }
     if (late > 0) {
       const dash = await get<{ lateTasks: { title: string; groom: string; due: string; late: string; doneAt?: string }[] }>('/dashboard');
       await http.patch('/dashboard', { lateTasks: [{ title: `${t.title} — ${t.horse ?? t.stall}`, groom: t.groom, due: t.time, late: lateText(late), doneAt }, ...dash.lateTasks] });
@@ -41,7 +58,30 @@ export const tasksApi = {
   async getStable(actor: Actor) {
     const g = await me(actor);
     const [stalls, horses, tasks, feeds] = await Promise.all([get<Stall[]>('/stalls'), get<VetHorse[]>('/horses'), get<CareTask[]>('/tasks', { date: DEMO_NOW.date }), get<FeedRequest[]>('/feedRequests')]);
-    return { groom: g, stalls: stalls.filter((s) => g.zones.includes(s.zone)), horses, tasks: tasks.filter((t) => t.groom === g.name), feeds };
+    const assignedStalls = stalls.filter((s) => g.zones.includes(s.zone) && s.groom === g.name);
+    // Đối soát các việc dọn chuồng đã hoàn thành, bao gồm cả dữ liệu được tạo
+    // trước khi cơ chế đồng bộ trạng thái chuồng được thêm vào.
+    const latestCleanByStall = new Map<string, CareTask>();
+    tasks
+      .filter((t) => t.groom === g.name && t.type === 'CLEAN' && t.stall)
+      .forEach((t) => {
+        const stallId = t.stall as string;
+        const previous = latestCleanByStall.get(stallId);
+        if (!previous || t.time.localeCompare(previous.time) > 0) latestCleanByStall.set(stallId, t);
+      });
+    const cleanedStalls = new Set(
+      [...latestCleanByStall.entries()]
+        .filter(([, t]) => t.status === 'DONE')
+        .map(([stallId]) => stallId),
+    );
+    await Promise.all(
+      assignedStalls
+        .filter((s) => cleanedStalls.has(s.id) && s.status !== 'CLEAN' && s.status !== 'MAINTENANCE')
+        .map((s) => http.patch<Stall>(`/stalls/${s.id}`, { status: 'CLEAN' })),
+    );
+    const syncedStalls = assignedStalls.map((s) => cleanedStalls.has(s.id) && s.status !== 'MAINTENANCE' ? { ...s, status: 'CLEAN' as const } : s);
+    const assignedHorseIds = new Set(assignedStalls.map((s) => s.horseId).filter(Boolean));
+    return { groom: g, stalls: syncedStalls, horses: horses.filter((h) => assignedHorseIds.has(h.id)), tasks: tasks.filter((t) => t.groom === g.name), feeds };
   },
 
   /** 2.3 — the Groom never edits a vet diet (BR_03); they send a request to the vet instead. */

@@ -38,8 +38,9 @@ export const ResetStep: React.FC<{ contact: string; onChangeContact: () => void;
       await authApi.resetPassword(contact, form.values.otp, form.values.newPassword);
       onDone();
     } catch (err) {
-      setServerError((err as ApiError)?.message || 'Đặt lại mật khẩu thất bại.');
-      form.setServerErrors({ otp: ' ' });
+      const message = (err as ApiError)?.message || 'Đặt lại mật khẩu thất bại.';
+      setServerError(message);
+      form.setServerErrors(message.includes('trùng mật khẩu cũ') ? { newPassword: message } : { otp: ' ' });
     } finally {
       form.setSubmitting(false);
     }

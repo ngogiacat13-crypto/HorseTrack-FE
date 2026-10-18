@@ -34,7 +34,7 @@ export const WarehouseInventory: React.FC = () => {
   return (
     <div className="ht ht-page">
       <PageHeader title="Danh sách tồn kho" sub="Tồn thực tế, lượng đã giữ cho phác đồ, số khả dụng và các lô hàng dự kiến về."
-        actions={<Link className="ht-btn ht-btn--primary" to="/warehouse/check"><Icon name="clip" />Kiểm kê tháng</Link>} />
+      />
 
       <div className="ht-stats">
         <StatCard icon="box" tone="brand" value={items.length} label="Mặt hàng đang theo dõi" />

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ManagedUser, managerApi } from '../../../api/managerApi';
+import { AssignedHorse, AssignedStall, GroomAssignment, ManagedUser, managerApi } from '../../../api/managerApi';
 import { useActor } from '../../../auth/AuthContext';
 import { useAction } from '../../../hooks/useAction';
 import { Icon } from '../../../components/ui/Icon';
@@ -16,6 +16,35 @@ const useReason = () => {
   const check = () => { if (reason.trim().length < 10) { setErr('Lý do phải có ít nhất 10 ký tự.'); return false; } return true; };
   const onChange = (v: string) => { setReason(v); if (v.trim().length >= 10) setErr(''); };
   return { reason, err, check, onChange };
+};
+
+export const GroomAssignmentDialog: React.FC<{ user: ManagedUser; data: { grooms: GroomAssignment[]; stalls: AssignedStall[]; horses: AssignedHorse[] }; onClose: () => void; onDone: () => void }> = ({ user, data, onClose, onDone }) => {
+  const actor = useActor();
+  const { busy, error, run } = useAction();
+  const current = data.grooms.find((g) => g.id === user.id || g.name === user.fullName);
+  const [zones, setZones] = useState<string[]>(current?.zones ?? []);
+  const [horseIds, setHorseIds] = useState<string[]>(() => data.horses.filter((h) => (current?.zones ?? []).includes(data.stalls.find((s) => s.horseId === h.id)?.zone ?? '')).map((h) => h.id));
+  const available = data.horses.filter((h) => zones.includes(data.stalls.find((s) => s.horseId === h.id)?.zone ?? ''));
+  const toggle = (value: string, values: string[], setValues: React.Dispatch<React.SetStateAction<string[]>>) => setValues(values.includes(value) ? values.filter((x) => x !== value) : [...values, value]);
+  const toggleZone = (zone: string) => {
+    const adding = !zones.includes(zone);
+    setZones((xs) => adding ? [...xs, zone] : xs.filter((x) => x !== zone));
+    const ids = data.horses.filter((h) => data.stalls.find((s) => s.horseId === h.id)?.zone === zone).map((h) => h.id);
+    setHorseIds((xs) => adding ? [...new Set([...xs, ...ids])] : xs.filter((id) => !ids.includes(id)));
+  };
+  const save = async () => { if (await run(() => managerApi.assignGroom(user, zones, horseIds, actor), `Đã phân công ${user.fullName}: ${zones.join(', ')} · ${horseIds.length} ngựa.`)) onDone(); };
+  return (
+    <Dialog open onClose={onClose} icon="stable" tone="brand" width={700} busy={busy} busyLabel="Đang lưu…" title={`Phân công chăm sóc · ${user.fullName}`} sub="Chọn khu làm việc và những ngựa người chăm được phụ trách trong các khu đó." confirmLabel="Lưu phân công" onConfirm={save}>
+      {error && <Callout tone="danger" style={{ marginBottom: 14 }}>{error}</Callout>}
+      <div className="ht-label" style={{ marginBottom: 8 }}>Khu chăm sóc</div>
+      <div className="ht-roles">{['Khu A', 'Khu B', 'Khu C'].map((z) => <label key={z} className="ht-role"><input type="checkbox" checked={zones.includes(z)} onChange={() => toggleZone(z)} />{z}</label>)}</div>
+      <div className="ht-label" style={{ margin: '16px 0 8px' }}>Ngựa được giao</div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, maxHeight: 280, overflowY: 'auto' }}>
+        {available.map((h) => { const stall = data.stalls.find((s) => s.horseId === h.id); return <label key={h.id} className="ht-role" style={{ alignItems: 'flex-start' }}><input type="checkbox" checked={horseIds.includes(h.id)} onChange={() => toggle(h.id, horseIds, setHorseIds)} /><span><b>{h.name}</b><small className="sub">{stall?.id} · {stall?.zone} · Chủ: {h.owner}</small></span></label>; })}
+      </div>
+      {!available.length && <div className="ht-empty">Chọn khu để hiện danh sách ngựa.</div>}
+    </Dialog>
+  );
 };
 
 /* 5.2 — change role after the BR_06 conflict check; a failing check blocks the change. */

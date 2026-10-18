@@ -50,6 +50,9 @@ export interface ManagedUser {
   lastLogin: string; status: 'ACTIVE' | 'LOCKED'; lockReason?: string;
   openTasks?: number; horsesOwned?: number; serviceSuspended?: boolean; avatarUrl?: string | null;
 }
+export interface GroomAssignment { id: string; name: string; zones: string[] }
+export interface AssignedStall { id: string; zone: string; horseId: string | null; horse: string | null; status: string; groom: string }
+export interface AssignedHorse { id: string; name: string; owner: string; stall: string; health: string }
 export interface RoleCheck { level: 'pass' | 'warn' | 'fail'; text: string }
 
 export type AuditArea = 'reg' | 'med' | 'train' | 'fin' | 'acct';
@@ -219,6 +222,32 @@ export const managerApi = {
 
   /* ----- Users & roles ----- */
   getUsers: async () => (await get<UserRecord[]>('/users')).map(toManaged),
+
+  async getGroomAssignments() {
+    const [grooms, stalls, horses] = await Promise.all([
+      get<GroomAssignment[]>('/grooms'), get<AssignedStall[]>('/stalls'), get<AssignedHorse[]>('/horses'),
+    ]);
+    return { grooms, stalls, horses };
+  },
+
+  async assignGroom(user: ManagedUser, zones: string[], horseIds: string[], actor: Actor) {
+    if (user.role !== 'Groom') throw new Error('Chỉ có thể phân công cho Người chăm ngựa.');
+    if (!zones.length) throw new Error('Chọn ít nhất một khu chăm sóc.');
+    const assignments = await managerApi.getGroomAssignments();
+    const target = assignments.grooms.find((g) => g.id === user.id || g.name === user.fullName);
+    if (!target) throw new Error('Không tìm thấy hồ sơ phân công của người chăm ngựa.');
+    const selected = new Set(horseIds);
+    const invalid = assignments.horses.find((h) => selected.has(h.id) && !zones.includes(assignments.stalls.find((s) => s.horseId === h.id)?.zone ?? ''));
+    if (invalid) throw new Error(`${invalid.name} không thuộc khu đã chọn.`);
+    await http.patch(`/grooms/${target.id}`, { zones });
+    await Promise.all(assignments.stalls.map((s) => {
+      if (selected.has(s.horseId ?? '')) return http.patch(`/stalls/${s.id}`, { groom: user.fullName });
+      if (s.groom === user.fullName) return http.patch(`/stalls/${s.id}`, { groom: 'Chưa phân công' });
+      return Promise.resolve();
+    }));
+    await addAudit(actor, { action: 'ASSIGN_GROOM_SCOPE', label: 'Phân công khu và ngựa cho mã phu', object: user.fullName, area: 'acct', from: target.zones.join(', '), to: `${zones.join(', ')} · ${horseIds.length} ngựa`, reason: 'Cập nhật phạm vi chăm sóc' });
+    return { zones, horseIds };
+  },
 
   /** BR_06 conflict check — pure function, no request. */
   checkRoleChange(user: ManagedUser, to: UserRole): RoleCheck[] {

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ownerApi, type NewRegistration } from '../../../api/ownerApi';
 import type { Registration } from '../../../api/managerApi';
 import { useActor, useAuth } from '../../../auth/AuthContext';
@@ -54,7 +54,7 @@ const RegistrationForm: React.FC<{ resubmit?: Registration }> = ({ resubmit }) =
 
   return (
     <div className="ht ht-page">
-      <PageHeader crumbs={<Link to={PATH.owner.registrations}>Đăng ký ngựa mới</Link>} title={resubmit ? `Nộp lại hồ sơ ${resubmit.id}` : 'Tạo hồ sơ đăng ký ngựa'}
+      <PageHeader crumbs={<button type="button" className="ht-back" onClick={() => navigate(-1)}><Icon name="back" size={14} />Quay lại</button>} title={resubmit ? `Nộp lại hồ sơ ${resubmit.id}` : 'Tạo hồ sơ đăng ký ngựa'}
         sub="Hệ thống kiểm tra trường bắt buộc rồi chuyển hồ sơ sang PENDING_REVIEW cho Quản lý CLB" />
       {resubmit && <Callout tone="info" title="Hồ sơ được phép nộp lại" style={{ marginBottom: 16 }}>Thông tin cũ đã được điền sẵn — bổ sung giấy tờ còn thiếu và tải lại toàn bộ tệp.</Callout>}
       <form onSubmit={submit} className="ht-cols">
