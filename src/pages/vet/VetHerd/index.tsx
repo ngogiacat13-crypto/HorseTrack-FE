@@ -38,8 +38,7 @@ export const VetHerd: React.FC = () => {
 
   return (
     <div className="ht ht-page">
-      <PageHeader title="Sức khỏe đàn ngựa" sub={`${horses.length} ngựa · ${locked.length} đang khóa huấn luyện · ${data.protocols.filter(isOpenProtocol).length} phác đồ đang mở`}
-        actions={<Link className="ht-btn ht-btn--primary" to="/vet/cases"><Icon name="clip" />Hộp thư ca khám{newCases.length > 0 && ` (${newCases.length})`}</Link>} />
+      <PageHeader title="Sức khỏe đàn ngựa" sub={`${horses.length} ngựa · ${locked.length} đang khóa huấn luyện · ${data.protocols.filter(isOpenProtocol).length} phác đồ đang mở`} />
 
       {delayed.map((p) => (
         <div key={p.id} className="ht-banner" role="alert">

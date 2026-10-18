@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { SESSION_LABEL, trainerApi } from '../../../api/trainerApi';
 import { useActor } from '../../../auth/AuthContext';
 import { useFetch } from '../../../hooks/useFetch';
@@ -13,6 +13,7 @@ import { DecisionRecord, SessionSide } from './SessionSide';
 /* 2.1 cảnh báo PAUSED_PENDING_TRAINER · 2.2 biểu đồ chỉ số · 2.3 dừng & gửi bác sĩ · 2.4 điều chỉnh & tiếp tục */
 export const TrainerSessionDetail: React.FC = () => {
   const { id = '' } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const actor = useActor();
   const { data, loading, error, reload } = useFetch(() => trainerApi.getSession(id, actor), [id, actor]);
 
@@ -25,7 +26,7 @@ export const TrainerSessionDetail: React.FC = () => {
   return (
     <div className="ht ht-page">
       <PageHeader
-        crumbs={<><Link className="ht-back" to="/trainer/schedule"><Icon name="back" size={14} />Lịch tập</Link><Icon name="chev" size={14} /><span className="ht-mono">{s.date}</span><Icon name="chev" size={14} /><b className="ht-mono">{s.id}</b></>}
+        crumbs={<><button type="button" className="ht-back" onClick={() => navigate(-1)}><Icon name="back" size={14} />Quay lại</button><Icon name="chev" size={14} /><span className="ht-mono">{s.date}</span><Icon name="chev" size={14} /><b className="ht-mono">{s.id}</b></>}
         title={<>Phiên tập <span className="ht-mono">#{s.id}</span></>}
         badge={<Badge tone={SESSION_LABEL[s.status][1]}>{SESSION_LABEL[s.status][0]}</Badge>}
         sub={<><b>{s.horseName}</b> · <span className="ht-mono">{s.date} {s.time}</span> · Mã phu: <b>{s.groom}</b> · {s.label} · {s.track}</>}
