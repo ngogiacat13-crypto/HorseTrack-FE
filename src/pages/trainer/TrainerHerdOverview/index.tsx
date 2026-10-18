@@ -48,7 +48,6 @@ export const TrainerHerdOverview: React.FC = () => {
       <PageHeader
         title="Tổng quan đàn ngựa"
         sub={`${horses.length} ngựa · ${locked.length} đang bị khóa tập · ${running} có giáo án đang chạy`}
-        actions={<Link className="ht-btn ht-btn--primary" to="/trainer/plans/new"><Icon name="calendar" />Tạo giáo án</Link>}
       />
 
       {pending.map((s) => (

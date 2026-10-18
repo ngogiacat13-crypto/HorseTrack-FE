@@ -33,7 +33,7 @@ export const StableMap: React.FC = () => {
 
   return (
     <div className="ht ht-page">
-      <PageHeader title="Sơ đồ chuồng trại" sub="Vị trí và tình trạng ngựa bạn phụ trách. Chuồng của ngựa HLV khác chỉ hiện là đã có ngựa. Trạng thái vệ sinh do Mã phu cập nhật." />
+      <PageHeader title="Sơ đồ chuồng trại" sub="Vị trí và tình trạng các ngựa do bạn phụ trách. Trạng thái vệ sinh do Mã phu cập nhật." />
 
       <div className="ht-stats">
         <StatCard icon="stable" tone="brand" value={stalls.length} label="Tổng số chuồng" />
@@ -65,7 +65,7 @@ export const StableMap: React.FC = () => {
                             <span className="ht-mono">{s.id}</span>
                             {h?.trainingLocked && <Icon name="lock" size={14} style={{ color: 'var(--danger-ink)' }} />}
                           </span>
-                          <b style={s.otherTrainer ? { color: 'var(--muted)', fontWeight: 500 } : undefined}>{s.horse ?? (s.otherTrainer ? 'Ngựa HLV khác' : 'Trống')}</b>
+                            <b>{s.horse ?? 'Trống'}</b>
                           <Badge tone={STALL_LABEL[s.status][1]} plain>{STALL_LABEL[s.status][0]}</Badge>
                         </button>
                       );
@@ -88,7 +88,7 @@ export const StableMap: React.FC = () => {
                     {curHorse.lock && <Callout tone="danger" icon="lock">Khóa tập: {curHorse.lock.reason} (BS {curHorse.lock.by}).</Callout>}
                     <Link className="ht-more" to={`/trainer/horses/${curHorse.id}`}>Mở hồ sơ ngựa <Icon name="arrow" /></Link>
                   </>
-                ) : <p style={{ margin: 0, color: 'var(--muted)' }}>{cur.otherTrainer ? 'Chuồng có ngựa do HLV khác phụ trách — bạn không xem được thông tin ngựa này.' : 'Chuồng trống.'}</p>}
+                ) : <p style={{ margin: 0, color: 'var(--muted)' }}>Chuồng trống.</p>}
                 <dl className="ht-kv">
                   <dt>Khu</dt><dd>{cur.zone}</dd>
                   <dt>Mã phu phụ trách</dt><dd>{cur.groom}</dd>

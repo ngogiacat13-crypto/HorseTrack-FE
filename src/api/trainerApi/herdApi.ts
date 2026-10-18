@@ -29,8 +29,9 @@ export const herdApi = {
   async getStable(actor: Actor) {
     const [stalls, horses] = await Promise.all([get<Stall[]>('/stalls'), myHorses(actor)]);
     const mine = new Set(horses.map((h) => h.id));
-    // Stalls of other trainers' horses stay on the map, but the horse is hidden.
-    const masked = stalls.map((st) => (st.horseId && !mine.has(st.horseId) ? { ...st, horseId: null, horse: null, otherTrainer: true } : st));
-    return { stalls: masked, horses };
+    // HLV chỉ thấy chuồng trống và chuồng đang chứa ngựa do mình phụ trách.
+    // Không hiển thị ngựa hoặc placeholder của HLV khác trên sơ đồ này.
+    const visibleStalls = stalls.filter((st) => !st.horseId || mine.has(st.horseId));
+    return { stalls: visibleStalls, horses };
   },
 };
