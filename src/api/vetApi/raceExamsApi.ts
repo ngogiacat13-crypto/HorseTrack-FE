@@ -27,13 +27,13 @@ export const raceExamsApi = {
     if (input.pass && (horse.health === 'INJURED' || horse.health === 'QUARANTINE')) throw new Error(`${horse.name} đang ${horse.health === 'INJURED' ? 'chấn thương' : 'cách ly'} — không thể kết luận ĐẠT.`);
     const note = min(input.note, 10, input.pass ? 'Nhận xét khám' : 'Lý do không đạt');
     const vetResult = { pass: input.pass, by: actor.name, at: now(), note, conditions: input.conditions.trim() || undefined };
-    const status = input.pass ? 'WAITING_OWNER' : 'VET_FAILED';
+    const status = input.pass ? 'READY_TO_SUBMIT' : 'VET_FAILED';
     const history = [
       { at: now(), who: `BS ${actor.name}`, text: input.pass ? 'kết luận ĐẠT · gửi kết quả cho chủ ngựa và HLV' : `kết luận KHÔNG ĐẠT: ${note}`, tone: input.pass ? 'success' as const : 'danger' as const },
       ...p.history,
     ];
     const { data } = await http.patch<RaceProposal>(`/raceProposals/${p.id}`, { status, vetResult, history });
-    await addAudit(actor, { action: input.pass ? 'RACE_EXAM_PASS' : 'RACE_EXAM_FAIL', label: 'Khám trước thi đấu', object: `${p.id} · ${p.horseName}`, area: 'med', from: 'WAITING_VET_EXAM', to: input.pass ? 'VET_PASSED → WAITING_OWNER' : 'VET_FAILED', reason: note });
+    await addAudit(actor, { action: input.pass ? 'RACE_EXAM_PASS' : 'RACE_EXAM_FAIL', label: 'Khám trước thi đấu', object: `${p.id} · ${p.horseName}`, area: 'med', from: 'WAITING_VET_EXAM', to: input.pass ? 'READY_TO_SUBMIT' : 'VET_FAILED', reason: note });
     return data;
   },
 };

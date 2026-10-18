@@ -14,7 +14,7 @@ export const FLOWS: { title: string; who: string; steps: string[] }[] = [
   { title: 'Đăng ký ngựa mới', who: 'Chủ ngựa → Quản lý CLB', steps: ['Nộp hồ sơ + giấy tờ', 'PENDING_REVIEW', 'Checklist 3 mục', 'APPROVED / REJECTED'] },
   { title: 'Phiên tập vượt ngưỡng', who: 'Mã phu → HLV → Bác sĩ', steps: ['Nhập chỉ số', 'Tự tạm dừng (BR_02)', 'HLV quyết định', 'Tiếp tục / chuyển Bác sĩ'] },
   { title: 'Phác đồ & thuốc', who: 'Bác sĩ ↔ Quản lý kho', steps: ['Lập phác đồ', 'Kho kiểm tồn', 'Giữ hàng / chờ ETA', 'Bác sĩ xác nhận → cấp thuốc'] },
-  { title: 'Thi đấu', who: 'HLV → Bác sĩ → Chủ ngựa', steps: ['Đề xuất', 'Khám trước thi đấu', 'Chủ ngựa đồng ý', 'READY_TO_SUBMIT'] },
+  { title: 'Thi đấu', who: 'HLV → Chủ ngựa → Bác sĩ', steps: ['Đề xuất', 'Chủ ngựa đồng ý', 'Khám sức khỏe', 'READY_TO_SUBMIT'] },
   { title: 'Vật tư chuồng trại', who: 'Mã phu → Quản lý kho', steps: ['Gửi yêu cầu', 'Kiểm tồn', 'Cấp phát / chờ hàng', 'Mã phu xác nhận nhận'] },
   { title: 'Hóa đơn quá hạn', who: 'Hệ thống → Chủ ngựa → Quản lý CLB', steps: ['Quá 10 ngày: phạt', 'Đạt 25 ngày: đình chỉ', 'Thanh toán VNPay + xác minh', 'Kích hoạt lại'] },
 ];

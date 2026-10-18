@@ -16,7 +16,7 @@ export const RespondDialog: React.FC<{ proposal: RaceProposal; agree: boolean; o
   return (
     <Dialog open onClose={onClose} busy={busy} icon={agree ? 'check' : 'x'} tone={agree ? 'brand' : 'danger'}
       title={agree ? `Đồng ý cho ${p.horseName} thi đấu` : `Từ chối đề xuất ${p.id}`}
-      sub={agree ? 'Đề xuất chuyển sang READY_TO_SUBMIT. Việc gửi hồ sơ cho ban tổ chức do CLB thực hiện ngoài hệ thống — chưa có nghĩa BTC đã nhận.' : 'Đề xuất chuyển OWNER_DECLINED và dừng quy trình đăng ký giải này.'}
+      sub={agree ? 'Đề xuất chuyển sang chờ Bác sĩ khám sức khỏe trước thi đấu.' : 'Đề xuất chuyển OWNER_DECLINED và dừng quy trình đăng ký giải này.'}
       confirmLabel={agree ? 'Xác nhận đồng ý' : 'Xác nhận từ chối'} onConfirm={save}>
       {error && <Callout tone="danger" style={{ marginBottom: 14 }}>{error}</Callout>}
       {agree ? (

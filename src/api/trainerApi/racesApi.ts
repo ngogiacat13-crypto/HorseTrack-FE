@@ -23,12 +23,12 @@ export const racesApi = {
     const all = await get<RaceProposal[]>('/raceProposals');
     const proposal: RaceProposal = {
       id: nextId(all.map((p) => p.id), 'DX-'), horseId: horse.id, horseName: horse.name, owner: horse.owner, tournamentId: tournament.id,
-      status: 'WAITING_VET_EXAM', createdAt: DEMO_NOW.date, createdBy: actor.name, note: input.note.trim() || undefined,
-      history: [{ at: DEMO_NOW.short, who: actor.name, text: 'tạo đề xuất · gửi yêu cầu khám trước thi đấu' }],
+      status: 'WAITING_OWNER', createdAt: DEMO_NOW.date, createdBy: actor.name, note: input.note.trim() || undefined,
+      history: [{ at: DEMO_NOW.short, who: actor.name, text: 'tạo đề xuất · chờ chủ ngựa đồng ý' }],
       vetResult: null, ownerResponse: null, result: null,
     };
     const { data } = await http.post<RaceProposal>('/raceProposals', proposal);
-    await addAudit(actor, { action: 'CREATE_RACE_PROPOSAL', label: 'Tạo đề xuất thi đấu', object: `${data.id} · ${horse.name}`, area: 'train', to: 'WAITING_VET_EXAM', reason: `${tournament.name} · ${tournament.date}` });
+    await addAudit(actor, { action: 'CREATE_RACE_PROPOSAL', label: 'Tạo đề xuất thi đấu', object: `${data.id} · ${horse.name}`, area: 'train', to: 'WAITING_OWNER', reason: `${tournament.name} · ${tournament.date}` });
     return data;
   },
 
