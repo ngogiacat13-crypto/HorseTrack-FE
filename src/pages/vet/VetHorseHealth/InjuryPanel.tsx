@@ -1,19 +1,19 @@
 import React, { useState } from 'react';
-import { BODY_PARTS, INJURY_SEVERITIES, VetCase, VetHorse, vetApi } from '../../../api/vetApi';
+import { BODY_PARTS, INJURY_SEVERITIES, VetHorse, vetApi } from '../../../api/vetApi';
 import { useActor } from '../../../auth/AuthContext';
 import { useAction } from '../../../hooks/useAction';
 import { Icon } from '../../../components/ui/Icon';
 import { Badge, Callout, Panel } from '../../../components/ui/Ht';
 import { InjuryMap } from '../../../components/vet/InjuryMap';
 
-const EMPTY = { part: '', severity: 'Trung bình', note: '', caseId: '' };
+const EMPTY = { part: '', severity: 'Trung bình', note: '' };
 
 /** Closest named body part to a click on the map. */
 const nearestPart = (x: number, y: number) =>
   BODY_PARTS.reduce((best, b) => (Math.hypot(b.x - x, b.y - y) < Math.hypot(best.x - x, best.y - y) ? b : best)).part;
 
 /* 1.3 — mark injuries on the 2D map: pick a body part or click the map, then add. */
-export const InjuryPanel: React.FC<{ horse: VetHorse; openCases: VetCase[]; onChanged: () => void }> = ({ horse, openCases, onChanged }) => {
+export const InjuryPanel: React.FC<{ horse: VetHorse; onChanged: () => void }> = ({ horse, onChanged }) => {
   const actor = useActor();
   const { busy, error, setError, run } = useAction(onChanged);
   const [selected, setSelected] = useState<string | null>(null);
@@ -29,7 +29,7 @@ export const InjuryPanel: React.FC<{ horse: VetHorse; openCases: VetCase[]; onCh
     if (!pending) { setError('Chọn bộ phận hoặc bấm lên sơ đồ để đặt vị trí.'); return; }
     if (await run(() => vetApi.addInjury(horse, { ...mark, ...pending }, actor), `Đã đánh dấu ${mark.part} trên sơ đồ.`)) {
       setPending(null);
-      setMark({ ...EMPTY, caseId: mark.caseId });
+      setMark(EMPTY);
     }
   };
 
@@ -45,12 +45,6 @@ export const InjuryPanel: React.FC<{ horse: VetHorse; openCases: VetCase[]; onCh
             {INJURY_SEVERITIES.map((s) => <option key={s}>{s}</option>)}
           </select>
           <input className="ht-input" value={mark.note} onChange={(e) => setMark({ ...mark, note: e.target.value })} placeholder="Mô tả: sưng, đau khi chạm…" aria-label="Mô tả" />
-          {openCases.length > 0 && (
-            <select className="ht-select" value={mark.caseId} onChange={(e) => setMark({ ...mark, caseId: e.target.value })} aria-label="Liên kết ca khám">
-              <option value="">Không gắn ca</option>
-              {openCases.map((c) => <option key={c.id} value={c.id}>#{c.id} · {c.type}</option>)}
-            </select>
-          )}
           <button type="button" className="ht-btn ht-btn--primary ht-btn--sm" onClick={add} disabled={busy}><Icon name="check" />Thêm</button>
         </div>
         {error && <Callout tone="danger">{error}</Callout>}

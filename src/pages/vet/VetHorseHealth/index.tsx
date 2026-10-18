@@ -66,7 +66,7 @@ export const VetHorseHealth: React.FC = () => {
 
       {tab === 'health' && (
         <div className="ht-cols">
-          <div><InjuryPanel horse={horse} openCases={openCases} onChanged={reload} /></div>
+          <div><InjuryPanel horse={horse} onChanged={reload} /></div>
           <div>
             <StatusPanel horse={horse} />
             <DietPanel horse={horse} pendingFeeds={feedRequests.filter((f) => f.status === 'PENDING')} onChanged={reload} />
