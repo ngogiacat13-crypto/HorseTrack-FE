@@ -6,7 +6,7 @@ import { ROLE_LABEL } from '../../../components/layout/nav';
 import { useDebounce } from '../../../hooks/useDebounce';
 
 type Role = ManagedUser['role'];
-export type UserAction = 'role' | 'lock' | 'unlock';
+export type UserAction = 'role' | 'lock' | 'unlock' | 'assign';
 const ROLES = Object.keys(ROLE_LABEL) as Role[];
 
 /* 5.1 — users with search + role/status filters. The signed-in manager cannot act on their own account. */
@@ -54,6 +54,7 @@ export const UserTable: React.FC<{ users: ManagedUser[]; meId?: string; onAction
                     {u.status === 'ACTIVE'
                       ? <button type="button" className="ht-btn ht-btn--secondary ht-btn--sm" onClick={() => onAction('lock', u)}><Icon name="lock" />Khóa</button>
                       : <button type="button" className="ht-btn ht-btn--secondary ht-btn--sm" onClick={() => onAction('unlock', u)}><Icon name="unlock" />Mở khóa</button>}
+                    {u.role === 'Groom' && u.status === 'ACTIVE' && <button type="button" className="ht-btn ht-btn--ghost ht-btn--sm" onClick={() => onAction('assign', u)}><Icon name="stable" />Phân công</button>}
                   </>}
                 </div>
               </td>
