@@ -2,6 +2,7 @@
 // REST calls to json-server (db.json) through the shared axios instance.
 // Demo clock: 03/10/2026 10:30. The manager monitors medical work but never approves protocols (BR_07).
 import { DEMO_NOW, http } from './http';
+import { USE_BACKEND, be } from './beClient';
 
 /* ---------------- Types ---------------- */
 export type RegStatus = 'Pending' | 'Approved' | 'Rejected';
@@ -51,6 +52,15 @@ export interface ManagedUser {
   openTasks?: number; horsesOwned?: number; serviceSuspended?: boolean; avatarUrl?: string | null;
 }
 export interface GroomAssignment { id: string; name: string; zones: string[] }
+/** Roles the Club Manager can create staff accounts for. */
+export type StaffRole = 'HeadTrainer' | 'Veterinarian' | 'Groom' | 'WarehouseManager';
+export interface StaffInput {
+  fullName: string; username: string; email: string; phone: string; password: string; role: StaffRole;
+  /** HLV / Bác sĩ: số chứng chỉ hành nghề */ licenseNumber?: string;
+  /** Bác sĩ: nơi công tác · Mã phu: khu chuồng phụ trách */ specialization?: string;
+}
+/* role on the screens → Users.role_name accepted by POST /auth/staff/create (StaffCreateRequestDTO: Trainer | Veterinarian | Groom) */
+export const BE_STAFF_ROLE: Partial<Record<StaffRole, string>> = { HeadTrainer: 'Trainer', Veterinarian: 'Veterinarian', Groom: 'Groom' };
 export interface AssignedStall { id: string; zone: string; horseId: string | null; horse: string | null; status: string; groom: string }
 export interface AssignedHorse { id: string; name: string; owner: string; stall: string; health: string }
 export interface RoleCheck { level: 'pass' | 'warn' | 'fail'; text: string }
@@ -222,6 +232,30 @@ export const managerApi = {
 
   /* ----- Users & roles ----- */
   getUsers: async () => (await get<UserRecord[]>('/users')).map(toManaged),
+
+  /** Club Manager creates a staff account (staff cannot sign up by themselves; only Horse Owners can). */
+  async createStaff(input: StaffInput, actor: Actor): Promise<ManagedUser> {
+    const v = { ...input, fullName: input.fullName.trim(), username: input.username.trim(), email: input.email.trim(), phone: input.phone.replace(/\s/g, '') };
+    let id: string;
+    if (USE_BACKEND) {
+      const roleName = BE_STAFF_ROLE[v.role];
+      if (!roleName) throw new Error('Backend chưa hỗ trợ tạo tài khoản Quản lý kho.');
+      await be.post('/auth/staff/create', {
+        username: v.username, password: v.password, fullName: v.fullName, email: v.email, phone: v.phone || undefined,
+        roleName, licenseNumber: v.licenseNumber?.trim() || undefined, specialization: v.specialization?.trim() || undefined,
+      });
+      id = `be-${v.username}`; // the backend returns no id and has no user list API yet
+    } else {
+      const users = await get<UserRecord[]>('/users');
+      if (users.some((u) => u.username.toLowerCase() === v.username.toLowerCase())) throw new Error('Tên đăng nhập đã tồn tại.');
+      if (users.some((u) => u.email.toLowerCase() === v.email.toLowerCase())) throw new Error('Email đã được sử dụng.');
+      id = String(Math.max(0, ...users.map((u) => Number(u.id) || 0)) + 1);
+      await http.post('/users', { id, username: v.username, password: v.password, fullname: v.fullName, email: v.email, phone: v.phone, role: v.role, status: 'ACTIVE', lastLogin: '—', openTasks: 0 });
+      if (v.role === 'Groom') await http.post('/grooms', { id, name: v.fullName, zones: v.specialization ? [v.specialization] : [] });
+    }
+    await addAudit(actor, { action: 'CREATE_ACCOUNT', label: 'Tạo tài khoản nhân viên', object: `${v.username} · ${v.fullName}`, area: 'acct', from: '—', to: v.role, reason: 'Quản lý CLB cấp tài khoản cho nhân viên' });
+    return { id, fullName: v.fullName, username: v.username, email: v.email, role: v.role, lastLogin: '—', status: 'ACTIVE', openTasks: 0 };
+  },
 
   async getGroomAssignments() {
     const [grooms, stalls, horses] = await Promise.all([

@@ -92,7 +92,8 @@ be.interceptors.response.use(
   (res) => res,
   async (error: AxiosError<ApiResponse<unknown>>) => {
     const req = error.config as (InternalAxiosRequestConfig & { _retried?: boolean }) | undefined;
-    const isAuthCall = req?.url?.startsWith('/auth/');
+    // public auth calls never retry; /auth/staff/create needs a token like any other call
+    const isAuthCall = /^\/auth\/(login|refresh|logout|register-owner)/.test(req?.url ?? '');
     if (error.response?.status === 401 && req && !req._retried && !isAuthCall && tokenStore.get()?.refreshToken) {
       req._retried = true;
       try {
