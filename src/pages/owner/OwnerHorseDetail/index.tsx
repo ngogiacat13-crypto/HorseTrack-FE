@@ -4,7 +4,7 @@ import { ownerApi } from '../../../api/ownerApi';
 import { useActor } from '../../../auth/AuthContext';
 import { useFetch } from '../../../hooks/useFetch';
 import { PATH, toPath } from '../../../routers/routerPath';
-import { Badge, Callout, money, PageHeader, Panel, Tabs } from '../../../components/ui/Ht';
+import { BackButton, Badge, Callout, money, PageHeader, Panel, Tabs } from '../../../components/ui/Ht';
 import { HorseBadges, LoadState, PhaseBar } from '../../../components/trainer/TrainerParts';
 import { HealthTab } from './HealthTab';
 import { PerformanceTab } from './PerformanceTab';
@@ -21,7 +21,7 @@ export const OwnerHorseDetail: React.FC = () => {
 
   return (
     <div className="ht ht-page">
-      <PageHeader crumbs={<Link to={PATH.owner.home}>Ngựa của tôi</Link>} title={h.name}
+      <PageHeader crumbs={<BackButton fallback={PATH.owner.home} />} title={h.name}
         sub={<>{h.breed} · {h.sex === '♂' ? 'Đực' : 'Cái'} · {h.age} tuổi · chuồng {h.stall}</>}
         badge={<HorseBadges horse={h} compact />} />
       <Tabs.Group defaultValue="INFO">

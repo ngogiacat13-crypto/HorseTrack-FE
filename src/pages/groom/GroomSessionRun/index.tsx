@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { DEMO_NOW } from '../../../api/http';
 import { groomApi } from '../../../api/groomApi';
 import { SESSION_LABEL } from '../../../api/trainerApi';
@@ -8,14 +8,13 @@ import { useAction } from '../../../hooks/useAction';
 import { useFetch } from '../../../hooks/useFetch';
 import { PATH } from '../../../routers/routerPath';
 import { Icon } from '../../../components/ui/Icon';
-import { Badge, Callout, PageHeader, Panel } from '../../../components/ui/Ht';
+import { BackButton, Badge, Callout, PageHeader, Panel } from '../../../components/ui/Ht';
 import { HorseBadges, HrChart, LoadState } from '../../../components/trainer/TrainerParts';
 import { ReadingForm } from './ReadingForm';
 
 /* 3.1 Bắt đầu phiên · 3.2 Nhập chỉ số · 3.3 Tự tạm dừng khi vượt ngưỡng (BR_02) · 3.4 Kết thúc phiên */
 export const GroomSessionRun: React.FC = () => {
   const { id = '' } = useParams();
-  const navigate = useNavigate();
   const actor = useActor();
   const { data, loading, error, reload } = useFetch(() => groomApi.getSession(id, actor), [id, actor]);
   const act = useAction(reload);
@@ -30,7 +29,7 @@ export const GroomSessionRun: React.FC = () => {
 
   return (
     <div className="ht ht-page">
-      <PageHeader crumbs={<button type="button" className="ht-back" onClick={() => navigate(-1)}><Icon name="back" size={14} />Quay lại</button>}
+      <PageHeader crumbs={<BackButton fallback={PATH.groom.sessions} />}
         title={<>Phiên <span className="ht-mono">#{s.id}</span> · {s.horseName}</>}
         sub={<>{s.label} · <span className="ht-mono">{s.date}</span> {s.time} · {s.track}{plan.name ? <> · giáo án “{plan.name}”</> : null}</>}
         badge={<Badge tone={SESSION_LABEL[s.status][1]}>{SESSION_LABEL[s.status][0]}</Badge>} />

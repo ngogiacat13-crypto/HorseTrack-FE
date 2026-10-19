@@ -1,11 +1,11 @@
 import React, { useMemo, useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { HEALTH_LABEL, raceBlock, trainerApi } from '../../../api/trainerApi';
 import type { ApiError } from '../../../api/http';
 import { useActor } from '../../../auth/AuthContext';
 import { useFetch } from '../../../hooks/useFetch';
 import { Icon } from '../../../components/ui/Icon';
-import { Badge, Busy, Callout, PageHeader, Panel, useToast } from '../../../components/ui/Ht';
+import { BackButton, Badge, Busy, Callout, PageHeader, Panel, useToast } from '../../../components/ui/Ht';
 import { LoadState } from '../../../components/trainer/TrainerParts';
 
 /* 3.2 chọn ngựa đủ điều kiện · 3.3 tạo đề xuất thi đấu (BR_01, BR_04) */
@@ -49,7 +49,7 @@ export const TrainerProposalCreate: React.FC = () => {
   return (
     <div className="ht ht-page">
       <PageHeader
-        crumbs={<><Link className="ht-back" to="/trainer/races"><Icon name="back" size={14} />Giải đua</Link><Icon name="chev" size={14} /><b>Tạo đề xuất</b></>}
+        crumbs={<BackButton fallback="/trainer/races" />}
         title="Đề xuất ngựa thi đấu"
         sub="Tạo hồ sơ nội bộ: chủ ngựa đồng ý trước, sau đó Bác sĩ khám sức khỏe. Chưa phải đăng ký với ban tổ chức."
       />

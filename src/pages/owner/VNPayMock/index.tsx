@@ -26,7 +26,7 @@ export const VNPayMock: React.FC = () => {
     <div className="ht ht-vnpay">
       <header className="ht-vnpay__top">
         <span style={{ display: 'inline-flex', gap: 10, alignItems: 'center', fontWeight: 700 }}><BrandMark />HorseTrack</span>
-        <Link className="ht-more" to={back}><Icon name="back" size={14} /> Quay lại HorseTrack</Link>
+        <Link className="ht-more" to={back}><Icon name="back" size={14} /> Quay lại</Link>
       </header>
       <main className="ht-vnpay__card">
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'flex-start' }}>
