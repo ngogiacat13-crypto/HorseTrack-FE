@@ -2,6 +2,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 import { Icon } from '../ui/Icon';
+import { USE_BACKEND } from '../../api/beClient';
 import { NAV_BY_ROLE } from './nav';
 
 export const Sidebar: React.FC = () => {
@@ -18,7 +19,7 @@ export const Sidebar: React.FC = () => {
             <NavLink key={it.path} to={it.path} end={it.end} className="ht-side__item">
               <Icon name={it.icon} />
               <span>{it.label}</span>
-              {it.count ? <span className={`ht-count${it.tone ? ' ht-count--' + it.tone : ''}`}>{it.count}</span> : null}
+              {it.count && !USE_BACKEND ? <span className={`ht-count${it.tone ? ' ht-count--' + it.tone : ''}`}>{it.count}</span> : null}
             </NavLink>
           ))}
         </React.Fragment>

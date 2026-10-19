@@ -1,5 +1,7 @@
 import axios from 'axios';
 import { mockAdapter } from './mockServer';
+import { hybridAdapter } from './hybridAdapter';
+import { USE_BACKEND } from './beClient';
 
 /* One axios instance for the whole app (Slot 18–19: REST + axios).
    - No VITE_API_URL  → data comes from db.json inside the browser (src/api/mockServer.ts). `npm run dev` is enough.
@@ -11,7 +13,8 @@ export const http = axios.create({
   baseURL: USE_MOCK ? undefined : API_URL,
   timeout: 8000,
   headers: { 'Content-Type': 'application/json' },
-  ...(USE_MOCK ? { adapter: mockAdapter } : {}),
+  // dev:be → collections the Spring Boot backend serves come from it, the rest from db.json
+  ...(USE_MOCK ? { adapter: USE_BACKEND ? hybridAdapter : mockAdapter } : {}),
 });
 
 /* Turn network / HTTP errors into one readable Vietnamese message. */
@@ -30,5 +33,11 @@ http.interceptors.response.use(
 /* Lỗi ném ra từ authApi: lỗi đơn, hoặc nhiều lỗi theo từng field khi đăng ký. */
 export type ApiError = { message?: string; field?: string; fields?: Record<string, string> };
 
-/* Demo clock used across the app (03/10/2026 10:30). */
-export const DEMO_NOW = { date: '03/10/2026', time: '10:31', short: '03/10 10:31' };
+/* Clock used across the app: the fixed demo time (03/10/2026 10:31) with db.json, the real time with the backend. */
+const clock = (d: Date) => {
+  const p = (n: number) => String(n).padStart(2, '0');
+  const date = `${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()}`;
+  const time = `${p(d.getHours())}:${p(d.getMinutes())}`;
+  return { date, time, short: `${date.slice(0, 5)} ${time}` };
+};
+export const DEMO_NOW = USE_BACKEND ? clock(new Date()) : { date: '03/10/2026', time: '10:31', short: '03/10 10:31' };

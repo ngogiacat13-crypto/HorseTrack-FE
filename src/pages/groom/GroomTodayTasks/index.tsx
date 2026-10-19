@@ -10,6 +10,12 @@ import { PATH, toPath } from '../../../routers/routerPath';
 import { LoadState } from '../../../components/trainer/TrainerParts';
 import { TaskCard } from './TaskCard';
 import { taskState } from './taskState';
+
+const WEEKDAYS = ['Chủ nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+const weekday = (ddmmyyyy: string) => {
+  const [d, m, y] = ddmmyyyy.split('/').map(Number);
+  return WEEKDAYS[new Date(y, m - 1, d).getDay()];
+};
 import { CompleteTaskDialog } from './CompleteTaskDialog';
 
 type Tab = 'ALL' | TaskType;
@@ -33,7 +39,7 @@ export const GroomTodayTasks: React.FC = () => {
 
   return (
     <div className="ht ht-page">
-      <PageHeader title="Công việc hôm nay" sub={<>Thứ Bảy, <span className="ht-mono">{DEMO_NOW.date}</span> · {groom.zones.join(', ')}</>}
+      <PageHeader title="Công việc hôm nay" sub={<>{weekday(DEMO_NOW.date)}, <span className="ht-mono">{DEMO_NOW.date}</span> · {groom.zones.join(', ')}</>}
         actions={<span style={{ display: 'inline-flex', gap: 8 }}>
           <Badge tone="neutral">{tasks.length} việc</Badge><Badge tone="success">{done} xong</Badge>{late > 0 && <Badge tone="danger">{late} quá hạn</Badge>}
         </span>} />

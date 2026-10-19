@@ -5,6 +5,7 @@ import { useClickOutside } from '../../hooks/useClickOutside';
 import { ROLE_HOME } from '../../api/mockData';
 import { Icon } from '../ui/Icon';
 import { Avatar, BrandMark, DemoClock } from '../ui/Ht';
+import { USE_BACKEND } from '../../api/beClient';
 import { ROLE_LABEL, SEARCH_HINT } from './nav';
 
 export const Topbar: React.FC = () => {
@@ -27,8 +28,9 @@ export const Topbar: React.FC = () => {
       </label>
 
       <div className="ht-user">
-        <button type="button" className="ht-iconbtn ht-bell" aria-label="Thông báo (4 mới)">
-          <Icon name="bell" size={18} /><span className="ht-count">4</span>
+        {/* demo counter; the backend has no notification API yet */}
+        <button type="button" className="ht-iconbtn ht-bell" aria-label={USE_BACKEND ? 'Thông báo' : 'Thông báo (4 mới)'}>
+          <Icon name="bell" size={18} />{!USE_BACKEND && <span className="ht-count">4</span>}
         </button>
 
         <div className="ht-usermenu" ref={menuRef}>

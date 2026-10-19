@@ -37,15 +37,31 @@ export const resetMockDb = () => {
   db = load();
 };
 
-const respond = (config: InternalAxiosRequestConfig, status: number, data: unknown): AxiosResponse => ({
+export const respond = (config: InternalAxiosRequestConfig, status: number, data: unknown): AxiosResponse => ({
   data, status, statusText: String(status), headers: new AxiosHeaders(), config, request: {},
 });
 
-const fail = (config: InternalAxiosRequestConfig, status: number): never => {
+export const fail = (config: InternalAxiosRequestConfig, status: number): never => {
   throw new AxiosError(`Mock ${status}`, String(status), config, {}, respond(config, status, {}));
 };
 
 const RESERVED = new Set(['_sort', '_order', '_limit', '_page', 'q']);
+
+/** json-server style query: field filters, _sort/_order, _limit. Shared with the backend bridge (hybridAdapter). */
+export const queryRows = (resource: Row[], params: Record<string, unknown>) => {
+  let rows = resource.filter((r) =>
+    Object.entries(params).every(([k, v]) => RESERVED.has(k) || v === undefined || String(r[k]) === String(v)));
+  if (params._sort) {
+    const key = String(params._sort);
+    const dir = String(params._order ?? 'asc').toLowerCase() === 'desc' ? -1 : 1;
+    rows = [...rows].sort((a, b) => {
+      const x = a[key] as string | number, y = b[key] as string | number;
+      return (x > y ? 1 : x < y ? -1 : 0) * dir;
+    });
+  }
+  if (params._limit) rows = rows.slice(0, Number(params._limit));
+  return rows;
+};
 
 export const mockAdapter: AxiosAdapter = async (config) => {
   await new Promise((r) => setTimeout(r, LATENCY_MS));
@@ -73,18 +89,7 @@ export const mockAdapter: AxiosAdapter = async (config) => {
 
   if (method === 'get') {
     if (id !== undefined) return index < 0 ? fail(config, 404) : respond(config, 200, resource[index]);
-    let rows = resource.filter((r) =>
-      Object.entries(params).every(([k, v]) => RESERVED.has(k) || v === undefined || String(r[k]) === String(v)));
-    if (params._sort) {
-      const key = String(params._sort);
-      const dir = String(params._order ?? 'asc').toLowerCase() === 'desc' ? -1 : 1;
-      rows = [...rows].sort((a, b) => {
-        const x = a[key] as string | number, y = b[key] as string | number;
-        return (x > y ? 1 : x < y ? -1 : 0) * dir;
-      });
-    }
-    if (params._limit) rows = rows.slice(0, Number(params._limit));
-    return respond(config, 200, rows);
+    return respond(config, 200, queryRows(resource, params));
   }
 
   if (method === 'post') {
