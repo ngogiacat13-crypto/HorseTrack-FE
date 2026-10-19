@@ -1,6 +1,7 @@
-import React, { createContext, useCallback, useContext, useMemo, useReducer } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer } from 'react';
 import type { AuthUser } from '../api/mockData';
 import { authApi } from '../api/authApi';
+import { setSessionExpiredHandler } from '../api/beClient';
 
 /* Auth = Context (provider/consumer, Slot 8) + useReducer (Slot 9–10).
    Domain data (registrations, invoices…) lives in the Redux store instead. */
@@ -56,6 +57,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = useCallback(() => {
     localStorage.removeItem(STORAGE_KEY);
     dispatch({ type: 'LOGOUT' });
+    void authApi.logout(); // backend: revoke the refresh token
+  }, []);
+
+  // Backend: when the refresh token is also expired, sign out (the router then shows /login).
+  useEffect(() => {
+    setSessionExpiredHandler(() => {
+      localStorage.removeItem(STORAGE_KEY);
+      dispatch({ type: 'LOGOUT' });
+    });
   }, []);
 
   const updateUser = useCallback((patch: Partial<AuthUser>) => {

@@ -3,7 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { warehouseApi } from '../../../api/warehouseApi';
 import { useFetch } from '../../../hooks/useFetch';
 import { Icon } from '../../../components/ui/Icon';
-import { Badge, Callout, PageHeader, Panel, Timeline } from '../../../components/ui/Ht';
+import { BackButton, Badge, Callout, PageHeader, Panel, Timeline } from '../../../components/ui/Ht';
 import { LoadState } from '../../../components/trainer/TrainerParts';
 import { ProtocolBadge, ProtocolPath } from '../../../components/vet/VetParts';
 import { StockCheckForm } from './StockCheckForm';
@@ -29,7 +29,7 @@ export const WarehouseMedicalDetail: React.FC = () => {
   return (
     <div className="ht ht-page">
       <PageHeader
-        crumbs={<><Link className="ht-back" to="/warehouse/medical"><Icon name="back" size={14} />Yêu cầu thuốc</Link><Icon name="chev" size={14} /><b>{p.id}</b></>}
+        crumbs={<BackButton fallback="/warehouse/medical" />}
         title={<>Phác đồ <span className="ht-mono">{p.id}</span> <span style={{ color: 'var(--muted)', fontWeight: 500 }}>/ {horse.name}</span></>}
         badge={<ProtocolBadge state={p.state} delayed={p.delayed} />}
         sub={<>{p.diagnosis} · BS {p.vet} · chuồng <b>{horse.stall}</b> · cần thuốc từ <b className="ht-mono">{p.requiredBy}</b></>}

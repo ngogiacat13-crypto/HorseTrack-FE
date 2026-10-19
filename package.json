@@ -13,7 +13,8 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"src/**/*.{ts,tsx,css,json}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,css,json}\"",
-    "dev:server": "vite --mode server"
+    "dev:server": "vite --mode server",
+    "dev:be": "vite --mode backend"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.2.7",

@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { DEMO_NOW, type ApiError } from '../../../api/http';
 import { addDays, ProtoPhase, vetApi } from '../../../api/vetApi';
 import { useActor } from '../../../auth/AuthContext';
-import { Icon } from '../../../components/ui/Icon';
-import { Callout, PageHeader, useToast } from '../../../components/ui/Ht';
+import { BackButton, Callout, PageHeader, useToast } from '../../../components/ui/Ht';
 import { HorseBadges } from '../../../components/trainer/TrainerParts';
 import { PhaseEditor } from './PhaseEditor';
 import { HorseCaseFields, SummaryPanel } from './FormParts';
@@ -81,7 +80,7 @@ export const ProtocolForm: React.FC<{ data: FormData; horseParam: string; casePa
   return (
     <div className="ht ht-page">
       <PageHeader
-        crumbs={<><Link className="ht-back" to="/vet/protocols"><Icon name="back" size={14} />Phác đồ điều trị</Link><Icon name="chev" size={14} /><b>{r ? `Phiên bản mới của ${r.id}` : 'Tạo mới'}</b></>}
+        crumbs={<BackButton fallback="/vet/protocols" />}
         title={<>Tạo phác đồ điều trị{horse && <span style={{ color: 'var(--muted)', fontWeight: 500 }}> / {horse.name}</span>}</>}
         badge={horse && <HorseBadges horse={horse} compact />}
       />

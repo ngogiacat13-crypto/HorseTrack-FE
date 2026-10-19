@@ -1,11 +1,11 @@
 import React, { useMemo, useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { trainerApi, trainingBlock } from '../../../api/trainerApi';
 import type { ApiError } from '../../../api/http';
 import { useActor } from '../../../auth/AuthContext';
 import { useFetch } from '../../../hooks/useFetch';
 import { Icon } from '../../../components/ui/Icon';
-import { Callout, PageHeader, Panel, useToast } from '../../../components/ui/Ht';
+import { BackButton, Callout, PageHeader, Panel, useToast } from '../../../components/ui/Ht';
 import { HorseBadges, LoadState } from '../../../components/trainer/TrainerParts';
 import { NEW_PHASE, PhaseDraft, PlanType, TEMPLATES, TYPES, validPhase } from './templates';
 import { PhaseRow } from './PhaseRow';
@@ -69,7 +69,7 @@ export const TrainerPlanCreate: React.FC = () => {
   return (
     <form className="ht ht-page" onSubmit={submit} noValidate>
       <PageHeader
-        crumbs={<><Link className="ht-back" to="/trainer/plans"><Icon name="back" size={14} />Giáo án</Link><Icon name="chev" size={14} /><b>Tạo mới</b></>}
+        crumbs={<BackButton fallback="/trainer/plans" />}
         title="Tạo giáo án huấn luyện"
         sub="Chọn ngựa, đặt mục tiêu, rồi chia giai đoạn. Ngựa đang bị khóa y tế không thể lập giáo án (BR_01)."
       />

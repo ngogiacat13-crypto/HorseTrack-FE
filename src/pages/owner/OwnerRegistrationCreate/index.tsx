@@ -7,7 +7,7 @@ import { useAction } from '../../../hooks/useAction';
 import { useFetch } from '../../../hooks/useFetch';
 import { PATH } from '../../../routers/routerPath';
 import { Icon } from '../../../components/ui/Icon';
-import { Callout, PageHeader, Panel, Segmented } from '../../../components/ui/Ht';
+import { BackButton, Callout, PageHeader, Panel, Segmented } from '../../../components/ui/Ht';
 import { LoadState } from '../../../components/trainer/TrainerParts';
 import { DocUpload } from './DocUpload';
 
@@ -54,7 +54,7 @@ const RegistrationForm: React.FC<{ resubmit?: Registration }> = ({ resubmit }) =
 
   return (
     <div className="ht ht-page">
-      <PageHeader crumbs={<button type="button" className="ht-back" onClick={() => navigate(-1)}><Icon name="back" size={14} />Quay lại</button>} title={resubmit ? `Nộp lại hồ sơ ${resubmit.id}` : 'Tạo hồ sơ đăng ký ngựa'}
+      <PageHeader crumbs={<BackButton fallback={PATH.owner.registrations} />} title={resubmit ? `Nộp lại hồ sơ ${resubmit.id}` : 'Tạo hồ sơ đăng ký ngựa'}
         sub="Hệ thống kiểm tra trường bắt buộc rồi chuyển hồ sơ sang PENDING_REVIEW cho Quản lý CLB" />
       {resubmit && <Callout tone="info" title="Hồ sơ được phép nộp lại" style={{ marginBottom: 16 }}>Thông tin cũ đã được điền sẵn — bổ sung giấy tờ còn thiếu và tải lại toàn bộ tệp.</Callout>}
       <form onSubmit={submit} className="ht-cols">

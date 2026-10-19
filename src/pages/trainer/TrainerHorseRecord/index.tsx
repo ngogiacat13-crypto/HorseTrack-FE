@@ -4,7 +4,7 @@ import { horseInitials, raceBlock, trainerApi, trainingBlock } from '../../../ap
 import { useActor } from '../../../auth/AuthContext';
 import { useFetch } from '../../../hooks/useFetch';
 import { Icon } from '../../../components/ui/Icon';
-import { PageHeader, Tabs } from '../../../components/ui/Ht';
+import { BackButton, PageHeader, Tabs } from '../../../components/ui/Ht';
 import { HorseBadges, LoadState } from '../../../components/trainer/TrainerParts';
 import { HealthTab, OverviewTab, RacesTab, TrainingTab } from './RecordTabs';
 
@@ -29,7 +29,7 @@ export const TrainerHorseRecord: React.FC = () => {
     <div className="ht ht-page">
       <PageHeader
         docTitle={horse.name}
-        crumbs={<><Link className="ht-back" to="/trainer"><Icon name="back" size={14} />Tổng quan đàn ngựa</Link><Icon name="chev" size={14} /><b>{horse.name}</b></>}
+        crumbs={<BackButton fallback="/trainer" />}
         title={<span style={{ display: 'inline-flex', gap: 12, alignItems: 'center' }}><i className="ht-avatar ht-avatar--xl">{horseInitials(horse.name)}</i>{horse.name}</span>}
         badge={<HorseBadges horse={horse} />}
         sub={<>{horse.breed} · {horse.sex} {horse.age} tuổi · Chuồng <b>{horse.stall}</b> · Chủ: <b>{horse.owner}</b></>}

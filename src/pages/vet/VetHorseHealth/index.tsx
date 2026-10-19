@@ -4,7 +4,7 @@ import { horseInitials } from '../../../api/trainerApi';
 import { isOpenProtocol, vetApi } from '../../../api/vetApi';
 import { useFetch } from '../../../hooks/useFetch';
 import { Icon } from '../../../components/ui/Icon';
-import { PageHeader, Tabs } from '../../../components/ui/Ht';
+import { BackButton, PageHeader, Tabs } from '../../../components/ui/Ht';
 import { HorseBadges, LoadState } from '../../../components/trainer/TrainerParts';
 import { HealthStatusDialog, LockDialog, UnlockDialog } from '../../../components/vet/VetDialogs';
 import { InjuryPanel } from './InjuryPanel';
@@ -32,7 +32,7 @@ export const VetHorseHealth: React.FC = () => {
   return (
     <div className="ht ht-page">
       <PageHeader
-        crumbs={<><Link className="ht-back" to="/vet"><Icon name="back" size={14} />Sức khỏe đàn ngựa</Link><Icon name="chev" size={14} /><b>{horse.name}</b></>}
+        crumbs={<BackButton fallback="/vet" />}
         title={<span style={{ display: 'inline-flex', gap: 12, alignItems: 'center' }}><i className="ht-avatar ht-avatar--xl">{horseInitials(horse.name)}</i>{horse.name}</span>}
         badge={<HorseBadges horse={horse} />}
         sub={<>{horse.breed} · {horse.sex} {horse.age} tuổi · Chuồng <b>{horse.stall}</b> · Chủ: <b>{horse.owner}</b></>}
