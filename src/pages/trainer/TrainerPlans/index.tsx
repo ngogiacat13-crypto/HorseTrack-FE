@@ -7,8 +7,8 @@ import { Icon } from '../../../components/ui/Icon';
 import { Badge, PageHeader, Panel, StatCard, Tabs } from '../../../components/ui/Ht';
 import { LoadState, PhaseBar } from '../../../components/trainer/TrainerParts';
 
-type Filter = 'running' | 'paused' | 'history';
-const MATCH: Record<Filter, PlanStatus[]> = { running: ['ACTIVE'], paused: ['PAUSED'], history: ['COMPLETED', 'REPLACED'] };
+type Filter = 'planned' | 'running' | 'paused' | 'history';
+const MATCH: Record<Filter, PlanStatus[]> = { planned: ['PLANNED'], running: ['ACTIVE'], paused: ['PAUSED'], history: ['COMPLETED', 'REPLACED'] };
 
 /* 1.2 Giáo án huấn luyện — danh sách */
 export const TrainerPlans: React.FC = () => {
@@ -20,7 +20,7 @@ export const TrainerPlans: React.FC = () => {
 
   if (!data) return <LoadState loading={loading} error={error} onRetry={reload} />;
 
-  const withPlan = new Set(plans.filter((p) => p.status === 'ACTIVE' || p.status === 'PAUSED').map((p) => p.horseId));
+  const withPlan = new Set(plans.filter((p) => p.status === 'PLANNED' || p.status === 'ACTIVE' || p.status === 'PAUSED').map((p) => p.horseId));
   const noPlan = data.horses.filter((h) => !withPlan.has(h.id));
   const count = (f: Filter) => plans.filter((p) => MATCH[f].includes(p.status)).length;
 
@@ -39,6 +39,7 @@ export const TrainerPlans: React.FC = () => {
       </div>
 
       <Tabs<Filter> value={filter} onChange={setFilter} items={[
+        { value: 'planned', label: 'Chưa bắt đầu', count: count('planned') },
         { value: 'running', label: 'Đang chạy', count: count('running') },
         { value: 'paused', label: 'Tạm dừng', count: count('paused') },
         { value: 'history', label: 'Lịch sử', count: count('history') },

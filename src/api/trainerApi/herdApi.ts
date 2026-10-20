@@ -1,6 +1,6 @@
 import type { Actor } from '../managerApi';
 import type { TrainingPlan, TrainingSession, Tournament, RaceProposal, Vaccination, Stall } from './types';
-import { get, myHorses, getMyHorse, ofHorses } from './shared';
+import { get, myHorses, getMyHorse, ofHorses, withLiveStatus } from './shared';
 
 export const herdApi = {
   /* ----- Herd overview (1.1, 4.2, 4.3) ----- */
@@ -8,7 +8,7 @@ export const herdApi = {
     const [horses, plans, sessions, vaccinations] = await Promise.all([
       myHorses(actor), get<TrainingPlan[]>('/trainingPlans'), get<TrainingSession[]>('/trainingSessions'), get<Vaccination[]>('/vaccinations'),
     ]);
-    return { horses, plans: ofHorses(plans, horses), sessions: ofHorses(sessions, horses), vaccinations: ofHorses(vaccinations, horses) };
+    return { horses, plans: await withLiveStatus(ofHorses(plans, horses), sessions), sessions: ofHorses(sessions, horses), vaccinations: ofHorses(vaccinations, horses) };
   },
 
   /* ----- Horse record (1.5, 4.1–4.3; read-only health) ----- */
@@ -21,7 +21,7 @@ export const herdApi = {
       get<RaceProposal[]>('/raceProposals', { horseId: id }),
       get<Tournament[]>('/tournaments'),
     ]);
-    return { horse, plans, sessions, vaccinations, proposals, tournaments };
+    return { horse, plans: await withLiveStatus(plans, sessions), sessions, vaccinations, proposals, tournaments };
   },
 
 

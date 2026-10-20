@@ -13,7 +13,8 @@ export const AssignDialog: React.FC<{ data: Schedule; onClose: () => void; onDon
   const actor = useActor();
   const { busy, error, setError, run } = useAction();
   const [form, setForm] = useState({ zone: '', horseId: '', date: '04/10/2026', time: '09:00', groom: '', track: 'đường cát 1200 m', metrics: [METRICS[0], METRICS[1]] });
-  const activePlanHorses = new Set(data.plans.filter((p) => p.status === 'ACTIVE').map((p) => p.horseId));
+  // a plan not started yet (PLANNED) can get its first session; it starts running from its start date
+  const activePlanHorses = new Set(data.plans.filter((p) => p.status === 'PLANNED' || p.status === 'ACTIVE').map((p) => p.horseId));
   const zoneHorses = form.zone ? data.horses.filter((h) => data.zoneOf(h) === form.zone) : [];
   const zoneGrooms = form.zone ? data.grooms.filter((g) => g.zones.includes(form.zone)) : [];
 
@@ -52,7 +53,7 @@ export const AssignDialog: React.FC<{ data: Schedule; onClose: () => void; onDon
           <select id="as-horse" className="ht-select" style={selectStyle} value={form.horseId} disabled={!form.zone} onChange={(e) => setForm({ ...form, horseId: e.target.value })}>
             <option value="">{form.zone ? `— Chọn ngựa ${form.zone} —` : '— Chọn khu trước —'}</option>
             {zoneHorses.map((h) => {
-              const why = trainingBlock(h) ? 'đang khóa tập' : !activePlanHorses.has(h.id) ? 'chưa có giáo án đang chạy' : '';
+              const why = trainingBlock(h) ? 'đang khóa tập' : !activePlanHorses.has(h.id) ? 'chưa có giáo án' : '';
               return <option key={h.id} value={h.id} disabled={!!why}>{h.name} · {h.stall}{why ? ` — ${why}` : ''}</option>;
             })}
           </select>

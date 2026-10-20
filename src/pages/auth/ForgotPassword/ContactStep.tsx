@@ -5,10 +5,10 @@ import { Icon } from '../../../components/ui/Icon';
 import { Busy, Callout, Field, TextInput } from '../../../components/ui/Ht';
 import { useForm } from '../../../hooks/useForm';
 
-/* Step 1 — email or phone of the account; the API sends a 6-digit OTP. */
+/* Step 1 — email of the account; the API sends a 6-digit OTP. */
 export const ContactStep: React.FC<{ onSent: (contact: string) => void }> = ({ onSent }) => {
   const [serverError, setServerError] = useState('');
-  const form = useForm({ contact: '' }, (v) => ({ contact: v.contact.trim() ? undefined : 'Vui lòng nhập Email hoặc Số điện thoại' }));
+  const form = useForm({ contact: '' }, (v) => ({ contact: v.contact.trim() ? undefined : 'Vui lòng nhập email' }));
 
   const send = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,9 +29,9 @@ export const ContactStep: React.FC<{ onSent: (contact: string) => void }> = ({ o
     <>
       {serverError && <Callout tone="danger" style={{ marginBottom: 16 }}>{serverError}</Callout>}
       <h1 className="ht-auth__title">Quên mật khẩu?</h1>
-      <p className="ht-auth__sub">Nhập email hoặc số điện thoại đã đăng ký để nhận mã khôi phục.</p>
+      <p className="ht-auth__sub">Nhập email đã đăng ký để nhận mã khôi phục.</p>
       <form onSubmit={send} noValidate>
-        <Field label="Email hoặc số điện thoại" htmlFor="contact" required error={form.errors.contact}>
+        <Field label="Email" htmlFor="contact" required error={form.errors.contact}>
           <TextInput icon="mail" autoComplete="username" placeholder="vd: minh@horsetrack.vn" {...form.field('contact')} />
         </Field>
         <button type="submit" className="ht-btn ht-btn--primary ht-btn--block" disabled={form.submitting} aria-busy={form.submitting || undefined}>

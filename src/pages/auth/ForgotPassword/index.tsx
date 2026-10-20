@@ -5,7 +5,7 @@ import { Icon } from '../../../components/ui/Icon';
 import { ContactStep } from './ContactStep';
 import { ResetStep } from './ResetStep';
 
-/* Quên mật khẩu: 1) email/SĐT → OTP · 2) OTP + mật khẩu mới · 3) xong, tự về trang đăng nhập sau 3 giây. */
+/* Quên mật khẩu: 1) email → OTP · 2) OTP + mật khẩu mới · 3) xong, tự về trang đăng nhập sau 3 giây. */
 export const ForgotPassword: React.FC = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -23,9 +23,9 @@ export const ForgotPassword: React.FC = () => {
       logoHeight={56}
       eyebrow="Khôi phục tài khoản"
       headline="Đặt lại mật khẩu trong 2 bước."
-      lede="Mã khôi phục gồm 6 chữ số, gửi tới email hoặc số điện thoại đã đăng ký."
+      lede="Mã khôi phục gồm 6 chữ số, gửi tới email đã đăng ký."
       points={[
-        { icon: 'mail', title: 'Xác minh liên hệ', text: 'Nhập email hoặc SĐT của tài khoản.' },
+        { icon: 'mail', title: 'Xác minh email', text: 'Nhập email của tài khoản.' },
         { icon: 'key', title: 'Nhập mã và mật khẩu mới', text: 'Mật khẩu mới có hiệu lực ngay.' },
       ]}
       foot="Không nhận được mã? Liên hệ Quản lý CLB."

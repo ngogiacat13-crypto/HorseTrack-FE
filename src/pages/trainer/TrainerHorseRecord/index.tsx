@@ -18,7 +18,7 @@ export const TrainerHorseRecord: React.FC = () => {
 
   if (!data) return <LoadState loading={loading} error={error} onRetry={reload} />;
   const { horse, plans, sessions, vaccinations, proposals, tournaments } = data;
-  const plan = plans.find((p) => p.status === 'ACTIVE' || p.status === 'PAUSED');
+  const plan = plans.find((p) => p.status === 'PLANNED' || p.status === 'ACTIVE' || p.status === 'PAUSED');
   const history = [...sessions].sort((a, b) => sortKey(b).localeCompare(sortKey(a)));
   const scored = history.filter((s) => s.evaluation);
   const avg = scored.length ? (scored.reduce((s, x) => s + (x.evaluation?.score ?? 0), 0) / scored.length).toFixed(1) : '—';

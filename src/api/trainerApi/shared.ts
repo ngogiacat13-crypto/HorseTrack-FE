@@ -1,7 +1,7 @@
 /* Internal helpers. Ownership: a trainer only reads and acts on horses with horse.trainerId === actor.id. */
-import { http } from '../http';
+import { DEMO_NOW, http } from '../http';
 import type { Actor } from '../managerApi';
-import type { Horse } from './types';
+import type { Horse, TrainingPlan, TrainingSession } from './types';
 import { trainingBlock } from './labels';
 
 export const get = async <T,>(url: string, params?: Record<string, unknown>) => (await http.get<T>(url, { params })).data;
@@ -32,4 +32,18 @@ export const getHorseChecked = async (horseId: string, actor: Actor) => {
   const block = trainingBlock(horse);
   if (block) throw new Error(`${horse.name}: ${block}`);
   return horse;
+};
+
+/** Plan states that count as "the horse's current plan" (one per horse). */
+export const CURRENT_PLAN: TrainingPlan['status'][] = ['PLANNED', 'ACTIVE', 'PAUSED'];
+const dayKey = (ddmmyyyy: string) => ddmmyyyy.split('/').reverse().join('');
+/** A PLANNED plan starts running once its start date has come AND a session has been given to a Mã phu.
+    The switch is saved, so every screen (owner, vet…) sees the same state. */
+export const withLiveStatus = async (plans: TrainingPlan[], sessions?: TrainingSession[]) => {
+  const due = plans.filter((p) => p.status === 'PLANNED' && dayKey(p.startDate) <= dayKey(DEMO_NOW.date));
+  if (!due.length) return plans;
+  const all = sessions ?? (await get<TrainingSession[]>('/trainingSessions'));
+  const started = new Set(due.filter((p) => all.some((s) => s.planId === p.id)).map((p) => p.id));
+  await Promise.all([...started].map((id) => http.patch(`/trainingPlans/${id}`, { status: 'ACTIVE' })));
+  return plans.map((p) => (started.has(p.id) ? { ...p, status: 'ACTIVE' as const } : p));
 };

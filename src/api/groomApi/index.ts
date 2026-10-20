@@ -7,8 +7,12 @@
 import { tasksApi } from './tasksApi';
 import { sessionsApi } from './sessionsApi';
 import { reportsApi } from './reportsApi';
+import { USE_BACKEND } from '../beClient';
+import { groomSupplyBe } from '../beActions';
 
 export * from './types';
 export { lateBy } from './tasksApi';
 
-export const groomApi = { ...tasksApi, ...sessionsApi, ...reportsApi };
+const base = { ...tasksApi, ...sessionsApi, ...reportsApi };
+// dev:be → supply requests go to /api/v1/supply-requests
+export const groomApi: typeof base = USE_BACKEND ? { ...base, ...groomSupplyBe } : base;

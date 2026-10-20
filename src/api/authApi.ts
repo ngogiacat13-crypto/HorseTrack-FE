@@ -109,12 +109,24 @@ const beAuth = {
     });
   },
 
-  async changePassword(oldPassword: string, newPassword: string): Promise<void> {
-    await be.put('/account/change-password', { oldPassword, newPassword, confirmNewPassword: newPassword });
+  /** Change password needs a 6-digit OTP sent to the account email (POST /account/change-password/otp first). */
+  async changePassword(oldPassword: string, newPassword: string, otp?: string): Promise<void> {
+    await be.put('/account/change-password', { oldPassword, newPassword, confirmNewPassword: newPassword, otp });
+  },
+
+  async requestChangePasswordOtp(): Promise<string> {
+    return beData<string>(be.post('/account/change-password/otp'));
+  },
+
+  /** Forgot password: the backend emails a 6-digit OTP, then resets with it. */
+  async forgotPassword(email: string): Promise<void> {
+    await be.post('/auth/forgot-password', { email });
+  },
+
+  async resetPassword(email: string, otp: string, newPassword: string): Promise<void> {
+    await be.post('/auth/reset-password', { email, otp, newPassword, confirmNewPassword: newPassword });
   },
 };
-
-const NO_BE_API = 'Backend chưa có API cho chức năng này.';
 
 export const authApi = {
   /** Login by username, email or phone (backend: username only). */
@@ -157,28 +169,34 @@ export const authApi = {
     return toAuthUser(data);
   },
 
-  /** Demo: no real OTP is sent; only checks that the account exists. */
-  async sendOtp(contact: string): Promise<void> {
-    if (USE_BACKEND) throw new Error(NO_BE_API);
-    const user = (await findBy('email', contact)) ?? (await findBy('phone', contact));
-    if (!user) throw new Error('Không tìm thấy tài khoản với email / số điện thoại này.');
+  /** Demo: no real OTP is sent; only checks that the account exists by email. */
+  async sendOtp(email: string): Promise<void> {
+    if (USE_BACKEND) return beAuth.forgotPassword(email);
+    const user = await findBy('email', email);
+    if (!user) throw new Error('Không tìm thấy tài khoản với email này.');
   },
 
-  async resetPassword(contact: string, otp: string, newPassword: string): Promise<void> {
-    if (USE_BACKEND) throw new Error(NO_BE_API);
+  async resetPassword(email: string, otp: string, newPassword: string): Promise<void> {
+    if (USE_BACKEND) return beAuth.resetPassword(email, otp, newPassword);
     if (otp !== '123456') throw new Error('Mã OTP không đúng. Vui lòng thử lại với 123456.');
-    const user = (await findBy('email', contact)) ?? (await findBy('phone', contact));
+    const user = await findBy('email', email);
     if (!user) throw new Error('Không tìm thấy tài khoản.');
     if (user.password === newPassword) throw new Error('Mật khẩu mới không được trùng mật khẩu cũ.');
     await http.patch(`/users/${user.id}`, { password: newPassword });
   },
 
-  async changePassword(userId: string, oldPassword: string, newPassword: string): Promise<void> {
-    if (USE_BACKEND) return beAuth.changePassword(oldPassword, newPassword);
+  async changePassword(userId: string, oldPassword: string, newPassword: string, otp?: string): Promise<void> {
+    if (USE_BACKEND) return beAuth.changePassword(oldPassword, newPassword, otp);
     const { data: user } = await http.get<UserRecord>(`/users/${userId}`);
     if (user.password !== oldPassword) throw new Error('Mật khẩu hiện tại không đúng.');
     if (user.password === newPassword) throw new Error('Mật khẩu mới không được trùng mật khẩu cũ.');
     await http.patch(`/users/${userId}`, { password: newPassword });
+  },
+
+  /** Backend: email a 6-digit code needed to change the password. Mock mode: nothing to send. */
+  async requestChangePasswordOtp(): Promise<string> {
+    if (USE_BACKEND) return beAuth.requestChangePasswordOtp();
+    return '';
   },
 
   /** Set or remove (null) the profile picture of the signed-in user. */

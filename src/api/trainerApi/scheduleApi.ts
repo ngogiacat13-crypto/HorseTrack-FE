@@ -2,7 +2,7 @@ import { DEMO_NOW, http } from '../http';
 import { type Actor, addAudit } from '../managerApi';
 import type { Horse, TrainingPlan, TrainingSession, Vaccination, Stall, Groom } from './types';
 import { horseZone } from './labels';
-import { get, nextId, myHorses, getMyHorse, ofHorses, getHorseChecked } from './shared';
+import { get, nextId, myHorses, getMyHorse, ofHorses, getHorseChecked, withLiveStatus } from './shared';
 
 export const scheduleApi = {
   /* ----- Schedule (1.3, 1.4) ----- */
@@ -12,7 +12,7 @@ export const scheduleApi = {
     ]);
     const zoneOf = (h: Horse) => horseZone(h, stalls);
     return {
-      sessions: ofHorses(sessions, horses), horses, plans: ofHorses(plans, horses), grooms, vaccinations: ofHorses(vaccinations, horses),
+      sessions: ofHorses(sessions, horses), horses, plans: await withLiveStatus(ofHorses(plans, horses), sessions), grooms, vaccinations: ofHorses(vaccinations, horses),
       zones: [...new Set(horses.map(zoneOf))].sort(), // only zones that hold this trainer's horses
       zoneOf,
     };
@@ -20,8 +20,10 @@ export const scheduleApi = {
 
   async assignSession(input: { horseId: string; date: string; time: string; groom: string; track: string; metrics: string[] }, actor: Actor) {
     const horse = await getHorseChecked(input.horseId, actor);
-    const [plan] = await get<TrainingPlan[]>('/trainingPlans', { horseId: horse.id, status: 'ACTIVE' });
-    if (!plan) throw new Error(`${horse.name} chưa có giáo án đang chạy — tạo giáo án trước khi xếp lịch.`);
+    const plan = (await get<TrainingPlan[]>('/trainingPlans', { horseId: horse.id })).find((p) => p.status === 'PLANNED' || p.status === 'ACTIVE');
+    if (!plan) throw new Error(`${horse.name} chưa có giáo án — tạo giáo án trước khi xếp lịch.`);
+    const day = (d: string) => d.split('/').reverse().join('');
+    if (day(input.date) < day(plan.startDate)) throw new Error(`Giáo án “${plan.name}” bắt đầu ngày ${plan.startDate} — không xếp phiên trước ngày này.`);
     // Mã phu must be in charge of the horse's stable zone.
     const [stalls, grooms] = await Promise.all([get<Stall[]>('/stalls'), get<Groom[]>('/grooms')]);
     const zone = horseZone(horse, stalls);
@@ -37,6 +39,7 @@ export const scheduleApi = {
       status: 'SCHEDULED', thresholds: { hr: phase.hrLimit, speed: 60 }, readings: [], metrics: input.metrics, decision: null, evaluation: null,
     };
     const { data } = await http.post<TrainingSession>('/trainingSessions', session);
+    await withLiveStatus([plan], [...all, data]); // a session exists and the start date has come → the plan is running
     await addAudit(actor, { action: 'ASSIGN_SESSION', label: 'Phân công phiên tập', object: `${data.id} · ${horse.name}`, area: 'train', to: `${input.date} ${input.time} · ${input.groom}`, reason: `${data.label} · ${input.track}` });
     return data;
   },

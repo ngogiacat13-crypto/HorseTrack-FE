@@ -31,7 +31,7 @@ export const TrainerPlanCreate: React.FC = () => {
 
   const horses = useMemo(() => data?.horses ?? [], [data]);
   const horse = horses.find((h) => h.id === horseId);
-  const running = data?.plans.find((p) => p.horseId === horseId && (p.status === 'ACTIVE' || p.status === 'PAUSED'));
+  const running = data?.plans.find((p) => p.horseId === horseId && (p.status === 'PLANNED' || p.status === 'ACTIVE' || p.status === 'PAUSED'));
 
   if (!data) return <LoadState loading={loading} error={error} onRetry={reload} />;
 

@@ -9,10 +9,14 @@ import { medicalApi } from './medicalApi';
 import { shipmentsApi } from './shipmentsApi';
 import { requisitionsApi } from './requisitionsApi';
 import { checksApi } from './checksApi';
+import { USE_BACKEND } from '../beClient';
+import { warehouseBe } from '../beActions';
 
 export * from './types';
 export * from './labels';
 export { needs, previewStock, WAREHOUSE_STATES } from './medicalApi';
 export type { MoveKind } from './inventoryApi';
 
-export const warehouseApi = { ...inventoryApi, ...medicalApi, ...shipmentsApi, ...requisitionsApi, ...checksApi };
+const base = { ...inventoryApi, ...medicalApi, ...shipmentsApi, ...requisitionsApi, ...checksApi };
+// dev:be → every warehouse action goes to /api/v1/inventory/... (the backend moves the stock itself)
+export const warehouseApi: typeof base = USE_BACKEND ? { ...base, ...warehouseBe } : base;

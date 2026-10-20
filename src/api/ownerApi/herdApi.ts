@@ -25,7 +25,7 @@ export const herdApi = {
     return {
       horses: horses.map((h) => ({
         horse: h,
-        plan: plans.find((p) => p.horseId === h.id && p.status === 'ACTIVE') ?? null,
+        plan: plans.find((p) => p.horseId === h.id && (p.status === 'ACTIVE' || p.status === 'PLANNED')) ?? null,
         protocol: protocols.find((p) => p.horseId === h.id && p.state !== 'SUPERSEDED' && isOpenProtocol(p)) ?? null,
         stats: raceStats(results(h)),
       })),
@@ -48,7 +48,7 @@ export const herdApi = {
     const shown = protocols.filter((p) => p.state !== 'SUPERSEDED');
     return {
       horse,
-      plan: plans.find((p) => p.status === 'ACTIVE') ?? null,
+      plan: plans.find((p) => p.status === 'ACTIVE' || p.status === 'PLANNED') ?? null,
       sessions: sessions.filter((s) => s.status === 'COMPLETED' || s.status === 'STOPPED').slice(-5).reverse(),
       protocols: shown,
       cases: cases.slice().sort((a, b) => b.id.localeCompare(a.id)),
