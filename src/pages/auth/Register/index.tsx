@@ -30,8 +30,6 @@ export const Register: React.FC = () => {
       phone: '',
       email: '',
       password: '',
-      taxCode: '',
-      billingAddress: '',
     },
     (v) => ({
       fullname: v.fullname.trim() ? undefined : 'Vui lòng nhập họ và tên',
@@ -55,8 +53,6 @@ export const Register: React.FC = () => {
         : v.password.length < 8
           ? 'Mật khẩu tối thiểu 8 ký tự'
           : undefined,
-      taxCode: v.taxCode.trim() ? undefined : 'Vui lòng nhập mã số thuế',
-      billingAddress: v.billingAddress.trim() ? undefined : 'Vui lòng nhập địa chỉ xuất hóa đơn',
     })
   );
 
@@ -78,11 +74,11 @@ export const Register: React.FC = () => {
     try {
       const v = form.values;
       await authApi.register({
-        ...v,
-        phone: v.phone.replace(/\s/g, ''),
         fullname: v.fullname.trim(),
-        taxCode: v.taxCode.trim(),
-        billingAddress: v.billingAddress.trim(),
+        username: v.username.trim(),
+        email: v.email.trim(),
+        phone: v.phone.replace(/\s/g, ''),
+        password: v.password,
       });
       setDoneUser(v.username);
     } catch (err) {
@@ -215,24 +211,6 @@ export const Register: React.FC = () => {
                 {...form.field('email')}
               />
             </Field>
-            <div className="ht-grid-2">
-              <Field label="Mã số thuế" htmlFor="taxCode" required error={form.errors.taxCode}>
-                <TextInput icon="receipt" placeholder="vd: 0312345678" {...form.field('taxCode')} />
-              </Field>
-              <Field
-                label="Địa chỉ xuất hóa đơn"
-                htmlFor="billingAddress"
-                required
-                error={form.errors.billingAddress}
-              >
-                <TextInput
-                  icon="file"
-                  autoComplete="street-address"
-                  placeholder="Số nhà, đường, quận, tỉnh"
-                  {...form.field('billingAddress')}
-                />
-              </Field>
-            </div>
             <Field label="Mật khẩu" htmlFor="password" required error={form.errors.password}>
               <PasswordInput
                 autoComplete="new-password"
