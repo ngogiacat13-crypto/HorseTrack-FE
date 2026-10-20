@@ -167,3 +167,26 @@ Quản lý CLB → Theo dõi y tế cũng đọc phác đồ thật từ `/medic
 - Quản lý kho không gọi được `GET /horses` (403) → trang chi tiết phác đồ của kho lấy tên ngựa từ chính phác đồ.
 - Vẫn **chưa có API danh sách người dùng / khóa / đổi vai trò** (màn hình Người dùng & phân quyền vẫn là dữ liệu mẫu).
 - Lập phác đồ: backend chưa có ca khám nào (`GET /medical/cases` rỗng) nên ô "Ca khám" trên form có thể trống.
+
+---
+
+## 7. Người dùng & Nhật ký hệ thống (backend nhánh `test`, 20/10/2026)
+
+Code backend mới trên GitHub `HuaTrongNghia/HorseTrack`:
+- Nhánh **`test`** (commit `9e089ed`) có đủ code → **chạy backend từ nhánh này**.
+- Nhánh `main` (commit `9b35f4b`) đang **thiếu các file DTO** (`UserResponseDTO`, `UserPageResponseDTO`, `UserLockRequestDTO`, `UserRoleChangeRequestDTO`, `AuditLogResponseDTO`) nên chưa build được.
+
+### Đã nối (Quản lý CLB — `manager_admin`)
+| Màn hình | API | |
+|---|---|---|
+| Người dùng & phân quyền: danh sách (vai trò, trạng thái, lý do khóa, đăng nhập gần nhất, số công việc mở, số ngựa sở hữu) | `GET /api/v1/users/all` | ✅ |
+| Khóa tài khoản (lý do ≥ 10 ký tự) | `PUT /api/v1/users/{id}/lock` | ✅ |
+| Mở khóa tài khoản | `PUT /api/v1/users/{id}/unlock` | ✅ |
+| Đổi vai trò | `PUT /api/v1/users/{id}/role` | ☑️ |
+| Nhật ký hệ thống | `GET /api/v1/audit-logs/paged` | ✅ |
+
+✅ = đã thử với backend nhánh `test` (30 tài khoản thật; khóa → mở khóa `test_hlv` đều 200, nhật ký ghi lại cả hai thao tác). ☑️ = đã nối, chưa thử.
+Khi backend chưa có API, hai màn hình tự dùng dữ liệu mẫu như trước (không báo lỗi). Chạy backend nhánh `test` là có dữ liệu thật ngay.
+
+Code: `loadUsers`, `loadAuditLogs` trong `src/api/beDomain.ts` (đăng ký ở `LOADERS` của `hybridAdapter.ts`); khóa / mở khóa / đổi vai trò trong `src/api/managerApi.ts` (`beUserAction`).
+Phân công khu chuồng cho Mã phu (nút "Phân công") vẫn là dữ liệu mẫu — backend chưa có API.

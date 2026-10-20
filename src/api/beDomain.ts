@@ -197,3 +197,50 @@ export const loadStockTx = async (): Promise<Row[] | null> => {
     by: t.performedByName ?? '—', note: t.note ?? '', balance: Number(t.balanceAfter) || 0,
   }));
 };
+
+/* ---------- users + audit log (Club Manager, backend branch `test`) ---------- */
+interface BeUser {
+  userId: number; username: string; fullName: string; email: string; phone?: string | null; roleName: string; role?: string | null; status?: string | null;
+  isActive?: boolean; lockReason?: string | null; openTasks?: number | null; horsesOwned?: number | null; lastLogin?: string | null;
+}
+const FE_ROLE: Record<string, string> = {
+  'Club Manager': 'ClubManager', 'Head Trainer': 'HeadTrainer', Trainer: 'HeadTrainer', Veterinarian: 'Veterinarian', Groom: 'Groom',
+  'Warehouse Manager': 'WarehouseManager', 'Horse Owner': 'HorseOwner',
+};
+/** null when the running backend has no /users API yet (older build) → the screen keeps db.json */
+export const loadUsers = async (): Promise<Row[] | null> => {
+  if (me()?.role !== 'ClubManager') return null;
+  const users = await beGet<BeUser[]>('/users/all').catch(() => null);
+  if (!users) return null;
+  return users.map((u) => ({
+    id: String(u.userId), beId: u.userId, username: u.username, fullname: u.fullName, email: u.email, phone: u.phone ?? '',
+    role: u.role || FE_ROLE[u.roleName] || u.roleName, status: u.status ?? (u.isActive === false ? 'LOCKED' : 'ACTIVE'),
+    lockReason: u.lockReason ?? undefined, openTasks: u.openTasks ?? 0, horsesOwned: u.horsesOwned ?? 0, lastLogin: u.lastLogin && /^\d{4}-\d{2}-\d{2}/.test(u.lastLogin) ? dmhm(u.lastLogin) : u.lastLogin || '—',
+  }));
+};
+
+interface BeAudit { logId: number; userId?: number | null; username?: string | null; fullName?: string | null; actionType: string; targetTable: string; oldValue?: string | null; newValue?: string | null; ipAddress?: string | null; timestamp: string }
+const AREA: Record<string, string> = {
+  Users: 'acct', Horses: 'reg', Horse_Registrations: 'reg', Medical_Records: 'med', Treatment_Protocols: 'med', Inventory_Items: 'med', Stock_Transactions: 'med',
+  Purchase_Orders: 'med', Supply_Requests: 'med', Training_Plans: 'train', Training_Sessions: 'train', Care_Tasks: 'train', Invoices: 'fin', Payment_Transactions: 'fin',
+};
+const ACTION_LABEL: Record<string, string> = {
+  LOGIN: 'Đăng nhập', LOGOUT: 'Đăng xuất', LOCK_ACCOUNT: 'Khóa tài khoản', UNLOCK_ACCOUNT: 'Mở khóa tài khoản', CHANGE_ROLE: 'Đổi vai trò',
+  CREATE: 'Tạo mới', UPDATE: 'Cập nhật', DELETE: 'Xóa', CREATE_STAFF: 'Tạo tài khoản nhân viên',
+};
+export const loadAuditLogs = async (): Promise<Row[] | null> => {
+  if (me()?.role !== 'ClubManager') return null;
+  const page = await beGet<{ content: BeAudit[] }>('/audit-logs/paged', { page: 0, size: 300 }).catch(() => null);
+  if (!page) return null;
+  const users = (await loadUsers()) ?? [];
+  return page.content.map((l) => {
+    const u = users.find((x) => x.beId === l.userId);
+    const area = AREA[l.targetTable] ?? (/LOCK|ROLE|LOGIN|STAFF|PASSWORD/i.test(l.actionType) ? 'acct' : 'reg');
+    return {
+      id: l.logId, at: dmyhm(l.timestamp) + (l.timestamp.length > 18 ? l.timestamp.slice(16, 19) : ''), who: l.fullName || l.username || 'Hệ thống',
+      role: (u?.role as string) ?? '—', action: l.actionType, label: ACTION_LABEL[l.actionType] ?? l.actionType.replace(/_/g, ' ').toLowerCase(),
+      object: l.targetTable, area, ip: l.ipAddress ?? '—', from: l.oldValue ?? undefined, to: l.newValue ?? undefined,
+      isLogin: /LOGIN|LOGOUT/.test(l.actionType),
+    };
+  });
+};
