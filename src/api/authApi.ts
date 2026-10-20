@@ -99,15 +99,13 @@ const beAuth = {
     await be.post('/auth/logout', { refreshToken: t.refreshToken }, { headers: { Authorization: `Bearer ${t.accessToken}` } }).catch(() => {});
   },
 
-  async register(p: { username: string; password: string; fullname: string; email: string; phone: string; taxCode?: string; billingAddress?: string }): Promise<void> {
+  async register(p: { username: string; password: string; fullname: string; email: string; phone: string }): Promise<void> {
     await be.post('/auth/register-owner', {
       username: p.username,
       password: p.password,
       fullName: p.fullname,
       email: p.email,
       phone: p.phone,
-      taxCode: p.taxCode,
-      billingAddress: p.billingAddress,
     });
   },
 
@@ -134,7 +132,7 @@ export const authApi = {
     if (USE_BACKEND) await beAuth.logout();
   },
 
-  async register(payload: { username: string; password: string; fullname: string; email: string; phone: string; taxCode?: string; billingAddress?: string }): Promise<AuthUser | null> {
+  async register(payload: { username: string; password: string; fullname: string; email: string; phone: string }): Promise<AuthUser | null> {
     if (USE_BACKEND) {
       await beAuth.register(payload);
       return null;

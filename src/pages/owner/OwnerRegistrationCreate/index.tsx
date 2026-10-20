@@ -13,13 +13,13 @@ import { DocUpload } from './DocUpload';
 
 const EMPTY: NewRegistration = {
   name: '', breed: '', sex: '♂', age: 3, color: '', height: '', weight: 0, passport: '', healthCert: '',
-  phone: '', taxCode: '', billingAddress: '', files: { ownership: null, health: null },
+  phone: '', files: { ownership: null, health: null },
 };
 /** Prefill from a rejected file (documents must be uploaded again). */
 const fromReg = (r: Registration): NewRegistration => ({
   ...EMPTY, name: r.horse.name, breed: r.horse.breed, sex: r.horse.sex === '♀' ? '♀' : '♂', age: r.horse.age,
   color: r.horseExtra.color, height: r.horseExtra.height, weight: r.horseExtra.weight,
-  passport: r.horseExtra.passport, healthCert: r.horseExtra.healthCert, phone: r.owner.phone, taxCode: r.ownerExtra.taxCode, billingAddress: r.ownerExtra.billingAddress,
+  passport: r.horseExtra.passport, healthCert: r.horseExtra.healthCert, phone: r.owner.phone,
 });
 
 /* 1.4 Tạo hồ sơ đăng ký ngựa (Flow 1, bước 1–2) — hoặc nộp lại hồ sơ bị từ chối khi được phép. */
@@ -40,7 +40,7 @@ const RegistrationForm: React.FC<{ resubmit?: Registration }> = ({ resubmit }) =
   const [f, setF] = useState<NewRegistration>(() => (resubmit ? fromReg(resubmit) : EMPTY));
   const set = <K extends keyof NewRegistration>(k: K, v: NewRegistration[K]) => setF((x) => ({ ...x, [k]: v }));
   const setFile = (k: keyof NewRegistration['files']) => (d: NewRegistration['files'][typeof k]) => setF((x) => ({ ...x, files: { ...x.files, [k]: d } }));
-  const text = (k: 'name' | 'breed' | 'color' | 'height' | 'passport' | 'healthCert' | 'phone' | 'taxCode' | 'billingAddress', label: string, ph: string, req = true) => (
+  const text = (k: 'name' | 'breed' | 'color' | 'height' | 'passport' | 'healthCert' | 'phone', label: string, ph: string, req = true) => (
     <div className="ht-field" style={{ margin: 0 }}>
       <label className="ht-label" htmlFor={`rg-${k}`}>{label}{req && <span className="ht-req">*</span>}</label>
       <input id={`rg-${k}`} className={`ht-input${k === 'phone' ? ' ht-mono' : ''}`} value={f[k]} onChange={(e) => set(k, e.target.value)} placeholder={ph} />
@@ -85,12 +85,10 @@ const RegistrationForm: React.FC<{ resubmit?: Registration }> = ({ resubmit }) =
           </Panel>
         </div>
         <div>
-          <Panel as="h3" title="3. Chủ ngựa & thanh toán">
+          <Panel as="h3" title="3. Chủ ngựa">
             <div className="ht-panel__body" style={{ display: 'grid', gap: 14 }}>
               <dl className="ht-kv"><dt>Họ tên</dt><dd>{actor.name}</dd><dt>Email</dt><dd>{user?.email || '—'}</dd></dl>
               {text('phone', 'Số điện thoại', '0912345678')}
-              {text('taxCode', 'Mã số thuế', 'Không bắt buộc', false)}
-              {text('billingAddress', 'Địa chỉ nhận hóa đơn', 'Số nhà, đường, quận, tỉnh/thành')}
             </div>
           </Panel>
           {error && <Callout tone="danger">{error}</Callout>}

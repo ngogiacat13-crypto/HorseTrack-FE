@@ -35,8 +35,6 @@ export const OwnerInfo: React.FC<{ reg: Registration }> = ({ reg: d }) => (
         <dt>Điện thoại</dt><dd className="ht-mono">{d.owner.phone}</dd>
       </dl>
       <dl className="ht-kv">
-        <dt>Mã số thuế</dt><dd className="ht-mono">{d.ownerExtra.taxCode}</dd>
-        <dt>Địa chỉ</dt><dd>{d.ownerExtra.billingAddress}</dd>
         <dt>Ngựa đang gửi</dt><dd>{d.ownerExtra.otherHorses}</dd>
       </dl>
     </div>
