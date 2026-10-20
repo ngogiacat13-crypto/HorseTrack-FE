@@ -36,7 +36,7 @@ export type RaceResult = NonNullable<Horse['raceResults']>[number];
 export interface NewRegistration {
   name: string; breed: string; sex: '♂' | '♀'; age: number; color: string; height: string; weight: number;
   passport: string; healthCert: string;
-  phone: string; taxCode: string; billingAddress: string;
+  phone: string;
   files: { ownership: UploadedDoc | null; health: UploadedDoc | null };
 }
 export interface UploadedDoc { name: string; size: number; type: string }

@@ -16,7 +16,6 @@ const validate = (r: NewRegistration) => {
   min(r.color, 2, 'Màu lông');
   min(r.passport, 4, 'Số hộ chiếu ngựa');
   if (!/^0\d{9}$/.test(r.phone)) throw new Error('Số điện thoại gồm 10 chữ số, bắt đầu bằng 0.');
-  min(r.billingAddress, 10, 'Địa chỉ thanh toán');
   if (!r.files.ownership) throw new Error('Tải lên giấy tờ sở hữu.');
   if (!r.files.health) throw new Error('Tải lên giấy chứng nhận sức khỏe.');
 };
@@ -46,7 +45,7 @@ export const registrationsApi = {
       horse: { name: input.name.trim(), breed: input.breed.trim(), sex: input.sex, age: input.age, code: `HT-${id.slice(-4)}` },
       owner: { fullName: actor.name, email: actor.email ?? '', phone: input.phone },
       submittedAt: `${DEMO_NOW.date} ${DEMO_NOW.time}`, waitingDays: 0, passed: 0, status: 'Pending', firstIssue: undefined,
-      ownerExtra: { taxCode: input.taxCode.trim() || '—', billingAddress: input.billingAddress.trim(), otherHorses: horses.map((h) => h.name).join(', ') || '—' },
+      ownerExtra: { otherHorses: horses.map((h) => h.name).join(', ') || '—' },
       horseExtra: { color: input.color.trim(), height: input.height.trim() || '—', weight: input.weight || 0, passport: input.passport.trim(), healthCert: input.healthCert.trim() || '—' },
       checklist: CHECKS.map(([key, label]) => ({ key, label, detail: 'Chờ Quản lý CLB kiểm tra.', passed: false })),
       attachments: docs.filter(([, d]) => d).map(([name, d]) => ({ name, meta: docMeta(d as UploadedDoc) })),

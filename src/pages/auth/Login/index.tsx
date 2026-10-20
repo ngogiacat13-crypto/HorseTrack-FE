@@ -23,7 +23,7 @@ const DEMO_ACCOUNTS = [
 ];
 
 const schema = Yup.object({
-  username: Yup.string().trim().required('Vui lòng nhập tên đăng nhập / email / SĐT'),
+  username: Yup.string().trim().required('Vui lòng nhập tên đăng nhập'),
   password: Yup.string().required('Vui lòng nhập mật khẩu'),
 });
 
@@ -69,14 +69,14 @@ export const Login: React.FC = () => {
       barRight={<span style={{ fontSize: 13, color: 'var(--muted)' }}>Chủ ngựa mới? <Link className="ht-link" to="/register">Đăng ký</Link></span>}
     >
       <h1 className="ht-auth__title">Đăng nhập</h1>
-      <p className="ht-auth__sub">Dùng tên đăng nhập, email hoặc số điện thoại.</p>
+      <p className="ht-auth__sub">Dùng tên đăng nhập và mật khẩu để truy cập hệ thống.</p>
 
       {serverError && <Callout tone="danger" style={{ marginBottom: 16 }}>{serverError}</Callout>}
 
       <FormikProvider value={formik}>
       <form onSubmit={formik.handleSubmit} noValidate>
         <FocusFirstError />
-        <FormikField name="username" label="Tên đăng nhập / Email / SĐT" icon="user" autoComplete="username" placeholder="vd: nguyenminh" />
+        <FormikField name="username" label="Tên đăng nhập" icon="user" autoComplete="username" placeholder="vd: nguyenminh" />
 
         <div ref={passwordRef}>
           <FormikField name="password" label="Mật khẩu" password autoComplete="current-password" placeholder="Nhập mật khẩu" />
