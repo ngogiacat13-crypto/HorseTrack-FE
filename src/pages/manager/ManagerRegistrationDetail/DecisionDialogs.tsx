@@ -1,24 +1,46 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { USE_BACKEND } from '../../../api/beClient';
+import { http } from '../../../api/http';
 import { managerApi, Registration } from '../../../api/managerApi';
 import { useActor } from '../../../auth/AuthContext';
 import { useAction } from '../../../hooks/useAction';
 import { Callout, Dialog, ReasonField } from '../../../components/ui/Ht';
 
 type Check = Registration['checklist'][number];
+interface FreeStall { id: string; beId: number; zone: string; horseId: string | null; status: string }
 
 /* 1.1 — approve: status APPROVED, horse added to the managed list, owner notified. */
 export const ApproveDialog: React.FC<{ reg: Registration; checks: Check[]; onClose: () => void; onDone: (note: string) => void }> = ({ reg, checks, onClose, onDone }) => {
   const actor = useActor();
   const { busy, error, run } = useAction();
   const [note, setNote] = useState('');
+  // backend: approving = giving the horse an empty stall
+  const [stalls, setStalls] = useState<FreeStall[]>([]);
+  const [stallId, setStallId] = useState('');
+  useEffect(() => {
+    if (!USE_BACKEND) return;
+    http.get<FreeStall[]>('/stalls').then(({ data }) => setStalls(data.filter((s) => !s.horseId && s.status !== 'MAINTENANCE' && s.beId)));
+  }, []);
   const confirm = async () => {
-    if (await run(() => managerApi.approveRegistration(reg, checks, note, actor), `Đã phê duyệt ${reg.id} — ${reg.horse.name} được thêm vào danh sách quản lý.`)) onDone(note);
+    const stall = stalls.find((s) => String(s.beId) === stallId);
+    if (USE_BACKEND && !stall) { await run(() => Promise.reject(new Error('Chọn chuồng để cấp cho ngựa.')), ''); return; }
+    const picked = stall ? { id: stall.beId, code: stall.id } : undefined;
+    if (await run(() => managerApi.approveRegistration(reg, checks, note, actor, picked), `Đã phê duyệt ${reg.id} — ${reg.horse.name} được thêm vào danh sách quản lý.`)) onDone(note);
   };
   return (
     <Dialog open onClose={onClose} icon="check" tone="brand" title={`Phê duyệt ${reg.horse.name}?`}
       sub={<>Hồ sơ chuyển <span className="ht-mono">APPROVED</span>, ngựa được thêm vào danh sách quản lý và chủ ngựa nhận thông báo.</>}
       confirmLabel="Xác nhận phê duyệt" onConfirm={confirm} busy={busy}>
       {error && <Callout tone="danger" style={{ marginBottom: 14 }}>{error}</Callout>}
+      {USE_BACKEND && (
+        <div style={{ marginBottom: 14 }}>
+          <label className="ht-label" htmlFor="ap-stall" style={{ display: 'block', marginBottom: 6 }}>Cấp chuồng<span className="ht-req">*</span></label>
+          <select id="ap-stall" className="ht-select" style={{ width: '100%' }} value={stallId} onChange={(e) => setStallId(e.target.value)}>
+            <option value="">{stalls.length ? 'Chọn chuồng trống…' : 'Không còn chuồng trống'}</option>
+            {stalls.map((s) => <option key={s.beId} value={s.beId}>{s.id} · {s.zone}</option>)}
+          </select>
+        </div>
+      )}
       <label className="ht-label" htmlFor="ap-note" style={{ display: 'block', marginBottom: 6 }}>Ghi chú (không bắt buộc)</label>
       <textarea id="ap-note" className="ht-textarea" value={note} onChange={(e) => setNote(e.target.value)} placeholder="VD: Đã đối chiếu giấy tờ gốc với chủ ngựa." />
     </Dialog>

@@ -190,3 +190,21 @@ Khi backend chưa có API, hai màn hình tự dùng dữ liệu mẫu như trư
 
 Code: `loadUsers`, `loadAuditLogs` trong `src/api/beDomain.ts` (đăng ký ở `LOADERS` của `hybridAdapter.ts`); khóa / mở khóa / đổi vai trò trong `src/api/managerApi.ts` (`beUserAction`).
 Phân công khu chuồng cho Mã phu (nút "Phân công") vẫn là dữ liệu mẫu — backend chưa có API.
+
+---
+
+## 8. Đăng ký ngựa mới (Chủ ngựa → Quản lý CLB duyệt)
+
+Backend không có bảng hồ sơ đăng ký riêng: **hồ sơ = 1 dòng trong bảng `Horses`**.
+`stall_id = NULL` → đang chờ duyệt · có `stall_id` → đã duyệt (được cấp chuồng).
+
+| Màn hình | API | |
+|---|---|---|
+| Chủ ngựa gửi hồ sơ (bắt buộc nhập cân nặng) | `POST /api/v1/horses/register` | ✅ nối |
+| Chủ ngựa: "Ngựa của tôi" (chỉ ngựa đã được cấp chuồng) + "Đăng ký ngựa mới" | `GET /api/v1/horses/my-horses/{ownerId}` | ✅ nối |
+| Quản lý CLB: hàng chờ duyệt | `GET /api/v1/horses` | ✅ đã thử (hiện đúng Xích Thố, Phi Yến đang chờ) |
+| Quản lý CLB: phê duyệt = **chọn chuồng trống** rồi cấp | `PUT /api/v1/horses/{id}/approve` `{stallId}` | ✅ nối (hộp chọn chuồng lấy từ `/stalls`) |
+| Từ chối / nộp lại hồ sơ | — | ⏳ backend chưa có API, chỉ lưu tạm trên trình duyệt |
+
+Checklist, giấy tờ đính kèm, màu lông, chiều cao chưa có cột trong DB → chỉ hiện trên màn hình, không lưu. Số hộ chiếu + màu lông được ghi vào cột `pedigree`.
+Code: `LOADERS.registrations` + `WRITES.registrations` trong `src/api/hybridAdapter.ts`; hộp chọn chuồng trong `src/pages/manager/ManagerRegistrationDetail/DecisionDialogs.tsx`.

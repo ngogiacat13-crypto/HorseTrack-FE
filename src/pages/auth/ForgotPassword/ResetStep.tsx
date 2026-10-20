@@ -1,12 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { authApi } from '../../../api/authApi';
+import { USE_BACKEND } from '../../../api/beClient';
 import type { ApiError } from '../../../api/http';
 import { OtpInput } from '../../../components/auth/OtpInput';
 import { Icon } from '../../../components/ui/Icon';
 import { Busy, Callout, Field, PasswordInput, StrengthMeter, TextInput } from '../../../components/ui/Ht';
 import { useForm } from '../../../hooks/useForm';
 
-const SHOW_DEMO = import.meta.env.DEV || import.meta.env.VITE_DEMO === 'true';
+// backend mode sends a real code by email, so the fixed demo code does not apply
+const SHOW_DEMO = !USE_BACKEND && (import.meta.env.DEV || import.meta.env.VITE_DEMO === 'true');
 const RESEND_SECONDS = 45;
 
 /* Step 2 — OTP + new password. "Gửi lại mã" is available again after 45 seconds. */

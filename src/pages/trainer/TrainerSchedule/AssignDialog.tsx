@@ -3,7 +3,8 @@ import { trainerApi, trainingBlock, TrainingSession } from '../../../api/trainer
 import { useActor } from '../../../auth/AuthContext';
 import { useAction } from '../../../hooks/useAction';
 import { Callout, Dialog } from '../../../components/ui/Ht';
-import { ASSIGN_DAYS, METRICS } from './constants';
+import { DEMO_NOW } from '../../../api/http';
+import { METRICS, TODAY, dmyToIso, dowOf, isoToDmy } from './constants';
 
 type Schedule = Awaited<ReturnType<typeof trainerApi.getSchedule>>;
 const selectStyle: React.CSSProperties = { height: 44 };
@@ -12,7 +13,7 @@ const selectStyle: React.CSSProperties = { height: 44 };
 export const AssignDialog: React.FC<{ data: Schedule; onClose: () => void; onDone: (s: TrainingSession) => void }> = ({ data, onClose, onDone }) => {
   const actor = useActor();
   const { busy, error, setError, run } = useAction();
-  const [form, setForm] = useState({ zone: '', horseId: '', date: '04/10/2026', time: '09:00', groom: '', track: 'đường cát 1200 m', metrics: [METRICS[0], METRICS[1]] });
+  const [form, setForm] = useState({ zone: '', horseId: '', date: TODAY, time: '09:00', groom: '', track: 'đường cát 1200 m', metrics: [METRICS[0], METRICS[1]] });
   // a plan not started yet (PLANNED) can get its first session; it starts running from its start date
   const activePlanHorses = new Set(data.plans.filter((p) => p.status === 'PLANNED' || p.status === 'ACTIVE').map((p) => p.horseId));
   const zoneHorses = form.zone ? data.horses.filter((h) => data.zoneOf(h) === form.zone) : [];
@@ -27,7 +28,10 @@ export const AssignDialog: React.FC<{ data: Schedule; onClose: () => void; onDon
   const assign = async () => {
     if (!form.zone) { setError('Chọn khu chuồng.'); return; }
     if (!form.horseId) { setError('Chọn ngựa.'); return; }
+    if (!/^\d{2}\/\d{2}\/\d{4}$/.test(form.date)) { setError('Chọn ngày tập.'); return; }
+    if (dmyToIso(form.date) < dmyToIso(TODAY)) { setError('Không xếp phiên vào ngày đã qua.'); return; }
     if (!/^\d{2}:\d{2}$/.test(form.time)) { setError('Giờ theo dạng HH:mm.'); return; }
+    if (form.date === TODAY && form.time <= DEMO_NOW.time) { setError(`Hôm nay đã qua ${DEMO_NOW.time} — chọn giờ muộn hơn hoặc ngày khác.`); return; }
     if (!form.groom) { setError('Chọn Mã phu thực hiện.'); return; }
     if (form.metrics.length === 0) { setError('Chọn ít nhất 1 chỉ số cần ghi nhận.'); return; }
     let created: TrainingSession | null = null;
@@ -61,10 +65,9 @@ export const AssignDialog: React.FC<{ data: Schedule; onClose: () => void; onDon
       </div>
       <div className="ht-grid-2">
         <div className="ht-field">
-          <label className="ht-label" htmlFor="as-date">Ngày</label>
-          <select id="as-date" className="ht-select" style={selectStyle} value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })}>
-            {ASSIGN_DAYS.map(([dow, d]) => <option key={d} value={d}>{dow} · {d}</option>)}
-          </select>
+          <label className="ht-label" htmlFor="as-date">Ngày{form.date && <span style={{ fontWeight: 400, color: 'var(--muted-foreground)' }}> · {dowOf(form.date)}{form.date === TODAY ? ' · hôm nay' : ''}</span>}</label>
+          <input id="as-date" type="date" className="ht-input" style={selectStyle} min={dmyToIso(TODAY)} value={dmyToIso(form.date)}
+            onChange={(e) => setForm({ ...form, date: e.target.value ? isoToDmy(e.target.value) : '' })} />
         </div>
         <div className="ht-field">
           <label className="ht-label" htmlFor="as-time">Giờ</label>

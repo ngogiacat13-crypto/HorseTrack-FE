@@ -47,7 +47,7 @@ const TASK_TYPE: Record<string, [string, string]> = {
 };
 
 /* ---------- backend DTOs (Swagger) ---------- */
-interface BeHorse { horseId: number; horseName: string; dob: string; gender: string; breed: string; weightKg: number; healthStatus: string; isLocked: boolean; ownerId: number; stallId: number | null }
+interface BeHorse { horseId: number; horseName: string; dob: string; gender: string; breed: string; pedigree?: string | null; weightKg: number; healthStatus: string; isLocked: boolean; ownerId: number; stallId: number | null; stallCode?: string | null; approvalStatus?: string | null; createdAt?: string | null }
 interface BeStall { stallId: number; stallCode: string; barnZone: string; cleanStatus: string; currentHorseId: number | null; horseName: string | null }
 interface BePlan { planId: number; planName: string; horseName: string; startDate: string; endDate: string; status: string; progress: number }
 interface BeSchedule { sessionId: number; sessionDate: string; activityType: string; status: string; planName: string; horseName: string; stallZone: string }
@@ -61,7 +61,9 @@ interface BeShipment { lotCode: string; itemName: string; quantity: number; unit
 /* ---------- collections served by the backend ---------- */
 const stallsRaw = () => orEmpty(data<BeStall[]>('/stalls'));
 const horsesRaw = async () => {
-  if (me()?.role === 'WarehouseManager') return []; // the warehouse cannot read /horses (403)
+  const u = me();
+  if (u?.role === 'WarehouseManager') return []; // the warehouse cannot read /horses (403)
+  if (u?.role === 'HorseOwner') return orEmpty(data<BeHorse[]>(`/horses/my-horses/${u.id}`)); // an owner may only read their own horses
   return (await data<{ horses: BeHorse[] }>('/horses', { page: 0, size: 500 }).catch(() => ({ horses: [] }))).horses;
 };
 const byName = (rows: Row[], name?: string | null) => rows.find((r) => r.name === name);
@@ -70,10 +72,11 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
   async horses() {
     const u = me();
     const [hs, stalls] = await Promise.all([horsesRaw(), stallsRaw()]);
-    return hs.map((h) => ({
+    // "Ngựa của tôi" only lists horses the Club Manager approved (a stall assigned); pending ones show under "Đăng ký ngựa mới"
+    return hs.filter((h) => u?.role !== 'HorseOwner' || isApproved(h)).map((h) => ({
       id: String(h.horseId), name: h.horseName, breed: h.breed, sex: sex(h.gender), age: age(h.dob), weightKg: h.weightKg,
       owner: u?.role === 'HorseOwner' && String(h.ownerId) === u.id ? u.name : `Chủ ngựa #${h.ownerId}`,
-      stall: stalls.find((s) => s.stallId === h.stallId)?.stallCode ?? '—',
+      stall: stalls.find((s) => s.stallId === h.stallId)?.stallCode ?? h.stallCode ?? '—',
       // The backend has no "trainer in charge" yet: a trainer sees every horse.
       trainerId: u?.role === 'HeadTrainer' ? u.id : '',
       health: health(h.healthStatus), trainingLocked: !!h.isLocked, form: null, pendingCase: null,
@@ -85,7 +88,7 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
   async stalls() {
     const [stalls, grooms] = await Promise.all([stallsRaw(), LOADERS.grooms()]);
     return stalls.map((s) => ({
-      id: s.stallCode, zone: zone(s.barnZone), horseId: s.currentHorseId ? String(s.currentHorseId) : null, horse: s.horseName,
+      id: s.stallCode, beId: s.stallId, zone: zone(s.barnZone), horseId: s.currentHorseId ? String(s.currentHorseId) : null, horse: s.horseName,
       status: CLEAN[(s.cleanStatus ?? '').toLowerCase()] ?? 'CLEAN',
       groom: (grooms.find((g) => (g.zones as string[]).includes(zone(s.barnZone)))?.name as string) ?? 'Chưa phân công',
     }));
@@ -230,6 +233,39 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
   async stockChecks() {
     return (await loadStockChecks()) ?? ((await mockGet('/stockChecks')) as Row[]);
   },
+  /* Horse registrations = rows of the Horses table: no stall yet → waiting for the Club Manager, stall assigned → approved.
+     The backend keeps no checklist, documents or rejection, so those stay in this tab only. */
+  async registrations() {
+    const u = me();
+    if (u?.role !== 'ClubManager' && u?.role !== 'HorseOwner') return (await mockGet('/registrations')) as Row[];
+    const [hs, users] = await Promise.all([horsesRaw(), u.role === 'ClubManager' ? LOADERS.users() : Promise.resolve([] as Row[])]);
+    const ownerOf = (h: BeHorse) => (u.role === 'HorseOwner' ? { fullName: u.name, email: '', phone: '—' } : (() => {
+      const o = users.find((x) => x.beId === h.ownerId);
+      return { fullName: (o?.fullname as string) ?? `Chủ ngựa #${h.ownerId}`, email: (o?.email as string) ?? '', phone: (o?.phone as string) || '—' };
+    })());
+    return hs.map((h) => {
+      const ok = isApproved(h);
+      const code = String(h.horseId).padStart(4, '0');
+      const sent = h.createdAt ? `${ddmmyyyy(h.createdAt)} ${hhmm(h.createdAt)}` : '—';
+      const stall = h.stallCode ?? `#${h.stallId}`;
+      return {
+        id: `REG-${code}`, beId: h.horseId,
+        horse: { name: h.horseName, breed: h.breed, sex: sex(h.gender), age: age(h.dob), code: `HT-${code}` },
+        owner: ownerOf(h), submittedAt: sent,
+        waitingDays: !ok && h.createdAt ? Math.max(0, Math.floor((Date.now() - new Date(h.createdAt).getTime()) / 86400000)) : 0,
+        passed: ok ? REG_CHECKS.length : 0, status: ok ? 'Approved' : 'Pending', decidedNote: ok ? `Cấp chuồng ${stall}` : undefined,
+        ownerExtra: { otherHorses: hs.filter((x) => x.ownerId === h.ownerId && x.horseId !== h.horseId).map((x) => x.horseName).join(', ') || '—' },
+        horseExtra: { color: '—', height: '—', weight: h.weightKg, passport: h.pedigree || '—', healthCert: '—' },
+        checklist: REG_CHECKS.map(([key, label]) => ({ key, label, detail: ok ? 'Đã kiểm tra thủ công.' : 'Chờ Quản lý CLB kiểm tra.', passed: ok })),
+        attachments: [],
+        history: [
+          ...(ok ? [{ tone: 'success', who: 'Quản lý CLB', text: `phê duyệt · cấp chuồng ${stall} · chuyển APPROVED`, at: '—' }] : []),
+          { who: 'Hệ thống', text: 'kiểm tra trường bắt buộc: đủ · chuyển PENDING_REVIEW', at: sent },
+          { who: ownerOf(h).fullName, text: 'gửi hồ sơ', at: sent },
+        ],
+      };
+    });
+  },
   /* Club Manager: users + audit log (backend branch `test`); an older backend without these APIs → db.json */
   async users() {
     return (await loadUsers()) ?? ((await mockGet('/users')) as Row[]);
@@ -241,6 +277,8 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
     return (await loadStockTx()) ?? ((await mockGet('/stockTx')) as Row[]);
   },
 };
+const isApproved = (h: BeHorse) => (h.approvalStatus ? h.approvalStatus === 'APPROVED' : h.stallId != null);
+const REG_CHECKS: [string, string][] = [['identity', 'Danh tính chủ ngựa'], ['health', 'Giấy chứng nhận sức khỏe còn hiệu lực'], ['ownership', 'Giấy tờ sở hữu hợp lệ']];
 const unknownHorse = (id: string): Row => ({
   id, name: id.slice(4), breed: '—', sex: '♂', age: 0, owner: '—', stall: '—', trainerId: '', health: 'HEALTHY', trainingLocked: false,
   form: null, pendingCase: null, lock: null, injuries: [], medicalHistory: [], raceResults: [], medicalDiet: null,
@@ -248,8 +286,30 @@ const unknownHorse = (id: string): Row => ({
 const tourId = (e: BeExam) => `T-${e.tournamentName}-${e.raceDate}`.replace(/\s+/g, '-');
 
 /* ---------- writes the backend supports ---------- */
-type Write = (id: string | undefined, body: Row, current: Row | undefined) => Promise<void> | void;
+/** Returns true when the backend stored the whole change: the rows are then read again instead of kept in this tab. */
+type Write = (id: string | undefined, body: Row, current: Row | undefined) => Promise<boolean | void> | boolean | void;
 const WRITES: Record<string, Partial<Record<'post' | 'patch', Write>>> = {
+  registrations: {
+    // owner sends the file → a new horse without a stall (waiting for approval)
+    async post(_id, body) {
+      const h = body.horse as { name: string; breed: string; sex: string; age: number };
+      const x = body.horseExtra as { color: string; weight: number; passport: string };
+      if (!(Number(x.weight) >= 0.1)) throw new Error('Nhập cân nặng của ngựa (kg).');
+      await be.post('/horses/register', {
+        horseName: h.name, dob: `${new Date().getFullYear() - h.age}-01-01`, gender: h.sex === '♀' ? 'Mare' : 'Stallion', breed: h.breed,
+        pedigree: [x.passport && `Hộ chiếu ${x.passport}`, x.color && `màu ${x.color}`].filter(Boolean).join(' · ') || null,
+        weightKg: Number(x.weight), ownerId: Number(me()?.id),
+      });
+      return true;
+    },
+    // approve = assign a stall; the backend has no rejection yet (kept in this tab)
+    async patch(_id, body, current) {
+      if (body.status !== 'Approved') return false;
+      if (!body.stallId) throw new Error('Chọn chuồng để cấp cho ngựa.');
+      await be.put(`/horses/${current?.beId}/approve`, { stallId: Number(body.stallId) });
+      return true;
+    },
+  },
   horses: {
     async patch(id, body) {
       if (!('trainingLocked' in body)) return;
@@ -347,8 +407,12 @@ export const hybridAdapter: AxiosAdapter = async (config) => {
 
   const current = id === undefined ? undefined : rows.find((r) => String(r.id) === id);
   const write = WRITES[name]?.[method as 'post' | 'patch'];
-  if (write) await write(id, body, current); // backend errors reach the screen as normal errors
+  const stored = write ? await write(id, body, current) : false; // backend errors reach the screen as normal errors
   cache.delete(name);
+  if (stored === true) {
+    invalidate(name, 'horses', 'stalls');
+    return respond(config, method === 'post' ? 201 : 200, { ...(current ?? {}), ...body });
+  }
 
   if (method === 'post') {
     const row = { ...body, id: body.id ?? `${Date.now()}` };

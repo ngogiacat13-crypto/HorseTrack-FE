@@ -154,13 +154,15 @@ export const managerApi = {
   getRegistrations: () => get<Registration[]>('/registrations'),
   getRegistration: (id: string) => get<Registration>(`/registrations/${id}`),
 
-  async approveRegistration(reg: Registration, checklist: ChecklistItem[], note: string, actor: Actor) {
+  /** Backend: approving assigns the horse a stall (`stall` = the stall code shown, `stallId` = its backend id). */
+  async approveRegistration(reg: Registration, checklist: ChecklistItem[], note: string, actor: Actor, stall?: { id: number; code: string }) {
     const history: HistoryItem[] = [
-      { tone: 'success', who: actor.name, text: `phê duyệt · chuyển APPROVED${note ? `: “${note}”` : ''}`, at: DEMO_NOW.short },
+      { tone: 'success', who: actor.name, text: `phê duyệt${stall ? ` · cấp chuồng ${stall.code}` : ''} · chuyển APPROVED${note ? `: “${note}”` : ''}`, at: DEMO_NOW.short },
       ...reg.history,
     ];
     const { data } = await http.patch<Registration>(`/registrations/${reg.id}`, {
-      status: 'Approved', decidedNote: `Duyệt ${DEMO_NOW.date.slice(0, 5)}`, checklist, passed: checklist.length, firstIssue: null, history,
+      status: 'Approved', decidedNote: stall ? `Cấp chuồng ${stall.code}` : `Duyệt ${DEMO_NOW.date.slice(0, 5)}`, checklist, passed: checklist.length, firstIssue: null, history,
+      stallId: stall?.id,
     });
     await addAudit(actor, { action: 'APPROVE_REGISTRATION', label: 'Phê duyệt hồ sơ ngựa', object: `${reg.id} · ${reg.horse.name}`, area: 'reg', from: 'PENDING_REVIEW', to: 'APPROVED', reason: note || `Checklist ${checklist.length}/${checklist.length} đạt.` });
     return data;
