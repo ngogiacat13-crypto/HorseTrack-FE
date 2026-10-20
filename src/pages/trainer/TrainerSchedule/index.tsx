@@ -25,7 +25,7 @@ export const TrainerSchedule: React.FC = () => {
   if (!data) return <LoadState loading={loading} error={error} onRetry={reload} />;
 
   const assigned = (s: TrainingSession) => {
-    toast(`Đã phân công ${s.id} · ${s.horseName} cho ${s.groom} lúc ${s.time} ${s.date.slice(0, 5)}.`);
+    toast(`Đã phân công ${s.id ? `${s.id} · ` : ''}${s.horseName} cho ${s.groom} lúc ${s.time} ${s.date.slice(0, 5)}.`);
     setAssignOpen(false);
     setDay(s.date);
     reload();

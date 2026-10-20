@@ -73,9 +73,9 @@ Muốn nối thêm API mới: thêm vào `LOADERS` (đọc) hoặc `WRITES` (ghi
 |---|---|---|
 | Tổng quan đàn ngựa, Hồ sơ huấn luyện ngựa | `GET /api/v1/horses`, `GET /api/v1/training-plans`, `GET /api/v1/training-sessions/my-schedule` | ✅ |
 | Sơ đồ chuồng | `GET /api/v1/stalls` | ✅ |
-| Giáo án | `GET /api/v1/training-plans` | ✅ |
-| Lịch tập | `GET /api/v1/training-sessions/my-schedule` | ☑️ (chưa có phiên) |
-| Phân công phiên tập | `POST /api/v1/training-plans/{planId}/sessions` | ❌ backend chỉ cho `Head Trainer` (403) |
+| Giáo án: danh sách · tạo mới | `GET /api/v1/training-plans` · `POST /api/v1/training-plans` | ✅ · ☑️ (xem mục 10) |
+| Lịch tập | `GET /api/v1/training-plans/{planId}` (mọi phiên của từng giáo án; `my-schedule` chỉ trả phiên giao cho chính người gọi) | ✅ (xem mục 10) |
+| Phân công phiên tập | `GET /api/v1/training-plans/assignable-staff?planId=`, `POST /api/v1/training-plans/{planId}/sessions` | ✅ (xem mục 10) |
 | Giải đua & đề xuất | `GET /api/v1/prerace-exams` | ✅ |
 
 ### Mã phu (`test_maphu`)
@@ -102,7 +102,7 @@ Danh sách ngựa của tôi đọc từ `GET /api/v1/horses` (lọc theo chủ)
 - `GET /protocols`, `/protocols/shipments`, `/vaccinations`, `/prerace-exams` đang **trả dữ liệu viết cứng trong code**, không đọc database; thao tác ghi chỉ trả "thành công" và mất khi restart.
 - Các dữ liệu đó nhắc tới ngựa Bolt, Comet, Thunder, Arrow nhưng bảng `Horses` chỉ có 2 ngựa.
 - API tạo nhân viên chỉ nhận `Trainer | Veterinarian | Groom`: không tạo được `Head Trainer` (cần cho giáo án, phân công), chưa có `Warehouse Manager`.
-- Tên khu chuồng lẫn lộn "Zone A" / "Khu A" (FE tự đổi về "Khu A").
+- Tên khu chuồng lẫn lộn "Zone A" / "Khu A" (FE tự đổi về "Khu A", nhưng backend so khớp nguyên văn nên ngựa ở chuồng "Zone A" không có Mã phu nào để phân công — xem mục 10).
 - Backend chỉ cho CORS `http://localhost:5173`; FE chạy qua proxy của Vite nên không bị ảnh hưởng.
 
 ---
@@ -156,7 +156,7 @@ Quản lý CLB → Theo dõi y tế cũng đọc phác đồ thật từ `/medic
 | Gửi yêu cầu vật tư | `POST /supply-requests` | ⚠️ ô chọn vật tư vẫn là dữ liệu mẫu (xem phần cần backend) |
 
 ### Chưa nối (để sau)
-- **HLV:** tạo giáo án `POST /training-plans` (backend chỉ cho `Head Trainer`; tài khoản `test_hlv` là `Trainer`).
+- ~~**HLV:** tạo giáo án `POST /training-plans`~~ → đã nối (mục 10); backend hiện cho vai trò `Trainer` (`test_hlv`).
 - **Công việc chăm sóc:** `POST /care-tasks` (FE chưa có màn hình tạo công việc).
 - **Đăng ký ngựa:** `HorseResponseDTO` có `approvalStatus` → hàng chờ duyệt của Quản lý CLB (`PUT /horses/{id}/approve`) và form đăng ký của chủ ngựa (`POST /horses/register`).
 - **Nhà cung cấp:** thêm / sửa (`POST/PUT /inventory/suppliers`), thêm / sửa vật tư (`POST/PUT /inventory/items`) — FE chưa có màn hình.
@@ -270,3 +270,53 @@ Quy tắc tài khoản mới (áp dụng cho Đăng ký, Tạo nhân viên, Đ�
 - `application.properties` đang ghi thẳng **mật khẩu database** và **JWT secret mặc định** rồi commit lên git → nên chuyển sang biến môi trường và đổi mật khẩu.
 - Email tạo nhân viên chứa **mật khẩu tạm ở dạng đọc được (không mã hóa)**; ở chế độ dev mật khẩu này còn in ra console. Nên cân nhắc gửi link đặt mật khẩu thay vì mật khẩu.
 - OTP lưu trong bộ nhớ → chạy nhiều instance hoặc restart sẽ mất mã.
+
+---
+
+## 10. Phân công phiên tập cho Mã phu (HLV) — 21/10/2026
+
+Trước đây (chạy `npm run dev:be`) ô **Mã phu** vẫn lấy danh sách mẫu `/grooms` trong `db.json`, và khi gửi chỉ có **tên** Mã phu nên backend báo lỗi (thiếu `assignedToId`). Lịch của HLV cũng luôn trống vì `my-schedule` chỉ trả phiên giao cho chính người gọi.
+
+| Bước trên màn hình "Phân công phiên tập" | API | |
+|---|---|---|
+| Chọn khu → chọn ngựa (ngựa phải có giáo án đang chạy) | `GET /horses`, `GET /stalls`, `GET /training-plans` | ✅ |
+| Danh sách Mã phu = Groom đang hoạt động cùng khu chuồng với ngựa của giáo án | `GET /training-plans/assignable-staff?planId=` | ✅ đã thử trên giao diện (`test_hlv`, ngựa Chieu Da → 3 Mã phu Khu A) |
+| Gửi cho Mã phu | `POST /training-plans/{planId}/sessions` `{ sessionDate, activityType, notes, assignedToId }` | ✅ 201 (phiên thử #3, xem dưới) |
+| Lịch tập của HLV | `GET /training-plans/{planId}` cho từng giáo án (`sessions[]` có `assignedToName`) | ✅ |
+
+Backend tự kiểm tra khi gửi: giáo án chưa kết thúc/hủy, ngày tập nằm trong thời gian giáo án và không ở quá khứ, ngựa không bị VetLock, người được chọn là Groom đang hoạt động **cùng khu** với ngựa. Lỗi trả về hiện ngay trên hộp thoại.
+Chỉ tài khoản vai trò `Trainer` gọi được 2 API phân công (`test_hlv`).
+
+Dữ liệu gửi: `activityType` = "<loại giáo án>", `notes` = "<đường tập> · Ghi nhận: <các chỉ số đã chọn>" (backend chưa có cột chỉ số cần ghi nhận).
+
+Code:
+| File | Thay đổi |
+|---|---|
+| `src/api/trainerApi/scheduleApi.ts` | `getAssignableGrooms(planId)`; `assignSession` khi chạy backend gọi thẳng `POST /training-plans/{planId}/sessions` với `assignedToId` |
+| `src/pages/trainer/TrainerSchedule/AssignDialog.tsx` | Chọn ngựa xong mới tải Mã phu từ backend; ô Mã phu lưu `id`; báo "Chưa có Mã phu phụ trách …" khi danh sách rỗng |
+| `src/api/hybridAdapter.ts` | `LOADERS.trainingSessions` cho HLV đọc phiên từ `/training-plans/{id}`; bỏ `WRITES.trainingSessions.post` cũ (gửi thiếu `assignedToId`) |
+
+**Đã thử thật (21/10/2026):** `test_hlv` phân công ngựa Chieu Da (giáo án #3) cho **Mã phu Test** (`test_maphu`, id 19), 21/10/2026 09:00 → backend trả 201, tạo **phiên #3** (PENDING).
+Phiên hiện trên Lịch tập của HLV, trong `GET /training-plans/3` và trong `my-schedule` của `test_maphu`. Phiên này vẫn nằm trong DB chung; xóa nếu không cần.
+
+### Cần nhóm backend xem
+- Cột `TrainingSessions.activity_type` là **VARCHAR(100)** (không phải NVARCHAR) → mất dấu tiếng Việt: phiên #3 lưu thành "Th? l?c · du?ng cát 1200 m". Cần `ALTER TABLE TrainingSessions ALTER COLUMN activity_type NVARCHAR(100) NOT NULL` và sửa lại dòng #3 (cột `notes` là NVARCHAR nên vẫn đúng).
+- Chuồng **A-101** (ngựa Bạch Long Mã, giáo án #2) có `barn_zone = 'Zone A'`, còn mọi Groom ghi `Khu A` → `assignable-staff?planId=2` trả rỗng, không phân công được. Cần sửa dữ liệu về cùng một tên khu (hoặc backend chuẩn hóa khi so khớp).
+- `POST /{planId}/sessions` không trả id phiên vừa tạo (FE phải tải lại lịch).
+- Bảng khu chuồng / Sơ đồ chuồng vẫn lấy Mã phu phụ trách từ dữ liệu mẫu: backend chưa có API danh sách Groom + khu (ngoài `assignable-staff` theo từng giáo án).
+
+### Sửa thêm: Tạo giáo án gửi lên backend (21/10/2026)
+**Lỗi gặp:** phân công cho ngựa Xích Thố (Khu B) báo `Failed to convert value of type 'java.lang.String' to required type 'java.lang.Integer'; For input string: "KH-0004"`, dù đã tạo Mã phu Khu B.
+**Nguyên nhân:** màn hình "Tạo giáo án" chưa bao giờ gửi lên backend: giáo án chỉ lưu tạm trên trình duyệt với mã giả `KH-0004`, nên backend không có giáo án nào cho Xích Thố (chỉ có #2 Bạch Long Mã, #3 Chieu Da) và `assignable-staff?planId=KH-0004` lỗi.
+Mã phu Khu B (**Hứa Nghĩa**, id 34) đã có trên backend; chỉ thiếu giáo án.
+
+| Chức năng | API | |
+|---|---|---|
+| Tạo giáo án | `POST /training-plans` `{ horseId, planName, startDate, endDate, goal }` → trả `planId` | ☑️ đã nối, chưa bấm thử (sẽ ghi vào DB chung) |
+
+- Backend không lưu loại giáo án và các giai đoạn: FE tính `endDate` = ngày bắt đầu + tổng số tuần của các giai đoạn − 1 ngày, và ghi tóm tắt vào đầu `goal`, ví dụ `[Sức bền · 3 giai đoạn · 8 tuần] <mục tiêu>`.
+- Ngày bắt đầu mặc định là **hôm nay** (backend không nhận ngày trong quá khứ).
+- Backend tự chặn: ngựa chưa được cấp chuồng, ngựa đang VetLock, ngựa **đã có giáo án ACTIVE** (FE không còn tự "thay thế" giáo án cũ như bản dữ liệu mẫu).
+- Giáo án tạo trước bản sửa này chỉ tồn tại trong tab cũ: **tải lại trang rồi tạo lại**. Nếu vẫn còn mã dạng `KH-…`, hộp phân công báo rõ "Giáo án … chưa có trên hệ thống" thay vì lỗi máy chủ.
+
+Code: `src/api/trainerApi/plansApi.ts` (`beCreatePlan`), `src/pages/trainer/TrainerPlanCreate/index.tsx` (ngày bắt đầu mặc định), `src/api/trainerApi/scheduleApi.ts` (`assertBePlan`).

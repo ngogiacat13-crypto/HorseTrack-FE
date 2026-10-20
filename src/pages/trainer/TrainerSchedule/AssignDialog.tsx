@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { trainerApi, trainingBlock, TrainingSession } from '../../../api/trainerApi';
+import { trainerApi, trainingBlock, type Groom, TrainingSession } from '../../../api/trainerApi';
+import { USE_BACKEND } from '../../../api/beClient';
 import { useActor } from '../../../auth/AuthContext';
 import { useAction } from '../../../hooks/useAction';
 import { Callout, Dialog } from '../../../components/ui/Ht';
@@ -13,17 +14,41 @@ const selectStyle: React.CSSProperties = { height: 44 };
 export const AssignDialog: React.FC<{ data: Schedule; onClose: () => void; onDone: (s: TrainingSession) => void }> = ({ data, onClose, onDone }) => {
   const actor = useActor();
   const { busy, error, setError, run } = useAction();
-  const [form, setForm] = useState({ zone: '', horseId: '', date: TODAY, time: '09:00', groom: '', track: 'đường cát 1200 m', metrics: [METRICS[0], METRICS[1]] });
+  const [form, setForm] = useState({ zone: '', horseId: '', date: TODAY, time: '09:00', groom: '', groomId: '', track: 'đường cát 1200 m', metrics: [METRICS[0], METRICS[1]] });
   // a plan not started yet (PLANNED) can get its first session; it starts running from its start date
-  const activePlanHorses = new Set(data.plans.filter((p) => p.status === 'PLANNED' || p.status === 'ACTIVE').map((p) => p.horseId));
+  const runningPlans = data.plans.filter((p) => p.status === 'PLANNED' || p.status === 'ACTIVE');
+  const activePlanHorses = new Set(runningPlans.map((p) => p.horseId));
   const zoneHorses = form.zone ? data.horses.filter((h) => data.zoneOf(h) === form.zone) : [];
-  const zoneGrooms = form.zone ? data.grooms.filter((g) => g.zones.includes(form.zone)) : [];
+  // Backend: Mã phu come from GET /training-plans/assignable-staff for the chosen horse's plan (grooms of that horse's zone)
+  const [beGrooms, setBeGrooms] = useState<{ planId: string; list: Groom[] | null; error: string }>({ planId: '', list: null, error: '' });
+  const zoneGrooms = USE_BACKEND ? beGrooms.list ?? [] : form.zone ? data.grooms.filter((g) => g.zones.includes(form.zone)) : [];
+  const pickGroom = (g?: Groom) => ({ groom: g?.name ?? '', groomId: g?.id ?? '' });
 
   const pickZone = (zone: string) => {
     const grooms = data.grooms.filter((g) => g.zones.includes(zone));
-    setForm({ ...form, zone, horseId: '', groom: grooms.length === 1 ? grooms[0].name : '' });
+    setForm({ ...form, zone, horseId: '', ...pickGroom(!USE_BACKEND && grooms.length === 1 ? grooms[0] : undefined) });
+    setBeGrooms({ planId: '', list: null, error: '' });
     setError('');
   };
+
+  const pickHorse = async (horseId: string) => {
+    setForm((f) => ({ ...f, horseId, ...pickGroom() }));
+    if (!USE_BACKEND) return;
+    const planId = runningPlans.find((p) => p.horseId === horseId)?.id ?? '';
+    setBeGrooms({ planId, list: null, error: '' });
+    if (!planId) return;
+    try {
+      const list = await trainerApi.getAssignableGrooms(planId);
+      setBeGrooms((s) => (s.planId === planId ? { planId, list, error: '' } : s));
+      if (list.length === 1) setForm((f) => (f.horseId === horseId ? { ...f, ...pickGroom(list[0]) } : f));
+    } catch (e) {
+      setBeGrooms((s) => (s.planId === planId ? { planId, list: [], error: (e as Error).message } : s));
+    }
+  };
+  const groomPlaceholder = !form.zone ? '— Chọn khu trước —'
+    : USE_BACKEND && !form.horseId ? '— Chọn ngựa trước —'
+      : USE_BACKEND && beGrooms.list === null ? 'Đang tải Mã phu…'
+        : zoneGrooms.length ? '— Chọn Mã phu —' : `Chưa có Mã phu phụ trách ${form.zone}`;
 
   const assign = async () => {
     if (!form.zone) { setError('Chọn khu chuồng.'); return; }
@@ -54,7 +79,7 @@ export const AssignDialog: React.FC<{ data: Schedule; onClose: () => void; onDon
         </div>
         <div className="ht-field">
           <label className="ht-label" htmlFor="as-horse">Ngựa<span className="ht-req">*</span></label>
-          <select id="as-horse" className="ht-select" style={selectStyle} value={form.horseId} disabled={!form.zone} onChange={(e) => setForm({ ...form, horseId: e.target.value })}>
+          <select id="as-horse" className="ht-select" style={selectStyle} value={form.horseId} disabled={!form.zone} onChange={(e) => pickHorse(e.target.value)}>
             <option value="">{form.zone ? `— Chọn ngựa ${form.zone} —` : '— Chọn khu trước —'}</option>
             {zoneHorses.map((h) => {
               const why = trainingBlock(h) ? 'đang khóa tập' : !activePlanHorses.has(h.id) ? 'chưa có giáo án' : '';
@@ -77,10 +102,12 @@ export const AssignDialog: React.FC<{ data: Schedule; onClose: () => void; onDon
       <div className="ht-grid-2">
         <div className="ht-field">
           <label className="ht-label" htmlFor="as-groom">Mã phu<span className="ht-req">*</span></label>
-          <select id="as-groom" className="ht-select" style={selectStyle} value={form.groom} disabled={!form.zone} onChange={(e) => setForm({ ...form, groom: e.target.value })}>
-            <option value="">{!form.zone ? '— Chọn khu trước —' : zoneGrooms.length ? '— Chọn Mã phu —' : `Chưa có Mã phu phụ trách ${form.zone}`}</option>
-            {zoneGrooms.map((g) => <option key={g.id} value={g.name}>{g.name} · {g.zones.join(', ')}</option>)}
+          <select id="as-groom" className="ht-select" style={selectStyle} value={form.groomId} disabled={!form.zone || (USE_BACKEND && !zoneGrooms.length)}
+            onChange={(e) => setForm({ ...form, ...pickGroom(zoneGrooms.find((g) => g.id === e.target.value)) })}>
+            <option value="">{groomPlaceholder}</option>
+            {zoneGrooms.map((g) => <option key={g.id} value={g.id}>{g.name} · {g.zones.join(', ')}</option>)}
           </select>
+          {USE_BACKEND && beGrooms.error && <div className="ht-error" role="alert">{beGrooms.error}</div>}
         </div>
         <div className="ht-field">
           <label className="ht-label" htmlFor="as-track">Đường tập</label>

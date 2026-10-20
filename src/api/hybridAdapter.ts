@@ -50,6 +50,7 @@ const TASK_TYPE: Record<string, [string, string]> = {
 interface BeHorse { horseId: number; horseName: string; dob: string; gender: string; breed: string; pedigree?: string | null; weightKg: number; healthStatus: string; isLocked: boolean; ownerId: number; stallId: number | null; stallCode?: string | null; approvalStatus?: string | null; createdAt?: string | null }
 interface BeStall { stallId: number; stallCode: string; barnZone: string; cleanStatus: string; currentHorseId: number | null; horseName: string | null }
 interface BePlan { planId: number; planName: string; horseName: string; startDate: string; endDate: string; status: string; progress: number }
+interface BePlanDetail { planId: number; planName: string; horseId: number | null; horseName: string; startDate: string; endDate: string; status: string; sessions: { sessionId: number; sessionDate: string; activityType: string; status: string; notes: string | null; assignedToId: number | null; assignedToName: string | null }[] }
 interface BeSchedule { sessionId: number; sessionDate: string; activityType: string; status: string; planName: string; horseName: string; stallZone: string }
 interface BeTask { taskId: number; taskType: string; status: string; dueDate: string; horseName: string; stallZone: string }
 interface BeCase { caseId: string; horseId: number; horseName: string; source: string; issueType: string; severity: string; status: string; description: string; maxHeartRate: number; vetResult: string; createdAt: string }
@@ -116,10 +117,22 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
     });
   },
 
-  /* Sessions: the backend gives each Trainer / Groom their own schedule. */
+  /* Sessions. Groom: /training-sessions/my-schedule (sessions assigned to them).
+     Trainer: my-schedule only holds sessions assigned to the caller, so read every plan's sessions from /training-plans/{id}. */
   async trainingSessions() {
     const u = me();
     if (!u || !['HeadTrainer', 'Groom'].includes(u.role)) return [];
+    if (u.role === 'HeadTrainer') {
+      const plans = await LOADERS.trainingPlans();
+      const details = await Promise.all(plans.map((p) => data<BePlanDetail>(`/training-plans/${p.id}`).catch(() => null)));
+      return details.flatMap((d, i) => (d?.sessions ?? []).map((s) => ({
+        id: String(s.sessionId), horseId: plans[i].horseId, horseName: d!.horseName, planId: String(d!.planId), phaseNo: 1, label: s.activityType,
+        date: ddmmyyyy(s.sessionDate), time: hhmm(s.sessionDate), groom: s.assignedToName ?? '—', groomId: s.assignedToId ? String(s.assignedToId) : null,
+        // notes = "<đường tập> · Ghi nhận: <chỉ số>" (written by trainerApi.assignSession)
+        track: (s.notes ?? '').split(' · Ghi nhận:')[0] || '—', metrics: (s.notes ?? '').split(' · Ghi nhận:')[1]?.split(',').map((m) => m.trim()).filter(Boolean),
+        status: SESSION[s.status?.toUpperCase()] ?? 'SCHEDULED', thresholds: { hr: 180, speed: 60 }, readings: [], decision: null, evaluation: null,
+      })));
+    }
     const [rows, horses, plans] = await Promise.all([
       orEmpty(data<BeSchedule[]>('/training-sessions/my-schedule', { startDate: '2020-01-01', endDate: '2030-12-31' })), LOADERS.horses(), LOADERS.trainingPlans(),
     ]);
@@ -348,13 +361,7 @@ const WRITES: Record<string, Partial<Record<'post' | 'patch', Write>>> = {
       if (body.status === 'COMPLETED') await be.put(`/training-sessions/${id}/execute`, { status: 'COMPLETED', notes: 'Hoàn thành phiên' });
       if (body.status === 'STOPPED') await be.put(`/training-sessions/${id}/execute`, { status: 'CANCELLED', notes: (body.decision as Row | undefined)?.note ?? 'Dừng phiên' });
     },
-    async post(_id, body) {
-      if (!body.planId) throw new Error('Ngựa này chưa có giáo án trên hệ thống — tạo giáo án trước khi phân công.');
-      const [d, m, y] = String(body.date).split('/');
-      await be.post(`/training-plans/${body.planId}/sessions`, {
-        sessionDate: `${y}-${m}-${d}T${body.time ?? '08:00'}:00`, activityType: body.label ?? 'Phiên tập', notes: body.track ?? '', assignedToId: Number(body.groomId) || undefined,
-      });
-    },
+    // creating a session goes straight to POST /training-plans/{planId}/sessions (trainerApi.assignSession)
   },
 };
 

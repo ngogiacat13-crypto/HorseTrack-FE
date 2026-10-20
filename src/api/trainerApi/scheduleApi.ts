@@ -1,8 +1,15 @@
 import { DEMO_NOW, http } from '../http';
+import { USE_BACKEND, be, beData } from '../beClient';
+import { invalidate } from '../hybridAdapter';
 import { type Actor, addAudit } from '../managerApi';
 import type { Horse, TrainingPlan, TrainingSession, Vaccination, Stall, Groom } from './types';
 import { horseZone } from './labels';
 import { get, nextId, myHorses, getMyHorse, ofHorses, getHorseChecked, withLiveStatus } from './shared';
+
+/* A plan id that is not a number only exists in this browser tab (e.g. KH-0004, made before plans were sent to the backend). */
+const assertBePlan = (planId: string) => {
+  if (!/^\d+$/.test(planId)) throw new Error(`Giáo án ${planId} chưa có trên hệ thống (chỉ lưu tạm trên trình duyệt). Tải lại trang và tạo lại giáo án cho ngựa này.`);
+};
 
 export const scheduleApi = {
   /* ----- Schedule (1.3, 1.4) ----- */
@@ -18,12 +25,37 @@ export const scheduleApi = {
     };
   },
 
-  async assignSession(input: { horseId: string; date: string; time: string; groom: string; track: string; metrics: string[] }, actor: Actor) {
+  /** Backend: Mã phu who may run this plan's sessions = active grooms of the horse's stable zone
+      (GET /training-plans/assignable-staff?planId=). Mock mode reads db.json grooms in getSchedule instead. */
+  async getAssignableGrooms(planId: string): Promise<Groom[]> {
+    assertBePlan(planId);
+    const rows = await beData<{ userId: number; fullName: string; barnZone?: string | null }[]>(be.get('/training-plans/assignable-staff', { params: { planId } }));
+    return rows.map((g) => ({ id: String(g.userId), name: g.fullName, zones: g.barnZone ? [g.barnZone.replace(/^Zone\s+/i, 'Khu ')] : [] }));
+  },
+
+  async assignSession(input: { horseId: string; date: string; time: string; groom: string; groomId?: string; track: string; metrics: string[] }, actor: Actor) {
     const horse = await getHorseChecked(input.horseId, actor);
     const plan = (await get<TrainingPlan[]>('/trainingPlans', { horseId: horse.id })).find((p) => p.status === 'PLANNED' || p.status === 'ACTIVE');
     if (!plan) throw new Error(`${horse.name} chưa có giáo án — tạo giáo án trước khi xếp lịch.`);
     const day = (d: string) => d.split('/').reverse().join('');
     if (day(input.date) < day(plan.startDate)) throw new Error(`Giáo án “${plan.name}” bắt đầu ngày ${plan.startDate} — không xếp phiên trước ngày này.`);
+    if (USE_BACKEND) {
+      // The backend checks the rest: plan running, date inside the plan, horse not locked, groom of the horse's zone.
+      assertBePlan(plan.id);
+      if (!input.groomId) throw new Error('Chọn Mã phu thực hiện.');
+      const [d, m, y] = input.date.split('/');
+      const label = plan.type;
+      await be.post(`/training-plans/${plan.id}/sessions`, {
+        sessionDate: `${y}-${m}-${d}T${input.time}:00`, activityType: label,
+        notes: `${input.track} · Ghi nhận: ${input.metrics.join(', ')}`, assignedToId: Number(input.groomId),
+      });
+      invalidate('trainingSessions', 'trainingPlans');
+      // the backend returns no session id; the schedule reloads right after
+      return {
+        id: '', horseId: horse.id, horseName: horse.name, planId: plan.id, phaseNo: 1, label, date: input.date, time: input.time,
+        groom: input.groom, track: input.track, status: 'SCHEDULED', thresholds: { hr: 180, speed: 60 }, readings: [], metrics: input.metrics, decision: null, evaluation: null,
+      } as TrainingSession;
+    }
     // Mã phu must be in charge of the horse's stable zone.
     const [stalls, grooms] = await Promise.all([get<Stall[]>('/stalls'), get<Groom[]>('/grooms')]);
     const zone = horseZone(horse, stalls);
