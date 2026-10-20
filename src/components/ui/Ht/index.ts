@@ -6,7 +6,7 @@
 export { money } from './format';
 export { Field } from './Field';
 export { TextInput, PasswordInput } from './Inputs';
-export { scorePassword } from './password';
+export { PASSWORD_RE, PASSWORD_RULE, USERNAME_RE, USERNAME_RULE, scorePassword } from './password';
 export { StrengthMeter } from './StrengthMeter';
 export { Busy } from './Busy';
 export { Callout } from './Callout';

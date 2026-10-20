@@ -1,6 +1,6 @@
 import { http } from './http';
 import type { AuthUser, Role } from './mockData';
-import { USE_BACKEND, be, beData, tokenStore, type Tokens } from './beClient';
+import { EMAIL_TIMEOUT, USE_BACKEND, be, beData, tokenStore, type ApiResponse, type Tokens } from './beClient';
 
 /* Auth against json-server's /users collection.
    DEMO ONLY: passwords are stored in plain text in db.json. A real backend must hash them and issue tokens. */
@@ -114,13 +114,15 @@ const beAuth = {
     await be.put('/account/change-password', { oldPassword, newPassword, confirmNewPassword: newPassword, otp });
   },
 
+  /** Returns the backend message, e.g. "Đã gửi mã OTP tới ng***@gmail.com. Mã có hiệu lực 120 giây." (data is only the masked email). */
   async requestChangePasswordOtp(): Promise<string> {
-    return beData<string>(be.post('/account/change-password/otp'));
+    const { data } = await be.post<ApiResponse<string>>('/account/change-password/otp', undefined, { timeout: EMAIL_TIMEOUT });
+    return data.message || (data.data ? `Đã gửi mã OTP tới ${data.data}.` : '');
   },
 
   /** Forgot password: the backend emails a 6-digit OTP, then resets with it. */
   async forgotPassword(email: string): Promise<void> {
-    await be.post('/auth/forgot-password', { email });
+    await be.post('/auth/forgot-password', { email }, { timeout: EMAIL_TIMEOUT });
   },
 
   async resetPassword(email: string, otp: string, newPassword: string): Promise<void> {

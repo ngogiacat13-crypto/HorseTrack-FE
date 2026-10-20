@@ -95,7 +95,7 @@ Danh sách ngựa của tôi đọc từ `GET /api/v1/horses` (lọc theo chủ)
 - Hồ sơ đăng ký ngựa có giấy tờ (hàng chờ duyệt). Backend có `POST /horses/register`, `PUT /horses/{id}/approve` nhưng cấu trúc khác FE, cần thống nhất
 - Báo cáo sự cố, yêu cầu vật tư, toàn bộ phần kho (tồn kho, đơn nhập, kiểm kê)
 - Đề xuất thi đấu (HLV tạo, chủ ngựa đồng ý), đánh giá phong độ, nhập chỉ số nhịp tim
-- Quên mật khẩu (OTP), thông báo
+- Thông báo (quên mật khẩu bằng OTP đã nối, xem mục 6 và 9)
 
 ## 5. Lưu ý cho nhóm backend
 
@@ -119,7 +119,7 @@ Tài khoản thử mới: `test_kho` (Quản lý kho), mật khẩu giống các
 | Đổi mật khẩu: nút "Gửi mã OTP" + ô nhập OTP (chỉ khi chạy backend) | `POST /api/v1/account/change-password/otp`, `PUT /api/v1/account/change-password` (có `otp`) | ☑️ |
 | Quản lý CLB tạo tài khoản **Quản lý kho** | `POST /api/v1/auth/staff/create` (`roleName: Warehouse Manager`) | ✅ |
 
-Ghi chú: khi backend chưa cấu hình `MAIL_USERNAME`, email (kể cả mã OTP) chỉ in ra console của server.
+Ghi chú: khi backend chưa cấu hình `MAIL_USERNAME`, email (kể cả mã OTP) chỉ in ra console của server. Chi tiết phần email xem **mục 9**.
 
 ### Đã nối thêm: Kho, phác đồ thật, yêu cầu vật tư (đợt 2)
 Code: `src/api/beDomain.ts` (đổi dữ liệu backend → dạng màn hình, chọn API theo vai trò), `src/api/beActions.ts` (các thao tác ghi),
@@ -208,3 +208,65 @@ Backend không có bảng hồ sơ đăng ký riêng: **hồ sơ = 1 dòng trong
 
 Checklist, giấy tờ đính kèm, màu lông, chiều cao chưa có cột trong DB → chỉ hiện trên màn hình, không lưu. Số hộ chiếu + màu lông được ghi vào cột `pedigree`.
 Code: `LOADERS.registrations` + `WRITES.registrations` trong `src/api/hybridAdapter.ts`; hộp chọn chuồng trong `src/pages/manager/ManagerRegistrationDetail/DecisionDialogs.tsx`.
+
+---
+
+## 9. Email (OTP, tài khoản nhân viên) — 21/10/2026
+
+Backend không có API email riêng. `EmailService` (module `notification`) gửi email bên trong 3 API:
+
+| Chức năng | API | Email gửi đi | |
+|---|---|---|---|
+| Quên mật khẩu | `POST /auth/forgot-password` → `POST /auth/reset-password` | Mã OTP đặt lại mật khẩu | ☑️ API đã thử, chưa bấm trên giao diện |
+| Đổi mật khẩu | `POST /account/change-password/otp` → `PUT /account/change-password` (có `otp`) | Mã OTP đổi mật khẩu | ☑️ API đã thử, chưa bấm trên giao diện |
+| Quản lý CLB tạo nhân viên | `POST /auth/staff/create` | Tên đăng nhập + mật khẩu tạm | ☑️ (không thử vì sẽ ghi vào DB chung) |
+
+### Quy tắc OTP (backend, `OtpService`)
+- 6 chữ số, hiệu lực **120 giây**, dùng 1 lần, yêu cầu mã mới thì mã cũ mất hiệu lực.
+- Nhập sai **5 lần** thì mã bị hủy.
+- Giữa 2 lần gửi phải chờ **30 giây** (theo từng email + mục đích).
+- Quên mật khẩu luôn trả cùng một câu "Nếu email đã đăng ký…", dù email có tồn tại hay không.
+- Mã lưu trong bộ nhớ: restart server là mất hết mã.
+
+### Cấu hình gửi email thật (backend)
+Đặt biến môi trường trong Run Configuration của IntelliJ (không ghi mật khẩu vào `application.properties`):
+
+| Biến | Ý nghĩa | Mặc định |
+|---|---|---|
+| `MAIL_USERNAME`, `MAIL_PASSWORD` | Tài khoản SMTP. Gmail: bật xác minh 2 bước, dùng **App Password 16 ký tự** | trống → **chế độ dev**: không gửi, in nội dung email (kể cả OTP, mật khẩu tạm) ra console |
+| `MAIL_HOST`, `MAIL_PORT` | Máy chủ SMTP | `smtp.gmail.com`, `587` |
+| `MAIL_FROM`, `MAIL_FROM_NAME` | Người gửi hiển thị | `MAIL_USERNAME`, `HorseTrack EquineCare` |
+| `MAIL_WAIT_SECONDS` | Số giây request chờ email gửi xong để báo kết quả | `8` |
+| `OTP_TTL_SECONDS`, `OTP_MAX_ATTEMPTS`, `OTP_RESEND_COOLDOWN_SECONDS` | Quy tắc OTP | `120`, `5`, `30` |
+
+### Thay đổi phía backend (chưa commit, trong `Test API 3/.../HorseTrack`)
+- **Gửi email bất đồng bộ** (`EmailService`): email gửi trên 2 luồng riêng `email-sender`, SMTP chậm (tới ~30 giây) không còn giữ request.
+  `sendOtp` / `sendStaffAccount` trả về `CompletableFuture`; `await()` chờ tối đa `app.mail.wait-seconds` và trả `SENT` / `FAILED` / `PENDING`.
+  - Quên mật khẩu: không chờ → phản hồi luôn nhanh như nhau (không lộ email nào đã đăng ký qua thời gian phản hồi). Gửi lỗi thì hủy mã để thử lại ngay.
+  - OTP đổi mật khẩu: chờ tối đa 8 giây; gửi lỗi → **503** "Không gửi được mã OTP…" và hủy mã. Lỗi đến muộn (sau 8 giây) cũng hủy mã.
+  - Tạo nhân viên: chờ tối đa 8 giây rồi báo 1 trong 3: đã gửi / **đang gửi** / không gửi được (tài khoản vẫn được tạo).
+- **Thời gian chờ 30 giây an toàn khi gọi đồng thời** (`OtpService.checkAndMarkCooldown` dùng `ConcurrentHashMap.compute`): 10 yêu cầu cùng lúc chỉ 1 yêu cầu được gửi.
+- File đã sửa: `EmailService`, `OtpService`, `AuthServiceImpl`, `AccountServiceImpl`, `AuthController`, `application.properties` (thêm `app.mail.wait-seconds`).
+- **Phải Restart backend trong IntelliJ** mới có code mới.
+
+Đã thử với bản chạy riêng cổng 8081: bình thường (dev mode), SMTP từ chối kết nối (503 sau ~0,2 giây, gửi lại được ngay), SMTP treo (200 sau ~8,2 giây, sau đó gửi lại được ngay).
+
+### Thay đổi phía FE
+| File | Thay đổi |
+|---|---|
+| `src/api/beClient.ts` | `EMAIL_TIMEOUT = 40000`: 3 API có gửi email chờ tối đa 40 giây (các API khác vẫn 15 giây) |
+| `src/api/authApi.ts` | `requestChangePasswordOtp` trả về **câu thông báo** của backend ("Đã gửi mã OTP tới te******@… Mã có hiệu lực 120 giây.") thay vì chỉ email đã che |
+| `src/api/managerApi.ts` | `createStaff` trả thêm `emailNote` (thông báo của backend) và `emailFailed` |
+| `src/pages/manager/ManagerUsers/CreateStaffDialog.tsx` | Toast hiện kết quả gửi email; gửi thất bại thì hiện thêm hộp cảnh báo để Quản lý báo thông tin đăng nhập cho nhân viên theo cách khác |
+| `src/pages/auth/ChangePassword/index.tsx` | Nút "Gửi mã OTP" đếm ngược 30 giây; danh sách "Yêu cầu mật khẩu" thêm 2 dòng theo quy tắc mới |
+| `src/pages/auth/ForgotPassword/ResetStep.tsx` | "Gửi lại mã" báo lỗi nếu có (trước đây im lặng); chờ 30 giây (trước là 45); ghi chú "Mã có hiệu lực 120 giây, chỉ dùng một lần" |
+| `src/components/ui/Ht/password.ts` | Quy tắc dùng chung, **giống backend** (`@StrongPassword`, `@ValidUsername`) |
+
+Quy tắc tài khoản mới (áp dụng cho Đăng ký, Tạo nhân viên, Đổi mật khẩu, Đặt lại mật khẩu):
+- **Mật khẩu:** 8–64 ký tự, có ít nhất 1 chữ cái và 1 chữ số, không chứa khoảng trắng.
+- **Tên đăng nhập:** 4–30 ký tự, chỉ gồm chữ không dấu, chữ số, dấu chấm (`.`) và gạch dưới (`_`). Đăng nhập không kiểm tra quy tắc này (tài khoản cũ vẫn vào được).
+
+### Cần nhóm backend xem
+- `application.properties` đang ghi thẳng **mật khẩu database** và **JWT secret mặc định** rồi commit lên git → nên chuyển sang biến môi trường và đổi mật khẩu.
+- Email tạo nhân viên chứa **mật khẩu tạm ở dạng đọc được (không mã hóa)**; ở chế độ dev mật khẩu này còn in ra console. Nên cân nhắc gửi link đặt mật khẩu thay vì mật khẩu.
+- OTP lưu trong bộ nhớ → chạy nhiều instance hoặc restart sẽ mất mã.

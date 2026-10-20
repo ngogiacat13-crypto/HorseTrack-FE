@@ -112,5 +112,8 @@ be.interceptors.response.use(
   },
 );
 
+/** Calls that send an email: the backend may wait for SMTP (app.mail.wait-seconds), so allow more than the default 15 s. */
+export const EMAIL_TIMEOUT = 40000;
+
 /** Unwrap ApiResponse<T> → T. */
 export const beData = <T>(p: Promise<{ data: ApiResponse<T> }>) => p.then((r) => r.data.data);

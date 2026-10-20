@@ -4,7 +4,7 @@ import { USE_BACKEND } from '../../../api/beClient';
 import { useActor } from '../../../auth/AuthContext';
 import { useAction } from '../../../hooks/useAction';
 import { useForm } from '../../../hooks/useForm';
-import { Callout, Dialog, Field, PasswordInput, TextInput } from '../../../components/ui/Ht';
+import { Callout, Dialog, Field, PASSWORD_RE, PASSWORD_RULE, PasswordInput, TextInput, USERNAME_RE, USERNAME_RULE, useToast } from '../../../components/ui/Ht';
 import { ROLE_LABEL } from '../../../components/layout/nav';
 
 const PHONE_RE = /^(0|\+84)(\d{9,10})$/;
@@ -17,14 +17,15 @@ const ZONES = ['Khu A', 'Khu B', 'Khu C'];
 export const CreateStaffDialog: React.FC<{ onClose: () => void; onDone: (u: ManagedUser) => void }> = ({ onClose, onDone }) => {
   const actor = useActor();
   const { busy, error, run } = useAction();
+  const toast = useToast();
   const form = useForm(
     { role: 'HeadTrainer', fullName: '', username: '', email: '', phone: '', password: '', licenseNumber: '', specialization: '' },
     (v) => ({
       fullName: v.fullName.trim() ? undefined : 'Vui lòng nhập họ và tên',
-      username: !v.username.trim() ? 'Vui lòng nhập tên đăng nhập' : !/^[a-zA-Z0-9_.]{4,50}$/.test(v.username.trim()) ? 'Tối thiểu 4 ký tự, chỉ gồm chữ không dấu, số, _ và .' : undefined,
+      username: !v.username.trim() ? 'Vui lòng nhập tên đăng nhập' : !USERNAME_RE.test(v.username.trim()) ? USERNAME_RULE : undefined,
       email: !v.email.trim() ? 'Vui lòng nhập email' : !EMAIL_RE.test(v.email.trim()) ? 'Email không hợp lệ' : undefined,
       phone: v.phone && !PHONE_RE.test(v.phone.replace(/\s/g, '')) ? 'Số điện thoại không hợp lệ' : undefined,
-      password: !v.password ? 'Vui lòng nhập mật khẩu tạm' : v.password.length < 8 ? 'Mật khẩu tối thiểu 8 ký tự' : undefined,
+      password: !v.password ? 'Vui lòng nhập mật khẩu tạm' : !PASSWORD_RE.test(v.password) ? PASSWORD_RULE : undefined,
       specialization: v.role === 'Groom' && !v.specialization ? 'Chọn khu chuồng phụ trách' : undefined,
     }),
   );
@@ -37,8 +38,12 @@ export const CreateStaffDialog: React.FC<{ onClose: () => void; onDone: (u: Mana
     const v = form.values;
     const out: { user?: ManagedUser } = {};
     const ok = await run(async () => {
-      out.user = await managerApi.createStaff({ ...v, role }, actor);
-    }, `Đã tạo tài khoản ${v.username.trim()} · ${ROLE_LABEL[role]}.`);
+      const { emailNote, emailFailed, ...user } = await managerApi.createStaff({ ...v, role }, actor);
+      out.user = user;
+      // Backend: tell whether the login details were emailed (or failed: the manager must send them another way)
+      toast(emailNote ?? `Đã tạo tài khoản ${v.username.trim()} · ${ROLE_LABEL[role]}.`);
+      if (emailFailed) window.alert(emailNote);
+    });
     if (ok && out.user) onDone(out.user);
   };
 

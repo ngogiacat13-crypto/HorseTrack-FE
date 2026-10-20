@@ -8,9 +8,13 @@ import {
   Busy,
   Callout,
   Field,
+  PASSWORD_RE,
+  PASSWORD_RULE,
   PasswordInput,
   StrengthMeter,
   TextInput,
+  USERNAME_RE,
+  USERNAME_RULE,
 } from '../../../components/ui/Ht';
 import { useForm } from '../../../hooks/useForm';
 
@@ -35,8 +39,8 @@ export const Register: React.FC = () => {
       fullname: v.fullname.trim() ? undefined : 'Vui lòng nhập họ và tên',
       username: !v.username
         ? 'Vui lòng nhập tên đăng nhập'
-        : v.username.length < 4
-          ? 'Tối thiểu 4 ký tự'
+        : !USERNAME_RE.test(v.username.trim())
+          ? USERNAME_RULE
           : undefined,
       phone: !v.phone
         ? 'Vui lòng nhập số điện thoại'
@@ -50,8 +54,8 @@ export const Register: React.FC = () => {
           : undefined,
       password: !v.password
         ? 'Vui lòng nhập mật khẩu'
-        : v.password.length < 8
-          ? 'Mật khẩu tối thiểu 8 ký tự'
+        : !PASSWORD_RE.test(v.password)
+          ? PASSWORD_RULE
           : undefined,
     })
   );
