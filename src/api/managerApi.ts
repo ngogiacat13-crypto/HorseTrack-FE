@@ -2,7 +2,8 @@
 // REST calls to json-server (db.json) through the shared axios instance.
 // Demo clock: 03/10/2026 10:30. The manager monitors medical work but never approves protocols (BR_07).
 import { DEMO_NOW, http } from './http';
-import { USE_BACKEND, be } from './beClient';
+import { USE_BACKEND, be, beData } from './beClient';
+import { invalidate } from './hybridAdapter';
 
 /* ---------------- Types ---------------- */
 export type RegStatus = 'Pending' | 'Approved' | 'Rejected';
@@ -50,6 +51,7 @@ export interface ManagedUser {
   id: string; fullName: string; username: string; email: string; role: UserRole;
   lastLogin: string; status: 'ACTIVE' | 'LOCKED'; lockReason?: string;
   openTasks?: number; horsesOwned?: number; serviceSuspended?: boolean; avatarUrl?: string | null;
+  beId?: number;
 }
 export interface GroomAssignment { id: string; name: string; zones: string[] }
 /** Roles the Club Manager can create staff accounts for. */
@@ -92,6 +94,15 @@ export const addAudit = (actor: Actor, e: Omit<AuditLog, 'id' | 'at' | 'who' | '
   }).then((r) => r.data);
 
 interface UserRecord extends Omit<ManagedUser, 'fullName'> { fullname: string; password?: string }
+/* Backend (branch `test`): PUT /api/v1/users/{id}/lock | unlock | role — the backend writes the audit log itself. */
+const beUserAction = async (url: string, body: Record<string, string>): Promise<ManagedUser> => {
+  const u = await beData<{ userId: number; username: string; fullName: string; email: string; role?: string; roleName: string; status?: string; lockReason?: string | null; openTasks?: number; horsesOwned?: number; lastLogin?: string | null }>(be.put(url, body));
+  invalidate('users', 'auditLogs');
+  return {
+    id: String(u.userId), username: u.username, fullName: u.fullName, email: u.email, role: (u.role ?? u.roleName) as UserRole,
+    status: u.status === 'LOCKED' ? 'LOCKED' : 'ACTIVE', lockReason: u.lockReason ?? undefined, openTasks: u.openTasks ?? 0, horsesOwned: u.horsesOwned ?? 0, lastLogin: u.lastLogin && /^\d{4}-\d{2}-\d{2}/.test(u.lastLogin) ? `${u.lastLogin.slice(8, 10)}/${u.lastLogin.slice(5, 7)} ${u.lastLogin.slice(11, 16)}` : u.lastLogin || '—',
+  };
+};
 const toManaged = ({ password: _pw, fullname, ...u }: UserRecord): ManagedUser => ({ ...u, fullName: fullname });
 
 /* ---------------- API ---------------- */
@@ -295,18 +306,21 @@ export const managerApi = {
   },
 
   async changeRole(user: ManagedUser, role: UserRole, reason: string, actor: Actor) {
+    if (USE_BACKEND) return beUserAction(`/users/${user.id}/role`, { roleName: role, reason: reason.trim() });
     const { data } = await http.patch<UserRecord>(`/users/${user.id}`, { role, openTasks: 0 });
     await addAudit(actor, { action: 'CHANGE_ROLE', label: 'Đổi vai trò', object: `${user.username} · ${user.fullName}`, area: 'acct', from: user.role, to: role, reason });
     return toManaged(data);
   },
 
   async lockUser(user: ManagedUser, reason: string, actor: Actor) {
+    if (USE_BACKEND) return beUserAction(`/users/${user.id}/lock`, { reason: reason.trim() });
     const { data } = await http.patch<UserRecord>(`/users/${user.id}`, { status: 'LOCKED', lockReason: reason });
     await addAudit(actor, { action: 'LOCK_ACCOUNT', label: 'Khóa tài khoản', object: `${user.username} · ${user.fullName}`, area: 'acct', from: 'ACTIVE', to: 'LOCKED', reason });
     return toManaged(data);
   },
 
   async unlockUser(user: ManagedUser, reason: string, actor: Actor) {
+    if (USE_BACKEND) return beUserAction(`/users/${user.id}/unlock`, { reason: reason.trim() });
     const { data } = await http.patch<UserRecord>(`/users/${user.id}`, { status: 'ACTIVE', lockReason: null });
     await addAudit(actor, { action: 'UNLOCK_ACCOUNT', label: 'Mở khóa tài khoản', object: `${user.username} · ${user.fullName}`, area: 'acct', from: 'LOCKED', to: 'ACTIVE', reason });
     return toManaged(data);

@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { ManagedUser, managerApi, type GroomAssignment, type AssignedHorse, type AssignedStall } from '../../../api/managerApi';
 import { useAuth } from '../../../auth/AuthContext';
-import { Loading, PageHeader, Tabs } from '../../../components/ui/Ht';
+import { Callout, Loading, PageHeader, Tabs } from '../../../components/ui/Ht';
+import { USE_BACKEND } from '../../../api/beClient';
 import { Icon } from '../../../components/ui/Icon';
 import { UserAction, UserTable } from './UserTable';
 import { RbacMatrix } from './RbacMatrix';
@@ -31,6 +32,18 @@ export const ManagerUsers: React.FC = () => {
       <PageHeader title="Người dùng & phân quyền" sub="Tạo tài khoản nhân viên, khóa, mở khóa, đổi vai trò. Mọi thay đổi được ghi Audit Log (BR_10)."
         actions={<button type="button" className="ht-btn ht-btn--primary" onClick={() => setCreating(true)}><Icon name="usercog" size={16} />Tạo tài khoản nhân viên</button>} />
       <Tabs value={tab} onChange={setTab} items={[{ value: 'users', label: 'Người dùng', count: users.length }, { value: 'rbac', label: 'Vai trò & quyền' }]} />
+
+      {USE_BACKEND && (
+        users.some((u) => u.beId !== undefined) ? (
+          <Callout tone="success" style={{ margin: '12px 0 16px' }}>
+            Đang hiển thị <strong>dữ liệu thật từ database (nhánh test)</strong> — {users.length} tài khoản trong hệ thống.
+          </Callout>
+        ) : (
+          <Callout tone="demo" style={{ margin: '12px 0 16px' }}>
+            Đang hiển thị <strong>dữ liệu mẫu (db.json)</strong> — Backend hiện tại chưa có API người dùng hoặc bạn chưa đăng nhập bằng tài khoản Quản lý CLB.
+          </Callout>
+        )
+      )}
 
       {tab === 'users' ? <UserTable users={users} meId={me?.userId} onAction={(kind, user) => setDlg({ kind, user })} /> : <RbacMatrix />}
 

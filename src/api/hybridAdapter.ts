@@ -1,7 +1,7 @@
 import type { AxiosAdapter, InternalAxiosRequestConfig } from 'axios';
 import { be, type ApiResponse } from './beClient';
 import { fail, mockAdapter, queryRows, respond } from './mockServer';
-import { loadInventory, loadProtocols, loadRequisitions, loadShipments, loadStockChecks, loadStockTx } from './beDomain';
+import { loadAuditLogs, loadInventory, loadProtocols, loadRequisitions, loadShipments, loadStockChecks, loadStockTx, loadUsers } from './beDomain';
 
 /* Backend bridge (`npm run dev:be`).
    The screens keep calling the same REST paths as with db.json ('/horses', '/stalls', '/trainingPlans'…).
@@ -229,6 +229,13 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
   },
   async stockChecks() {
     return (await loadStockChecks()) ?? ((await mockGet('/stockChecks')) as Row[]);
+  },
+  /* Club Manager: users + audit log (backend branch `test`); an older backend without these APIs → db.json */
+  async users() {
+    return (await loadUsers()) ?? ((await mockGet('/users')) as Row[]);
+  },
+  async auditLogs() {
+    return (await loadAuditLogs()) ?? ((await mockGet('/auditLogs')) as Row[]);
   },
   async stockTx() {
     return (await loadStockTx()) ?? ((await mockGet('/stockTx')) as Row[]);
