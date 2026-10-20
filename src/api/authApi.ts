@@ -157,17 +157,17 @@ export const authApi = {
     return toAuthUser(data);
   },
 
-  /** Demo: no real OTP is sent; only checks that the account exists. */
-  async sendOtp(contact: string): Promise<void> {
+  /** Demo: no real OTP is sent; only checks that the account exists by email. */
+  async sendOtp(email: string): Promise<void> {
     if (USE_BACKEND) throw new Error(NO_BE_API);
-    const user = (await findBy('email', contact)) ?? (await findBy('phone', contact));
-    if (!user) throw new Error('Không tìm thấy tài khoản với email / số điện thoại này.');
+    const user = await findBy('email', email);
+    if (!user) throw new Error('Không tìm thấy tài khoản với email này.');
   },
 
-  async resetPassword(contact: string, otp: string, newPassword: string): Promise<void> {
+  async resetPassword(email: string, otp: string, newPassword: string): Promise<void> {
     if (USE_BACKEND) throw new Error(NO_BE_API);
     if (otp !== '123456') throw new Error('Mã OTP không đúng. Vui lòng thử lại với 123456.');
-    const user = (await findBy('email', contact)) ?? (await findBy('phone', contact));
+    const user = await findBy('email', email);
     if (!user) throw new Error('Không tìm thấy tài khoản.');
     if (user.password === newPassword) throw new Error('Mật khẩu mới không được trùng mật khẩu cũ.');
     await http.patch(`/users/${user.id}`, { password: newPassword });
