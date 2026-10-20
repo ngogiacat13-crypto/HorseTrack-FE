@@ -3,14 +3,15 @@ import { Form, Formik, type FormikHelpers } from 'formik';
 import * as Yup from 'yup';
 import { useAuth } from '../../../auth/AuthContext';
 import { authApi } from '../../../api/authApi';
+import { USE_BACKEND } from '../../../api/beClient';
 import type { ApiError } from '../../../api/http';
 import { Icon } from '../../../components/ui/Icon';
 import { Badge, Busy, Callout, PageHeader, Rules, StrengthMeter } from '../../../components/ui/Ht';
 import { FocusFirstError, FormikField } from '../../../components/form/FormikField';
 import { ROLE_LABEL } from '../../../components/layout/nav';
 
-type Values = { oldPassword: string; newPassword: string; confirmPassword: string };
-const EMPTY: Values = { oldPassword: '', newPassword: '', confirmPassword: '' };
+type Values = { oldPassword: string; newPassword: string; confirmPassword: string; otp: string };
+const EMPTY: Values = { oldPassword: '', newPassword: '', confirmPassword: '', otp: '' };
 
 /* Yup: the validation rules of the form, declared once. */
 const schema = Yup.object({
@@ -22,19 +23,32 @@ const schema = Yup.object({
   confirmPassword: Yup.string()
     .required('Vui lòng xác nhận mật khẩu mới')
     .oneOf([Yup.ref('newPassword')], 'Mật khẩu xác nhận không khớp'),
+  // backend: a 6-digit code emailed by "Gửi mã OTP"
+  otp: USE_BACKEND ? Yup.string().required('Nhập mã OTP gửi tới email').matches(/^\d{6}$/, 'Mã OTP gồm 6 chữ số') : Yup.string(),
 });
 
 export const ChangePassword: React.FC = () => {
   const { user } = useAuth();
   const [status, setStatus] = useState<{ tone: 'success' | 'danger'; msg: React.ReactNode } | null>(null);
   const [reveal, setReveal] = useState(false);
+  const [otpState, setOtpState] = useState<{ busy: boolean; sent: boolean; msg: string }>({ busy: false, sent: false, msg: '' });
+
+  const sendOtp = async () => {
+    setOtpState({ busy: true, sent: false, msg: '' });
+    try {
+      const msg = await authApi.requestChangePasswordOtp();
+      setOtpState({ busy: false, sent: true, msg: msg || `Đã gửi mã OTP tới ${user?.email}. Mã có hiệu lực trong vài phút.` });
+    } catch (err) {
+      setOtpState({ busy: false, sent: false, msg: (err as ApiError)?.message || 'Không gửi được mã OTP.' });
+    }
+  };
 
   // Formik only calls this when the schema passes; isSubmitting stays true until the promise settles.
   const onSubmit = async (v: Values, { resetForm, setFieldError }: FormikHelpers<Values>) => {
     setStatus(null);
     try {
       if (!user) throw new Error('Bạn chưa đăng nhập.');
-      await authApi.changePassword(user.userId, v.oldPassword, v.newPassword);
+      await authApi.changePassword(user.userId, v.oldPassword, v.newPassword, v.otp || undefined);
       setStatus({ tone: 'success', msg: <><b>Đổi mật khẩu thành công!</b> Dùng mật khẩu mới cho lần đăng nhập sau.</> });
       resetForm();
     } catch (err) {
@@ -75,6 +89,17 @@ export const ChangePassword: React.FC = () => {
                     </FormikField>
                     <FormikField name="confirmPassword" label="Xác nhận mật khẩu mới" required icon="lock" type={reveal ? 'text' : 'password'} autoComplete="new-password" placeholder="Nhập lại mật khẩu mới" />
                   </div>
+                  {USE_BACKEND && (
+                    <div className="ht-grid-2" style={{ alignItems: 'end' }}>
+                      <FormikField name="otp" label="Mã OTP (gửi tới email)" required icon="mail" inputMode="numeric" maxLength={6} autoComplete="one-time-code" placeholder="6 chữ số" />
+                      <div style={{ paddingBottom: 18 }}>
+                        <button type="button" className="ht-btn ht-btn--secondary" onClick={sendOtp} disabled={otpState.busy}>
+                          <Busy busy={otpState.busy} label="Đang gửi…">{otpState.sent ? 'Gửi lại mã OTP' : 'Gửi mã OTP'}</Busy>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  {USE_BACKEND && otpState.msg && <Callout tone={otpState.sent ? 'info' : 'danger'} style={{ marginBottom: 12 }}>{otpState.msg}</Callout>}
                   <hr className="ht-divider" style={{ marginTop: 8 }} />
                   <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
                     <button type="button" className="ht-btn ht-btn--secondary" onClick={() => { resetForm(); setStatus(null); }}>Hủy</button>

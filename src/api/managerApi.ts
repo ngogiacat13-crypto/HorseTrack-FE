@@ -59,8 +59,8 @@ export interface StaffInput {
   /** HLV / Bác sĩ: số chứng chỉ hành nghề */ licenseNumber?: string;
   /** Bác sĩ: nơi công tác · Mã phu: khu chuồng phụ trách */ specialization?: string;
 }
-/* role on the screens → Users.role_name accepted by POST /auth/staff/create (StaffCreateRequestDTO: Trainer | Veterinarian | Groom) */
-export const BE_STAFF_ROLE: Partial<Record<StaffRole, string>> = { HeadTrainer: 'Trainer', Veterinarian: 'Veterinarian', Groom: 'Groom' };
+/* role on the screens → Users.role_name accepted by POST /auth/staff/create (StaffCreateRequestDTO: Trainer | Veterinarian | Groom | Warehouse Manager) */
+export const BE_STAFF_ROLE: Partial<Record<StaffRole, string>> = { HeadTrainer: 'Trainer', Veterinarian: 'Veterinarian', Groom: 'Groom', WarehouseManager: 'Warehouse Manager' };
 export interface AssignedStall { id: string; zone: string; horseId: string | null; horse: string | null; status: string; groom: string }
 export interface AssignedHorse { id: string; name: string; owner: string; stall: string; health: string }
 export interface RoleCheck { level: 'pass' | 'warn' | 'fail'; text: string }

@@ -15,7 +15,8 @@ export interface Horse {
 
 export type Intensity = 'Nhẹ' | 'Vừa' | 'Cao';
 export interface PlanPhase { no: number; name: string; weeks: number; intensity: Intensity; distanceM: number; sessionsPerWeek: number; hrLimit: number }
-export type PlanStatus = 'ACTIVE' | 'PAUSED' | 'COMPLETED' | 'REPLACED';
+/** PLANNED = created, waiting for its start date and a first session given to a Mã phu; then ACTIVE. */
+export type PlanStatus = 'PLANNED' | 'ACTIVE' | 'PAUSED' | 'COMPLETED' | 'REPLACED';
 export interface TrainingPlan {
   id: string; horseId: string; horseName: string;
   /** Name given by the trainer, e.g. “Giáo án tăng sức bền cự ly dài”. */

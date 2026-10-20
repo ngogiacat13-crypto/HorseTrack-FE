@@ -24,7 +24,7 @@ export const TrainerHerdOverview: React.FC = () => {
   const horses = useMemo(() => data?.horses ?? [], [data]);
   const activePlan = useMemo(() => {
     const m = new Map<string, TrainingPlan>();
-    (data?.plans ?? []).filter((p) => p.status === 'ACTIVE' || p.status === 'PAUSED').forEach((p) => m.set(p.horseId, p));
+    (data?.plans ?? []).filter((p) => p.status === 'PLANNED' || p.status === 'ACTIVE' || p.status === 'PAUSED').forEach((p) => m.set(p.horseId, p));
     return m;
   }, [data]);
 
