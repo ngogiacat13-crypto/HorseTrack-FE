@@ -121,30 +121,49 @@ Tài khoản thử mới: `test_kho` (Quản lý kho), mật khẩu giống các
 
 Ghi chú: khi backend chưa cấu hình `MAIL_USERNAME`, email (kể cả mã OTP) chỉ in ra console của server.
 
-### Chưa nối (backend đã có API, việc tiếp theo)
-**Quản lý kho** (chỉ role Warehouse Manager gọi được):
-- Tồn kho: `GET /inventory/items`, `GET /inventory/low-stock`, `PUT /inventory/items/{id}/safety-level`, `POST /inventory/stock-movements`
-- Thuốc theo phác đồ: `GET /inventory/protocols`, `PUT /inventory/protocols/{id}/stock-check`, `PUT /inventory/protocols/{id}/dispense`
-- Đơn nhập hàng: `GET/POST /inventory/purchase-orders`, `PUT .../{id}/in-transit | eta | receive | cancel`, `GET /inventory/suppliers`
-- Yêu cầu vật tư của Mã phu: `GET /inventory/supply-requests`, `PUT .../{id}/issue | wait-restock | reject`
-- Kiểm kê tháng: `GET/POST /inventory/stock-counts`, `PUT .../{id}`, `PUT .../{id}/complete`
-- Nhật ký kho: `GET /inventory/transactions`
+### Đã nối thêm: Kho, phác đồ thật, yêu cầu vật tư (đợt 2)
+Code: `src/api/beDomain.ts` (đổi dữ liệu backend → dạng màn hình, chọn API theo vai trò), `src/api/beActions.ts` (các thao tác ghi),
+`src/api/hybridAdapter.ts` (thêm `inventory`, `requisitions`, `stockChecks`, `stockTx`; `protocols`, `shipments` lấy API thật).
+Thao tác ghi của kho / phác đồ gọi thẳng backend (thay hàm cũ trong `warehouseApi`, `vetApi`, `groomApi`) vì backend tự cộng/trừ tồn.
 
-**Bác sĩ thú y** (phác đồ thật thay cho dữ liệu viết cứng `/protocols`):
-- `GET /medical-management/protocols`, `GET .../{id}`, `POST /medical-management/protocols`, `PUT .../{id}/confirm | wait-restock | complete | cancel`, `POST .../{id}/progress-notes | new-version`
-- Danh mục thuốc đổi sang `MedicineCatalogDTO` (`itemCode`, `itemName`, `availableStock`) — cần sửa lại hàm `getMedicines`.
+**Quản lý kho** (`test_kho`)
+| Màn hình | API | |
+|---|---|---|
+| Tồn kho, cảnh báo dưới ngưỡng | `GET /inventory/items` | ✅ (9 mặt hàng thật) |
+| Cập nhật tồn (nhập / xuất / điều chỉnh) | `POST /inventory/stock-movements` | ☑️ |
+| Ngưỡng an toàn | `PUT /inventory/items/{id}/safety-level` | ☑️ |
+| Thuốc theo phác đồ (danh sách + chi tiết) | `GET /inventory/protocols`, `GET /inventory/protocols/{id}` | ✅ |
+| Kiểm tồn & phản hồi BS, cấp phát | `PUT /inventory/protocols/{id}/stock-check`, `PUT .../dispense` | ☑️ (chưa bấm: PD-0040 là dữ liệu thật của nhóm) |
+| Vật tư từ Mã phu: cấp / chờ hàng / từ chối | `GET /inventory/supply-requests`, `PUT .../{id}/issue | wait-restock | reject` | ✅ đọc · ☑️ ghi |
+| Đơn nhập hàng: tạo, đang giao, đổi ETA, hủy, nhận hàng | `GET/POST /inventory/purchase-orders`, `PUT .../{id}/in-transit | eta | cancel | receive`, `GET /inventory/suppliers` | ✅ đọc · ☑️ ghi |
+| Kiểm kê tháng (tạo phiếu + chốt) | `GET /inventory/stock-counts`, `GET .../{id}`, `POST /inventory/stock-counts`, `PUT .../{id}/complete` | ✅ đọc · ☑️ ghi |
+| Nhật ký kho | `GET /inventory/transactions` | ✅ |
 
-**Mã phu:** `POST /supply-requests`, `GET /supply-requests/my`, `PUT /supply-requests/{id}/cancel`.
+**Bác sĩ thú y** (`test_bacsi`)
+| Màn hình | API | |
+|---|---|---|
+| Phác đồ điều trị (danh sách + chi tiết có giai đoạn, phản hồi kho, ghi chú) | `GET /medical-management/protocols`, `GET .../{id}` | ✅ (PD-0038/39/40) |
+| Lập phác đồ / phiên bản mới | `POST /medical-management/protocols`, `POST .../{id}/new-version` | ☑️ |
+| Xác nhận, chờ hàng, ghi tiến triển, kết thúc, hủy | `PUT .../{id}/confirm | wait-restock | complete | cancel`, `POST .../{id}/progress-notes` | ☑️ |
+| Danh mục thuốc (DTO mới `MedicineCatalogDTO`) | `GET /medical-management/medications` | ✅ |
 
-**HLV:** tạo giáo án `POST /training-plans`. **Công việc chăm sóc:** `POST /care-tasks`.
+Quản lý CLB → Theo dõi y tế cũng đọc phác đồ thật từ `/medical-management/protocols`.
 
-**Đăng ký ngựa:** `HorseResponseDTO` có `approvalStatus` → nối hàng chờ duyệt của Quản lý CLB (`PUT /horses/{id}/approve`) và form đăng ký của chủ ngựa (`POST /horses/register`).
+**Mã phu** (`test_maphu`)
+| Màn hình | API | |
+|---|---|---|
+| Yêu cầu của tôi | `GET /supply-requests/my` | ✅ |
+| Gửi yêu cầu vật tư | `POST /supply-requests` | ⚠️ ô chọn vật tư vẫn là dữ liệu mẫu (xem phần cần backend) |
 
-### Cách làm dự kiến
-- Đọc dữ liệu: thêm `inventory`, `shipments`, `requisitions`, `stockChecks`, `stockTx`, `protocols` vào `LOADERS` trong `src/api/hybridAdapter.ts`, chọn API theo vai trò (kho → `/inventory/...`, bác sĩ/QL CLB → `/medical-management/...`).
-- Ghi dữ liệu: thay hẳn các hàm trong `warehouseApi`, `vetApi` (phác đồ), `groomApi` (yêu cầu vật tư) bằng lệnh gọi backend, vì backend tự cộng/trừ tồn kho (tránh trừ hai lần).
-- Đổi mã: FE dùng mã chữ (`VT-0019`, `PD-0040`, `SHIP-0005`, `RQ-0004`, `KK-2026-10`), backend dùng số (`itemId`, `protocolId`…) → lưu kèm `beId` khi chuyển đổi.
+### Chưa nối (để sau)
+- **HLV:** tạo giáo án `POST /training-plans` (backend chỉ cho `Head Trainer`; tài khoản `test_hlv` là `Trainer`).
+- **Công việc chăm sóc:** `POST /care-tasks` (FE chưa có màn hình tạo công việc).
+- **Đăng ký ngựa:** `HorseResponseDTO` có `approvalStatus` → hàng chờ duyệt của Quản lý CLB (`PUT /horses/{id}/approve`) và form đăng ký của chủ ngựa (`POST /horses/register`).
+- **Nhà cung cấp:** thêm / sửa (`POST/PUT /inventory/suppliers`), thêm / sửa vật tư (`POST/PUT /inventory/items`) — FE chưa có màn hình.
+- **Mã phu hủy yêu cầu:** `PUT /supply-requests/{id}/cancel` — FE chưa có nút hủy.
 
 ### Cần nhóm backend xem
-- Mã phu không gọi được `GET /inventory/items` (403) nên form "Yêu cầu vật tư" không có danh sách vật tư để chọn → cần mở quyền đọc cho Groom hoặc một API danh mục vật tư.
+- Mã phu không gọi được `GET /inventory/items` (403) → form "Yêu cầu vật tư" chưa có danh sách vật tư thật để chọn. Cần mở quyền đọc cho Groom hoặc thêm API danh mục vật tư.
+- Quản lý kho không gọi được `GET /horses` (403) → trang chi tiết phác đồ của kho lấy tên ngựa từ chính phác đồ.
 - Vẫn **chưa có API danh sách người dùng / khóa / đổi vai trò** (màn hình Người dùng & phân quyền vẫn là dữ liệu mẫu).
+- Lập phác đồ: backend chưa có ca khám nào (`GET /medical/cases` rỗng) nên ô "Ca khám" trên form có thể trống.

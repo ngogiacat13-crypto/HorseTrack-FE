@@ -1,6 +1,7 @@
 import type { AxiosAdapter, InternalAxiosRequestConfig } from 'axios';
 import { be, type ApiResponse } from './beClient';
 import { fail, mockAdapter, queryRows, respond } from './mockServer';
+import { loadInventory, loadProtocols, loadRequisitions, loadShipments, loadStockChecks, loadStockTx } from './beDomain';
 
 /* Backend bridge (`npm run dev:be`).
    The screens keep calling the same REST paths as with db.json ('/horses', '/stalls', '/trainingPlans'…).
@@ -59,7 +60,10 @@ interface BeShipment { lotCode: string; itemName: string; quantity: number; unit
 
 /* ---------- collections served by the backend ---------- */
 const stallsRaw = () => orEmpty(data<BeStall[]>('/stalls'));
-const horsesRaw = async () => (await data<{ horses: BeHorse[] }>('/horses', { page: 0, size: 500 }).catch(() => ({ horses: [] }))).horses;
+const horsesRaw = async () => {
+  if (me()?.role === 'WarehouseManager') return []; // the warehouse cannot read /horses (403)
+  return (await data<{ horses: BeHorse[] }>('/horses', { page: 0, size: 500 }).catch(() => ({ horses: [] }))).horses;
+};
 const byName = (rows: Row[], name?: string | null) => rows.find((r) => r.name === name);
 
 const LOADERS: Record<string, () => Promise<Row[]>> = {
@@ -187,6 +191,8 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
   },
 
   async protocols() {
+    const real = await loadProtocols().catch(() => null); // backend Test API 3: real protocols with phases + stock answer
+    if (real) return real;
     const [rows, horses] = await Promise.all([orEmpty(data<BeProtocol[]>('/protocols')), LOADERS.horses()]);
     return rows.map((p) => {
       const short = /thiếu/i.test(p.status);
@@ -204,12 +210,28 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
   },
 
   async shipments() {
+    const real = await loadShipments().catch(() => null); // warehouse: real purchase orders
+    if (real) return real;
     const rows = await orEmpty(data<BeShipment[]>('/protocols/shipments'));
     const ST: Record<string, string> = { 'trễ': 'DELAYED', 'đang giao': 'IN_TRANSIT', 'đã nhận': 'RECEIVED', 'đã đặt': 'ORDERED', 'đã hủy': 'CANCELLED' };
     return rows.map((s) => ({
       id: s.lotCode, supplier: '—', orderedAt: '—', status: ST[(s.status ?? '').toLowerCase()] ?? 'ORDERED', eta: s.eta, forRef: s.targetProtocol,
       item: `${s.itemName} · ${s.quantity} ${s.unit}`, lines: [{ itemId: '', name: s.itemName, unit: s.unit, qty: s.quantity, received: null, lot: null, expiry: null }], history: [],
     }));
+  },
+
+  /* Warehouse module (backend Test API 3) — other roles fall back to db.json for these collections. */
+  async inventory() {
+    return (await loadInventory()) ?? ((await mockGet('/inventory')) as Row[]);
+  },
+  async requisitions() {
+    return (await loadRequisitions()) ?? ((await mockGet('/requisitions')) as Row[]);
+  },
+  async stockChecks() {
+    return (await loadStockChecks()) ?? ((await mockGet('/stockChecks')) as Row[]);
+  },
+  async stockTx() {
+    return (await loadStockTx()) ?? ((await mockGet('/stockTx')) as Row[]);
   },
 };
 const unknownHorse = (id: string): Row => ({
@@ -287,6 +309,8 @@ const rowsOf = async (name: string) => {
   const o = ov(name);
   return [...(await load(name)).map((r) => ({ ...r, ...(o.patches.get(String(r.id)) ?? {}) })), ...o.added];
 };
+/** Forget cached rows (and local-only changes) after a write the backend made itself. */
+export const invalidate = (...names: string[]) => names.forEach((n) => { cache.delete(n); overlay.delete(n); });
 const mockGet = async (url: string) => (await mockAdapter({ url, method: 'get', headers: {} } as InternalAxiosRequestConfig)).data;
 
 export const hybridAdapter: AxiosAdapter = async (config) => {
@@ -306,6 +330,11 @@ export const hybridAdapter: AxiosAdapter = async (config) => {
     if (row) return respond(config, 200, row);
     // Sample records of the backend (pre-race exams, vaccinations, protocols) name horses that are not in the Horses table yet
     if (name === 'horses' && id.startsWith('ten:')) return respond(config, 200, unknownHorse(id));
+    // roles that may not read /horses (warehouse) still open a protocol: build the horse from the protocol row
+    if (name === 'horses') {
+      const p = (await rowsOf('protocols')).find((r) => String(r.horseId) === id);
+      if (p) return respond(config, 200, { ...unknownHorse(`ten:${p.horse}`), id, trainingLocked: !!p.trainingLocked });
+    }
     return fail(config, 404);
   }
 

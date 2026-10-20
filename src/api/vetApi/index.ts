@@ -12,6 +12,8 @@ import { healthApi } from './healthApi';
 import { protocolsApi } from './protocolsApi';
 import { vaccinationsApi } from './vaccinationsApi';
 import { raceExamsApi } from './raceExamsApi';
+import { USE_BACKEND } from '../beClient';
+import { vetProtocolBe } from '../beActions';
 
 export * from './types';
 export * from './labels';
@@ -19,4 +21,6 @@ export * from './dates';
 export * from './drugs';
 export { protoCost, stockShort } from './shared';
 
-export const vetApi = { ...overviewApi, ...casesApi, ...healthApi, ...protocolsApi, ...vaccinationsApi, ...raceExamsApi };
+const base = { ...overviewApi, ...casesApi, ...healthApi, ...protocolsApi, ...vaccinationsApi, ...raceExamsApi };
+// dev:be → protocol actions go to /api/v1/medical-management/protocols
+export const vetApi: typeof base = USE_BACKEND ? { ...base, ...vetProtocolBe } : base;

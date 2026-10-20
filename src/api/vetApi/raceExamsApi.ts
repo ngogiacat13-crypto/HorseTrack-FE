@@ -1,5 +1,6 @@
 import { http } from '../http';
 import { USE_BACKEND, be, beData } from '../beClient';
+import { mapMedicine } from '../beDomain';
 import { type Actor, addAudit } from '../managerApi';
 import type { Horse, RaceProposal, Tournament } from '../trainerApi';
 import type { InventoryItem, Protocol, VetHorse } from './types';
@@ -17,13 +18,9 @@ export const raceExamsApi = {
   /* ----- Medicine catalogue (read-only for the vet; stock is owned by the warehouse) ----- */
   async getMedicines() {
     if (USE_BACKEND) {
-      // Backend: GET /medical-management/medications (catalogue + stock available)
-      const meds = await beData<{ id: number; code: string; name: string; category: string; routeOfAdmin: string | null; referenceDose: string | null; dopingDetectionTime: string | null; price: number; unit: string; stockAvailable: number }[]>(be.get('/medical-management/medications'));
-      return meds.map((m): InventoryItem => ({
-        id: m.code || String(m.id), name: m.name, category: 'Thuốc', group: m.category, route: m.routeOfAdmin ?? '—', unit: m.unit,
-        unitPrice: Number(m.price) || 0, onHand: m.stockAvailable ?? 0, held: 0, safety: 0, doseRef: m.referenceDose ?? undefined,
-        detectionHours: m.dopingDetectionTime ? Number(String(m.dopingDetectionTime).replace(/\D/g, '')) || undefined : undefined,
-      }));
+      // Backend: GET /medical-management/medications (MedicineCatalogDTO: itemCode, itemName, availableStock…)
+      const meds = await beData<Parameters<typeof mapMedicine>[0][]>(be.get('/medical-management/medications'));
+      return meds.map((m) => mapMedicine(m) as unknown as InventoryItem);
     }
     const inventory = await get<InventoryItem[]>('/inventory');
     return inventory.filter((i) => i.category !== 'Thức ăn');

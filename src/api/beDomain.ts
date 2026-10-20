@@ -1,0 +1,199 @@
+import { be, type ApiResponse } from './beClient';
+import { PROTOCOL_LABEL } from './vetApi/labels';
+import type { ProtocolState } from './managerApi';
+
+/* Backend → screen shapes for the warehouse and treatment-protocol modules (backend `Test API 3`).
+   The screens use codes as ids (VT-0019, PD-0040, SHIP-0005, RQ-0004, KK-2026-10); every mapped row also keeps the
+   backend number in `beId`, which the write calls (beActions.ts) send back. */
+
+type Row = Record<string, unknown>;
+export interface Me { id: string; name: string; role: string }
+export const me = (): Me | null => {
+  try {
+    const u = JSON.parse(localStorage.getItem('horsetrack_user') ?? 'null') as { userId: string; fullname: string; role: string } | null;
+    return u ? { id: u.userId, name: u.fullname, role: u.role } : null;
+  } catch {
+    return null;
+  }
+};
+export const beGet = async <T,>(url: string, params?: Record<string, unknown>) => (await be.get<ApiResponse<T>>(url, { params })).data.data;
+
+/* ---------- formats ---------- */
+export const dmy = (iso?: string | null) => {
+  if (!iso) return '—';
+  const [y, m, d] = iso.slice(0, 10).split('-');
+  return d && m && y ? `${d}/${m}/${y}` : iso;
+};
+export const dmyhm = (iso?: string | null) => (iso ? `${dmy(iso)}${iso.length > 15 ? ' ' + iso.slice(11, 16) : ''}` : '—');
+export const dmhm = (iso?: string | null) => (iso ? `${iso.slice(8, 10)}/${iso.slice(5, 7)}${iso.length > 15 ? ' ' + iso.slice(11, 16) : ''}` : '—');
+/** dd/mm/yyyy → yyyy-mm-dd (what the backend expects for LocalDate) */
+export const iso = (ddmmyyyy?: string | null) => {
+  if (!ddmmyyyy) return undefined;
+  const [d, m, y] = ddmmyyyy.split('/');
+  return y && m && d ? `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}` : ddmmyyyy;
+};
+/** "mm/yyyy" ↔ backend expiry date */
+const mmYYYY = (isoDate?: string | null) => (isoDate ? `${isoDate.slice(5, 7)}/${isoDate.slice(0, 4)}` : '—');
+export const expiryIso = (mmyyyy?: string) => (mmyyyy && /^\d{2}\/\d{4}$/.test(mmyyyy) ? `${mmyyyy.slice(3)}-${mmyyyy.slice(0, 2)}-28` : undefined);
+
+const CATEGORY: Record<string, string> = {
+  FEED: 'Thức ăn', SUPPLEMENT: 'Thức ăn bổ sung', MEDICINE: 'Thuốc', VACCINE: 'Vaccine', MEDICAL_SUPPLY: 'Vật tư y tế',
+  STABLE_SUPPLY: 'Vật tư chuồng trại', EQUIPMENT: 'Dụng cụ', OTHER: 'Khác',
+};
+
+/* ---------- inventory ---------- */
+interface BeItem {
+  itemId: number; itemCode: string; itemName: string; category: string; itemGroup?: string | null; brand?: string | null; unit: string; unitPrice: number;
+  currentStock: number; heldStock: number; minSafetyStock: number; route?: string | null; isControlled?: boolean; requiresPrescription?: boolean;
+  withdrawalHours?: number | null; doseReference?: string | null; note?: string | null; lots?: { lotNo: string; expiryDate: string; quantity: number }[] | null;
+}
+interface BeMedicine { itemId: number; itemCode: string; itemName: string; category: string; unit: string; unitPrice: number; availableStock: number; route?: string | null; isControlled?: boolean; withdrawalHours?: number | null; doseReference?: string | null }
+
+export const mapItem = (i: BeItem): Row => ({
+  id: i.itemCode, beId: i.itemId, name: i.itemName, category: CATEGORY[i.category] ?? i.category, group: i.itemGroup || CATEGORY[i.category] || i.category,
+  route: i.route ?? '—', brand: i.brand ?? undefined, unit: i.unit, unitPrice: Number(i.unitPrice) || 0,
+  onHand: Number(i.currentStock) || 0, held: Number(i.heldStock) || 0, safety: Number(i.minSafetyStock) || 0, note: i.note ?? undefined,
+  doseRef: i.doseReference ?? undefined, detectionHours: i.withdrawalHours ?? undefined, rx: !!i.requiresPrescription, controlled: !!i.isControlled,
+  lots: i.lots ? i.lots.map((l) => ({ lot: l.lotNo, expiry: mmYYYY(l.expiryDate), qty: Number(l.quantity) || 0 })) : undefined,
+});
+export const mapMedicine = (m: BeMedicine): Row => ({
+  id: m.itemCode, beId: m.itemId, name: m.itemName, category: CATEGORY[m.category] ?? m.category, group: CATEGORY[m.category] ?? m.category,
+  route: m.route ?? '—', unit: m.unit, unitPrice: Number(m.unitPrice) || 0, onHand: Number(m.availableStock) || 0, held: 0, safety: 0,
+  doseRef: m.doseReference ?? undefined, detectionHours: m.withdrawalHours ?? undefined, controlled: !!m.isControlled,
+});
+
+/** Warehouse: full stock; vet / club manager: the medicine catalogue (used by the protocol form). */
+export const loadInventory = async (): Promise<Row[] | null> => {
+  const role = me()?.role;
+  if (role === 'WarehouseManager') return (await beGet<BeItem[]>('/inventory/items')).map(mapItem);
+  if (role === 'Veterinarian' || role === 'ClubManager') return (await beGet<BeMedicine[]>('/medical-management/medications')).map(mapMedicine);
+  return null; // Groom has no read access to the item list yet (403) → db.json
+};
+
+/* ---------- treatment protocols ---------- */
+interface BeProtocol {
+  protocolId: number; protocolCode: string; horseId: number; horseName: string; vetName?: string; caseId?: number | null; versionNo?: number;
+  replacesProtocolCode?: string | null; replacedByProtocolCode?: string | null; diagnosis: string; state: string; requiredBy?: string | null;
+  isDelayed?: boolean; trainingLocked?: boolean; waitEta?: string | null; waitNote?: string | null; note?: string | null; outcome?: string | null;
+  createdAt?: string; totalCost?: number;
+  phases?: { phaseNo: number; phaseName: string; startDate: string; durationDays: number; goal?: string | null; items: { itemId: number; itemCode: string; itemName: string; unit: string; quantity: number; unitPrice: number; dosage?: string | null }[] }[] | null;
+  stockAnswer?: { itemId: number; itemName: string; unit: string; qtyNeeded: number; qtyAvailable: number; qtyHeld: number; qtyShort: number; eta?: string | null; purchaseOrderId?: number | null; checkedByName?: string; checkedAt?: string }[] | null;
+  progressNotes?: { writtenByName: string; writtenAt: string; content: string }[] | null;
+}
+const CLOSED = ['COMPLETED', 'SUPERSEDED', 'CANCELLED'];
+
+export const mapProtocol = (p: BeProtocol): Row => {
+  const state = (PROTOCOL_LABEL[p.state as ProtocolState] ? p.state : 'WAITING_STOCK_CHECK') as ProtocolState;
+  const phases = (p.phases ?? []).map((ph) => ({
+    no: ph.phaseNo, name: ph.phaseName, startDate: dmy(ph.startDate), days: ph.durationDays, goal: ph.goal ?? '',
+    items: ph.items.map((it) => ({ itemId: it.itemCode, beItemId: it.itemId, name: it.itemName, unit: it.unit, unitPrice: Number(it.unitPrice) || 0, qty: Number(it.quantity) || 0, dosage: it.dosage ?? undefined })),
+  }));
+  const codeOf = new Map(phases.flatMap((ph) => ph.items.map((it) => [it.beItemId, it.itemId] as const)));
+  const answer = p.stockAnswer ?? [];
+  const tone = state === 'STOCK_SHORTAGE' || state === 'REQUIRES_VET_REVIEW' ? 'danger' : CLOSED.includes(state) ? 'neutral' : state === 'IN_TREATMENT' || state === 'READY_FOR_DISPENSING' ? 'success' : 'info';
+  return {
+    id: p.protocolCode, beId: p.protocolId, version: p.versionNo ?? 1, replaces: p.replacesProtocolCode ?? null, supersededBy: p.replacedByProtocolCode ?? null,
+    horseId: String(p.horseId), horse: p.horseName, caseId: p.caseId ? String(p.caseId) : '—', diagnosis: p.diagnosis, vet: p.vetName ?? '—',
+    createdAt: dmy(p.createdAt), requiredBy: dmy(p.requiredBy), phases, state, path: [state],
+    stock: answer.length ? {
+      at: dmhm(answer[0].checkedAt), by: answer[0].checkedByName ?? 'Kho',
+      lines: answer.map((a) => ({
+        itemId: codeOf.get(a.itemId) ?? String(a.itemId), name: a.itemName, unit: a.unit, need: a.qtyNeeded, available: a.qtyAvailable, held: a.qtyHeld,
+        short: a.qtyShort, eta: a.eta ? dmy(a.eta) : null, lot: null, expiry: null, shipment: a.purchaseOrderId ? `SHIP-${String(a.purchaseOrderId).padStart(4, '0')}` : undefined,
+      })),
+    } : null,
+    wait: p.waitEta ? { eta: dmy(p.waitEta), requiredBy: dmy(p.requiredBy), at: '—', note: p.waitNote ?? '' } : null,
+    delayed: !!p.isDelayed, progress: (p.progressNotes ?? []).map((n) => ({ at: dmhm(n.writtenAt), by: n.writtenByName, text: n.content })),
+    outcome: p.outcome ?? null, label: PROTOCOL_LABEL[state][0], tone, cost: Number(p.totalCost) || 0, trainingLocked: !!p.trainingLocked,
+    open: !CLOSED.includes(state), materials: answer.map((a) => ({ item: `${a.itemName} · ${a.qtyNeeded} ${a.unit}`, status: a.qtyShort > 0 ? `Thiếu ${a.qtyShort}` : 'Đủ', tone: a.qtyShort > 0 ? 'danger' : 'success' })),
+    note: p.note ?? '', log: [],
+  };
+};
+
+/** Vet / club manager: /medical-management/protocols · warehouse: /inventory/protocols. Detail calls give phases and the stock answer. */
+export const loadProtocols = async (): Promise<Row[] | null> => {
+  const role = me()?.role;
+  const base = role === 'WarehouseManager' ? '/inventory/protocols' : role === 'Veterinarian' || role === 'ClubManager' ? '/medical-management/protocols' : null;
+  if (!base) return null; // other roles: keep the older sample list
+  const list = await beGet<BeProtocol[]>(base);
+  const full = await Promise.all(list.map((p) => beGet<BeProtocol>(`${base}/${p.protocolId}`).catch(() => p)));
+  return full.map(mapProtocol);
+};
+
+/* ---------- purchase orders ---------- */
+interface BePo {
+  orderId: number; orderCode: string; supplierName: string; purpose: string; status: string; expectedDeliveryDate?: string | null; previousEta?: string | null;
+  requiredBy?: string | null; orderedAt?: string; receivedAt?: string | null; createdByName?: string; note?: string | null; protocolId?: number | null; requisitionId?: number | null;
+  lines: { poLineId: number; itemId: number; itemCode: string; itemName: string; unit: string; quantityOrdered: number; quantityReceived?: number | null; lotNo?: string | null; expiryDate?: string | null }[];
+}
+export const mapPo = (o: BePo): Row => {
+  const forRef = o.protocolId ? `PD-${String(o.protocolId).padStart(4, '0')}` : o.requisitionId ? `RQ-${String(o.requisitionId).padStart(4, '0')}` : 'Bổ sung tồn';
+  const lines = o.lines.map((l) => ({
+    itemId: l.itemCode, beItemId: l.itemId, poLineId: l.poLineId, name: l.itemName, unit: l.unit, qty: Number(l.quantityOrdered) || 0,
+    received: o.status === 'RECEIVED' ? Number(l.quantityReceived) || 0 : null, lot: l.lotNo ?? null, expiry: l.expiryDate ? mmYYYY(l.expiryDate) : null,
+  }));
+  const cancel = o.note?.split('Hủy đơn:')[1]?.trim();
+  return {
+    id: o.orderCode, beId: o.orderId, supplier: o.supplierName, orderedAt: dmy(o.orderedAt), status: o.status, eta: dmy(o.expectedDeliveryDate),
+    etaOld: o.previousEta ? dmy(o.previousEta) : undefined, requiredBy: o.requiredBy ? dmy(o.requiredBy) : undefined, forRef,
+    item: lines.map((l) => `${l.name} · ${l.qty} ${l.unit}`).join(', '), lines,
+    history: [{ at: dmhm(o.orderedAt), who: o.createdByName ?? 'Kho', text: `tạo đơn nhập${o.note ? ` · ${o.note}` : ''}` }],
+    receivedAt: o.receivedAt ? dmhm(o.receivedAt) : undefined, cancelReason: cancel,
+  };
+};
+export const loadShipments = async (): Promise<Row[] | null> =>
+  me()?.role === 'WarehouseManager' ? (await beGet<BePo[]>('/inventory/purchase-orders')).map(mapPo) : null;
+
+/* ---------- supply requests (Groom → warehouse) ---------- */
+interface BeReq {
+  requisitionId: number; requisitionCode: string; requestedByName: string; barnZone: string; itemId: number; itemCode: string; itemName: string; unit: string;
+  quantity: number; reason: string; requestedAt: string; neededBy?: string | null; status: string; rejectReason?: string | null; issuedQuantity?: number | null;
+  issuedByName?: string | null; issuedAt?: string | null; purchaseOrderCodes?: string[] | null;
+}
+const REQ_STATUS: Record<string, string> = { CANCELLED: 'CLOSED' };
+export const mapReq = (r: BeReq): Row => {
+  const history: Row[] = [{ at: dmhm(r.requestedAt), who: r.requestedByName, text: 'gửi yêu cầu' }];
+  if (r.status === 'WAITING_RESTOCK') history.unshift({ at: '—', who: 'Kho', text: `chờ hàng về${r.purchaseOrderCodes?.length ? ` (${r.purchaseOrderCodes.join(', ')})` : ''}`, tone: 'warning' });
+  if (r.status === 'REJECTED') history.unshift({ at: '—', who: 'Kho', text: `từ chối: ${r.rejectReason ?? ''}`, tone: 'danger' });
+  if (r.issuedAt) history.unshift({ at: dmhm(r.issuedAt), who: r.issuedByName ?? 'Kho', text: `cấp ${r.issuedQuantity} ${r.unit}`, tone: 'success' });
+  if (r.status === 'CANCELLED') history.unshift({ at: '—', who: r.requestedByName, text: 'hủy yêu cầu' });
+  return {
+    id: r.requisitionCode, beId: r.requisitionId, by: r.requestedByName, zone: r.barnZone, itemId: r.itemCode, beItemId: r.itemId, item: r.itemName, unit: r.unit,
+    qty: Number(r.quantity) || 0, reason: r.reason, at: dmhm(r.requestedAt), neededBy: dmy(r.neededBy), status: REQ_STATUS[r.status] ?? r.status,
+    rejectReason: r.rejectReason ?? undefined, shipmentId: r.purchaseOrderCodes?.[0],
+    issued: r.issuedAt ? { qty: Number(r.issuedQuantity) || 0, to: r.requestedByName, at: dmhm(r.issuedAt), by: r.issuedByName ?? 'Kho' } : undefined,
+    history,
+  };
+};
+export const loadRequisitions = async (): Promise<Row[] | null> => {
+  const role = me()?.role;
+  if (role === 'WarehouseManager') return (await beGet<BeReq[]>('/inventory/supply-requests')).map(mapReq);
+  if (role === 'Groom') return (await beGet<BeReq[]>('/supply-requests/my')).map(mapReq);
+  return null;
+};
+
+/* ---------- monthly stock counts + warehouse log ---------- */
+interface BeCount { countId: number; countCode: string; countMonth: string; status: string; countedByName?: string; countedAt?: string; note?: string | null; lines?: { itemCode: string; itemName: string; unit: string; systemQty: number; countedQty: number; reason?: string | null }[] | null }
+export const loadStockChecks = async (): Promise<Row[] | null> => {
+  if (me()?.role !== 'WarehouseManager') return null;
+  const list = await beGet<BeCount[]>('/inventory/stock-counts');
+  const full = await Promise.all(list.map((c) => beGet<BeCount>(`/inventory/stock-counts/${c.countId}`).catch(() => c)));
+  return full.map((c) => ({
+    id: c.countCode, beId: c.countId, month: `${c.countMonth.slice(5, 7)}/${c.countMonth.slice(0, 4)}`, at: dmyhm(c.countedAt), by: c.countedByName ?? '—',
+    status: 'DONE', note: c.note ?? '',
+    lines: (c.lines ?? []).map((l) => ({ itemId: l.itemCode, item: l.itemName, unit: l.unit, system: Number(l.systemQty) || 0, counted: Number(l.countedQty) || 0, reason: l.reason ?? '' })),
+  }));
+};
+
+interface BeTx { txCode: string; txType: string; itemCode: string; itemName: string; lotNo?: string | null; quantity: number; balanceAfter: number; refType?: string | null; refId?: number | null; performedByName?: string; performedAt: string; note?: string | null }
+const REF: Record<string, string> = { PROTOCOL: 'PD-', PURCHASE_ORDER: 'SHIP-', REQUISITION: 'RQ-', STOCK_COUNT: 'KK#' };
+export const loadStockTx = async (): Promise<Row[] | null> => {
+  if (me()?.role !== 'WarehouseManager') return null;
+  const page = await beGet<{ content: BeTx[] }>('/inventory/transactions', { page: 0, size: 500 });
+  return page.content.map((t) => ({
+    id: t.txCode, at: dmhm(t.performedAt), type: t.txType === 'DISPOSE' ? 'ISSUE' : t.txType, itemId: t.itemCode, item: t.itemName,
+    qty: t.txType === 'ISSUE' || t.txType === 'DISPOSE' ? -Math.abs(Number(t.quantity)) : Number(t.quantity), lot: t.lotNo ?? undefined,
+    ref: t.refType && t.refType !== 'OTHER' ? `${REF[t.refType] ?? t.refType + ' '}${t.refId ?? ''}` : undefined,
+    by: t.performedByName ?? '—', note: t.note ?? '', balance: Number(t.balanceAfter) || 0,
+  }));
+};
