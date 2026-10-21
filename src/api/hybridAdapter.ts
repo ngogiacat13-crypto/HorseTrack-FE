@@ -183,7 +183,21 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
   },
 
   async feedRequests() {
-    return [];
+    const rows = await orEmpty(data<Row[]>('/diet-requests'));
+    return rows.map((r) => ({
+      id: String(r.requestCode || 'FR-' + r.requestId),
+      beId: r.requestId,
+      horseId: String(r.horseId),
+      horse: r.horseName,
+      item: r.item ?? r.requestDetail,
+      reason: r.reason,
+      by: r.requestedByName,
+      at: r.requestedAt ? ddmmyyyy(r.requestedAt as string) : '—',
+      status: r.status,
+      vetNote: r.vetNote ?? undefined,
+      decidedBy: r.decidedByName ?? undefined,
+      decidedAt: r.decidedAt ? ddmmyyyy(r.decidedAt as string) : undefined,
+    }));
   },
 
   async vaccinations() {
@@ -469,6 +483,69 @@ const WRITES: Record<string, Partial<Record<'post' | 'patch' | 'put', Write>>> =
       return false;
     },
   },
+  feedRequests: {
+    async post(_id, body) {
+      const horses = await LOADERS.horses();
+      const h = horses.find((x) => x.id === body.horseId || x.name === body.horse);
+      const res = await be.post<ApiResponse<Row>>('/diet-requests', {
+        horseId: Number(h?.id ?? body.horseId),
+        item: body.item,
+        reason: body.reason,
+      });
+      invalidate('feedRequests');
+      const d = res.data.data;
+      return {
+        id: String(d.requestCode || 'FR-' + d.requestId),
+        beId: d.requestId,
+        horseId: String(d.horseId),
+        horse: d.horseName,
+        item: d.item ?? d.requestDetail,
+        reason: d.reason,
+        by: d.requestedByName,
+        at: d.requestedAt ? ddmmyyyy(d.requestedAt as string) : '—',
+        status: d.status,
+      };
+    },
+    async patch(id, body, current) {
+      const beId = current?.beId ?? id;
+      const isApproved = body.status === 'APPROVED';
+      await be.put(`/diet-requests/${beId}/decide`, {
+        approve: isApproved,
+        note: body.vetNote ?? (isApproved ? 'Duyệt thức ăn đặc biệt' : 'Từ chối thức ăn đặc biệt'),
+      });
+      invalidate('feedRequests', 'horses');
+      return true;
+    },
+  },
+  requisitions: {
+    async post(_id, body) {
+      const items = await LOADERS.inventory();
+      const found = items.find((i) => i.id === body.itemId);
+      let neededByIso: string | undefined = undefined;
+      if (body.neededBy && typeof body.neededBy === 'string' && body.neededBy.includes('/')) {
+        const [d, m, y] = body.neededBy.split('/');
+        neededByIso = `${y}-${m}-${d}`;
+      }
+      const res = await be.post<ApiResponse<Row>>('/supply-requests', {
+        itemId: Number(found?.beId ?? body.itemId),
+        quantity: Number(body.qty),
+        reason: body.reason,
+        neededBy: neededByIso,
+      });
+      invalidate('requisitions');
+      return res.data.data;
+    },
+    async patch(id, body, current) {
+      const beId = current?.beId ?? id;
+      if (current?.status === 'ISSUED') {
+        await be.put(`/supply-requests/${beId}/confirm-received`);
+      } else {
+        await be.put(`/supply-requests/${beId}/cancel`);
+      }
+      invalidate('requisitions');
+      return true;
+    },
+  },
   trainingSessions: {
     async patch(id, body) {
       if (body.confirmed === true) {
@@ -478,7 +555,13 @@ const WRITES: Record<string, Partial<Record<'post' | 'patch' | 'put', Write>>> =
       }
       if (body.status === 'COMPLETED') await be.put(`/training-sessions/${id}/execute`, { status: 'COMPLETED', notes: 'Hoàn thành phiên' });
       if (body.status === 'STOPPED') await be.put(`/training-sessions/${id}/execute`, { status: 'CANCELLED', notes: (body.decision as Row | undefined)?.note ?? 'Dừng phiên' });
-    },
+            if (body.evaluation) {
+          const ev = body.evaluation as { score: number; comment?: string };
+          await be.put(`/training-sessions/${id}/evaluate`, { score: Number(ev.score), comment: ev.comment ?? '' });
+          invalidate('trainingPlans', 'trainingSessions');
+          return true;
+        }
+},
   },
 };
 
