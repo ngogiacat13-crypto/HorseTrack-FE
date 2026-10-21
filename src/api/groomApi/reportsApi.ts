@@ -6,6 +6,7 @@ import type { Requisition, StockItem } from '../warehouseApi';
 import { get, me, min, nextId, now } from './shared';
 
 const PRESCRIPTION_ONLY = ['Thuốc', 'Vaccine'];
+export const CANCELLABLE: Requisition['status'][] = ['SUBMITTED', 'CHECKING_STOCK', 'WAITING_RESTOCK'];
 
 export const reportsApi = {
   async getReports(actor: Actor) {
@@ -60,6 +61,13 @@ export const reportsApi = {
     };
     const { data } = await http.post<Requisition>('/requisitions', r);
     await addAudit(actor, { action: 'CREATE_REQUISITION', label: 'Yêu cầu vật tư', object: `${data.id} · ${item.name}`, area: 'med', to: 'SUBMITTED', reason: `${input.qty} ${item.unit} — ${reason}` });
+    return data;
+  },
+
+  async cancelRequisition(r: Requisition, actor: Actor) {
+    if (!CANCELLABLE.includes(r.status)) throw new Error('Chỉ hủy được yêu cầu kho chưa xử lý xong.');
+    const { data } = await http.patch<Requisition>(`/requisitions/${r.id}`, { status: 'CLOSED', history: [{ at: now(), who: actor.name, text: 'hủy yêu cầu' }, ...r.history] });
+    await addAudit(actor, { action: 'CANCEL_REQUISITION', label: 'Hủy yêu cầu vật tư', object: `${r.id} · ${r.item}`, area: 'med', from: r.status, to: 'CLOSED' });
     return data;
   },
 

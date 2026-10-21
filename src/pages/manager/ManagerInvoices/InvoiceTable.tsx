@@ -10,9 +10,9 @@ const BADGE: Record<InvoiceStatus, [React.ComponentProps<typeof Badge>['tone'], 
   UNPAID: ['neutral', 'Chờ thanh toán'], PAID: ['success', 'Đã thanh toán'], ACTIVE: ['success', 'Đã kích hoạt lại'],
 };
 
-interface Props { invoices: Invoice[]; q: string; onSearch: (q: string) => void; onSuspend: (i: Invoice) => void; onReactivate: (i: Invoice) => void }
+interface Props { invoices: Invoice[]; q: string; onSearch: (q: string) => void; onSuspend: (i: Invoice) => void; onReactivate: (i: Invoice) => void; onCancel?: (i: Invoice) => void }
 
-export const InvoiceTable: React.FC<Props> = ({ invoices, q, onSearch, onSuspend, onReactivate }) => {
+export const InvoiceTable: React.FC<Props> = ({ invoices, q, onSearch, onSuspend, onReactivate, onCancel }) => {
   const toast = useToast();
   const actor = useActor();
   const remind = async (i: Invoice) => { await managerApi.sendReminder(i, actor); toast(`Đã gửi nhắc thanh toán ${i.id} cho ${i.owner}.`); };
@@ -22,6 +22,7 @@ export const InvoiceTable: React.FC<Props> = ({ invoices, q, onSearch, onSuspend
       {i.status === 'OVERDUE' && i.overdueDays < SUSPEND_AT && <button type="button" className="ht-btn ht-btn--ghost ht-btn--sm" onClick={() => remind(i)}>Gửi nhắc</button>}
       {i.status === 'SUSPENDED' && <button type="button" className="ht-btn ht-btn--secondary ht-btn--sm" disabled title="Chưa tất toán nợ, phí phạt và phí kích hoạt (BR_14)">Kích hoạt lại</button>}
       {i.status === 'REACTIVATION_PENDING' && <button type="button" className="ht-btn ht-btn--primary ht-btn--sm" onClick={() => onReactivate(i)}>Kích hoạt lại</button>}
+      {onCancel && (i.status === 'UNPAID' || i.status === 'OVERDUE') && <button type="button" className="ht-btn ht-btn--ghost ht-btn--sm" data-testid="cancel-invoice-btn" onClick={() => onCancel(i)}>Hủy</button>}
     </div>
   );
 

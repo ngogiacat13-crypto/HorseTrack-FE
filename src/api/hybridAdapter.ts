@@ -106,6 +106,7 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
   },
 
   async trainingPlans() {
+    if (me()?.role === 'HorseOwner') return (await ownerProgress()).map(({ plan }) => plan);
     const [page, horses] = await Promise.all([data<{ content: BePlan[] }>('/training-plans', { page: 0, size: 500 }).catch(() => ({ content: [] })), LOADERS.horses()]);
     return page.content.map((p) => {
       const weeks = Math.max(1, Math.round((new Date(p.endDate).getTime() - new Date(p.startDate).getTime()) / (7 * 864e5)));
@@ -120,6 +121,7 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
 
   async trainingSessions() {
     const u = me();
+    if (u?.role === 'HorseOwner') return (await ownerProgress()).flatMap(({ sessions }) => sessions);
     if (!u || !['HeadTrainer', 'Groom'].includes(u.role)) return [];
     if (u.role === 'HeadTrainer') {
       const plans = await LOADERS.trainingPlans();
@@ -281,6 +283,25 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
   async stockTx() {
     return (await loadStockTx()) ?? ((await mockGet('/stockTx')) as Row[]);
   },
+};
+interface BeOwnerProgress { planId: number; planName: string; startDate: string; endDate: string; status: string; progress?: number | null; sessions?: { sessionId: number; sessionDate: string; activityType: string; status: string; notes?: string | null; assignedToName?: string | null }[] | null }
+const ownerProgress = async () => {
+  const horses = await LOADERS.horses();
+  const rows = await Promise.all(horses.map(async (h) => ({ h, p: await data<BeOwnerProgress | null>(`/owner/training/horses/${h.id}/progress`).catch(() => null) })));
+  return rows.filter((r): r is { h: Row; p: BeOwnerProgress } => !!r.p?.planId).map(({ h, p }) => {
+    const weeks = Math.max(1, Math.round((new Date(p.endDate).getTime() - new Date(p.startDate).getTime()) / (7 * 864e5)));
+    const plan: Row = {
+      id: String(p.planId), horseId: h.id, horseName: h.name, name: p.planName, type: 'Thể lực', goal: '', startDate: ddmmyyyy(p.startDate), createdBy: '—',
+      phases: [{ no: 1, name: 'Toàn giáo án', weeks, intensity: 'Vừa', distanceM: 1200, sessionsPerWeek: 3, hrLimit: 180 }],
+      currentPhase: 1, week: Math.max(1, Math.round(((p.progress ?? 0) * weeks) / 100)), status: PLAN_STATUS[(p.status ?? '').toUpperCase()] ?? 'PAUSED',
+    };
+    const sessions: Row[] = (p.sessions ?? []).map((x) => ({
+      id: String(x.sessionId), horseId: h.id, horseName: h.name, planId: String(p.planId), phaseNo: 1, label: x.activityType,
+      date: ddmmyyyy(x.sessionDate), time: hhmm(x.sessionDate), groom: x.assignedToName ?? '—', track: (x.notes ?? '').split(' · Ghi nhận:')[0] || '—',
+      status: SESSION[x.status?.toUpperCase()] ?? 'SCHEDULED', confirmed: x.status?.toUpperCase() === 'CONFIRMED', thresholds: { hr: 180, speed: 60 }, readings: [], decision: null, evaluation: null,
+    }));
+    return { plan, sessions };
+  });
 };
 const isApproved = (h: BeHorse) => (h.approvalStatus ? h.approvalStatus === 'APPROVED' : h.stallId != null);
 const REG_CHECKS: [string, string][] = [['identity', 'Danh tính chủ ngựa'], ['health', 'Giấy chứng nhận sức khỏe còn hiệu lực'], ['ownership', 'Giấy tờ sở hữu hợp lệ']];
