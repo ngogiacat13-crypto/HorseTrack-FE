@@ -4,6 +4,7 @@ import { useActor } from '../../../auth/AuthContext';
 import { useAction } from '../../../hooks/useAction';
 import { Callout, Dialog, ReasonField } from '../../../components/ui/Ht';
 import { ROLE_LABEL } from '../../../components/layout/nav';
+import { TrainerHorsesDialog } from './TrainerHorsesDialog';
 
 const useReason = () => {
   const [reason, setReason] = useState('');
@@ -13,31 +14,31 @@ const useReason = () => {
   return { reason, err, check, onChange };
 };
 
-export const AssignmentDialog: React.FC<{ user: ManagedUser; data: { grooms: GroomAssignment[]; stalls: AssignedStall[]; horses: AssignedHorse[] }; onClose: () => void; onDone: () => void }> = ({ user, data, onClose, onDone }) => {
+export const AssignmentDialog: React.FC<{ user: ManagedUser; data: { grooms: GroomAssignment[]; stalls: AssignedStall[]; horses: AssignedHorse[] }; onClose: () => void; onDone: () => void }> = ({ user, data, onClose, onDone }) => (
+  user.role === 'HeadTrainer'
+    ? <TrainerHorsesDialog user={user} stalls={data.stalls} horses={data.horses} onClose={onClose} onDone={onDone} />
+    : <GroomZoneDialog user={user} data={data} onClose={onClose} onDone={onDone} />
+);
+
+const GroomZoneDialog: React.FC<{ user: ManagedUser; data: { grooms: GroomAssignment[]; stalls: AssignedStall[]; horses: AssignedHorse[] }; onClose: () => void; onDone: () => void }> = ({ user, data, onClose, onDone }) => {
   const actor = useActor();
   const { busy, error, run } = useAction();
   const current = data.grooms.find((g) => g.id === user.id || g.name === user.fullName);
-  const trainerZones = [...new Set(data.horses.filter((h) => h.trainerId === user.id).map((h) => data.stalls.find((s) => s.horseId === h.id)?.zone).filter((z): z is string => !!z))];
-  const currentZone = current?.zones[0] ?? trainerZones[0] ?? '';
-  const occupied = new Set(data.grooms
-    .filter((g) => g.id !== user.id && g.role === user.role)
-    .flatMap((g) => g.zones));
+  const currentZone = current?.zones[0] ?? '';
+  const occupied = new Set(data.grooms.filter((g) => g.id !== user.id && g.role === 'Groom').flatMap((g) => g.zones));
   const [zone, setZone] = useState(currentZone);
   const save = async () => {
-    const ok = user.role === 'HeadTrainer'
-      ? await run(() => managerApi.assignTrainer(user, zone ? [zone] : [], actor), `Đã cập nhật khu cho ${user.fullName}: ${zone}.`)
-      : await run(() => managerApi.assignGroom(user, zone ? [zone] : [], actor), `Đã cập nhật khu cho ${user.fullName}: ${zone}.`);
-    if (ok) onDone();
+    if (await run(() => managerApi.assignGroom(user, zone ? [zone] : [], actor), `Đã cập nhật khu cho ${user.fullName}: ${zone}.`)) onDone();
   };
   return (
-    <Dialog open onClose={onClose} icon="stable" tone="brand" width={700} busy={busy} busyLabel="Đang lưu…" title={`Phân công ${user.role === 'HeadTrainer' ? 'huấn luyện' : 'chăm sóc'} · ${user.fullName}`} sub={user.role === 'HeadTrainer' ? 'Chọn những ngựa HLV trưởng phụ trách huấn luyện.' : 'Chọn khu làm việc và những ngựa người chăm được phụ trách trong các khu đó.'} confirmLabel="Lưu phân công" onConfirm={save}>
+    <Dialog open onClose={onClose} icon="stable" tone="brand" width={700} busy={busy} busyLabel="Đang lưu…" testId="groom-zone-dialog" title={`Phân công chăm sóc · ${user.fullName}`} sub="Chọn một khu làm việc; người chăm phụ trách mọi chuồng trong khu đó." confirmLabel="Lưu phân công" onConfirm={save}>
       {error && <Callout tone="danger" style={{ marginBottom: 14 }}>{error}</Callout>}
-      <div className="ht-label" style={{ marginBottom: 8 }}>{user.role === 'HeadTrainer' ? 'Khu phụ trách' : 'Khu chăm sóc'}</div>
+      <div className="ht-label" style={{ marginBottom: 8 }}>Khu chăm sóc</div>
       <div className="ht-roles">{['Khu A', 'Khu B', 'Khu C'].map((z) => {
         const disabled = occupied.has(z) && z !== currentZone;
-        return <label key={z} className="ht-role" style={disabled ? { opacity: 0.5 } : undefined}><input type="radio" name={`zone-${user.id}`} checked={zone === z} disabled={disabled} onChange={() => setZone(z)} />{z}{disabled && <small className="sub"> · đã có {user.role === 'HeadTrainer' ? 'HLV' : 'Groom'}</small>}</label>;
+        return <label key={z} className="ht-role" style={disabled ? { opacity: 0.5 } : undefined}><input type="radio" name={`zone-${user.id}`} data-testid={`groom-zone-${z}`} checked={zone === z} disabled={disabled} onChange={() => setZone(z)} />{z}{disabled && <small className="sub"> · đã có người chăm</small>}</label>;
       })}</div>
-      <Callout tone="info" style={{ marginTop: 16 }}>Ngựa đã được duyệt trong khu sẽ tự động do HLV của khu đó phụ trách. Groom sẽ tự động phụ trách các chuồng trong khu đó.</Callout>
+      <Callout tone="info" style={{ marginTop: 16 }}>Mỗi người chăm phụ trách đúng một khu và mọi chuồng trong khu đó; mỗi khu chỉ có một người chăm.</Callout>
     </Dialog>
   );
 };

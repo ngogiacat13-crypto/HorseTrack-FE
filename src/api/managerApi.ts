@@ -60,7 +60,7 @@ export interface StaffInput {
 }
 export const BE_STAFF_ROLE: Partial<Record<StaffRole, string>> = { HeadTrainer: 'Trainer', Veterinarian: 'Veterinarian', Groom: 'Groom', WarehouseManager: 'Warehouse Manager' };
 export interface AssignedStall { id: string; zone: string; horseId: string | null; horse: string | null; status: string; groom: string }
-export interface AssignedHorse { id: string; name: string; owner: string; stall: string; health: string; trainerId?: string }
+export interface AssignedHorse { id: string; name: string; owner: string; stall: string; health: string; trainerId?: string; trainerName?: string | null }
 export interface RoleCheck { level: 'pass' | 'warn' | 'fail'; text: string }
 
 export type AuditArea = 'reg' | 'med' | 'train' | 'fin' | 'acct';
@@ -110,17 +110,6 @@ const loadOverdueTasks = async () => {
     title: `${task.title || task.taskType}${task.horseName ? ` — ${task.horseName}` : ''}`,
     groom: task.groomName ?? '—', due: task.scheduledTime?.slice(0, 5) ?? '—', late: lateBy(task),
   })) ?? null;
-};
-
-const assignZoneHorses = async (username: string, zone: string) => {
-  const staff = await beData<{ userId: number; username: string }[]>(be.get('/users/all'));
-  const trainer = staff.find((u) => u.username.toLowerCase() === username.toLowerCase());
-  if (!trainer) return 'Không tìm thấy HLV vừa tạo để phân công ngựa.';
-  const [{ data: stalls }, { data: horses }] = await Promise.all([http.get<AssignedStall[]>('/stalls'), http.get<AssignedHorse[]>('/horses')]);
-  const inZone = horses.filter((h) => stalls.some((s) => s.horseId === h.id && s.zone === zone));
-  for (const h of inZone) await be.put(`/horses/${h.id}/assign-trainer`, { trainerId: trainer.userId });
-  invalidate('horses');
-  return `Đã giao ${inZone.length} ngựa ${zone} cho HLV.`;
 };
 
 export const managerApi = {
@@ -283,10 +272,6 @@ export const managerApi = {
       emailNote = data.message;
       id = `be-${v.username}`;
       invalidate('users', 'auditLogs');
-      if (v.role === 'HeadTrainer' && v.specialization?.trim()) {
-        const handed = await assignZoneHorses(v.username, v.specialization.trim()).catch((e: Error) => `Chưa phân công được ngựa ${v.specialization}: ${e.message}`);
-        emailNote = [emailNote, handed].filter(Boolean).join(' · ');
-      }
     } else {
       const users = await get<UserRecord[]>('/users');
       if (users.some((u) => u.username.toLowerCase() === v.username.toLowerCase())) throw new Error('Tên đăng nhập đã tồn tại.');
@@ -306,16 +291,13 @@ export const managerApi = {
     const [grooms, users, stalls, allHorses] = await Promise.all([
       get<GroomAssignment[]>('/grooms'), get<UserRecord[]>('/users'), get<AssignedStall[]>('/stalls'), get<AssignedHorse[]>('/horses'),
     ]);
-    const horses = allHorses.filter((h) => h.stall && h.stall !== '—' && h.stall !== 'Chưa cấp chuồng');
+    const horses = allHorses.filter((h) => h.stall && h.stall !== '—' && h.stall !== 'Chưa cấp chuồng')
+      .map((h) => ({ ...h, trainerName: h.trainerName ?? users.find((u) => u.id === h.trainerId)?.fullname ?? null }));
     const zonesOfTrainer = (id: string) => [...new Set(horses.filter((h) => h.trainerId === id).map((h) => stalls.find((s) => s.horseId === h.id)?.zone).filter((z): z is string => !!z))];
     const staffZones = users
       .filter((u) => u.role === 'HeadTrainer' || u.role === 'Groom')
-      .map((u) => ({
-        id: u.id,
-        name: u.fullname,
-        role: u.role,
-        zones: USE_BACKEND && u.role === 'HeadTrainer' ? zonesOfTrainer(u.id) : u.zones ?? [],
-      }));
+      .map((u) => ({ id: u.id, name: u.fullname, role: u.role, zones: u.role === 'HeadTrainer' ? zonesOfTrainer(u.id) : u.zones ?? [] }));
+    if (USE_BACKEND) return { grooms: staffZones, stalls, horses };
     const allAssignments = [
       ...grooms.map((g) => ({ ...g, role: g.role ?? 'Groom' as const })),
       ...staffZones.filter((s) => !grooms.some((g) => g.id === s.id)),
@@ -345,27 +327,24 @@ export const managerApi = {
     return { zones };
   },
 
-  async assignTrainer(user: ManagedUser, zones: string[], actor: Actor) {
+  async assignTrainer(user: ManagedUser, horseIds: string[], actor: Actor) {
     if (user.role !== 'HeadTrainer') throw new Error('Chỉ có thể phân công cho HLV trưởng.');
-    if (zones.length !== 1) throw new Error('Chọn đúng một khu chuồng.');
     const assignments = await managerApi.getGroomAssignments();
-    const selected = new Set(assignments.horses.filter((h) => zones.includes(assignments.stalls.find((s) => s.horseId === h.id)?.zone ?? '')).map((h) => h.id));
-    const target = assignments.grooms.find((g) => g.id === user.id || g.name === user.fullName);
+    const selected = new Set(horseIds);
+    const dropped = assignments.horses.filter((h) => h.trainerId === user.id && !selected.has(h.id));
+    const added = assignments.horses.filter((h) => selected.has(h.id) && h.trainerId !== user.id);
     if (USE_BACKEND) {
-      for (const h of assignments.horses.filter((x) => selected.has(x.id) && x.trainerId !== user.id)) {
-        await be.put(`/horses/${h.id}/assign-trainer`, { trainerId: Number(user.id) });
-      }
+      if (dropped.length) throw new Error(`Backend chưa hỗ trợ bỏ phân công. Hãy phân công HLV khác cho: ${dropped.map((h) => h.name).join(', ')}.`);
+      for (const h of added) await be.put(`/horses/${h.id}/assign-trainer`, { trainerId: Number(user.id) });
       invalidate('horses', 'auditLogs');
-      return { zones };
+      return { horseIds };
     }
-    await Promise.all(assignments.horses.map((h) => {
-      if (selected.has(h.id)) return http.patch(`/horses/${h.id}`, { trainerId: user.id });
-      if (h.trainerId === user.id) return http.patch(`/horses/${h.id}`, { trainerId: '' });
-      return Promise.resolve();
-    }));
-    await http.patch(`/users/${user.id}`, { zones });
-    await addAudit(actor, { action: 'ASSIGN_TRAINER_SCOPE', label: 'Phân công khu cho HLV trưởng', object: user.fullName, area: 'acct', from: target?.zones.join(', ') ?? '—', to: zones.join(', '), reason: 'Cập nhật khu phụ trách huấn luyện' });
-    return { zones };
+    await Promise.all([
+      ...added.map((h) => http.patch(`/horses/${h.id}`, { trainerId: user.id })),
+      ...dropped.map((h) => http.patch(`/horses/${h.id}`, { trainerId: '' })),
+    ]);
+    await addAudit(actor, { action: 'ASSIGN_TRAINER_HORSES', label: 'Phân công ngựa cho HLV trưởng', object: user.fullName, area: 'acct', from: `${assignments.horses.filter((h) => h.trainerId === user.id).length} ngựa`, to: `${horseIds.length} ngựa`, reason: 'Cập nhật ngựa phụ trách huấn luyện' });
+    return { horseIds };
   },
 
   checkRoleChange(user: ManagedUser, to: UserRole): RoleCheck[] {

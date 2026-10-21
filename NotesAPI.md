@@ -482,3 +482,20 @@ Backend không có commit mới. Commit FE `f6f334d` đổi "Phân công" sang c
 | Danh sách nhân viên trong hộp phân công | `GET /users/all` | Bỏ danh sách Mã phu mẫu (db.json) khi chạy backend, chỉ dùng nhân viên thật |
 
 Cần nhóm backend: API đổi khu cho Mã phu (vd `PUT /users/{id}/zone`), và cột khu cho Trainer nếu muốn lưu khu HLV riêng.
+
+---
+
+## 18. HLV phụ trách ngựa ở nhiều khu (21/10/2026)
+
+Quyết định: **không phân khu cho HLV**. Quản lý CLB chọn **từng con ngựa** cho HLV, ở khu nào cũng được (vd HLV ToanNgo: 2 ngựa khu A, 1 khu B, 1 khu C). Mã phu vẫn phân theo khu.
+
+| Chỗ thay đổi | Trước | Sau |
+|---|---|---|
+| QL CLB → Người dùng → "Phân công" (HLV) | Chọn khu → giao mọi ngựa trong khu | Hộp `TrainerHorsesDialog`: danh sách ngựa đã duyệt nhóm theo khu, tick từng con; hiện "Đang do HLV khác phụ trách" (sẽ được bàn giao kèm giáo án) và tổng "Khu A 2 · Khu B 1 · Khu C 1" |
+| Tạo tài khoản HLV | Bắt buộc chọn khu (backend lại bỏ qua) | Không còn ô khu; chỉ Mã phu chọn khu |
+| API | `PUT /horses/{id}/assign-trainer` theo khu | `PUT /horses/{id}/assign-trainer` cho đúng các ngựa được tick |
+
+Bỏ tick một ngựa đang do HLV này phụ trách: backend chưa có API bỏ phân công → FE báo "Hãy phân công HLV khác cho …".
+Kịch bản tự kiểm: `scenarios/trainer-horses.spec.ts`.
+
+> **Gộp với commit nhóm `cb690b8` "phân khu" / `2aa1c1d` (17:02–17:05):** commit này bắt HLV và Mã phu chọn **đúng 1 khu**, mỗi khu 1 người. Đã gộp theo quyết định mới: **HLV chọn từng ngựa ở nhiều khu** (mục 18), **Mã phu giữ quy tắc 1 khu / 1 người** của nhóm (khu đã có người chăm bị khóa). Nút trên bảng người dùng: "Phân công ngựa" (HLV) · "Phân khu" (Mã phu). Kịch bản: `scenarios/trainer-horses.spec.ts`, `scenarios/groom-zone.spec.ts`.

@@ -52,7 +52,7 @@ export const UserTable: React.FC<{ users: ManagedUser[]; meId?: string; onAction
                     {u.status === 'ACTIVE'
                       ? <button type="button" className="ht-btn ht-btn--secondary ht-btn--sm" onClick={() => onAction('lock', u)}><Icon name="lock" />Khóa</button>
                       : <button type="button" className="ht-btn ht-btn--secondary ht-btn--sm" onClick={() => onAction('unlock', u)}><Icon name="unlock" />Mở khóa</button>}
-                    {(u.role === 'Groom' || u.role === 'HeadTrainer') && u.status === 'ACTIVE' && <button type="button" className="ht-btn ht-btn--ghost ht-btn--sm" onClick={() => onAction('assign', u)}><Icon name="stable" />Phân khu</button>}
+                    {(u.role === 'Groom' || u.role === 'HeadTrainer') && u.status === 'ACTIVE' && <button type="button" className="ht-btn ht-btn--ghost ht-btn--sm" data-testid={`assign-${u.username}`} onClick={() => onAction('assign', u)}><Icon name="stable" />{u.role === 'HeadTrainer' ? 'Phân công ngựa' : 'Phân khu'}</button>}
                   </>}
                 </div>
               </td>
