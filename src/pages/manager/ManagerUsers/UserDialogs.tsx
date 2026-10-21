@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { AssignedHorse, AssignedStall, GroomAssignment, ManagedUser, managerApi } from '../../../api/managerApi';
 import { useActor } from '../../../auth/AuthContext';
 import { useAction } from '../../../hooks/useAction';
-import { Icon } from '../../../components/ui/Icon';
 import { Callout, Dialog, ReasonField } from '../../../components/ui/Ht';
 import { ROLE_LABEL } from '../../../components/layout/nav';
 

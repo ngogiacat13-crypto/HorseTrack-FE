@@ -59,6 +59,7 @@ export const loadInventory = async (): Promise<Row[] | null> => {
   const role = me()?.role;
   if (role === 'WarehouseManager') return (await beGet<BeItem[]>('/inventory/items')).map(mapItem);
   if (role === 'Veterinarian' || role === 'ClubManager') return (await beGet<BeMedicine[]>('/medical-management/medications')).map(mapMedicine);
+  if (role === 'Groom') return (await beGet<BeItem[]>('/supply-requests/items').catch(() => null))?.map(mapItem) ?? null;
   return null;
 };
 
@@ -212,6 +213,7 @@ const AREA: Record<string, string> = {
 const ACTION_LABEL: Record<string, string> = {
   LOGIN: 'Đăng nhập', LOGOUT: 'Đăng xuất', LOCK_ACCOUNT: 'Khóa tài khoản', UNLOCK_ACCOUNT: 'Mở khóa tài khoản', CHANGE_ROLE: 'Đổi vai trò',
   CREATE: 'Tạo mới', UPDATE: 'Cập nhật', DELETE: 'Xóa', CREATE_STAFF: 'Tạo tài khoản nhân viên',
+  APPROVE_HORSE: 'Phê duyệt hồ sơ ngựa', REJECT_HORSE: 'Từ chối hồ sơ ngựa', VET_LOCK: 'Khóa huấn luyện', VET_UNLOCK: 'Mở khóa huấn luyện',
 };
 export const loadAuditLogs = async (): Promise<Row[] | null> => {
   if (me()?.role !== 'ClubManager') return null;

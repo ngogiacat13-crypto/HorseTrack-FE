@@ -17,7 +17,7 @@ export const ApproveDialog: React.FC<{ reg: Registration; checks: Check[]; onClo
   const [stallId, setStallId] = useState('');
   useEffect(() => {
     if (!USE_BACKEND) return;
-    http.get<FreeStall[]>('/stalls').then(({ data }) => setStalls(data.filter((s) => !s.horseId && s.status !== 'MAINTENANCE' && s.beId)));
+    http.get<FreeStall[]>('/stalls').then(({ data }) => setStalls(data.filter((s) => !s.horseId && s.status === 'CLEAN' && s.beId)));
   }, []);
   const confirm = async () => {
     const stall = stalls.find((s) => String(s.beId) === stallId);
@@ -34,7 +34,7 @@ export const ApproveDialog: React.FC<{ reg: Registration; checks: Check[]; onClo
         <div style={{ marginBottom: 14 }}>
           <label className="ht-label" htmlFor="ap-stall" style={{ display: 'block', marginBottom: 6 }}>Cấp chuồng<span className="ht-req">*</span></label>
           <select id="ap-stall" data-testid="approve-stall-select" className="ht-select" style={{ width: '100%' }} value={stallId} onChange={(e) => setStallId(e.target.value)}>
-            <option value="">{stalls.length ? 'Chọn chuồng trống…' : 'Không còn chuồng trống'}</option>
+            <option value="">{stalls.length ? 'Chọn chuồng trống đã vệ sinh…' : 'Không còn chuồng trống đã vệ sinh (CLEAN)'}</option>
             {stalls.map((s) => <option key={s.beId} value={s.beId}>{s.id} · {s.zone}</option>)}
           </select>
         </div>

@@ -5,6 +5,8 @@ import type { Severity, VetCase } from '../vetApi';
 import type { Requisition, StockItem } from '../warehouseApi';
 import { get, me, min, nextId, now } from './shared';
 
+const PRESCRIPTION_ONLY = ['Thuốc', 'Vaccine'];
+
 export const reportsApi = {
   async getReports(actor: Actor) {
     const g = await me(actor);
@@ -42,7 +44,7 @@ export const reportsApi = {
   async getRequisitions(actor: Actor) {
     const g = await me(actor);
     const [reqs, items] = await Promise.all([get<Requisition[]>('/requisitions'), get<StockItem[]>('/inventory')]);
-    return { groom: g, requisitions: reqs.filter((r) => r.by === g.name).sort((a, b) => b.id.localeCompare(a.id)), items: items.filter((i) => i.category === 'Vật tư chuồng trại' || i.category === 'Thức ăn' || i.category === 'Vật tư y tế') };
+    return { groom: g, requisitions: reqs.filter((r) => r.by === g.name).sort((a, b) => b.id.localeCompare(a.id)), items: items.filter((i) => !PRESCRIPTION_ONLY.includes(i.category)) };
   },
 
   async createRequisition(input: { itemId: string; qty: number; reason: string; neededBy: string }, actor: Actor) {

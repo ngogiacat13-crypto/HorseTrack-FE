@@ -343,3 +343,53 @@ Bộ `scenarios-live/` (Playwright) **chỉ đọc**, không ghi gì vào DB chu
 | Chủ ngựa | — | — | Chưa có tài khoản chủ ngựa trong `.env.backend` → chưa thử |
 
 **Chưa kiểm tra:** các thao tác **ghi** (tạo/duyệt/khóa/cấp phát…) vì sẽ thay đổi DB chung của nhóm.
+
+---
+
+## 12. Backend commit `04b86e9` (nhánh `test`, 21/10/2026 12:55)
+
+⚠️ **DB đã bị reset** (`DATABASE_reset_all_data.sql` trong commit này): còn `admin` / mật khẩu mặc định trong script (Quản lý CLB), 3 chủ ngựa nhóm mới tạo, **0 chuồng**. Các tài khoản `manager_admin`, `test_*` cũ đã mất (`.env.backend` đã ghi chú).
+
+### Đã nối
+| Màn hình | API | |
+|---|---|---|
+| Hàng chờ / chi tiết hồ sơ ngựa: trạng thái thật `PENDING / APPROVED / REJECTED`, mã `HT-xxxx`, màu lông, chiều cao, hộ chiếu, giấy sức khỏe | `GET /horses`, `GET /horses/my-horses/{ownerId}` | ✅ đọc (REG-0004 "flash") |
+| Lịch sử hồ sơ (mỗi lần nộp / duyệt / từ chối) + checklist 3 mục đã lưu | `GET /horses/{id}/registrations` | ✅ đọc (ngựa hiện có chưa có lần nộp nào trong bảng mới → trả rỗng, FE hiện "gửi hồ sơ") |
+| Chủ ngựa gửi hồ sơ: gửi thêm `color`, `heightHands`, `passportNo`, `healthCertIssuer`, `healthCertExpiry` (không nhét vào `pedigree` nữa) | `POST /horses/register` | ☑️ |
+| Phê duyệt: gửi kèm checklist (`IDENTITY/HEALTH/OWNERSHIP`) + ghi chú | `PUT /horses/{id}/approve` `{stallId, checks, note}` | ☑️ (DB chưa có chuồng nào) |
+| Từ chối (lý do ≥ 10 ký tự, cho/không cho nộp lại) | `PUT /horses/{id}/reject` `{reason, allowResubmit, checks}` | ☑️ |
+| Chủ ngựa sửa và nộp lại | `PUT /horses/{id}/resubmit` | ☑️ |
+| Mã phu báo sự cố → ca mới cho Bác sĩ | `POST /medical/cases` `{horseId, caseType, severity, description}` | ☑️ (cần ngựa ở trong khu của Mã phu) |
+| Mã phu xem lại sự cố đã báo (hết lỗi 403) | `GET /medical/cases` | ☑️ |
+| Bác sĩ ghi nhận khám (bỏ tham số `vetId`) · đóng ca | `POST /medical/cases/action` · `PUT /medical/cases/{caseId}/close` `{outcome}` | ☑️ |
+| Mã phu chọn vật tư thật khi gửi yêu cầu | `GET /supply-requests/items` | ☑️ |
+
+### Sửa thêm
+- Trang **Theo dõi y tế** (Quản lý CLB) bị sập khi DB không có phác đồ nào → giờ hiện "Chưa có phác đồ điều trị nào" (bộ `scenarios:live` phát hiện).
+
+### Cần nhóm backend / DB
+- Không có API tạo chuồng (`/stalls` chỉ đọc) → cần chèn chuồng vào DB bằng SQL, nếu không thì không duyệt được hồ sơ nào và Mã phu không có khu/ngựa.
+- Cần tạo lại tài khoản nhân viên để thử (Bác sĩ, HLV, Mã phu có khu, Quản lý kho).
+
+---
+
+## 13. Backend commit `9745ab6` + FE commit của nhóm (21/10/2026 13:38–13:47)
+
+**Backend đang chạy ở cổng 8080 CHƯA có `9745ab6`** (`GET /care-tasks/overdue` trả 500 "No static resource"). Cần pull nhánh `test` và chạy lại backend.
+
+DB hiện có: 15 chuồng `A-01…C-05` (đều CLEAN, trống), 3 Mã phu (Khu A/B/C), 3 Quản lý kho, 3 chủ ngựa, `admin`. Chưa có Bác sĩ, HLV.
+
+### Đã nối thêm
+| Màn hình | API / thay đổi backend | |
+|---|---|---|
+| Bảng điều khiển QL CLB: "Công việc trễ SLA" + số việc trễ (thay dữ liệu mẫu) | `GET /care-tasks/overdue` | ☑️ (chờ chạy lại backend; chưa có thì giữ dữ liệu mẫu) |
+| Việc hôm nay của Mã phu: ngày/giờ đúng (`taskDate` + `scheduledTime`), hạn SLA = giờ hẹn + 45 phút, tên việc, chuồng, hướng dẫn, cảnh báo trễ (`warningNote`) | `GET /care-tasks/my-tasks` | ☑️ — **sửa lỗi cũ**: FE đọc trường `dueDate` không tồn tại nên ngày/giờ luôn là "—" |
+| Duyệt hồ sơ: ô chọn chuồng chỉ hiện chuồng trống **CLEAN** (backend chặn chuồng chưa vệ sinh) | `PUT /horses/{id}/approve` | ☑️ |
+| Nhật ký hệ thống: nhãn tiếng Việt cho `APPROVE_HORSE`, `REJECT_HORSE`, `VET_LOCK`, `VET_UNLOCK` | `GET /audit-logs/paged` | ✅ |
+| Giáo án `PAUSED` (ngựa bị khóa tập) | đã hiển thị "Tạm dừng" từ trước | ✅ |
+
+Backend tự chặn thêm (FE hiện nguyên thông báo lỗi): Mã phu bị phân 2 buổi tập trùng giờ (60 phút), hoàn thành buổi tập của ngựa đang bị khóa, số điện thoại trùng khi tạo tài khoản.
+
+### FE của nhóm (`4191b17` bỏ "Đổi vai trò", `b3de28e` "Phân công cho HLV")
+- ⚠️ **Phân công ngựa cho HLV** chỉ lưu tạm trên trình duyệt khi chạy backend (`PATCH /horses/{id}` `trainerId` không có API backend tương ứng) → tải lại trang là mất. Backend hiện cho mọi HLV thấy mọi ngựa. Cần nhóm backend thêm API phân công nếu muốn giữ chức năng này.
+- Đã xóa import `Icon` thừa trong `UserDialogs.tsx` (cảnh báo lint sau khi bỏ "Đổi vai trò").

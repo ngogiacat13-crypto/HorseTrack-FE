@@ -13,6 +13,7 @@ export const LIVE_HOME: Record<LiveRole, string> = {
 };
 
 const USERNAME_ROLE: Record<string, LiveRole> = {
+  admin: 'ClubManager',
   manager_admin: 'ClubManager',
   test_hlv: 'HeadTrainer',
   test_bacsi: 'Veterinarian',

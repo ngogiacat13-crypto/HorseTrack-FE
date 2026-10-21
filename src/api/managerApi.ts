@@ -95,23 +95,41 @@ const beUserAction = async (url: string, body: Record<string, string>): Promise<
 };
 const toManaged = ({ password: _pw, fullname, ...u }: UserRecord): ManagedUser => ({ ...u, fullName: fullname });
 
+interface BeOverdueTask { taskCode?: string | null; title?: string | null; taskType: string; horseName?: string | null; groomName?: string | null; taskDate?: string | null; scheduledTime?: string | null }
+const lateBy = (task: BeOverdueTask) => {
+  if (!task.taskDate || !task.scheduledTime) return '—';
+  const minutes = Math.max(0, Math.round((Date.now() - new Date(`${task.taskDate}T${task.scheduledTime}`).getTime()) / 60000));
+  return minutes >= 60 ? `+${Math.floor(minutes / 60)} giờ ${String(minutes % 60).padStart(2, '0')}` : `+${minutes} phút`;
+};
+const loadOverdueTasks = async () => {
+  if (!USE_BACKEND) return null;
+  const rows = await beData<BeOverdueTask[]>(be.get('/care-tasks/overdue')).catch(() => null);
+  return rows?.map((task) => ({
+    title: `${task.title || task.taskType}${task.horseName ? ` — ${task.horseName}` : ''}`,
+    groom: task.groomName ?? '—', due: task.scheduledTime?.slice(0, 5) ?? '—', late: lateBy(task),
+  })) ?? null;
+};
+
 export const managerApi = {
   async getDashboard() {
-    const [dash, regs, protocols, invoices, shipments, logs] = await Promise.all([
+    const [dash, regs, protocols, invoices, shipments, logs, overdueTasks] = await Promise.all([
       get<any>('/dashboard'),
       get<Registration[]>('/registrations'),
       get<ProtocolWatch[]>('/protocols'),
       get<Invoice[]>('/invoices'),
       get<Shipment[]>('/shipments'),
       get<AuditLog[]>('/auditLogs', { _sort: 'id', _order: 'desc', _limit: 10 }),
+      loadOverdueTasks(),
     ]);
     const pending = regs.filter((r) => r.status === 'Pending');
     const delayed = shipments.filter((s) => s.status === 'DELAYED');
     const AREA_TONE: Record<AuditArea, 'danger' | 'warning' | 'success' | 'info'> = { train: 'danger', med: 'warning', reg: 'success', fin: 'info', acct: 'info' };
     return {
       ...dash,
+      ...(overdueTasks ? { lateTasks: overdueTasks.slice(0, 4), moreLateTasks: Math.max(0, overdueTasks.length - 4) } : {}),
       kpi: {
         ...dash.kpi,
+        ...(overdueTasks ? { lateTasks: overdueTasks.length, lateTasksToday: overdueTasks.length } : {}),
         pendingRegs: pending.length,
         oldestPendingDays: Math.max(0, ...pending.map((r) => r.waitingDays)),
         medicalWatch: protocols.filter((p) => p.state === 'REQUIRES_VET_REVIEW' || p.state === 'WAITING_STOCK_CHECK').length,
@@ -147,7 +165,7 @@ export const managerApi = {
     ];
     const { data } = await http.patch<Registration>(`/registrations/${reg.id}`, {
       status: 'Approved', decidedNote: stall ? `Cấp chuồng ${stall.code}` : `Duyệt ${DEMO_NOW.date.slice(0, 5)}`, checklist, passed: checklist.length, firstIssue: null, history,
-      stallId: stall?.id,
+      stallId: stall?.id, decisionNote: note.trim() || undefined,
     });
     await addAudit(actor, { action: 'APPROVE_REGISTRATION', label: 'Phê duyệt hồ sơ ngựa', object: `${reg.id} · ${reg.horse.name}`, area: 'reg', from: 'PENDING_REVIEW', to: 'APPROVED', reason: note || `Checklist ${checklist.length}/${checklist.length} đạt.` });
     return data;
@@ -160,7 +178,7 @@ export const managerApi = {
       ...reg.history,
     ];
     const { data } = await http.patch<Registration>(`/registrations/${reg.id}`, {
-      status: 'Rejected', decidedNote: allowResubmit ? 'Cho phép nộp lại' : 'Không cho nộp lại', checklist, history,
+      status: 'Rejected', decidedNote: allowResubmit ? 'Cho phép nộp lại' : 'Không cho nộp lại', checklist, history, reason: reason.trim(), allowResubmit,
     });
     await addAudit(actor, { action: 'REJECT_REGISTRATION', label: 'Từ chối hồ sơ ngựa', object: `${reg.id} · ${reg.horse.name}`, area: 'reg', from: 'PENDING_REVIEW', to: allowResubmit ? 'REJECTED · cho phép nộp lại' : 'REJECTED', reason: reason.trim() });
     return data;
