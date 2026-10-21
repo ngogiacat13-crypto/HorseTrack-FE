@@ -612,3 +612,13 @@ Code lúc kiểm tra: BE nhánh `test` `28105c6` · FE nhánh `dev` `6413d01`. �
 
 ### API backend FE vẫn chưa dùng (không ảnh hưởng demo)
 `DELETE /nutrition-plans/{id}` (dùng "Hủy" thay vì xóa), `/horses/available-for-training`, `/inventory/low-stock` (FE tự tính từ tồn kho), `PUT /inventory/suppliers/{id}`, `/training-plans/dashboard-stats`, `/billing/owners/{id}/service`, `/owner/training/my-horses`, `/owner/payments/medical-records/{id}/vnpay`, API hồ sơ y tế kiểu cũ (`/veterinary/medical-records`, `/manager/medical-records/{id}/approve`). `/payments/vnpay/ipn|return` do VNPay gọi.
+
+---
+
+## 21. Kiểm tra code mới BE `59fde20` + FE `340ddcc` (22/10/2026 02:05)
+
+- Không có code trùng đáng kể: 0 API trùng đường dẫn (163 API); `jscpd` BE 1,27% (chủ yếu khối import), FE 0,44%. Logic thực đơn gom ở `ItemCategories.isFeedItem` và `NutritionScope` (BR_03).
+- DB chung đã có cột `Daily_Tasks.diet_note`, `is_medical_diet` và trạng thái `SKIPPED`.
+- Luồng API thực đơn mới (QA Alpha / QA Gamma): **25/25** — khẩu phần mới thay khẩu phần cũ (`ENDED`), tự tạo việc cho ăn 3 bữa cho Mã phu, BS duyệt đề xuất → ghi lưu ý vào thực đơn và việc cho ăn, Mã phu cho ăn → trừ kho (Cám 120→117, Cỏ 500→498), HLV hủy → việc cho ăn chưa làm chuyển `SKIPPED`, khóa ngựa → khẩu phần thường kết thúc, chỉ BS lập khẩu phần `MEDICAL`, HLV không sửa được, mở khóa → khẩu phần y tế kết thúc.
+- ❌→✅ FE (`hybridAdapter.ts`, việc của Mã phu): việc đã hủy `SKIPPED` hiện như "Chờ" (14 việc, trùng lặp) và loại việc mã mới `FEED/CLEAN/...` bị xếp nhầm "Chải lông". Đã ẩn việc `SKIPPED`, nhận loại việc theo mã, hiện lưu ý khẩu phần (`dietNote`).
+- `npm run check` 17/17, `npm run scenarios:live` 12/12 (6 vai trò, không 4xx/5xx, không lỗi JS).
