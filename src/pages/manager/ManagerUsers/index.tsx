@@ -6,7 +6,7 @@ import { USE_BACKEND } from '../../../api/beClient';
 import { Icon } from '../../../components/ui/Icon';
 import { UserAction, UserTable } from './UserTable';
 import { RbacMatrix } from './RbacMatrix';
-import { GroomAssignmentDialog, LockUserDialog } from './UserDialogs';
+import { AssignmentDialog, LockUserDialog } from './UserDialogs';
 import { CreateStaffDialog } from './CreateStaffDialog';
 
 export const ManagerUsers: React.FC = () => {
@@ -46,7 +46,7 @@ export const ManagerUsers: React.FC = () => {
       {tab === 'users' ? <UserTable users={users} meId={me?.userId} onAction={(kind, user) => setDlg({ kind, user })} /> : <RbacMatrix />}
 
       {creating && <CreateStaffDialog onClose={() => setCreating(false)} onDone={(u) => { setUsers((xs) => [u, ...xs!]); setCreating(false); setTab('users'); }} />}
-      {dlg?.kind === 'assign' && <GroomAssignmentDialog user={dlg.user} data={assignmentData} onClose={() => setDlg(null)} onDone={() => { setDlg(null); managerApi.getGroomAssignments().then(setAssignmentData); }} />}
+      {dlg?.kind === 'assign' && <AssignmentDialog user={dlg.user} data={assignmentData} onClose={() => setDlg(null)} onDone={() => { setDlg(null); managerApi.getGroomAssignments().then(setAssignmentData); }} />}
       {dlg && (dlg.kind === 'lock' || dlg.kind === 'unlock') && <LockUserDialog user={dlg.user} lock={dlg.kind === 'lock'} onClose={() => setDlg(null)} onDone={applied} />}
     </div>
   );
