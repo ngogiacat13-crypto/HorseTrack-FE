@@ -51,7 +51,7 @@ export interface ManagedUser {
   zones?: string[];
   beId?: number;
 }
-export interface GroomAssignment { id: string; name: string; zones: string[] }
+export interface GroomAssignment { id: string; name: string; zones: string[]; role?: UserRole }
 export type StaffRole = 'HeadTrainer' | 'Veterinarian' | 'Groom' | 'WarehouseManager';
 export interface StaffInput {
   fullName: string; username: string; email: string; phone: string; password: string; role: StaffRole;
@@ -290,15 +290,15 @@ export const managerApi = {
     const [grooms, users, stalls, allHorses] = await Promise.all([
       get<GroomAssignment[]>('/grooms'), get<UserRecord[]>('/users'), get<AssignedStall[]>('/stalls'), get<AssignedHorse[]>('/horses'),
     ]);
-    const staffZones = users.filter((u) => (u.role === 'HeadTrainer' || u.role === 'Groom') && Array.isArray(u.zones)).map((u) => ({ id: u.id, name: u.fullname, zones: u.zones ?? [] }));
-    const allAssignments = [...grooms, ...staffZones.filter((s) => !grooms.some((g) => g.id === s.id))];
+    const staffZones = users.filter((u) => (u.role === 'HeadTrainer' || u.role === 'Groom') && Array.isArray(u.zones)).map((u) => ({ id: u.id, name: u.fullname, zones: u.zones ?? [], role: u.role }));
+    const allAssignments = [...grooms.map((g) => ({ ...g, role: g.role ?? 'Groom' as const })), ...staffZones.filter((s) => !grooms.some((g) => g.id === s.id))];
     const horses = allHorses.filter((h) => h.stall && h.stall !== '—' && h.stall !== 'Chưa cấp chuồng');
     return { grooms: allAssignments, stalls, horses };
   },
 
   async assignGroom(user: ManagedUser, zones: string[], actor: Actor) {
     if (user.role !== 'Groom') throw new Error('Chỉ có thể phân công cho Người chăm ngựa.');
-    if (!zones.length) throw new Error('Chọn ít nhất một khu chăm sóc.');
+    if (zones.length !== 1) throw new Error('Chọn đúng một khu chăm sóc.');
     const assignments = await managerApi.getGroomAssignments();
     const target = assignments.grooms.find((g) => g.id === user.id || g.name === user.fullName);
     if (!target) throw new Error('Không tìm thấy hồ sơ phân công của người chăm ngựa.');
@@ -315,7 +315,7 @@ export const managerApi = {
 
   async assignTrainer(user: ManagedUser, zones: string[], actor: Actor) {
     if (user.role !== 'HeadTrainer') throw new Error('Chỉ có thể phân công cho HLV trưởng.');
-    if (!zones.length) throw new Error('Chọn ít nhất một khu chuồng.');
+    if (zones.length !== 1) throw new Error('Chọn đúng một khu chuồng.');
     const assignments = await managerApi.getGroomAssignments();
     const selected = new Set(assignments.horses.filter((h) => zones.includes(assignments.stalls.find((s) => s.horseId === h.id)?.zone ?? '')).map((h) => h.id));
     const target = assignments.grooms.find((g) => g.id === user.id || g.name === user.fullName);

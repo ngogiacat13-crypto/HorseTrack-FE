@@ -18,23 +18,26 @@ export const AssignmentDialog: React.FC<{ user: ManagedUser; data: { grooms: Gro
   const { busy, error, run } = useAction();
   const current = data.grooms.find((g) => g.id === user.id || g.name === user.fullName);
   const trainerZones = [...new Set(data.horses.filter((h) => h.trainerId === user.id).map((h) => data.stalls.find((s) => s.horseId === h.id)?.zone).filter((z): z is string => !!z))];
-  const [zones, setZones] = useState<string[]>(current?.zones ?? trainerZones);
-  const toggleZone = (zone: string) => {
-    const adding = !zones.includes(zone);
-    setZones((xs) => adding ? [...xs, zone] : xs.filter((x) => x !== zone));
-  };
+  const currentZone = current?.zones[0] ?? trainerZones[0] ?? '';
+  const occupied = new Set(data.grooms
+    .filter((g) => g.id !== user.id && g.role === user.role)
+    .flatMap((g) => g.zones));
+  const [zone, setZone] = useState(currentZone);
   const save = async () => {
     const ok = user.role === 'HeadTrainer'
-      ? await run(() => managerApi.assignTrainer(user, zones, actor), `Đã cập nhật khu cho ${user.fullName}: ${zones.join(', ')}.`)
-      : await run(() => managerApi.assignGroom(user, zones, actor), `Đã cập nhật khu cho ${user.fullName}: ${zones.join(', ')}.`);
+      ? await run(() => managerApi.assignTrainer(user, zone ? [zone] : [], actor), `Đã cập nhật khu cho ${user.fullName}: ${zone}.`)
+      : await run(() => managerApi.assignGroom(user, zone ? [zone] : [], actor), `Đã cập nhật khu cho ${user.fullName}: ${zone}.`);
     if (ok) onDone();
   };
   return (
     <Dialog open onClose={onClose} icon="stable" tone="brand" width={700} busy={busy} busyLabel="Đang lưu…" title={`Phân công ${user.role === 'HeadTrainer' ? 'huấn luyện' : 'chăm sóc'} · ${user.fullName}`} sub={user.role === 'HeadTrainer' ? 'Chọn những ngựa HLV trưởng phụ trách huấn luyện.' : 'Chọn khu làm việc và những ngựa người chăm được phụ trách trong các khu đó.'} confirmLabel="Lưu phân công" onConfirm={save}>
       {error && <Callout tone="danger" style={{ marginBottom: 14 }}>{error}</Callout>}
       <div className="ht-label" style={{ marginBottom: 8 }}>{user.role === 'HeadTrainer' ? 'Khu phụ trách' : 'Khu chăm sóc'}</div>
-      <div className="ht-roles">{['Khu A', 'Khu B', 'Khu C'].map((z) => <label key={z} className="ht-role"><input type="checkbox" checked={zones.includes(z)} onChange={() => toggleZone(z)} />{z}</label>)}</div>
-      <Callout tone="info" style={{ marginTop: 16 }}>Ngựa đã được duyệt trong khu đã chọn sẽ tự động do HLV phụ trách. Groom sẽ tự động phụ trách các chuồng trong khu đó.</Callout>
+      <div className="ht-roles">{['Khu A', 'Khu B', 'Khu C'].map((z) => {
+        const disabled = occupied.has(z) && z !== currentZone;
+        return <label key={z} className="ht-role" style={disabled ? { opacity: 0.5 } : undefined}><input type="radio" name={`zone-${user.id}`} checked={zone === z} disabled={disabled} onChange={() => setZone(z)} />{z}{disabled && <small className="sub"> · đã có {user.role === 'HeadTrainer' ? 'HLV' : 'Groom'}</small>}</label>;
+      })}</div>
+      <Callout tone="info" style={{ marginTop: 16 }}>Ngựa đã được duyệt trong khu sẽ tự động do HLV của khu đó phụ trách. Groom sẽ tự động phụ trách các chuồng trong khu đó.</Callout>
     </Dialog>
   );
 };
