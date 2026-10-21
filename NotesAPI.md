@@ -444,3 +444,41 @@ Script DB cần chạy: `DATABASE_protocol_payment_hold.sql`.
 
 ### Còn lại
 - Một số chữ cố định trên màn tài chính vẫn là dữ liệu demo ("Quý 3/2026", "tháng 09", "điểm so với Q2", "Tính theo đồng hồ demo 03/10/2026").
+
+---
+
+## 16. Nối nốt API còn lại của backend `705c9f4` (21/10/2026)
+
+Không có commit backend mới trên `test` (`main` chỉ chép lại phần tài chính). Rà toàn bộ 134 API trong Swagger, nối thêm:
+
+| Màn hình | API | |
+|---|---|---|
+| QL CLB · Hóa đơn → nút **"Phát hành hóa đơn tháng"** (chọn kỳ, gọi lại không tạo trùng) | `POST /billing/invoices/generate?billingMonth=yyyy-MM` | ☑️ mở được hộp thoại, chưa bấm (ghi DB) |
+| QL CLB · Hóa đơn → nút **"Hủy"** trên hóa đơn chưa trả (lý do 10–255 ký tự) | `PUT /billing/invoices/{id}/cancel` | ☑️ |
+| QL CLB · Hóa đơn → nút **"Phí lưu chuồng"** (chọn chuồng, nhập phí/tháng) | `PUT /billing/stalls/{stallId}/monthly-fee` | ☑️ danh sách chuồng thật tải đúng |
+| Mã phu · Yêu cầu vật tư → nút **"Hủy"** (khi kho chưa xử lý xong: Mới gửi / Đang kiểm tồn / Chờ hàng) | `PUT /supply-requests/{id}/cancel` | ☑️ |
+| Chủ ngựa · Ngựa của tôi / Chi tiết ngựa: giáo án + buổi tập thật (trước đây gọi `/training-plans` bị chặn quyền → luôn trống) | `GET /owner/training/horses/{id}/progress` | ☑️ |
+
+Code mới theo quy chuẩn: `src/features/invoice-billing/` (billingApi, 3 hộp thoại, BillingActions).
+
+### Chưa nối (có lý do)
+- `/api/...` (không có `v1`): bản trùng đường dẫn cũ của các API đã nối.
+- `POST /veterinary/medical-records`, `PUT /manager/medical-records/{id}/approve`, `POST /owner/payments/medical-records/{id}/vnpay`: luồng hồ sơ y tế cũ, đã được thay bằng phác đồ + hóa đơn theo giai đoạn.
+- `POST /nutrition-plans`, `GET /horses/{id}/nutrition-plan/today`: khẩu phần theo vật tư kho; màn "Chế độ ăn" của Bác sĩ trên FE đang dùng mô hình khác (thức ăn đặc biệt) → cần thống nhất với nhóm.
+- `GET /training-plans/dashboard-stats`, `GET /inventory/low-stock`, `GET /billing/owners/{id}/service`, `PUT /inventory/suppliers/{id}`: FE đã tự tính từ dữ liệu khác hoặc chưa có màn hình.
+
+---
+
+## 17. Phân công theo khu (FE `f6f334d` của nhóm) — nối backend
+
+Backend không có commit mới. Commit FE `f6f334d` đổi "Phân công" sang chọn **khu**; khi chạy backend:
+
+| Thao tác | Backend | FE xử lý |
+|---|---|---|
+| Tạo tài khoản **Mã phu** + chọn khu | `POST /auth/staff/create` lưu khu vào `specialization` (`GroomProfile.assignedBarnZone`) | ✅ giữ nguyên |
+| Tạo tài khoản **HLV** + chọn khu | Backend **bỏ qua** khu của Trainer (bảng `TrainerProfile` không có cột khu) | Sau khi tạo, FE gọi `PUT /horses/{id}/assign-trainer` cho mọi ngựa đã duyệt trong khu đó |
+| "Phân công" HLV theo khu | `PUT /horses/{id}/assign-trainer` cho từng ngựa trong khu | ✅; khu của HLV hiển thị = khu của các ngựa được giao (lấy từ `assignedTrainerId`) |
+| "Phân công" đổi khu Mã phu | **Không có API** đổi khu sau khi tạo | Báo lỗi rõ ràng thay vì lưu tạm trên trình duyệt (trước đây tải lại trang là mất) |
+| Danh sách nhân viên trong hộp phân công | `GET /users/all` | Bỏ danh sách Mã phu mẫu (db.json) khi chạy backend, chỉ dùng nhân viên thật |
+
+Cần nhóm backend: API đổi khu cho Mã phu (vd `PUT /users/{id}/zone`), và cột khu cho Trainer nếu muốn lưu khu HLV riêng.

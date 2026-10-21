@@ -5,6 +5,8 @@ import { Loading, PageHeader, StatCard, Tabs, useToast } from '../../../componen
 import { InvoiceTable } from './InvoiceTable';
 import { ReactivateDialog, SuspendDialog } from './InvoiceDialogs';
 import { useDebounce } from '../../../hooks/useDebounce';
+import { USE_BACKEND } from '../../../api/beClient';
+import { BillingActions, CancelInvoiceDialog } from '../../../features/invoice-billing';
 
 type Filter = 'all' | 'unpaid' | 'overdue' | 'suspended' | 'paid';
 const isOverdue = (i: Invoice) => i.status === 'OVERDUE' || i.status === 'SUSPENDED';
@@ -15,9 +17,10 @@ export const ManagerInvoices: React.FC = () => {
   const [filter, setFilter] = useState<Filter>('all');
   const [q, setQ] = useState('');
   const query = useDebounce(q);
-  const [dlg, setDlg] = useState<null | { kind: 'suspend' | 'react'; inv: Invoice }>(null);
+  const [dlg, setDlg] = useState<null | { kind: 'suspend' | 'react' | 'cancel'; inv: Invoice }>(null);
+  const reload = () => { managerApi.getInvoices().then(setItems); };
 
-  useEffect(() => { managerApi.getInvoices().then(setItems); }, []);
+  useEffect(reload, []);
 
   const list = useMemo(() => (items ?? []).filter((i) => {
     const okF = filter === 'all'
@@ -36,7 +39,7 @@ export const ManagerInvoices: React.FC = () => {
   return (
     <div className="ht ht-page">
       <PageHeader title="Hóa đơn" sub="Theo dõi thu tiền, quá hạn và đình chỉ dịch vụ theo BR_12 · BR_13 · BR_14."
-        actions={<button className="ht-btn ht-btn--secondary" onClick={() => toast('Đang xuất danh sách hóa đơn (Excel)…')}><Icon name="download" />Xuất Excel</button>} />
+        actions={<>{USE_BACKEND && <BillingActions onChanged={reload} />}<button className="ht-btn ht-btn--secondary" onClick={() => toast('Đang xuất danh sách hóa đơn (Excel)…')}><Icon name="download" />Xuất Excel</button></>} />
 
       <div className="ht-stats">
         <StatCard icon="card" tone="brand" value={total((i) => (i.status === 'PAID' || i.status === 'ACTIVE') && i.period === '09/2026').toLocaleString('vi-VN')} unit="₫" label="Đã thu (đã xác minh)" meta="tháng 09" />
@@ -53,7 +56,9 @@ export const ManagerInvoices: React.FC = () => {
         { value: 'paid', label: 'Đã thanh toán' },
       ]} />
 
-      <InvoiceTable invoices={list} q={q} onSearch={setQ} onSuspend={(inv) => setDlg({ kind: 'suspend', inv })} onReactivate={(inv) => setDlg({ kind: 'react', inv })} />
+      <InvoiceTable invoices={list} q={q} onSearch={setQ} onSuspend={(inv) => setDlg({ kind: 'suspend', inv })} onReactivate={(inv) => setDlg({ kind: 'react', inv })} onCancel={USE_BACKEND ? (inv) => setDlg({ kind: 'cancel', inv }) : undefined} />
+
+      {dlg?.kind === 'cancel' && <CancelInvoiceDialog invoice={dlg.inv} onClose={() => setDlg(null)} onDone={() => { setDlg(null); reload(); }} />}
 
       {dlg?.kind === 'suspend' && <SuspendDialog invoice={dlg.inv} onClose={() => setDlg(null)}
         onDone={() => { update(dlg.inv.id, { status: 'SUSPENDED', suspendedSince: '03/10' }); setDlg(null); }} />}

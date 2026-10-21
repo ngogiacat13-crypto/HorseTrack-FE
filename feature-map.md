@@ -26,7 +26,7 @@ Quy ước `data-testid`: menu trái `nav-<đường dẫn bỏ / đầu, / đ�
 | QL CLB · Hàng chờ đăng ký ngựa | `src/pages/manager/ManagerRegistrationQueue/` | `/manager/registrations` | `nav-manager-registrations` |
 | QL CLB · Duyệt hồ sơ ngựa (cấp chuồng) | `src/pages/manager/ManagerRegistrationDetail/` | `/manager/registrations/:id` | `approve-registration-dialog`, `approve-stall-select`, `approve-note-input`, `reject-registration-dialog` |
 | QL CLB · Theo dõi y tế | `src/pages/manager/ManagerMedicalMonitoring/` | `/manager/medical-monitoring` | `nav-manager-medical-monitoring`, `medical-monitoring-empty` |
-| QL CLB · Hóa đơn | `src/pages/manager/ManagerInvoices/` | `/manager/invoices` | `nav-manager-invoices` |
+| QL CLB · Hóa đơn | `src/pages/manager/ManagerInvoices/` | `/manager/invoices` | `nav-manager-invoices`, `generate-invoices-btn`, `generate-invoices-dialog`, `generate-month-input`, `stall-fee-btn`, `stall-fee-dialog`, `cancel-invoice-btn`, `cancel-invoice-dialog` |
 | QL CLB · Báo cáo tài chính | `src/pages/manager/ManagerFinanceReport/` | `/manager/reports` | `nav-manager-reports` |
 | QL CLB · Người dùng & phân quyền | `src/pages/manager/ManagerUsers/` | `/manager/users` | `nav-manager-users` |
 | QL CLB · Nhật ký hệ thống | `src/pages/manager/ManagerAuditLogs/` | `/manager/audit-logs` | `nav-manager-audit-logs` |
@@ -53,7 +53,7 @@ Quy ước `data-testid`: menu trái `nav-<đường dẫn bỏ / đầu, / đ�
 | Mã phu · Phiên tập | `src/pages/groom/GroomSessions/` | `/groom/sessions` | `nav-groom-sessions` |
 | Mã phu · Thực hiện phiên | `src/pages/groom/GroomSessionRun/` | `/groom/sessions/:id` | `back-btn`, `confirm-session-btn`, `start-session-btn` |
 | Mã phu · Báo sự cố | `src/pages/groom/GroomIncidents/` | `/groom/incidents` | `nav-groom-incidents` |
-| Mã phu · Yêu cầu vật tư | `src/pages/groom/GroomRequests/` | `/groom/requests` | `nav-groom-requests` |
+| Mã phu · Yêu cầu vật tư | `src/pages/groom/GroomRequests/` | `/groom/requests` | `nav-groom-requests`, `cancel-requisition-btn` |
 | Chủ ngựa · Ngựa của tôi | `src/pages/owner/OwnerHorses/` | `/owner` | `nav-owner` |
 | Chủ ngựa · Chi tiết ngựa | `src/pages/owner/OwnerHorseDetail/` | `/owner/horses/:id` | `back-btn` |
 | Chủ ngựa · Xác nhận thi đấu | `src/pages/owner/OwnerRaces/` | `/owner/races` | `nav-owner-races` |
@@ -70,6 +70,7 @@ Quy ước `data-testid`: menu trái `nav-<đường dẫn bỏ / đầu, / đ�
 | Kho · Lô hàng nhập | `src/pages/warehouse/WarehouseShipments/` | `/warehouse/shipments` | `nav-warehouse-shipments` |
 | Kho · Kiểm kê | `src/pages/warehouse/WarehouseStockCheck/` | `/warehouse/check` | `nav-warehouse-check` |
 | Kho · Nhật ký kho | `src/pages/warehouse/WarehouseLog/` | `/warehouse/log` | `nav-warehouse-log` |
+| QL CLB · Phát hành / hủy hóa đơn, phí lưu chuồng (tính năng mới) | `src/features/invoice-billing/` | Nút trên trang `/manager/invoices` (chỉ khi chạy backend) | `generate-invoices-btn`, `stall-fee-btn`, `cancel-invoice-btn` |
 | Không tìm thấy (404) | `src/pages/shared/NotFound/` | Địa chỉ không tồn tại | — |
 
 ## Kịch bản tự kiểm (`scenarios/`)
