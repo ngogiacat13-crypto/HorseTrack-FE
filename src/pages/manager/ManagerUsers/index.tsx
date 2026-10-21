@@ -6,7 +6,7 @@ import { USE_BACKEND } from '../../../api/beClient';
 import { Icon } from '../../../components/ui/Icon';
 import { UserAction, UserTable } from './UserTable';
 import { RbacMatrix } from './RbacMatrix';
-import { GroomAssignmentDialog, LockUserDialog, RoleDialog } from './UserDialogs';
+import { GroomAssignmentDialog, LockUserDialog } from './UserDialogs';
 import { CreateStaffDialog } from './CreateStaffDialog';
 
 export const ManagerUsers: React.FC = () => {
@@ -27,7 +27,7 @@ export const ManagerUsers: React.FC = () => {
 
   return (
     <div className="ht ht-page">
-      <PageHeader title="Người dùng & phân quyền" sub="Tạo tài khoản nhân viên, khóa, mở khóa, đổi vai trò. Mọi thay đổi được ghi Audit Log (BR_10)."
+      <PageHeader title="Người dùng & phân quyền" sub="Tạo tài khoản nhân viên, khóa và mở khóa tài khoản. Mọi thay đổi được ghi Audit Log (BR_10)."
         actions={<button type="button" className="ht-btn ht-btn--primary" onClick={() => setCreating(true)}><Icon name="usercog" size={16} />Tạo tài khoản nhân viên</button>} />
       <Tabs value={tab} onChange={setTab} items={[{ value: 'users', label: 'Người dùng', count: users.length }, { value: 'rbac', label: 'Vai trò & quyền' }]} />
 
@@ -46,7 +46,6 @@ export const ManagerUsers: React.FC = () => {
       {tab === 'users' ? <UserTable users={users} meId={me?.userId} onAction={(kind, user) => setDlg({ kind, user })} /> : <RbacMatrix />}
 
       {creating && <CreateStaffDialog onClose={() => setCreating(false)} onDone={(u) => { setUsers((xs) => [u, ...xs!]); setCreating(false); setTab('users'); }} />}
-      {dlg?.kind === 'role' && <RoleDialog user={dlg.user} onClose={() => setDlg(null)} onDone={applied} />}
       {dlg?.kind === 'assign' && <GroomAssignmentDialog user={dlg.user} data={assignmentData} onClose={() => setDlg(null)} onDone={() => { setDlg(null); managerApi.getGroomAssignments().then(setAssignmentData); }} />}
       {dlg && (dlg.kind === 'lock' || dlg.kind === 'unlock') && <LockUserDialog user={dlg.user} lock={dlg.kind === 'lock'} onClose={() => setDlg(null)} onDone={applied} />}
     </div>

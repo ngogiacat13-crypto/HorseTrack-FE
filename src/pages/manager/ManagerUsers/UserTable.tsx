@@ -6,7 +6,7 @@ import { ROLE_LABEL } from '../../../components/layout/nav';
 import { useDebounce } from '../../../hooks/useDebounce';
 
 type Role = ManagedUser['role'];
-export type UserAction = 'role' | 'lock' | 'unlock' | 'assign';
+export type UserAction = 'lock' | 'unlock' | 'assign';
 const ROLES = Object.keys(ROLE_LABEL) as Role[];
 
 export const UserTable: React.FC<{ users: ManagedUser[]; meId?: string; onAction: (kind: UserAction, u: ManagedUser) => void }> = ({ users, meId, onAction }) => {
@@ -49,7 +49,6 @@ export const UserTable: React.FC<{ users: ManagedUser[]; meId?: string; onAction
               <td>
                 <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end', alignItems: 'center' }}>
                   {u.id === meId ? <span style={{ fontSize: 12, color: 'var(--muted)' }}>Tài khoản của bạn</span> : <>
-                    <button type="button" className="ht-btn ht-btn--ghost ht-btn--sm" disabled={u.status === 'LOCKED'} onClick={() => onAction('role', u)}><Icon name="usercog" />Đổi vai trò</button>
                     {u.status === 'ACTIVE'
                       ? <button type="button" className="ht-btn ht-btn--secondary ht-btn--sm" onClick={() => onAction('lock', u)}><Icon name="lock" />Khóa</button>
                       : <button type="button" className="ht-btn ht-btn--secondary ht-btn--sm" onClick={() => onAction('unlock', u)}><Icon name="unlock" />Mở khóa</button>}

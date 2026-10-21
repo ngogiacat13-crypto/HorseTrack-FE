@@ -6,9 +6,6 @@ import { Icon } from '../../../components/ui/Icon';
 import { Callout, Dialog, ReasonField } from '../../../components/ui/Ht';
 import { ROLE_LABEL } from '../../../components/layout/nav';
 
-type Role = ManagedUser['role'];
-const ROLES = Object.keys(ROLE_LABEL) as Role[];
-
 const useReason = () => {
   const [reason, setReason] = useState('');
   const [err, setErr] = useState('');
@@ -42,47 +39,6 @@ export const GroomAssignmentDialog: React.FC<{ user: ManagedUser; data: { grooms
         {available.map((h) => { const stall = data.stalls.find((s) => s.horseId === h.id); return <label key={h.id} className="ht-role" style={{ alignItems: 'flex-start' }}><input type="checkbox" checked={horseIds.includes(h.id)} onChange={() => toggle(h.id, horseIds, setHorseIds)} /><span><b>{h.name}</b><small className="sub">{stall?.id} · {stall?.zone} · Chủ: {h.owner}</small></span></label>; })}
       </div>
       {!available.length && <div className="ht-empty">Chọn khu để hiện danh sách ngựa.</div>}
-    </Dialog>
-  );
-};
-
-export const RoleDialog: React.FC<{ user: ManagedUser; onClose: () => void; onDone: (patch: Partial<ManagedUser>) => void }> = ({ user, onClose, onDone }) => {
-  const actor = useActor();
-  const { busy, error, run } = useAction();
-  const r = useReason();
-  const [newRole, setNewRole] = useState<Role>(user.role === 'Groom' ? 'HeadTrainer' : 'Groom');
-  const checks = managerApi.checkRoleChange(user, newRole);
-  const blocked = checks.some((c) => c.level === 'fail');
-  const confirm = async () => {
-    if (!r.check()) return;
-    if (await run(() => managerApi.changeRole(user, newRole, r.reason, actor), `Đã đổi vai trò ${user.fullName} → ${ROLE_LABEL[newRole]} · ghi Audit Log.`)) onDone({ role: newRole, openTasks: 0 });
-  };
-  return (
-    <Dialog open onClose={onClose} icon="usercog" tone="brand" width={560} busy={busy} busyLabel="Đang lưu…"
-      title={`Đổi vai trò · ${user.fullName}`} sub={<>Hiện tại: <b>{ROLE_LABEL[user.role]}</b> · <span className="ht-mono">{user.username}</span></>}
-      confirmLabel="Áp dụng vai trò" onConfirm={confirm} disabled={blocked}>
-      {error && <Callout tone="danger" style={{ marginBottom: 14 }}>{error}</Callout>}
-      <div className="ht-label" style={{ marginBottom: 8 }}>Vai trò mới</div>
-      <div className="ht-roles">
-        {ROLES.map((x) => (
-          <label key={x} className="ht-role">
-            <input type="radio" name="role" value={x} checked={newRole === x} disabled={x === user.role} onChange={() => setNewRole(x)} />
-            {ROLE_LABEL[x]}{x === user.role && ' · hiện tại'}
-          </label>
-        ))}
-      </div>
-      <div className="ht-label" style={{ margin: '16px 0 8px' }}>Kiểm tra xung đột · BR_06</div>
-      <ul className="ht-checks">
-        {checks.map((c, i) => (
-          <li key={i} className="ht-checkrow" data-state={c.level} style={{ padding: '10px 12px' }}>
-            <span className="ht-checkrow__icon"><Icon name={c.level === 'pass' ? 'check' : c.level === 'warn' ? 'warn' : 'x'} /></span>
-            <div><small style={{ margin: 0, color: 'var(--foreground)' }}>{c.text}</small></div><span />
-          </li>
-        ))}
-      </ul>
-      <div style={{ marginTop: 16 }}>
-        <ReasonField id="role-reason" label="Lý do" value={r.reason} error={r.err} minHeight={64} placeholder="VD: Bổ nhiệm HLV phụ trách nhóm ngựa Khu B từ 05/10." onChange={r.onChange} />
-      </div>
     </Dialog>
   );
 };
