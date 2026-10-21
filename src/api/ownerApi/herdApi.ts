@@ -45,7 +45,7 @@ export const herdApi = {
     const shown = protocols.filter((p) => p.state !== 'SUPERSEDED');
     return {
       horse,
-      plan: plans.find((p) => p.status === 'ACTIVE' || p.status === 'PLANNED') ?? null,
+      plan: plans.find((p) => p.status === 'ACTIVE' || p.status === 'PLANNED') ?? plans.find((p) => p.status === 'COMPLETED') ?? plans[0] ?? null,
       sessions: sessions.filter((s) => s.status === 'COMPLETED' || s.status === 'STOPPED').slice(-5).reverse(),
       protocols: shown,
       cases: cases.slice().sort((a, b) => b.id.localeCompare(a.id)),

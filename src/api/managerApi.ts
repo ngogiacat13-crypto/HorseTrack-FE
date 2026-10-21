@@ -307,14 +307,17 @@ export const managerApi = {
 
   async assignGroom(user: ManagedUser, zones: string[], actor: Actor) {
     if (user.role !== 'Groom') throw new Error('Chỉ có thể phân công cho Người chăm ngựa.');
-    if (zones.length !== 1) throw new Error('Chọn đúng một khu chăm sóc.');
+    if (zones.length > 1) throw new Error('Chỉ chọn một khu chăm sóc.');
     const assignments = await managerApi.getGroomAssignments();
     const target = assignments.grooms.find((g) => g.id === user.id || g.name === user.fullName);
     if (!target) throw new Error('Không tìm thấy hồ sơ phân công của người chăm ngựa.');
     if (USE_BACKEND) {
       const same = target.zones.length === zones.length && zones.every((z) => target.zones.includes(z));
       if (same) return { zones };
-      throw new Error(`Backend chưa có API đổi khu cho Mã phu — khu chỉ đặt được khi tạo tài khoản (hiện tại: ${target.zones.join(', ') || 'chưa có'}).`);
+      // zones rỗng = bỏ phân công khu
+      await be.put(`/users/${target.id}/barn-zone`, { barnZone: zones[0] ?? null });
+      invalidate('users', 'auditLogs');
+      return { zones };
     }
     await http.patch(`/grooms/${target.id}`, { zones });
     await Promise.all(assignments.stalls.map((s) => {
@@ -334,8 +337,9 @@ export const managerApi = {
     const dropped = assignments.horses.filter((h) => h.trainerId === user.id && !selected.has(h.id));
     const added = assignments.horses.filter((h) => selected.has(h.id) && h.trainerId !== user.id);
     if (USE_BACKEND) {
-      if (dropped.length) throw new Error(`Backend chưa hỗ trợ bỏ phân công. Hãy phân công HLV khác cho: ${dropped.map((h) => h.name).join(', ')}.`);
       for (const h of added) await be.put(`/horses/${h.id}/assign-trainer`, { trainerId: Number(user.id) });
+      // Bỏ phân công: backend chặn nếu ngựa còn giáo án chưa kết thúc (cần phân công HLV khác để bàn giao)
+      for (const h of dropped) await be.delete(`/horses/${h.id}/assign-trainer`);
       invalidate('horses', 'auditLogs');
       return { horseIds };
     }

@@ -38,8 +38,8 @@ export const OwnerHorseDetail: React.FC = () => {
               <div className="ht-panel__body" style={{ display: 'grid', gap: 14 }}>
                 {plan ? (
                   <>
-                    <div><b>{plan.name}</b><div style={{ fontSize: 13, color: 'var(--muted)' }}>{plan.goal} · bắt đầu {plan.startDate} · HLV {plan.createdBy}</div></div>
-                    <PhaseBar phases={plan.phases} current={plan.currentPhase} />
+                    <div><b>{plan.name}</b> {plan.status === 'COMPLETED' && <Badge tone="success" plain>Đã hoàn thành</Badge>}<div style={{ fontSize: 13, color: 'var(--muted)' }}>{plan.goal} · bắt đầu {plan.startDate} · HLV {plan.createdBy}</div></div>
+                    <PhaseBar phases={plan.phases} current={plan.status === 'COMPLETED' ? plan.phases.length : plan.currentPhase} />
                   </>
                 ) : <p style={{ margin: 0, color: 'var(--muted)' }}>Chưa có giáo án đang chạy.</p>}
                 {h.trainingLocked && <Callout tone="danger" icon="lock">Bác sĩ thú y tạm khóa huấn luyện — xem tab Sức khỏe.</Callout>}

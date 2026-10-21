@@ -55,7 +55,7 @@ interface BeRegCheck { checkKey: string; passed: boolean; detail?: string | null
 interface BeRegistration { registrationCode?: string | null; ownerName?: string | null; submittedAt?: string | null; status: string; ownerNote?: string | null; decisionNote?: string | null; allowResubmit?: boolean | null; decidedByName?: string | null; decidedAt?: string | null; checks?: BeRegCheck[] | null }
 interface BeStall { stallId: number; stallCode: string; barnZone: string; cleanStatus: string; currentHorseId: number | null; horseName: string | null }
 interface BePlan { planId: number; planName: string; horseName: string; startDate: string; endDate: string; status: string; progress: number }
-interface BePlanDetail { planId: number; planName: string; horseId: number | null; horseName: string; startDate: string; endDate: string; status: string; sessions: { sessionId: number; sessionDate: string; activityType: string; status: string; notes: string | null; assignedToId: number | null; assignedToName: string | null }[] }
+interface BePlanDetail { planId: number; planName: string; horseId: number | null; horseName: string; startDate: string; endDate: string; status: string; sessions: { sessionId: number; sessionDate: string; activityType: string; status: string; notes: string | null; assignedToId: number | null; assignedToName: string | null; evaluationScore?: number | null; evaluationComment?: string | null; evaluatedBy?: string | null; evaluatedAt?: string | null }[] }
 interface BeSchedule { sessionId: number; sessionDate: string; activityType: string; status: string; planName: string; horseName: string; stallZone: string }
 interface BeTask { taskId: number; taskCode?: string | null; taskType: string; title?: string | null; status: string; taskDate?: string | null; scheduledTime?: string | null; dueDate?: string | null; instructions?: string | null; completedAt?: string | null; horseName: string; stallCode?: string | null; stallZone: string; groomName?: string | null; warningNote?: string | null; overdue?: boolean | null }
 interface BeCase { caseId: string; id?: number; horseId: number; horseName: string; source: string; issueType: string; severity: string; status: string; description: string; imageUrl?: string | null; reportedByName?: string | null; assignedVetName?: string | null; maxHeartRate: number; vetResult: string | null; createdAt: string; closedAt?: string | null }
@@ -102,7 +102,7 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
     const demo = ((await mockGet('/grooms')) as Row[]) ?? [];
     if (u?.role !== 'Groom') return demo;
     const p = await data<{ specialization?: string | null }>('/account/my-profile').catch(() => ({ specialization: null }));
-    return [{ id: u.id, name: u.name, zones: p.specialization ? [zone(p.specialization)] : ['Khu A'] }, ...demo.filter((g) => g.id !== u.id)];
+    return [{ id: u.id, name: u.name, zones: p.specialization ? [zone(p.specialization)] : [] }, ...demo.filter((g) => g.id !== u.id)];
   },
 
   async trainingPlans() {
@@ -130,7 +130,8 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
         id: String(s.sessionId), horseId: plans[i].horseId, horseName: d!.horseName, planId: String(d!.planId), phaseNo: 1, label: s.activityType,
         date: ddmmyyyy(s.sessionDate), time: hhmm(s.sessionDate), groom: s.assignedToName ?? '—', groomId: s.assignedToId ? String(s.assignedToId) : null,
         track: (s.notes ?? '').split(' · Ghi nhận:')[0] || '—', metrics: (s.notes ?? '').split(' · Ghi nhận:')[1]?.split(',').map((m) => m.trim()).filter(Boolean),
-        status: SESSION[s.status?.toUpperCase()] ?? 'SCHEDULED', confirmed: s.status?.toUpperCase() === 'CONFIRMED', thresholds: { hr: 180, speed: 60 }, readings: [], decision: null, evaluation: null,
+        status: SESSION[s.status?.toUpperCase()] ?? 'SCHEDULED', confirmed: s.status?.toUpperCase() === 'CONFIRMED', thresholds: { hr: 180, speed: 60 }, readings: [], decision: null,
+        evaluation: s.evaluationScore ? { score: s.evaluationScore, comment: s.evaluationComment ?? '', by: s.evaluatedBy ?? 'HLV', at: s.evaluatedAt ?? '' } : null,
       })));
     }
     const [rows, horses, plans] = await Promise.all([
@@ -284,7 +285,26 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
     return (await loadStockTx()) ?? ((await mockGet('/stockTx')) as Row[]);
   },
 };
-interface BeOwnerProgress { planId: number; planName: string; startDate: string; endDate: string; status: string; progress?: number | null; sessions?: { sessionId: number; sessionDate: string; activityType: string; status: string; notes?: string | null; assignedToName?: string | null }[] | null }
+interface BeOwnerProgress {
+  planId: number;
+  planName: string;
+  startDate: string;
+  endDate: string;
+  status: string;
+  progress?: number | null;
+  sessions?: {
+    sessionId: number;
+    sessionDate: string;
+    activityType: string;
+    status: string;
+    notes?: string | null;
+    assignedToName?: string | null;
+    evaluationScore?: number | null;
+    evaluationComment?: string | null;
+    evaluatedBy?: string | null;
+    evaluatedAt?: string | null;
+  }[] | null;
+}
 const ownerProgress = async () => {
   const horses = await LOADERS.horses();
   const rows = await Promise.all(horses.map(async (h) => ({ h, p: await data<BeOwnerProgress | null>(`/owner/training/horses/${h.id}/progress`).catch(() => null) })));
@@ -298,7 +318,8 @@ const ownerProgress = async () => {
     const sessions: Row[] = (p.sessions ?? []).map((x) => ({
       id: String(x.sessionId), horseId: h.id, horseName: h.name, planId: String(p.planId), phaseNo: 1, label: x.activityType,
       date: ddmmyyyy(x.sessionDate), time: hhmm(x.sessionDate), groom: x.assignedToName ?? '—', track: (x.notes ?? '').split(' · Ghi nhận:')[0] || '—',
-      status: SESSION[x.status?.toUpperCase()] ?? 'SCHEDULED', confirmed: x.status?.toUpperCase() === 'CONFIRMED', thresholds: { hr: 180, speed: 60 }, readings: [], decision: null, evaluation: null,
+      status: SESSION[x.status?.toUpperCase()] ?? 'SCHEDULED', confirmed: x.status?.toUpperCase() === 'CONFIRMED', thresholds: { hr: 180, speed: 60 }, readings: [], decision: null,
+      evaluation: x.evaluationScore ? { score: x.evaluationScore, comment: x.evaluationComment ?? '', by: x.evaluatedBy ?? 'HLV', at: x.evaluatedAt ?? '' } : null,
     }));
     return { plan, sessions };
   });
