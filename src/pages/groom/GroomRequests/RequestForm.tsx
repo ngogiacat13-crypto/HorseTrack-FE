@@ -7,7 +7,6 @@ import { useAction } from '../../../hooks/useAction';
 import { Icon } from '../../../components/ui/Icon';
 import { Callout, ReasonField } from '../../../components/ui/Ht';
 
-/* 4.3 Yêu cầu vật tư → Quản lý kho (requisition SUBMITTED). */
 export const RequestForm: React.FC<{ items: StockItem[]; onDone: () => void }> = ({ items, onDone }) => {
   const actor = useActor();
   const { busy, error, run } = useAction(onDone);

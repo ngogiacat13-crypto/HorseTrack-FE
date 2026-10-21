@@ -1,22 +1,10 @@
 import React from 'react';
 
-/* ---------- DataTable (render props) ----------
-   The table owns the markup (thead, rows, empty row, scroll wrapper); the page only says what each cell shows.
-   Every column carries a `render` function: DataTable calls it with the row and puts the result in the <td>.
-
-   <DataTable rows={payments} rowKey={(p) => p.id} empty="Chưa có giao dịch." columns={[
-     { header: 'Mã', render: (p) => p.id, className: 'ht-mono' },
-     { header: 'Số tiền', render: (p) => money(p.amount), align: 'right' },
-   ]} />
-
-   onRowClick makes the whole row clickable; a button inside the row should call e.stopPropagation(). */
 export type Column<T> = {
   header: React.ReactNode;
   render: (row: T, index: number) => React.ReactNode;
   align?: 'right';
-  /** class of the <td> (e.g. 'ht-mono', 'num') */
   className?: string;
-  /** class of the <th> */
   headClassName?: string;
 };
 

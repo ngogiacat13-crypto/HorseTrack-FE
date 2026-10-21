@@ -5,7 +5,6 @@ import type { Severity, VetCase } from '../vetApi';
 import type { Requisition, StockItem } from '../warehouseApi';
 import { get, me, min, nextId, now } from './shared';
 
-/* 4.1–4.2 incident reports → vet inbox (and pause the running session if asked) · 4.3 supply requests → warehouse */
 export const reportsApi = {
   async getReports(actor: Actor) {
     const g = await me(actor);
@@ -14,7 +13,6 @@ export const reportsApi = {
     return { groom: g, cases: cases.filter((c) => c.sender === g.name).sort((a, b) => b.id.localeCompare(a.id)), horses: mineHorses };
   },
 
-  /** 4.1 / 4.2 — a new case in the vet inbox. With "notify trainer", a session running for this horse is paused. */
   async reportIncident(input: { horseId: string; type: string; severity: Severity; note: string; photo: string | null; notifyTrainer: boolean }, actor: Actor) {
     const horse = await get<Horse>(`/horses/${input.horseId}`);
     const type = min(input.type, 3, 'Loại sự cố');
@@ -47,7 +45,6 @@ export const reportsApi = {
     return { groom: g, requisitions: reqs.filter((r) => r.by === g.name).sort((a, b) => b.id.localeCompare(a.id)), items: items.filter((i) => i.category === 'Vật tư chuồng trại' || i.category === 'Thức ăn' || i.category === 'Vật tư y tế') };
   },
 
-  /** 4.3 — supply request to the warehouse. */
   async createRequisition(input: { itemId: string; qty: number; reason: string; neededBy: string }, actor: Actor) {
     const g = await me(actor);
     const item = await get<StockItem>(`/inventory/${input.itemId}`).catch(() => { throw new Error('Chọn vật tư.'); });
@@ -64,7 +61,6 @@ export const reportsApi = {
     return data;
   },
 
-  /** Received the issued items → CLOSED (end of the requisition status machine). */
   async confirmReceived(r: Requisition, actor: Actor) {
     if (r.status !== 'ISSUED') throw new Error('Chỉ xác nhận khi kho đã cấp phát.');
     const { data } = await http.patch<Requisition>(`/requisitions/${r.id}`, { status: 'CLOSED', history: [{ at: now(), who: actor.name, text: 'xác nhận đã nhận vật tư', tone: 'success' }, ...r.history] });

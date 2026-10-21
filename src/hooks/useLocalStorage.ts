@@ -1,7 +1,5 @@
 import { useCallback, useState } from 'react';
 
-/* Custom hook: like useState, but the value survives F5 (saved in localStorage under `key`).
-   Reading/writing is wrapped in try/catch: storage can be full or blocked (private window). */
 export function useLocalStorage<T>(key: string, initial: T) {
   const [value, setValue] = useState<T>(() => {
     try {
@@ -16,9 +14,7 @@ export function useLocalStorage<T>(key: string, initial: T) {
     setValue(next);
     try {
       localStorage.setItem(key, JSON.stringify(next));
-    } catch {
-      /* the value still applies until reload */
-    }
+    } catch {}
   }, [key]);
 
   return [value, set] as const;

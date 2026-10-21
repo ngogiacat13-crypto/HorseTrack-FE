@@ -3,7 +3,6 @@ import { addAudit, type Actor } from '../managerApi';
 import type { RaceProposal, Tournament } from '../trainerApi';
 import { get, min, now, DENIED } from './shared';
 
-/* 3.1–3.5 Xác nhận thi đấu (BR_04): the owner answers before the pre-race vet exam. */
 export const racesApi = {
   async getMyProposals(actor: Actor) {
     const [proposals, tournaments] = await Promise.all([get<RaceProposal[]>('/raceProposals'), get<Tournament[]>('/tournaments')]);
@@ -13,7 +12,6 @@ export const racesApi = {
       .map((p) => ({ proposal: p, tournament: tournaments.find((t) => t.id === p.tournamentId) }));
   },
 
-  /** 3.2 — agree → WAITING_VET_EXAM; decline → OWNER_DECLINED with a reason. */
   async respondProposal(p: RaceProposal, agree: boolean, note: string, actor: Actor) {
     if (p.owner !== actor.name) throw new Error(DENIED);
     if (p.status !== 'WAITING_OWNER') throw new Error('Đề xuất không ở bước chờ chủ ngựa xác nhận.');

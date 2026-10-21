@@ -1,7 +1,6 @@
 import React from 'react';
 import { Icon } from '../Icon';
 
-/* ---------- Rules checklist ---------- */
 export const Rules: React.FC<{ items: { ok: boolean; label: React.ReactNode }[]; style?: React.CSSProperties }> = ({ items, style }) => (
   <ul className="ht-rules" style={style}>
     {items.map((r, i) => (

@@ -4,3 +4,5 @@ dist
 .DS_Store
 docs/figma/
 *.zip
+playwright-report
+test-results

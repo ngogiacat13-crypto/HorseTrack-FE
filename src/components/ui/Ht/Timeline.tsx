@@ -1,6 +1,5 @@
 import React from 'react';
 
-/* ---------- Timeline ---------- */
 export interface TimelineItem { tone?: 'danger' | 'warning' | 'success' | 'info'; what: React.ReactNode; when: string }
 export const Timeline: React.FC<{ items: TimelineItem[] }> = ({ items }) => (
   <ul className="ht-timeline">

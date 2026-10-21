@@ -28,13 +28,12 @@ export const Topbar: React.FC = () => {
       </label>
 
       <div className="ht-user">
-        {/* demo counter; the backend has no notification API yet */}
-        <button type="button" className="ht-iconbtn ht-bell" aria-label={USE_BACKEND ? 'Thông báo' : 'Thông báo (4 mới)'}>
+        <button type="button" className="ht-iconbtn ht-bell" data-testid="notifications-btn" aria-label={USE_BACKEND ? 'Thông báo' : 'Thông báo (4 mới)'}>
           <Icon name="bell" size={18} />{!USE_BACKEND && <span className="ht-count">4</span>}
         </button>
 
         <div className="ht-usermenu" ref={menuRef}>
-          <button type="button" className="ht-usermenu__btn" aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
+          <button type="button" className="ht-usermenu__btn" data-testid="user-menu-btn" aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
             <span><b>{user.fullname}</b><small>{ROLE_LABEL[user.role]}</small></span>
             <Avatar name={user.fullname} src={user.avatarUrl} size={34} />
             <Icon name="down" size={14} style={{ color: 'var(--muted)' }} />
@@ -45,13 +44,13 @@ export const Topbar: React.FC = () => {
                 <Avatar name={user.fullname} src={user.avatarUrl} size={40} />
                 <span><b>{user.fullname}</b><small>{user.email}</small></span>
               </div>
-              <Link role="menuitem" className="ht-menu__item" to="/my-profile" onClick={() => setOpen(false)}>
+              <Link role="menuitem" className="ht-menu__item" data-testid="menu-my-profile" to="/my-profile" onClick={() => setOpen(false)}>
                 <Icon name="usercircle" />Hồ sơ cá nhân
               </Link>
-              <Link role="menuitem" className="ht-menu__item" to="/change-password" onClick={() => setOpen(false)}>
+              <Link role="menuitem" className="ht-menu__item" data-testid="menu-change-password" to="/change-password" onClick={() => setOpen(false)}>
                 <Icon name="key" />Đổi mật khẩu
               </Link>
-              <button role="menuitem" type="button" className="ht-menu__item ht-menu__item--danger" onClick={() => { logout(); navigate('/login'); }}>
+              <button role="menuitem" type="button" className="ht-menu__item ht-menu__item--danger" data-testid="logout-btn" onClick={() => { logout(); navigate('/login'); }}>
                 <Icon name="logout" />Đăng xuất
               </button>
             </div>

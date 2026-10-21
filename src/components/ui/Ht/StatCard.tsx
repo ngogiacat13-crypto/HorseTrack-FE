@@ -1,7 +1,6 @@
 import React from 'react';
 import { Icon, IconName } from '../Icon';
 
-/* ---------- Stat card ---------- */
 interface StatProps {
   icon: IconName;
   tone: 'brand' | 'info' | 'gold' | 'warning' | 'danger';

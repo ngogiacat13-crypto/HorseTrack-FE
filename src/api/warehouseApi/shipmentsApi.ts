@@ -10,7 +10,6 @@ const summary = (lines: ShipmentOrder['lines']) => lines.map((l) => `${l.name} �
 const push = (s: ShipmentOrder, line: HistoryLine) => [line, ...s.history];
 const late = (eta: string, requiredBy?: string) => !!requiredBy && dateKey(eta) > dateKey(requiredBy);
 
-/** Protocols whose short lines wait for this shipment (or for these items with no ETA yet). */
 const linkedProtocols = async (s: ShipmentOrder) => {
   const ps = await get<Protocol[]>('/protocols');
   const ids = new Set(s.lines.map((l) => l.itemId));
@@ -18,13 +17,11 @@ const linkedProtocols = async (s: ShipmentOrder) => {
     (p.id === s.forRef || (p.stock?.lines ?? []).some((l) => l.short > 0 && (l.shipment === s.id || (!l.shipment && ids.has(l.itemId))))));
 };
 
-/* 3.1–3.4 incoming shipments. Stock only goes up when goods are actually received. */
 export const shipmentsApi = {
   async getShipments() {
     const [shipments, items, protocols, requisitions] = await Promise.all([
       get<ShipmentOrder[]>('/shipments'), get<StockItem[]>('/inventory'), get<Protocol[]>('/protocols'), get<Requisition[]>('/requisitions'),
     ]);
-    // Open needs that a new order can be linked to (3.1).
     const needs = [
       ...protocols.filter((p) => ['STOCK_SHORTAGE', 'WAITING_RESTOCK', 'REQUIRES_VET_REVIEW'].includes(p.state))
         .flatMap((p) => (p.stock?.lines ?? []).filter((l) => l.short > 0 && !l.shipment).map((l) => ({ ref: p.id, label: `${p.id} · ${p.horse} · ${l.name} thiếu ${l.short} ${l.unit}`, itemId: l.itemId, qty: l.short, requiredBy: p.requiredBy }))),
@@ -34,7 +31,6 @@ export const shipmentsApi = {
     return { shipments: [...shipments].sort((a, b) => b.id.localeCompare(a.id)), items, needs };
   },
 
-  /** 3.1 — new order. Linking a requisition moves it to WAITING_RESTOCK; linking a protocol gives its short lines a real ETA. */
   async createShipment(input: { supplier: string; eta: string; lines: { itemId: string; qty: number }[]; forRef: string; requiredBy?: string }, actor: Actor) {
     const supplier = min(input.supplier, 3, 'Nhà cung cấp');
     if (!isDate(input.eta)) throw new Error('Ngày dự kiến về theo dạng dd/mm/yyyy.');
@@ -76,7 +72,6 @@ export const shipmentsApi = {
     return data;
   },
 
-  /** 2.5 / 3.2 — new ETA. If it passes the date a protocol needs the medicine, the vet is warned to re-assess (DELAYED_MEDICINE). The warehouse never changes the medicine. */
   async updateEta(s: ShipmentOrder, eta: string, reason: string, actor: Actor) {
     if (!OPEN_SHIPMENT.includes(s.status)) throw new Error('Lô hàng đã đóng.');
     if (!isDate(eta)) throw new Error('ETA mới theo dạng dd/mm/yyyy.');
@@ -109,11 +104,6 @@ export const shipmentsApi = {
     return data;
   },
 
-  /**
-   * 3.3 / 3.4 — receive what actually arrived (quantity, lot, expiry), then:
-   *  - protocols waiting for it: hold what is now available; when nothing is short the vet must review again before dispensing;
-   *  - requisitions waiting for it: ready to issue, the Groom is told to come.
-   */
   async receive(s: ShipmentOrder, input: { itemId: string; received: number; lot: string; expiry: string }[], actor: Actor) {
     if (!OPEN_SHIPMENT.includes(s.status)) throw new Error('Lô hàng đã đóng.');
     let items = await get<StockItem[]>('/inventory');
@@ -138,7 +128,6 @@ export const shipmentsApi = {
     const history = push(s, { at: now(), who: actor.name, text: `nhận hàng: ${lines.map((l) => `${l.name} ${l.received}/${l.qty}`).join(', ')}${partial ? ' · thiếu so với đơn' : ''}`, tone: partial ? 'warning' : 'success' });
     const { data } = await http.patch<ShipmentOrder>(`/shipments/${s.id}`, { status: 'RECEIVED', receivedAt: now(), lines, history });
 
-    // Protocols: hold the new stock for their short lines, then ask the vet to review (spec 2.2 step 7).
     const notified: string[] = [];
     items = await get<StockItem[]>('/inventory');
     for (const p of await linkedProtocols(s)) {
@@ -161,7 +150,6 @@ export const shipmentsApi = {
       { who: actor.name, text: `hàng về ${s.id}${isLate ? ' (trễ so với mốc cần thuốc)' : ''} · báo BS ${p.vet} rà soát lại`, at: now() });
       notified.push(p.id);
     }
-    // Requisitions waiting for this shipment.
     const reqs = (await get<Requisition[]>('/requisitions')).filter((r) => r.status === 'WAITING_RESTOCK' && (r.shipmentId === s.id || r.id === s.forRef));
     for (const r of reqs) {
       await http.patch(`/requisitions/${r.id}`, { status: 'APPROVED_FOR_ISSUE', history: [{ at: now(), who: actor.name, text: `hàng về (${s.id}) · báo ${r.by} đến nhận`, tone: 'success' }, ...r.history] });

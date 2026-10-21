@@ -12,13 +12,11 @@ export type FormData = Awaited<ReturnType<typeof vetApi.getProtocolForm>>;
 
 const newPhase = (no: number, start: string): ProtoPhase => ({ no, name: '', startDate: start, days: 7, goal: '', items: [] });
 
-/** Case to use for a horse: the one asked for, else the first examined one. */
 const pickCase = (data: FormData, horseId: string, wanted = '') => {
   const cases = data.cases.filter((c) => c.horseId === horseId);
   return cases.find((c) => c.id === wanted) ?? cases.find((c) => c.exam);
 };
 
-// Starts from the replaced protocol (new version, 2.4) or from the case exam.
 export const ProtocolForm: React.FC<{ data: FormData; horseParam: string; caseParam: string }> = ({ data, horseParam, caseParam }) => {
   const navigate = useNavigate();
   const actor = useActor();
@@ -40,7 +38,6 @@ export const ProtocolForm: React.FC<{ data: FormData; horseParam: string; casePa
   const horse = data.horses.find((h) => h.id === horseId);
   const vetCase = cases.find((c) => c.id === caseId);
   const inv = Object.fromEntries(data.inventory.map((i) => [i.id, i]));
-  // On hand minus held — plus what the replaced version holds, since sending the new version releases it.
   const availableOf = (itemId: string) => {
     const i = inv[itemId];
     const released = r?.stock?.lines.find((l) => l.itemId === itemId)?.held ?? 0;

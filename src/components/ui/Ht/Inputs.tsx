@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Icon, IconName } from '../Icon';
 
-/* ---------- Text input with leading icon ---------- */
 type InputProps = React.InputHTMLAttributes<HTMLInputElement> & { icon?: IconName; invalid?: boolean };
 export const TextInput = React.forwardRef<HTMLInputElement, InputProps>(({ icon, invalid, className, id, ...rest }, ref) => (
   <div className="ht-control">
@@ -18,7 +17,6 @@ export const TextInput = React.forwardRef<HTMLInputElement, InputProps>(({ icon,
 ));
 TextInput.displayName = 'TextInput';
 
-/* ---------- Password input with show/hide ---------- */
 type PasswordProps = Omit<InputProps, 'type'> & { revealed?: boolean; onRevealChange?: (v: boolean) => void };
 export const PasswordInput: React.FC<PasswordProps> = ({ icon = 'lock', invalid, id, revealed, onRevealChange, ...rest }) => {
   const [own, setOwn] = useState(false);

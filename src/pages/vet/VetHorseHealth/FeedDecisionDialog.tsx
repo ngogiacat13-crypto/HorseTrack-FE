@@ -4,7 +4,6 @@ import { useActor } from '../../../auth/AuthContext';
 import { useAction } from '../../../hooks/useAction';
 import { Callout, Dialog, ReasonField } from '../../../components/ui/Ht';
 
-/* 3.4 — approve (added to the medical diet) or reject (reason required) a special feed request. */
 export const FeedDecisionDialog: React.FC<{ request: FeedRequest; approve: boolean; onClose: () => void; onDone: () => void }> = ({ request, approve, onClose, onDone }) => {
   const actor = useActor();
   const { busy, error, run } = useAction();

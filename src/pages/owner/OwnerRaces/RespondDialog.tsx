@@ -5,7 +5,6 @@ import { useActor } from '../../../auth/AuthContext';
 import { useAction } from '../../../hooks/useAction';
 import { Callout, Dialog, ReasonField } from '../../../components/ui/Ht';
 
-/* 3.4 — agree (optional note) or decline (reason ≥ 10 chars). */
 export const RespondDialog: React.FC<{ proposal: RaceProposal; agree: boolean; onClose: () => void; onDone: () => void }> = ({ proposal: p, agree, onClose, onDone }) => {
   const actor = useActor();
   const { busy, error, run } = useAction();

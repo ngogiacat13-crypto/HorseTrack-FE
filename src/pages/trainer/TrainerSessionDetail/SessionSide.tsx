@@ -4,7 +4,6 @@ import { Horse, horseInitials, TrainingPlan, TrainingSession } from '../../../ap
 import { Badge, Callout, Panel } from '../../../components/ui/Ht';
 import { HorseBadges } from '../../../components/trainer/TrainerParts';
 
-/** The decision already taken on this session (read-only). */
 export const DecisionRecord: React.FC<{ decision: NonNullable<TrainingSession['decision']> }> = ({ decision: d }) => (
   <Panel title="Quyết định đã ghi nhận" right={<Badge tone={d.type === 'STOP_VET' ? 'danger' : 'info'}>{d.type === 'STOP_VET' ? 'Dừng & gửi BS' : 'Điều chỉnh & tiếp tục'}</Badge>}>
     <div className="ht-panel__body">
@@ -18,7 +17,6 @@ export const DecisionRecord: React.FC<{ decision: NonNullable<TrainingSession['d
   </Panel>
 );
 
-/** Horse card, alerts sent, and the demo-threshold note. */
 export const SessionSide: React.FC<{ session: TrainingSession; horse: Horse; plan: TrainingPlan; previousMax: number | null }> = ({ session: s, horse, plan, previousMax }) => (
   <>
     <Panel as="h3">

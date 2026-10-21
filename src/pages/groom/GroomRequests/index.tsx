@@ -9,7 +9,6 @@ import { Badge, Callout, PageHeader, Panel } from '../../../components/ui/Ht';
 import { LoadState } from '../../../components/trainer/TrainerParts';
 import { RequestForm } from './RequestForm';
 
-/* 4.3 Yêu cầu vật tư — gửi kho, theo dõi trạng thái, xác nhận đã nhận (ISSUED → CLOSED). */
 export const GroomRequests: React.FC = () => {
   const actor = useActor();
   const { data, loading, error, reload } = useFetch(() => groomApi.getRequisitions(actor), [actor]);

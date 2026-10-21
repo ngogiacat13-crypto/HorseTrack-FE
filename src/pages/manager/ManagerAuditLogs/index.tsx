@@ -11,7 +11,7 @@ export const ManagerAuditLogs: React.FC = () => {
   const toast = useToast();
   const [data, setData] = useState<{ total: number; items: AuditLog[] } | null>(null);
   const [q, setQ] = useState('');
-  const query = useDebounce(q); // filter after the user pauses typing
+  const query = useDebounce(q);
   const [who, setWho] = useState('');
   const [area, setArea] = useState<'' | AuditArea>('');
   const [logins, setLogins] = useState(false);

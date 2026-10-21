@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { trainerApi, trainingBlock } from '../../../api/trainerApi';
-import type { ApiError } from '../../../api/http';
+import { DEMO_NOW, type ApiError } from '../../../api/http';
+import { USE_BACKEND } from '../../../api/beClient';
 import { useActor } from '../../../auth/AuthContext';
 import { useFetch } from '../../../hooks/useFetch';
 import { Icon } from '../../../components/ui/Icon';
@@ -11,7 +12,8 @@ import { NEW_PHASE, PhaseDraft, PlanType, TEMPLATES, TYPES, validPhase } from '.
 import { PhaseRow } from './PhaseRow';
 import { PlanSummary } from './PlanSummary';
 
-/* 1.2 Xây dựng giáo án huấn luyện — chặn ngựa đang bị khóa y tế (BR_01) */
+const MIN_START = USE_BACKEND ? DEMO_NOW.date.split('/').reverse().join('-') : '2026-10-05';
+
 export const TrainerPlanCreate: React.FC = () => {
   const navigate = useNavigate();
   const toast = useToast();
@@ -23,7 +25,7 @@ export const TrainerPlanCreate: React.FC = () => {
   const [name, setName] = useState('');
   const [type, setType] = useState<PlanType>('Sức bền');
   const [goal, setGoal] = useState('');
-  const [startDate, setStartDate] = useState('2026-10-05');
+  const [startDate, setStartDate] = useState(MIN_START);
   const [phases, setPhases] = useState<PhaseDraft[]>(TEMPLATES['Sức bền'].map((p) => ({ ...p })));
   const [tried, setTried] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -99,7 +101,7 @@ export const TrainerPlanCreate: React.FC = () => {
                 </div>
                 <div className="ht-field">
                   <label className="ht-label" htmlFor="start">Ngày bắt đầu<span className="ht-req">*</span></label>
-                  <input id="start" type="date" className="ht-input" value={startDate} min="2026-10-03" onChange={(e) => setStartDate(e.target.value)} />
+                  <input id="start" type="date" className="ht-input" value={startDate} min={MIN_START} onChange={(e) => setStartDate(e.target.value)} />
                 </div>
               </div>
               {horse && <div style={{ margin: '-4px 0 16px' }}><HorseBadges horse={horse} /></div>}

@@ -12,7 +12,6 @@ import { PayPanel } from './PayPanel';
 
 const KIND: Record<string, string> = { TRAIN: 'Huấn luyện', STABLE: 'Lưu chuồng', MED: 'Y tế · thuốc', PENALTY: 'Phí phạt', REACTIVATION: 'Kích hoạt lại' };
 
-/* 2.2 Chi tiết hóa đơn — kỳ, dịch vụ, khoản phí, tổng tiền, hạn thanh toán · các mốc BR_12 / BR_13 */
 export const OwnerInvoiceDetail: React.FC = () => {
   const { id = '' } = useParams();
   const actor = useActor();

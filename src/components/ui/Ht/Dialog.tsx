@@ -2,7 +2,6 @@ import React, { useEffect, useId, useRef } from 'react';
 import { Icon, IconName } from '../Icon';
 import { Busy } from './Busy';
 
-/* ---------- Dialog ---------- */
 interface DialogProps {
   open: boolean;
   onClose: () => void;
@@ -18,8 +17,9 @@ interface DialogProps {
   disabled?: boolean;
   danger?: boolean;
   width?: number;
+  testId?: string;
 }
-export const Dialog: React.FC<DialogProps> = ({ open, onClose, icon, tone, title, sub, children, confirmLabel, busyLabel = 'Đang xử lý…', onConfirm, busy, disabled, danger, width }) => {
+export const Dialog: React.FC<DialogProps> = ({ open, onClose, icon, tone, title, sub, children, confirmLabel, busyLabel = 'Đang xử lý…', onConfirm, busy, disabled, danger, width, testId = 'dialog' }) => {
   const titleId = useId();
   const boxRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -34,15 +34,15 @@ export const Dialog: React.FC<DialogProps> = ({ open, onClose, icon, tone, title
   if (!open) return null;
   return (
     <div className="ht-scrim" onMouseDown={(e) => { if (e.target === e.currentTarget && !busy) onClose(); }}>
-      <div className="ht-dialog" role="dialog" aria-modal="true" aria-labelledby={titleId} ref={boxRef} style={width ? { maxWidth: width } : undefined}>
+      <div className="ht-dialog" data-testid={testId} role="dialog" aria-modal="true" aria-labelledby={titleId} ref={boxRef} style={width ? { maxWidth: width } : undefined}>
         <div className="ht-dialog__head">
           <span className={`ht-dialog__icon ht-tone-${tone}`}><Icon name={icon} /></span>
           <div><h2 id={titleId}>{title}</h2>{sub && <p>{sub}</p>}</div>
         </div>
         {children && <div className="ht-dialog__body">{children}</div>}
         <div className="ht-dialog__foot">
-          <button type="button" className="ht-btn ht-btn--secondary" onClick={onClose} disabled={busy}>Hủy</button>
-          <button type="button" className={`ht-btn ${danger ? 'ht-btn--danger' : 'ht-btn--primary'}`} onClick={onConfirm} disabled={busy || disabled} aria-busy={busy || undefined}>
+          <button type="button" className="ht-btn ht-btn--secondary" data-testid="dialog-cancel" onClick={onClose} disabled={busy}>Hủy</button>
+          <button type="button" className={`ht-btn ${danger ? 'ht-btn--danger' : 'ht-btn--primary'}`} data-testid="dialog-confirm" onClick={onConfirm} disabled={busy || disabled} aria-busy={busy || undefined}>
             <Busy busy={!!busy} label={busyLabel}>{confirmLabel}</Busy>
           </button>
         </div>

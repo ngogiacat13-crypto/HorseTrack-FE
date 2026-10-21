@@ -8,7 +8,6 @@ import { Badge, Callout, PageHeader, Panel, Timeline } from '../../../components
 import { LoadState } from '../../../components/trainer/TrainerParts';
 import { RespondDialog } from './RespondDialog';
 
-/* 3.1 Nhận đề xuất · 3.2 Đồng ý / từ chối · 3.3 Kết quả khám · 3.4 Kết quả thi đấu (BR_04) */
 export const OwnerRaces: React.FC = () => {
   const actor = useActor();
   const { data, loading, error, reload } = useFetch(() => ownerApi.getMyProposals(actor), [actor]);

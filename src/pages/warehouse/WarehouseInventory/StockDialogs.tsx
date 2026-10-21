@@ -6,7 +6,6 @@ import { Callout, Dialog, ReasonField, Segmented } from '../../../components/ui/
 
 const KIND_LABEL: Record<MoveKind, string> = { RECEIVE: 'Nhập kho', ISSUE: 'Xuất kho', ADJUST: 'Điều chỉnh' };
 
-/* 1.2 — receive / issue / adjust with a reason. Issues outside protocols and requisitions can never touch held stock. */
 export const StockMoveDialog: React.FC<{ item: StockItem; onClose: () => void; onDone: () => void }> = ({ item, onClose, onDone }) => {
   const actor = useActor();
   const { busy, error, run } = useAction();
@@ -47,7 +46,6 @@ export const StockMoveDialog: React.FC<{ item: StockItem; onClose: () => void; o
   );
 };
 
-/* 1.3 — safety threshold (BR_08). */
 export const SafetyDialog: React.FC<{ item: StockItem; onClose: () => void; onDone: () => void }> = ({ item, onClose, onDone }) => {
   const actor = useActor();
   const { busy, error, run } = useAction();

@@ -8,11 +8,9 @@ import { InjuryMap } from '../../../components/vet/InjuryMap';
 
 const EMPTY = { part: '', severity: 'Trung bình', note: '' };
 
-/** Closest named body part to a click on the map. */
 const nearestPart = (x: number, y: number) =>
   BODY_PARTS.reduce((best, b) => (Math.hypot(b.x - x, b.y - y) < Math.hypot(best.x - x, best.y - y) ? b : best)).part;
 
-/* 1.3 — mark injuries on the 2D map: pick a body part or click the map, then add. */
 export const InjuryPanel: React.FC<{ horse: VetHorse; onChanged: () => void }> = ({ horse, onChanged }) => {
   const actor = useActor();
   const { busy, error, setError, run } = useAction(onChanged);

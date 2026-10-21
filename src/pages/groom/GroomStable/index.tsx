@@ -12,7 +12,6 @@ import { FeedRequestDialog } from './FeedRequestDialog';
 
 const STALL: Record<Stall['status'], [string, 'success' | 'warning' | 'danger']> = { CLEAN: ['Sạch', 'success'], NEEDS_CLEANING: ['Cần dọn', 'warning'], MAINTENANCE: ['Bảo trì', 'danger'] };
 
-/* 2.1 Sơ đồ chuồng theo cùng bố cục HLV; chỉ hiển thị phạm vi được Quản lý CLB phân công. */
 export const GroomStable: React.FC = () => {
   const actor = useActor();
   const { data, loading, error, reload } = useFetch(() => groomApi.getStable(actor), [actor]);

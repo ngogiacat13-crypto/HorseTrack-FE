@@ -8,7 +8,6 @@ import { Badge, Callout, PageHeader, Panel } from '../../../components/ui/Ht';
 import { LoadState } from '../../../components/trainer/TrainerParts';
 import { IncidentForm } from './IncidentForm';
 
-/* 4.1–4.2 Báo cáo sự cố + danh sách báo cáo của tôi (trạng thái do Bác sĩ cập nhật). */
 export const GroomIncidents: React.FC = () => {
   const actor = useActor();
   const [params] = useSearchParams();

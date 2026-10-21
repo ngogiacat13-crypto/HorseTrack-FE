@@ -18,7 +18,6 @@ interface Props {
   children: React.ReactNode;
 }
 
-/* Public pages: top bar + split shell (brand panel on the left, form on the right). */
 export const AuthShell: React.FC<Props> = ({ eyebrow, headline, lede, points, foot, barRight, narrow, logoHeight = 72, children }) => (
   <div className="ht ht-auth" style={{ minHeight: '100vh' }}>
     <header className="ht-auth__bar">

@@ -5,7 +5,6 @@ import { Badge, Panel, Timeline } from '../../../components/ui/Ht';
 
 export type ShipmentAction = 'transit' | 'eta' | 'receive' | 'cancel';
 
-/** 3.2 — orders with status and ETA (old ETA struck through when it moved). */
 export const ShipmentTable: React.FC<{ shipments: ShipmentOrder[]; selectedId?: string; onSelect: (id: string) => void }> = ({ shipments, selectedId, onSelect }) => (
   <Panel>
     <div style={{ overflowX: 'auto' }}>
@@ -30,7 +29,6 @@ export const ShipmentTable: React.FC<{ shipments: ShipmentOrder[]; selectedId?: 
   </Panel>
 );
 
-/** One order: lines (ordered / received / lot), what it is for, history, and the next actions. */
 export const ShipmentDetail: React.FC<{ shipment: ShipmentOrder; onAction: (a: ShipmentAction) => void }> = ({ shipment: s, onAction }) => {
   const open = OPEN_SHIPMENT.includes(s.status);
   return (

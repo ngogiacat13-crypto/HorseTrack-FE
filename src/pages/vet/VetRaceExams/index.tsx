@@ -11,7 +11,6 @@ import { HorseBadges, LoadState } from '../../../components/trainer/TrainerParts
 
 type Tab = 'waiting' | 'done';
 
-/* 5.1 Nhận yêu cầu khám · 5.2 Khám lâm sàng · 5.3 Ghi kết quả ĐẠT/KHÔNG ĐẠT · 5.4 Gửi kết quả cho HLV và chủ ngựa (BR_04) */
 export const VetRaceExams: React.FC = () => {
   const actor = useActor();
   const toast = useToast();
@@ -32,7 +31,6 @@ export const VetRaceExams: React.FC = () => {
   const examHorse = examFor ? horseOf(examFor.horseId) : undefined;
   const blocked = examHorse && (examHorse.trainingLocked || examHorse.health === 'INJURED' || examHorse.health === 'QUARANTINE');
   const list = tab === 'waiting' ? waiting : done;
-  /** Drugs still detectable on race day (reference detection times). */
   const risky = (p: RaceProposal) => blockingWindows(drugWindows(data.protocols, data.inventory, p.horseId), tour(p.tournamentId)?.date ?? '');
   const examRisk = examFor ? risky(examFor) : [];
 

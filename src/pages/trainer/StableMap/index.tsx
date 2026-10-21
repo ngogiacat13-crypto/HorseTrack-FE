@@ -12,14 +12,13 @@ const STALL_LABEL: Record<Stall['status'], [string, 'success' | 'warning' | 'dan
   CLEAN: ['Sạch', 'success'], NEEDS_CLEANING: ['Cần dọn', 'warning'], MAINTENANCE: ['Bảo trì', 'danger'],
 };
 
-/* Sơ đồ chuồng trại — HLV trưởng chỉ xem vị trí ngựa và tình trạng; vệ sinh do Mã phu cập nhật. */
 export const StableMap: React.FC = () => {
   const actor = useActor();
   const { data, loading, error, reload } = useFetch(() => trainerApi.getStable(actor), [actor]);
   const [sel, setSel] = useState('A-02');
   const [zone, setZone] = useState('');
   const [q, setQ] = useState('');
-  const query = useDebounce(q); // filter after the user pauses typing
+  const query = useDebounce(q);
 
   const stalls = useMemo(() => data?.stalls ?? [], [data]);
   const visible = useMemo(() => stalls.filter((s) => (!zone || s.zone === zone) && `${s.id} ${s.horse ?? ''}`.toLowerCase().includes(query.trim().toLowerCase())), [stalls, zone, query]);

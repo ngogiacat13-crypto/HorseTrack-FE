@@ -9,7 +9,6 @@ import { ROLE_LABEL } from '../../../components/layout/nav';
 type Role = ManagedUser['role'];
 const ROLES = Object.keys(ROLE_LABEL) as Role[];
 
-/** Reason box shared by the user dialogs (min 10 characters). */
 const useReason = () => {
   const [reason, setReason] = useState('');
   const [err, setErr] = useState('');
@@ -47,7 +46,6 @@ export const GroomAssignmentDialog: React.FC<{ user: ManagedUser; data: { grooms
   );
 };
 
-/* 5.2 — change role after the BR_06 conflict check; a failing check blocks the change. */
 export const RoleDialog: React.FC<{ user: ManagedUser; onClose: () => void; onDone: (patch: Partial<ManagedUser>) => void }> = ({ user, onClose, onDone }) => {
   const actor = useActor();
   const { busy, error, run } = useAction();
@@ -89,7 +87,6 @@ export const RoleDialog: React.FC<{ user: ManagedUser; onClose: () => void; onDo
   );
 };
 
-/* 5.1 — lock / unlock an account with a reason. */
 export const LockUserDialog: React.FC<{ user: ManagedUser; lock: boolean; onClose: () => void; onDone: (patch: Partial<ManagedUser>) => void }> = ({ user, lock, onClose, onDone }) => {
   const actor = useActor();
   const { busy, error, run } = useAction();

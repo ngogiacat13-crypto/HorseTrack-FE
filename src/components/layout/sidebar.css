@@ -1,4 +1,3 @@
-/* ============ SIDEBAR - ICON ONLY ============ */
 .sidebar-icon-only {
   width: 68px;
   min-width: 68px;
@@ -14,7 +13,6 @@
   top: 0;
 }
 
-/* ---- Logo ---- */
 .sidebar-logo-wrap {
   margin-bottom: 20px;
   display: flex;
@@ -33,7 +31,6 @@
   font-size: 20px;
 }
 
-/* ---- Nav ---- */
 .sidebar-nav {
   display: flex;
   flex-direction: column;
@@ -52,7 +49,6 @@
   width: 100%;
 }
 
-/* ---- Icon Button ---- */
 .sidebar-icon-btn {
   position: relative;
   width: 42px;
@@ -78,7 +74,6 @@
   transition: transform 0.15s ease;
 }
 
-/* ---- Tooltip ---- */
 .sidebar-tooltip {
   position: absolute;
   left: calc(100% + 10px);

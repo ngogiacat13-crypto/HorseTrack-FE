@@ -10,7 +10,6 @@ import { Avatar, Badge, Callout } from '../../../components/ui/Ht';
 import { ROLE_LABEL } from '../../../components/layout/nav';
 import { AvatarDialog } from './AvatarDialog';
 
-/* Picture + name + role. Pick a file (or drop it on the picture) → preview → save. Works the same for every role. */
 export const AvatarCard: React.FC<{ user: AuthUser }> = ({ user }) => {
   const { updateUser } = useAuth();
   const actor = useActor();
@@ -18,7 +17,6 @@ export const AvatarCard: React.FC<{ user: AuthUser }> = ({ user }) => {
   const { busy, error, setError, run } = useAction();
   const [pickError, setPickError] = useState('');
   const [dragging, setDragging] = useState(false);
-  // undefined = no dialog · string = new picture to preview · null = confirm removal
   const [pending, setPending] = useState<string | null | undefined>(undefined);
 
   const pick = async (file?: File) => {

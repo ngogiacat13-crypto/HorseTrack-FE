@@ -8,7 +8,6 @@ import { Icon } from '../../../components/ui/Icon';
 import { BackButton, Badge, Busy, Callout, PageHeader, Panel, useToast } from '../../../components/ui/Ht';
 import { LoadState } from '../../../components/trainer/TrainerParts';
 
-/* 3.2 chọn ngựa đủ điều kiện · 3.3 tạo đề xuất thi đấu (BR_01, BR_04) */
 export const TrainerProposalCreate: React.FC = () => {
   const navigate = useNavigate();
   const toast = useToast();

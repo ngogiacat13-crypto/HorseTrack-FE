@@ -11,7 +11,6 @@ interface Props {
   onExam: () => void; onClose: () => void; onLock: () => void;
 }
 
-/* 1.2 — one case: horse, source, description, session metrics, exam result and the next actions. */
 export const CaseDetail: React.FC<Props> = ({ vetCase: c, horse, session, protocol, onExam, onClose, onLock }) => {
   const toast = useToast();
   const maxHr = session?.readings.length ? Math.max(...session.readings.map((r) => r.hr)) : null;

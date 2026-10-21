@@ -1,7 +1,6 @@
 import React from 'react';
 import { Icon } from '../Icon';
 
-/* ---------- Reason textarea with n/min counter ---------- */
 export const ReasonField: React.FC<{ id: string; label: string; value: string; onChange: (v: string) => void; min?: number; error?: string; placeholder?: string; minHeight?: number }> = ({ id, label, value, onChange, min = 10, error, placeholder, minHeight }) => {
   const n = value.trim().length;
   return (

@@ -4,7 +4,6 @@ import type { AuthUser } from '../../../api/mockData';
 import { Icon } from '../../../components/ui/Icon';
 import { ROLE_LABEL } from '../../../components/layout/nav';
 
-/** Account details of the signed-in user (read-only). */
 export const ProfileDetails: React.FC<{ user: AuthUser }> = ({ user }) => {
   const rows: [string, string, boolean?][] = [
     ['Họ và tên', user.fullname],

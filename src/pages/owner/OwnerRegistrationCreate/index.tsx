@@ -15,14 +15,12 @@ const EMPTY: NewRegistration = {
   name: '', breed: '', sex: '♂', age: 3, color: '', height: '', weight: 0, passport: '', healthCert: '',
   phone: '', files: { ownership: null, health: null },
 };
-/** Prefill from a rejected file (documents must be uploaded again). */
 const fromReg = (r: Registration): NewRegistration => ({
   ...EMPTY, name: r.horse.name, breed: r.horse.breed, sex: r.horse.sex === '♀' ? '♀' : '♂', age: r.horse.age,
   color: r.horseExtra.color, height: r.horseExtra.height, weight: r.horseExtra.weight,
   passport: r.horseExtra.passport, healthCert: r.horseExtra.healthCert, phone: r.owner.phone,
 });
 
-/* 1.4 Tạo hồ sơ đăng ký ngựa (Flow 1, bước 1–2) — hoặc nộp lại hồ sơ bị từ chối khi được phép. */
 export const OwnerRegistrationCreate: React.FC = () => {
   const actor = useActor();
   const [params] = useSearchParams();

@@ -6,7 +6,6 @@ import { Icon } from '../../../components/ui/Icon';
 import { Badge, Panel } from '../../../components/ui/Ht';
 import { ProtocolBadge } from '../../../components/vet/VetParts';
 
-/* The read-only tabs of the health record: cases & protocols, vaccinations, race exams. */
 
 export const CasesTab: React.FC<{ cases: VetCase[]; protocols: Protocol[] }> = ({ cases, protocols }) => (
   <div style={{ display: 'grid', gap: 24 }}>

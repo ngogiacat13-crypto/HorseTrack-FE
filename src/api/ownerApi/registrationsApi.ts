@@ -8,7 +8,6 @@ const CHECKS: [ChecklistItem['key'], string][] = [
 ];
 const docMeta = (d: UploadedDoc) => `${(d.name.split('.').pop() ?? '').toUpperCase()} · ${(d.size / 1048576).toFixed(1).replace('.', ',')} MB · ${DEMO_NOW.date.slice(0, 5)}`;
 
-/** Required-field check done by the system before the file reaches the Club Manager (Flow 1, step 2). */
 const validate = (r: NewRegistration) => {
   min(r.name, 2, 'Tên ngựa');
   min(r.breed, 2, 'Giống');
@@ -20,7 +19,6 @@ const validate = (r: NewRegistration) => {
   if (!r.files.health) throw new Error('Tải lên giấy chứng nhận sức khỏe.');
 };
 
-/* 1.4 Đăng ký ngựa mới → hàng chờ duyệt của Quản lý CLB (PENDING_REVIEW). */
 export const registrationsApi = {
   async getMyRegistrations(actor: Actor) {
     return (await get<Registration[]>('/registrations')).filter((r) => r.owner.fullName === actor.name).sort((a, b) => b.id.localeCompare(a.id));
@@ -32,7 +30,6 @@ export const registrationsApi = {
     return r;
   },
 
-  /** New file, or a resubmission of a rejected one when the manager allowed it (RESUBMITTED). */
   async submitRegistration(input: NewRegistration, actor: Actor & { email?: string }, resubmit?: Registration) {
     validate(input);
     if (resubmit && !(resubmit.status === 'Rejected' && resubmit.decidedNote === 'Cho phép nộp lại')) throw new Error('Hồ sơ này không được phép nộp lại.');

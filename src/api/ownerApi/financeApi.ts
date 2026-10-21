@@ -6,7 +6,6 @@ import type { OwnerInvoice, Payment } from './types';
 
 const mineOrDeny = (i: OwnerInvoice, actor: Actor) => { if (i.owner !== actor.name) throw new Error(DENIED); return i; };
 
-/* 2.1–2.6 Tài chính: invoices, VNPay sandbox, payment history. PAID only after the server check (BR_12). */
 export const financeApi = {
   async getMyInvoices(actor: Actor) {
     const [invoices, payments] = await Promise.all([get<OwnerInvoice[]>('/invoices'), get<Payment[]>('/payments')]);
@@ -20,13 +19,11 @@ export const financeApi = {
     return { invoice: inv, due: invoiceDue(inv), payments };
   },
 
-  /** 2.1 — open invoices only (unpaid, overdue, suspended). Paid ones are reached from the payment history. */
   async getOpenInvoices(actor: Actor) {
     const { invoices, payments } = await financeApi.getMyInvoices(actor);
     return { invoices: invoices.filter((x) => x.due.group !== 'PAID'), payments };
   },
 
-  /** 2.4 — totals paid / still owed and the finished transactions (successful or failed). */
   async getPaymentHistory(actor: Actor) {
     const { invoices, payments } = await financeApi.getMyInvoices(actor);
     const verified = payments.filter((p) => p.status === 'VERIFIED');
@@ -38,7 +35,6 @@ export const financeApi = {
     };
   },
 
-  /** 2.3 / 2.6 — open a VNPay transaction for the full amount due (debt + penalty + reactivation fee). */
   async startPayment(id: string, actor: Actor) {
     const inv = mineOrDeny(await get<OwnerInvoice>(`/invoices/${id}`), actor);
     if (isPaid(inv)) throw new Error('Hóa đơn đã được thanh toán.');
@@ -62,7 +58,6 @@ export const financeApi = {
     return { payment: p, invoice: await get<OwnerInvoice>(`/invoices/${p.invoiceId}`) };
   },
 
-  /** VNPay MOCK return page — "success" only moves to PENDING_VERIFY; the invoice is NOT paid yet. */
   async gatewayResult(p: Payment, result: 'SUCCESS' | 'FAILED' | 'PROCESSING', actor: Actor) {
     if (p.status !== 'INIT' && p.status !== 'PROCESSING') throw new Error('Giao dịch đã có kết quả.');
     const status = result === 'SUCCESS' ? 'PENDING_VERIFY' : result === 'FAILED' ? 'FAILED' : 'PROCESSING';
@@ -72,11 +67,6 @@ export const financeApi = {
     return data;
   },
 
-  /**
-   * Server-side check (IPN / reconciliation) — simulated for the demo.
-   * Checks the reference and the amount, then marks the invoice paid; a suspended service only moves to
-   * REACTIVATION_PENDING — the Club Manager reopens it (BR_14).
-   */
   async serverVerify(p: Payment) {
     if (p.status !== 'PENDING_VERIFY') throw new Error('Chỉ xác minh giao dịch đang chờ xác minh.');
     const inv = await get<OwnerInvoice>(`/invoices/${p.invoiceId}`);

@@ -7,7 +7,6 @@ import { Icon } from '../../../components/ui/Icon';
 import { BrandMark, DemoClock } from '../../../components/ui/Ht';
 import { FLOWS, RULES, ROLES } from './content';
 
-/* Màn hình chính (public) — giới thiệu hệ thống, 6 vai trò và các luồng nghiệp vụ trước khi đăng nhập. */
 export const Landing: React.FC = () => {
   const { user } = useAuth();
   return (

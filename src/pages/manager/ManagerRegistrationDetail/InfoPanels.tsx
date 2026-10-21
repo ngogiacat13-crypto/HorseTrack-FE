@@ -5,7 +5,6 @@ import { Badge, Panel, Timeline, TimelineItem } from '../../../components/ui/Ht'
 
 const twoCols: React.CSSProperties = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 32px' };
 
-/** Horse details as declared by the owner. */
 export const HorseInfo: React.FC<{ reg: Registration }> = ({ reg: d }) => (
   <Panel title="Thông tin ngựa" right={<Badge tone="neutral" plain>Khai báo bởi chủ ngựa</Badge>}>
     <div className="ht-panel__body" style={twoCols}>
@@ -55,7 +54,6 @@ export const Attachments: React.FC<{ reg: Registration }> = ({ reg: d }) => (
   </Panel>
 );
 
-/** 1.4 — history of the file (BR_10). */
 export const RegistrationHistory: React.FC<{ items: TimelineItem[] }> = ({ items }) => (
   <Panel as="h3" title="Lịch sử hồ sơ" right={<Badge tone="neutral" plain style={{ fontFamily: 'var(--font-mono)' }}>BR_10</Badge>}>
     <div className="ht-panel__body"><Timeline items={items} /></div>

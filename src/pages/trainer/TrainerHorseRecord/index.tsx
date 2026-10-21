@@ -10,7 +10,6 @@ import { HealthTab, OverviewTab, RacesTab, TrainingTab } from './RecordTabs';
 
 const sortKey = (s: { date: string; time: string }) => s.date.split('/').reverse().join('') + s.time;
 
-/* 1.5 lịch sử huấn luyện · 4.1 hồ sơ sức khỏe (chỉ xem) · 4.2 khóa tập · 4.3 lịch tiêm */
 export const TrainerHorseRecord: React.FC = () => {
   const { id = '' } = useParams<{ id: string }>();
   const actor = useActor();

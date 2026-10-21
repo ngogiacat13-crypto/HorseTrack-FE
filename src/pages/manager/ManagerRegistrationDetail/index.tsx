@@ -10,7 +10,6 @@ import { ApproveDialog, RejectDialog } from './DecisionDialogs';
 
 type Decision = { kind: 'Approved' | 'Rejected'; at: string };
 
-/* 1.1 Duyệt hồ sơ ngựa mới · 1.2 Checklist · 1.3 Từ chối kèm lý do · 1.4 Lịch sử (BR_10) */
 export const ManagerRegistrationDetail: React.FC = () => {
   const { id = 'REG-0019' } = useParams<{ id: string }>();
   const actor = useActor();

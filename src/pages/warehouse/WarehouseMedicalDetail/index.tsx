@@ -9,7 +9,6 @@ import { ProtocolBadge, ProtocolPath } from '../../../components/vet/VetParts';
 import { StockCheckForm } from './StockCheckForm';
 import { DispenseForm } from './DispenseForm';
 
-/** What the warehouse sees while the protocol is in the vet's hands. */
 const WAIT_TEXT: Record<string, string> = {
   STOCK_SHORTAGE: 'Đã báo thiếu. Bác sĩ đang quyết định đổi thuốc hoặc chờ hàng — kho không tự đổi thuốc.',
   STOCK_AVAILABLE: 'Đã giữ đủ hàng. Chờ bác sĩ xác nhận phác đồ rồi mới cấp phát.',
@@ -18,7 +17,6 @@ const WAIT_TEXT: Record<string, string> = {
   IN_TREATMENT: 'Đã cấp phát — đang điều trị.',
 };
 
-/* Chi tiết yêu cầu thuốc: 2.2–2.3 kiểm tồn & phản hồi · 2.4 cấp phát · trạng thái chờ bác sĩ / chờ hàng */
 export const WarehouseMedicalDetail: React.FC = () => {
   const { id = '' } = useParams<{ id: string }>();
   const { data, loading, error, reload } = useFetch(() => warehouseApi.getRequest(id), [id]);

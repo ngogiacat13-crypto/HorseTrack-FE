@@ -6,10 +6,8 @@ import { available, nearestLot, OPEN_SHIPMENT } from './labels';
 import { get, moveStock, now, posInt } from './shared';
 import type { ShipmentOrder, StockItem } from './types';
 
-/** States in which a protocol concerns the warehouse. */
 export const WAREHOUSE_STATES: Protocol['state'][] = ['WAITING_STOCK_CHECK', 'STOCK_SHORTAGE', 'STOCK_AVAILABLE', 'WAITING_RESTOCK', 'REQUIRES_VET_REVIEW', 'READY_FOR_DISPENSING', 'IN_TREATMENT'];
 
-/** Total need per item over all phases of a protocol. */
 export const needs = (p: Protocol) => {
   const m = new Map<string, { itemId: string; name: string; unit: string; need: number }>();
   p.phases.forEach((ph) => ph.items.forEach((it) => {
@@ -20,7 +18,6 @@ export const needs = (p: Protocol) => {
   return [...m.values()];
 };
 
-/** What the warehouse would answer right now: hold what is available (earliest lot), report the rest as short. */
 export const previewStock = (p: Protocol, items: StockItem[]) => needs(p).map((n) => {
   const it = items.find((i) => i.id === n.itemId);
   const avail = it ? available(it) : 0;
@@ -29,7 +26,6 @@ export const previewStock = (p: Protocol, items: StockItem[]) => needs(p).map((n
   return { ...n, available: avail, held, short: n.need - held, lot: lot?.lot ?? null, expiry: lot?.expiry ?? null };
 });
 
-/* 2.1–2.5 — protocol requests from the vet. The warehouse checks, holds and dispenses; it never changes the protocol (BR_07). */
 export const medicalApi = {
   async getRequests() {
     const [protocols, items, shipments] = await Promise.all([get<Protocol[]>('/protocols'), get<StockItem[]>('/inventory'), get<ShipmentOrder[]>('/shipments')]);
@@ -42,7 +38,6 @@ export const medicalApi = {
     return { protocol: p, horse, items, shipments, openShipments: shipments.filter((s) => OPEN_SHIPMENT.includes(s.status)) };
   },
 
-  /** 2.2 / 2.3 — answer the stock check. Short lines carry the ETA of a linked shipment, or "chưa xác định" (null) — never a guess. */
   async respondStock(p: Protocol, etaFor: Record<string, string | null>, actor: Actor) {
     if (p.state !== 'WAITING_STOCK_CHECK') throw new Error('Phác đồ này không còn chờ kho kiểm tồn.');
     const [items, shipments] = await Promise.all([get<StockItem[]>('/inventory'), get<ShipmentOrder[]>('/shipments')]);
@@ -68,7 +63,6 @@ export const medicalApi = {
     return data;
   },
 
-  /** 2.4 — dispense only a protocol the vet has confirmed. Actual quantity, lot and receiver are recorded; on hand goes down now. */
   async dispense(p: Protocol, input: { lines: { itemId: string; qty: number; lot: string }[]; receiver: string }, actor: Actor) {
     if (p.state !== 'READY_FOR_DISPENSING') throw new Error('Chỉ cấp phát phác đồ đã được bác sĩ xác nhận (READY_FOR_DISPENSING).');
     if (!isOpenProtocol(p)) throw new Error('Phác đồ đã đóng hoặc bị thay thế — không cấp phát.');

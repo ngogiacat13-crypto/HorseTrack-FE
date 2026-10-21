@@ -11,7 +11,6 @@ import { CloseCaseDialog } from './CloseCaseDialog';
 
 const SEV_ORDER = { HIGH: 0, MEDIUM: 1, LOW: 2 } as const;
 
-/* 1.1 Hộp thư ca khám · 1.2 Ghi nhận ca khám · 3.1 Khóa huấn luyện */
 export const VetInbox: React.FC = () => {
   const [params, setParams] = useSearchParams();
   const { data, loading, error, reload } = useFetch(() => vetApi.getCases());

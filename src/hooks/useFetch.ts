@@ -1,7 +1,5 @@
 import { DependencyList, useCallback, useEffect, useRef, useState } from 'react';
 
-/* Custom hook (Slot 9–10, 19): run an async loader in useEffect and expose { data, loading, error, reload }.
-   The cleanup flag ignores a response that arrives after the component unmounted or the deps changed. */
 export function useFetch<T>(loader: () => Promise<T>, deps: DependencyList = []) {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);
@@ -11,7 +9,6 @@ export function useFetch<T>(loader: () => Promise<T>, deps: DependencyList = [])
 
   useEffect(() => {
     let cancelled = false;
-    // New params (e.g. another :id) → drop the old data so a failed load is not hidden behind it. A plain reload keeps it.
     const changed = !lastDeps.current || deps.some((d, i) => d !== lastDeps.current?.[i]);
     lastDeps.current = deps;
     if (changed) setData(null);

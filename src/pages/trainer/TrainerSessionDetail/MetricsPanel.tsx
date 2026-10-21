@@ -4,7 +4,6 @@ import { Icon } from '../../../components/ui/Icon';
 import { Panel } from '../../../components/ui/Ht';
 import { HrChart } from '../../../components/trainer/TrainerParts';
 
-/** One read-only gauge: peak value against its threshold. */
 const Gauge: React.FC<{ label: string; value: number | string; limit: number; pct: number; note: string }> = ({ label, value, limit, pct, note }) => (
   <div className={`ht-metric${pct >= 100 ? ' ht-metric--over' : ''}`}>
     <div className="ht-metric__top"><span>{label}</span><span>Ngưỡng <b className="ht-mono">{limit}</b></span></div>
@@ -14,7 +13,6 @@ const Gauge: React.FC<{ label: string; value: number | string; limit: number; pc
   </div>
 );
 
-/* 2.2 — readings at the moment the session stopped + heart-rate chart with recovery. */
 export const MetricsPanel: React.FC<{ session: TrainingSession }> = ({ session: s }) => {
   const peak = s.readings.length ? s.readings.reduce((m, r) => (r.hr > m.hr ? r : m), s.readings[0]) : null;
   const peakSpeed = s.readings.length ? Math.max(...s.readings.map((r) => r.speed)) : 0;

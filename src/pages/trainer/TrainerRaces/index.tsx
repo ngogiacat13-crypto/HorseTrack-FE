@@ -13,7 +13,6 @@ import { TournamentTable } from './TournamentTable';
 
 type Tab = 'proposals' | 'tournaments';
 
-/* 3.1 danh sách giải · 3.4 theo dõi đề xuất · 3.5 nhập kết quả */
 export const TrainerRaces: React.FC = () => {
   const actor = useActor();
   const [params] = useSearchParams();

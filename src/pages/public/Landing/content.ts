@@ -1,4 +1,3 @@
-/* Static content of the public home page — taken from the functional spec (roles, flows, business rules). */
 import type { IconName } from '../../../components/ui/Icon';
 
 export const ROLES: { icon: IconName; name: string; en: string; text: string; items: string[] }[] = [

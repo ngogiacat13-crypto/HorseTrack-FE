@@ -1,7 +1,6 @@
 import React from 'react';
 import { Avatar, Callout, Dialog } from '../../../components/ui/Ht';
 
-/* Preview the new picture at the sizes it is shown in the app, then save — or confirm removing it. */
 export const AvatarDialog: React.FC<{ name: string; src: string | null; busy: boolean; error: string; onClose: () => void; onConfirm: () => void }> = ({ name, src, busy, error, onClose, onConfirm }) => (
   <Dialog open onClose={onClose} icon={src ? 'usercircle' : 'x'} tone={src ? 'brand' : 'danger'} danger={!src} busy={busy} busyLabel="Đang lưu…"
     title={src ? 'Xem trước ảnh đại diện' : 'Gỡ ảnh đại diện?'}

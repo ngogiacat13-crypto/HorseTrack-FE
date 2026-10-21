@@ -10,7 +10,6 @@ import { Icon } from '../../../components/ui/Icon';
 import { Badge, BrandMark, Callout, money } from '../../../components/ui/Ht';
 import { LoadState } from '../../../components/trainer/TrainerParts';
 
-/* 2.3 VNPay Sandbox — MOCK. "Thành công" only moves the transaction to "Chờ xác minh"; never to PAID. */
 export const VNPayMock: React.FC = () => {
   const { id = '' } = useParams();
   const actor = useActor();

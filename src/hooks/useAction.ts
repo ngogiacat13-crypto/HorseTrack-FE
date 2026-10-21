@@ -2,8 +2,6 @@ import { useCallback, useState } from 'react';
 import type { ApiError } from '../api/http';
 import { useToast } from '../components/ui/Ht';
 
-/** Runs one API action at a time: tracks busy + error, shows a toast on success, then calls onDone (e.g. reload).
-    run() resolves to true on success so the caller can close its dialog. */
 export function useAction(onDone?: () => void) {
   const toast = useToast();
   const [busy, setBusy] = useState(false);

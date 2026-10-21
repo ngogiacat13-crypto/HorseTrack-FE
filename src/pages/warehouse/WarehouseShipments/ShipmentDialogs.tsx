@@ -10,7 +10,6 @@ import { MedicinePicker } from '../../../components/vet/MedicinePicker';
 
 export interface Need { ref: string; label: string; itemId: string; qty: number; requiredBy: string }
 
-/* 3.1 — new order: supplier, items, quantity, ETA; optionally linked to a shortage (protocol) or a Groom request. */
 export const CreateShipmentDialog: React.FC<{ items: StockItem[]; needs: Need[]; initialRef?: string; onClose: () => void; onDone: (s: ShipmentOrder) => void }> = ({ items, needs, initialRef, onClose, onDone }) => {
   const actor = useActor();
   const { busy, error, run } = useAction();
@@ -79,7 +78,6 @@ export const CreateShipmentDialog: React.FC<{ items: StockItem[]; needs: Need[];
   );
 };
 
-/* 3.3 — what actually arrived: quantity, lot and expiry (medicines). Only this updates the stock. */
 export const ReceiveDialog: React.FC<{ shipment: ShipmentOrder; items: StockItem[]; onClose: () => void; onDone: (notified: string[]) => void }> = ({ shipment: s, items, onClose, onDone }) => {
   const actor = useActor();
   const { busy, error, run } = useAction();
@@ -114,7 +112,6 @@ export const ReceiveDialog: React.FC<{ shipment: ShipmentOrder; items: StockItem
   );
 };
 
-/* 2.5 / 3.2 — new ETA (with reason) or cancel. A later ETA past the medicine date warns the vet automatically. */
 export const ReasonDialog: React.FC<{ shipment: ShipmentOrder; kind: 'eta' | 'cancel'; onClose: () => void; onDone: (warned: string[]) => void }> = ({ shipment: s, kind, onClose, onDone }) => {
   const actor = useActor();
   const { busy, error, run } = useAction();

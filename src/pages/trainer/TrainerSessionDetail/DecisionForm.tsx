@@ -8,7 +8,6 @@ import { Busy, Callout, Panel, ReasonField, Rules, useToast } from '../../../com
 type Choice = 'stop' | 'adjust';
 const INTENSITIES: Intensity[] = ['Nhẹ', 'Vừa', 'Cao'];
 
-/* 2.3 stop & send to the vet · 2.4 adjust & continue — only when not locked (BR_01) and recovery HR is under the threshold (BR_02). */
 export const DecisionForm: React.FC<{ session: TrainingSession; horse: Horse; phase: PlanPhase; onDone: () => void }> = ({ session: s, horse, phase, onDone }) => {
   const actor = useActor();
   const toast = useToast();

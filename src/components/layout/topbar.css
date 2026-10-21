@@ -1,4 +1,3 @@
-/* ============ TOPBAR ============ */
 .topbar {
   height: 64px;
   background: #fff;
@@ -11,7 +10,6 @@
   gap: 16px;
 }
 
-/* ---------- LEFT ---------- */
 .topbar-left {
   display: flex;
   align-items: center;
@@ -33,7 +31,6 @@
 }
 .topbar-brand-icon { font-size: 22px; }
 
-/* Clock */
 .topbar-demo-clock {
   display: flex;
   align-items: center;
@@ -60,7 +57,6 @@
   color: #6b7280;
 }
 
-/* Time travel button */
 .topbar-time-btn {
   background: #1b4332;
   color: #fff;
@@ -76,7 +72,6 @@
 }
 .topbar-time-btn:hover { background: #14352a; }
 
-/* Search */
 .topbar-search {
   flex: 1;
   max-width: 500px;
@@ -96,7 +91,6 @@
 }
 .topbar-search::placeholder { color: #9ca3af; }
 
-/* ---------- RIGHT ---------- */
 .topbar-right {
   display: flex;
   align-items: center;
@@ -137,7 +131,6 @@
   border: 2px solid #fff;
 }
 
-/* ---------- User ---------- */
 .topbar-user { position: relative; }
 
 .topbar-user-btn {
@@ -192,7 +185,6 @@
   margin-left: -4px;
 }
 
-/* ---------- Dropdown ---------- */
 .topbar-dropdown {
   position: absolute;
   top: calc(100% + 8px);
@@ -255,7 +247,6 @@
 .topbar-dropdown-item-danger { color: #dc2626; }
 .topbar-dropdown-item-danger:hover { background: #fef2f2; }
 
-/* ---------- Responsive ---------- */
 @media (max-width: 1280px) {
   .topbar-demo-clock { display: none; }
 }

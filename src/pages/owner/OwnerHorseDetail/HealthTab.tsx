@@ -6,7 +6,6 @@ import { Badge, Callout, Panel, Timeline } from '../../../components/ui/Ht';
 import { InjuryMap } from '../../../components/vet/InjuryMap';
 import { ProtocolBadge, ProtocolPath } from '../../../components/vet/VetParts';
 
-/* 4.1 Phác đồ · 4.2 Lịch sử chấn thương — chỉ xem, không có thao tác chuyên môn (BR_09). */
 export const HealthTab: React.FC<{ horse: VetHorse; protocols: Protocol[]; cases: VetCase[]; vaccinations: Vaccination[] }> = ({ horse: h, protocols, cases, vaccinations }) => {
   const [sel, setSel] = useState<string | null>(null);
   return (

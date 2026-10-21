@@ -1,4 +1,3 @@
-/* Turn a picked image file into a small square avatar (center crop) — keeps the stored data URL around 20–60 KB. */
 export const AVATAR_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 export const AVATAR_MAX_MB = 5;
 

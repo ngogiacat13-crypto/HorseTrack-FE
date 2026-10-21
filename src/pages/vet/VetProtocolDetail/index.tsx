@@ -10,7 +10,6 @@ import { ActionDialog, ProtocolAction } from './ActionDialog';
 import { DecisionPanel } from './DecisionPanel';
 import { LogPanel, PhaseList, ProgressPanel, ProtocolBanners, StockPanel, VersionsPanel } from './ProtocolSections';
 
-/* Chi tiết phác đồ: 2.3 phản hồi kho · 2.4 thiếu thuốc → đổi / chờ · 2.5 xác nhận · 2.6 hàng trễ · 2.7 theo dõi kết quả */
 export const VetProtocolDetail: React.FC = () => {
   const { id = '' } = useParams<{ id: string }>();
   const navigate = useNavigate();

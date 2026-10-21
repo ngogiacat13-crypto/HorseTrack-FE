@@ -12,7 +12,6 @@ const BADGE: Record<InvoiceStatus, [React.ComponentProps<typeof Badge>['tone'], 
 
 interface Props { invoices: Invoice[]; q: string; onSearch: (q: string) => void; onSuspend: (i: Invoice) => void; onReactivate: (i: Invoice) => void }
 
-/* 3.1 — invoices with the overdue meter and the action allowed at each stage (BR_12/13/14). */
 export const InvoiceTable: React.FC<Props> = ({ invoices, q, onSearch, onSuspend, onReactivate }) => {
   const toast = useToast();
   const actor = useActor();

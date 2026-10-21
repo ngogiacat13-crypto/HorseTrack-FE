@@ -1,8 +1,3 @@
-/* ============================================================
-   AUTH MODULE — LOGIN / REGISTER / FORGOT / CHANGE PASSWORD
-   ============================================================ */
-
-/* ---------- Layout chung ---------- */
 .auth-page {
   min-height: 100vh;
   display: flex;
@@ -15,7 +10,6 @@
   font-family: 'Inter', sans-serif;
 }
 
-/* ---------- Card chính ---------- */
 .auth-card {
   width: 100%;
   max-width: 520px;
@@ -27,7 +21,6 @@
     0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-/* ---------- Logo + Tiêu đề ---------- */
 .auth-logo-wrap {
   display: flex;
   justify-content: center;
@@ -61,14 +54,12 @@
   line-height: 1.5;
 }
 
-/* ---------- Divider nhẹ ---------- */
 .auth-divider {
   height: 1px;
   background: #e8ede9;
   margin: 20px 0;
 }
 
-/* ---------- Demo hint box ---------- */
 .auth-demo-hint {
   background: #f7faf8;
   border: 1px solid #e0e9e3;
@@ -98,7 +89,6 @@
   font-weight: 500;
 }
 
-/* ---------- Form ---------- */
 .auth-form-group {
   margin-bottom: 16px;
 }
@@ -154,14 +144,12 @@
   gap: 8px;
 }
 
-/* ---------- Row 2 cột ---------- */
 .auth-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
 
-/* ---------- Nút chính ---------- */
 .auth-btn {
   width: 100%;
   background: #2d6a4f;
@@ -191,7 +179,6 @@
   cursor: not-allowed;
 }
 
-/* Nút phụ (Quay lại) */
 .auth-btn-secondary {
   background: transparent;
   color: #4a5d52;
@@ -204,7 +191,6 @@
   transform: none;
 }
 
-/* ---------- Links ---------- */
 .auth-footer {
   text-align: center;
   font-size: 13px;
@@ -224,7 +210,6 @@
   margin-bottom: 12px;
 }
 
-/* ---------- Bước đăng ký (Step badge) ---------- */
 .auth-step-header {
   display: flex;
   align-items: center;
@@ -247,7 +232,6 @@
   color: #1b4332;
 }
 
-/* ---------- Progress bar ---------- */
 .auth-progress {
   height: 4px;
   background: #e8ede9;
@@ -262,7 +246,6 @@
   transition: width 0.3s ease;
 }
 
-/* ---------- Info banner (blue) ---------- */
 .auth-info-banner {
   background: #eaf4ff;
   border: 1px solid #cfe4f8;
@@ -275,7 +258,6 @@
 }
 .auth-info-banner strong { font-weight: 700; }
 
-/* ---------- Success screen ---------- */
 .auth-success {
   text-align: center;
   padding: 12px 0;
@@ -306,7 +288,6 @@
   margin-bottom: 24px;
 }
 
-/* ---------- Responsive ---------- */
 @media (max-width: 575.98px) {
   .auth-card { padding: 24px 22px; border-radius: 16px; }
   .auth-title { font-size: 22px; }

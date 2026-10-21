@@ -5,7 +5,6 @@ import { Icon } from '../../../components/ui/Icon';
 import { Badge, Panel, Timeline } from '../../../components/ui/Ht';
 import { TODAY, WEEK } from './constants';
 
-/** Banner for each session paused above the threshold (BR_02) — the trainer must decide. */
 export const PausedBanners: React.FC<{ sessions: TrainingSession[] }> = ({ sessions }) => (
   <>
     {sessions.map((s) => (
@@ -18,7 +17,6 @@ export const PausedBanners: React.FC<{ sessions: TrainingSession[] }> = ({ sessi
   </>
 );
 
-/** Mon → Sun of the demo week with the number of sessions per day. */
 export const WeekStrip: React.FC<{ sessions: TrainingSession[]; day: string; onDay: (d: string) => void }> = ({ sessions, day, onDay }) => (
   <div className="ht-week" role="group" aria-label="Chọn ngày">
     {WEEK.map(([dow, date]) => {
@@ -35,7 +33,6 @@ export const WeekStrip: React.FC<{ sessions: TrainingSession[]; day: string; onD
   </div>
 );
 
-/** Sessions of one day; the last column is the next action for each session. */
 export const DaySessions: React.FC<{ day: string; sessions: TrainingSession[]; onEvaluate: (s: TrainingSession) => void }> = ({ day, sessions, onEvaluate }) => {
   const navigate = useNavigate();
   const action = (s: TrainingSession) => {
@@ -68,7 +65,6 @@ export const DaySessions: React.FC<{ day: string; sessions: TrainingSession[]; o
   );
 };
 
-/** 1.4 — completed sessions still waiting for a score. */
 export const EvaluateQueue: React.FC<{ sessions: TrainingSession[]; onEvaluate: (s: TrainingSession) => void }> = ({ sessions, onEvaluate }) => (
   <Panel as="h3" title="Chờ đánh giá phong độ" right={<span className="ht-count" style={{ margin: 0 }}>{sessions.length}</span>}>
     <ul className="ht-list">
@@ -83,7 +79,6 @@ export const EvaluateQueue: React.FC<{ sessions: TrainingSession[]; onEvaluate: 
   </Panel>
 );
 
-/** Vaccinations in the next 7 days — avoid heavy training around them. */
 export const VaccinesSoon: React.FC<{ vaccinations: Vaccination[] }> = ({ vaccinations }) => (
   <Panel as="h3" title="Lịch tiêm 7 ngày tới" right={<span className="ht-mono" style={{ fontSize: 12, color: 'var(--muted)' }}>tránh xếp tập nặng</span>}>
     <div className="ht-panel__body">

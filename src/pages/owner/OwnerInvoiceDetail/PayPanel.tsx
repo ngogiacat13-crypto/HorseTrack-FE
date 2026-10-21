@@ -7,7 +7,6 @@ import { PATH, toPath } from '../../../routers/routerPath';
 import { Icon } from '../../../components/ui/Icon';
 import { Badge, Callout, money, Panel } from '../../../components/ui/Ht';
 
-/* 2.3 / 2.6 Thanh toán: debt + penalty (BR_12) + reactivation fee (BR_14), then the VNPay sandbox. */
 export const PayPanel: React.FC<{ invoice: OwnerInvoice; due: InvoiceDue; payments: Payment[]; onChange: () => void }> = ({ invoice: i, due, payments, onChange }) => {
   const actor = useActor();
   const navigate = useNavigate();

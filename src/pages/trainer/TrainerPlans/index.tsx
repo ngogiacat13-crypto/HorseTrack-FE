@@ -10,7 +10,6 @@ import { LoadState, PhaseBar } from '../../../components/trainer/TrainerParts';
 type Filter = 'planned' | 'running' | 'paused' | 'history';
 const MATCH: Record<Filter, PlanStatus[]> = { planned: ['PLANNED'], running: ['ACTIVE'], paused: ['PAUSED'], history: ['COMPLETED', 'REPLACED'] };
 
-/* 1.2 Giáo án huấn luyện — danh sách */
 export const TrainerPlans: React.FC = () => {
   const actor = useActor();
   const { data, loading, error, reload } = useFetch(() => trainerApi.getPlans(actor), [actor]);

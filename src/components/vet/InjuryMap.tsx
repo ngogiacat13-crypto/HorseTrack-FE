@@ -2,16 +2,11 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import type { Injury } from '../../api/trainerApi';
 
-/* 2D injury map (spec 1.3) on public/horse-injury-map.svg — the horse seen from its left side.
-   Marks are placed in % of the image so they stay on the same body part at any width.
-   - read-only: HeadTrainer / others see the marks.
-   - editable: the vet clicks the body to place a new mark (onPick), and picks a mark to see its details. */
 export interface InjuryMapProps {
   injuries: Injury[];
   horseName: string;
   selectedId?: string | null;
   onSelect?: (id: string | null) => void;
-  /** Editable mode: where the new mark will go, and the click handler that moves it. */
   pending?: { x: number; y: number } | null;
   onPick?: (x: number, y: number) => void;
 }

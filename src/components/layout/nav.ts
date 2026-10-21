@@ -14,7 +14,6 @@ export const ROLE_LABEL: Record<Role, string> = {
 export interface NavItem { path: string; icon: IconName; label: string; count?: number; tone?: 'danger'; end?: boolean }
 export interface NavGroup { title: string; items: NavItem[] }
 
-/* Sidebar per role. Counts are demo values; wire them to the API when the backend exists. */
 export const NAV_BY_ROLE: Record<Role, NavGroup[]> = {
   ClubManager: [
     { title: 'Tổng quan', items: [{ path: PATH.manager.home, icon: 'grid', label: 'Bảng điều khiển', end: true }] },

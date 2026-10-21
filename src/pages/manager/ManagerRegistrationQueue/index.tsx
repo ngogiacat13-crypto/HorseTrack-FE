@@ -18,8 +18,8 @@ export const ManagerRegistrationQueue: React.FC = () => {
   const [items, setItems] = useState<Registration[] | null>(null);
   const [filter, setFilter] = useState<Filter>('Pending');
   const [q, setQ] = useState('');
-  const query = useDebounce(q); // filter after the user pauses typing
-  const [oldestFirst, setOldestFirst] = useLocalStorage('ht.regQueue.oldestFirst', true); // remembered after F5
+  const query = useDebounce(q);
+  const [oldestFirst, setOldestFirst] = useLocalStorage('ht.regQueue.oldestFirst', true);
 
   useEffect(() => { managerApi.getRegistrations().then(setItems); }, []);
 

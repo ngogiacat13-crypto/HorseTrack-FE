@@ -7,7 +7,6 @@ import type { HistoryLine, Requisition, ShipmentOrder, StockItem } from './types
 const step = (r: Requisition, patch: Partial<Requisition>, line: HistoryLine) =>
   http.patch<Requisition>(`/requisitions/${r.id}`, { ...patch, history: [line, ...r.history] }).then((x) => x.data);
 
-/* 4.1–4.3 non-medical supply requests from Grooms. Status: SUBMITTED → CHECKING_STOCK → APPROVED_FOR_ISSUE / WAITING_RESTOCK / REJECTED → ISSUED. */
 export const requisitionsApi = {
   async getRequisitions() {
     const [requisitions, items, shipments] = await Promise.all([get<Requisition[]>('/requisitions'), get<StockItem[]>('/inventory'), get<ShipmentOrder[]>('/shipments')]);
@@ -19,7 +18,6 @@ export const requisitionsApi = {
     return step(r, { status: 'CHECKING_STOCK' }, { at: now(), who: actor.name, text: 'đang kiểm tồn' });
   },
 
-  /** 4.2 — enough stock: approve and hand it over in one go (quantity and receiver recorded, stock goes down). */
   async issue(r: Requisition, input: { qty: number; to: string }, actor: Actor) {
     if (!['SUBMITTED', 'CHECKING_STOCK', 'APPROVED_FOR_ISSUE'].includes(r.status)) throw new Error('Yêu cầu này không ở bước cấp phát.');
     const qty = posInt(input.qty, 'Số lượng cấp');
@@ -36,7 +34,6 @@ export const requisitionsApi = {
     return data;
   },
 
-  /** 4.2 / 4.3 — not enough: wait for an open shipment (a new order is made from the shipments page). */
   async waitRestock(r: Requisition, shipmentId: string, actor: Actor) {
     if (!['SUBMITTED', 'CHECKING_STOCK'].includes(r.status)) throw new Error('Yêu cầu này không ở bước kiểm tồn.');
     const s = await get<ShipmentOrder>(`/shipments/${shipmentId}`);
@@ -47,7 +44,6 @@ export const requisitionsApi = {
     return data;
   },
 
-  /** 4.2 — rejecting always needs a reason. */
   async reject(r: Requisition, reason: string, actor: Actor) {
     if (['ISSUED', 'REJECTED', 'CLOSED'].includes(r.status)) throw new Error('Yêu cầu đã được xử lý.');
     const why = min(reason, 10, 'Lý do từ chối');

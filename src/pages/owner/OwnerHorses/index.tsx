@@ -9,7 +9,6 @@ import { Badge, Callout, money, PageHeader } from '../../../components/ui/Ht';
 import { HorseBadges, LoadState } from '../../../components/trainer/TrainerParts';
 import { ProtocolBadge } from '../../../components/vet/VetParts';
 
-/* 1.1 Danh sách ngựa của tôi — chỉ ngựa có liên kết sở hữu với tài khoản (BR_09). */
 export const OwnerHorses: React.FC = () => {
   const actor = useActor();
   const { data, loading, error, reload } = useFetch(() => ownerApi.getMyHorses(actor), [actor]);

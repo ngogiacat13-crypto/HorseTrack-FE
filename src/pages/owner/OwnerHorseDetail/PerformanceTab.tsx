@@ -7,7 +7,6 @@ import { Badge, Panel, StatCard } from '../../../components/ui/Ht';
 
 type Stats = { starts: number; wins: number; top3: number; best: number | null };
 
-/* 1.3 Theo dõi phong độ · 3.5 kết quả thi đấu được nhập vào hệ thống */
 export const PerformanceTab: React.FC<{ results: RaceResult[]; stats: Stats; proposals: { proposal: RaceProposal; tournament?: Tournament }[] }> = ({ results, stats, proposals }) => (
   <>
     <div className="ht-stats">

@@ -7,12 +7,10 @@ import { MedicinePicker } from '../../../components/vet/MedicinePicker';
 interface Props {
   phase: ProtoPhase; index: number; open: boolean;
   inventory: InventoryItem[];
-  /** Stock the vet may count on for an item, and how much the whole protocol needs of it. */
   availableOf: (itemId: string) => number; needOf: (itemId: string) => number;
   onToggle: () => void; onRemove?: () => void; onChange: (patch: Partial<ProtoPhase>) => void;
 }
 
-/* 2.1 — one phase of the protocol: name, dates, goal and its medicines. */
 export const PhaseEditor: React.FC<Props> = ({ phase: ph, index, open, inventory, availableOf, needOf, onToggle, onRemove, onChange }) => {
   const toast = useToast();
   const [adding, setAdding] = useState('');

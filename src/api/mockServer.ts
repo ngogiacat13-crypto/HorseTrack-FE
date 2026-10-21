@@ -1,10 +1,6 @@
 import { AxiosError, AxiosHeaders, type AxiosAdapter, type AxiosResponse, type InternalAxiosRequestConfig } from 'axios';
 import seed from '../../db.json';
 
-/* In-browser mock backend: an axios adapter that answers REST calls from db.json,
-   the same way json-server 0.17 does (filters, _sort, _order, _limit, GET/POST/PATCH/PUT/DELETE).
-   Used when VITE_API_URL is not set, so the UI can be tested with `npm run dev` only.
-   Changes are kept in localStorage; call resetMockDb() (or clear site data) to start over. */
 
 type Row = Record<string, unknown>;
 type Db = Record<string, Row[] | Row>;
@@ -26,12 +22,9 @@ let db: Db = load();
 const save = () => {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
-  } catch {
-    /* storage full or blocked: keep working in memory */
-  }
+  } catch {}
 };
 
-/** Restore db.json's original data. */
 export const resetMockDb = () => {
   localStorage.removeItem(STORAGE_KEY);
   db = load();
@@ -47,7 +40,6 @@ export const fail = (config: InternalAxiosRequestConfig, status: number): never 
 
 const RESERVED = new Set(['_sort', '_order', '_limit', '_page', 'q']);
 
-/** json-server style query: field filters, _sort/_order, _limit. Shared with the backend bridge (hybridAdapter). */
 export const queryRows = (resource: Row[], params: Record<string, unknown>) => {
   let rows = resource.filter((r) =>
     Object.entries(params).every(([k, v]) => RESERVED.has(k) || v === undefined || String(r[k]) === String(v)));
@@ -74,7 +66,6 @@ export const mockAdapter: AxiosAdapter = async (config) => {
   if (!name || !(name in db)) return fail(config, 404);
   const resource = db[name];
 
-  // Singular resource (e.g. /dashboard, /financeReport)
   if (!Array.isArray(resource)) {
     if (method === 'get') return respond(config, 200, resource);
     if (method === 'patch' || method === 'put') {

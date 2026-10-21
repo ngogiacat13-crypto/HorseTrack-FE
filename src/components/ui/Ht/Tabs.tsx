@@ -1,7 +1,5 @@
 import React, { createContext, useContext, useId, useState } from 'react';
 
-/* ---------- Tabs (filter bar) ----------
-   Simple form for filter tabs that only change a list: <Tabs value onChange items={[…]} /> */
 function TabsBar<T extends string>({ value, onChange, items }: { value: T; onChange: (v: T) => void; items: { value: T; label: string; count?: number }[] }) {
   return (
     <div className="ht-tabs" role="tablist">
@@ -14,20 +12,6 @@ function TabsBar<T extends string>({ value, onChange, items }: { value: T; onCha
   );
 }
 
-/* ---------- Tabs (compound components) ----------
-   For tabs that switch whole panels. The parts share the selected tab through Context,
-   so the page only lays them out — no `tab === 'X' &&` checks:
-
-   <Tabs.Group defaultValue="info">
-     <Tabs.List>
-       <Tabs.Tab value="info">Tổng quan</Tabs.Tab>
-       <Tabs.Tab value="cost" count={3}>Chi phí</Tabs.Tab>
-     </Tabs.List>
-     <Tabs.Panel value="info">…</Tabs.Panel>
-     <Tabs.Panel value="cost">…</Tabs.Panel>
-   </Tabs.Group>
-
-   Uncontrolled with `defaultValue`, or controlled with `value` + `onChange`. */
 type TabsCtx = { value: string; select: (v: string) => void; baseId: string };
 const TabsContext = createContext<TabsCtx | null>(null);
 
@@ -54,7 +38,6 @@ function Group({ defaultValue, value, onChange, children }: GroupProps) {
 }
 
 function List({ children, label }: { children: React.ReactNode; label?: string }) {
-  // Arrow keys move between tabs (WAI-ARIA tabs pattern).
   const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
     const tabs = Array.from(e.currentTarget.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
@@ -84,11 +67,9 @@ function Panel({ value, children }: { value: string; children: React.ReactNode }
   return <div role="tabpanel" id={`${baseId}-panel-${value}`} aria-labelledby={`${baseId}-tab-${value}`}>{children}</div>;
 }
 
-// A component with sub-components attached (Tabs.Group, Tabs.Tab…); fast refresh cannot see through Object.assign.
 // eslint-disable-next-line react-refresh/only-export-components
 export const Tabs = Object.assign(TabsBar, { Group, List, Tab, Panel });
 
-/* ---------- Segmented control ---------- */
 export function Segmented<T extends string>({ value, onChange, items, label }: { value: T; onChange: (v: T) => void; items: { value: T; label: string }[]; label: string }) {
   return (
     <div className="ht-seg" role="group" aria-label={label}>

@@ -69,7 +69,6 @@ import { OwnerRegistrationCreate } from '../pages/owner/OwnerRegistrationCreate'
 import { VNPayMock } from '../pages/owner/VNPayMock';
 
 
-/* Pages of each role — every one of them is wrapped in RoleGuard below. */
 const ROLE_ROUTES: { role: Role; routes: [path: string, element: React.ReactElement][] }[] = [
   { role: 'ClubManager', routes: [
     [PATH.manager.home, <ManagerDashboard />],
@@ -138,24 +137,19 @@ const ROLE_ROUTES: { role: Role; routes: [path: string, element: React.ReactElem
 export const AppRoutes: React.FC = () => {
   const { user } = useAuth();
   const home = user ? ROLE_HOME[user.role] : PATH.landing;
-  // Public pages bounce a signed-in user back to their home page.
   const publicOnly = (page: React.ReactElement) => (user ? <Navigate to={home} replace /> : page);
 
   return (
     <Routes>
-      {/* Opening localhost goes straight to the login page (or the workspace when already signed in). */}
       <Route path={PATH.root} element={<Navigate to={user ? home : PATH.login} replace />} />
 
-      {/* Public */}
       <Route path={PATH.landing} element={<Landing />} />
       <Route path={PATH.login} element={publicOnly(<Login />)} />
       <Route path={PATH.register} element={publicOnly(<Register />)} />
       <Route path={PATH.forgotPassword} element={publicOnly(<ForgotPassword />)} />
 
-      {/* VNPay sandbox MOCK — full page, outside the app layout */}
       <Route path={PATH.vnpay} element={user ? <RoleGuard role="HorseOwner"><VNPayMock /></RoleGuard> : <Navigate to={PATH.login} replace />} />
 
-      {/* App (signed in) */}
       <Route element={user ? <AppLayout /> : <Navigate to={PATH.login} replace />}>
         <Route path={PATH.horseProfile} element={<HorseProfile />} />
         <Route path={PATH.myProfile} element={<MyProfile />} />
@@ -166,7 +160,6 @@ export const AppRoutes: React.FC = () => {
         )))}
       </Route>
 
-      {/* 404: unknown address */}
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

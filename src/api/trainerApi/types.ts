@@ -1,25 +1,20 @@
-/* Data shapes of the HeadTrainer module (match db.json). */
 export type HealthStatus = 'HEALTHY' | 'WATCH' | 'INJURED' | 'QUARANTINE';
 export interface Injury { id?: string; part: string; severity: string; date: string; vet: string; note: string; x: number; y: number; caseId?: string }
 export interface Horse {
   id: string; name: string; breed: string; sex: '♂' | '♀'; age: number; owner: string; stall: string;
-  /** User id of the HeadTrainer in charge — a trainer only sees their own horses. */
   trainerId: string;
   health: HealthStatus; trainingLocked: boolean; form: 'GOOD' | null; pendingCase: string | null;
   lock: { by: string; at: string; reason: string; review: string } | null;
   injuries: Injury[];
   medicalHistory: { date: string; title: string; tone: 'danger' | 'warning' | 'success' }[];
-  /** Race results entered after each race (owner performance view). */
   raceResults?: { date: string; race: string; distance: string; rank: number; field: number; time: string }[];
 }
 
 export type Intensity = 'Nhẹ' | 'Vừa' | 'Cao';
 export interface PlanPhase { no: number; name: string; weeks: number; intensity: Intensity; distanceM: number; sessionsPerWeek: number; hrLimit: number }
-/** PLANNED = created, waiting for its start date and a first session given to a Mã phu; then ACTIVE. */
 export type PlanStatus = 'PLANNED' | 'ACTIVE' | 'PAUSED' | 'COMPLETED' | 'REPLACED';
 export interface TrainingPlan {
   id: string; horseId: string; horseName: string;
-  /** Name given by the trainer, e.g. “Giáo án tăng sức bền cự ly dài”. */
   name: string;
   type: string; goal: string; phases: PlanPhase[];
   currentPhase: number; week: number; status: PlanStatus; startDate: string; createdBy: string; pausedReason?: string;
@@ -64,7 +59,6 @@ export interface Vaccination {
 }
 export interface Stall {
   id: string; zone: string; horseId: string | null; horse: string | null; status: 'CLEAN' | 'NEEDS_CLEANING' | 'MAINTENANCE'; groom: string;
-  /** Set for the trainer view when the stall holds a horse of another trainer (name hidden). */
   otherTrainer?: boolean;
 }
 export interface Groom { id: string; name: string; zones: string[] }

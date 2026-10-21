@@ -9,7 +9,6 @@ import { RbacMatrix } from './RbacMatrix';
 import { GroomAssignmentDialog, LockUserDialog, RoleDialog } from './UserDialogs';
 import { CreateStaffDialog } from './CreateStaffDialog';
 
-/* 5.1 Quản lý người dùng (Quản lý CLB tạo tài khoản nhân viên) · 5.2 Đổi vai trò (BR_06) · 5.3 Phân quyền RBAC — mọi thay đổi ghi Audit Log (BR_10) */
 export const ManagerUsers: React.FC = () => {
   const { user: me } = useAuth();
   const [users, setUsers] = useState<ManagedUser[] | null>(null);
@@ -21,7 +20,6 @@ export const ManagerUsers: React.FC = () => {
   useEffect(() => { Promise.all([managerApi.getUsers(), managerApi.getGroomAssignments()]).then(([us, assignments]) => { setUsers(us); setAssignmentData(assignments); }); }, []);
   if (!users || !assignmentData) return <div className="ht ht-page"><Loading /></div>;
 
-  // Update the row in place after a successful action, then close the dialog.
   const applied = (patch: Partial<ManagedUser>) => {
     if (dlg) setUsers((xs) => xs!.map((x) => (x.id === dlg.user.id ? { ...x, ...patch } : x)));
     setDlg(null);

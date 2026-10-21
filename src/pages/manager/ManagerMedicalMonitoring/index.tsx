@@ -3,7 +3,6 @@ import { managerApi, ProtocolWatch, Shipment } from '../../../api/managerApi';
 import { Icon } from '../../../components/ui/Icon';
 import { Badge, Callout, Loading, PageHeader, Panel, Segmented, StatCard, Timeline, money, useToast } from '../../../components/ui/Ht';
 
-/* Read-only watch of treatment protocols (BR_07). Replaces the old protocol approval queue. */
 export const ManagerMedicalMonitoring: React.FC = () => {
   const toast = useToast();
   const [data, setData] = useState<{ protocols: ProtocolWatch[]; shipments: Shipment[]; monthCost: number } | null>(null);

@@ -4,7 +4,6 @@ import { useActor } from '../../../auth/AuthContext';
 import { useAction } from '../../../hooks/useAction';
 import { Callout, Dialog, money, Rules } from '../../../components/ui/Ht';
 
-/* 3.2 — BR_13: suspend the owner's service once an invoice is ≥ 25 days overdue. */
 export const SuspendDialog: React.FC<{ invoice: Invoice; onClose: () => void; onDone: () => void }> = ({ invoice: inv, onClose, onDone }) => {
   const actor = useActor();
   const { busy, error, run } = useAction();
@@ -26,7 +25,6 @@ export const SuspendDialog: React.FC<{ invoice: Invoice; onClose: () => void; on
   );
 };
 
-/* 3.3 — BR_14: reactivate only after the debt, penalty and reactivation fee are paid and verified. */
 export const ReactivateDialog: React.FC<{ invoice: Invoice; otherOverdue: boolean; onClose: () => void; onDone: () => void }> = ({ invoice: inv, otherOverdue, onClose, onDone }) => {
   const actor = useActor();
   const { busy, error, run } = useAction();

@@ -8,7 +8,6 @@ import { ProtocolBadge } from '../../../components/vet/VetParts';
 
 const muted: React.CSSProperties = { margin: 0, fontSize: 13, color: 'var(--muted)' };
 
-/** Health + training lock at a glance. */
 export const StatusPanel: React.FC<{ horse: VetHorse; onEdit: () => void }> = ({ horse, onEdit }) => (
   <Panel as="h3" title="Trạng thái hiện tại" right={<button type="button" className="ht-more" onClick={onEdit}>Cập nhật <Icon name="arrow" size={14} /></button>}>
     <div className="ht-panel__body">
@@ -21,7 +20,6 @@ export const StatusPanel: React.FC<{ horse: VetHorse; onEdit: () => void }> = ({
   </Panel>
 );
 
-/** The protocol in force for this horse, phase by phase. */
 export const ActiveProtocolPanel: React.FC<{ protocol?: Protocol }> = ({ protocol }) => (
   <Panel as="h3" title="Phác đồ đang áp dụng" right={protocol && <span className="ht-mono" style={{ fontSize: 12, color: 'var(--muted)' }}>{protocol.id}</span>}>
     <div className="ht-panel__body" style={{ display: 'grid', gap: 8 }}>
@@ -40,7 +38,6 @@ export const ActiveProtocolPanel: React.FC<{ protocol?: Protocol }> = ({ protoco
   </Panel>
 );
 
-/** 1.4 — medical history timeline. */
 export const HistoryPanel: React.FC<{ horse: VetHorse }> = ({ horse }) => (
   <Panel as="h3" title="Lịch sử y tế">
     <div className="ht-panel__body">

@@ -4,7 +4,6 @@ import { useAuth } from '../../../auth/AuthContext';
 import { ROLE_HOME } from '../../../api/mockData';
 import { PATH, toPath } from '../../../routers/routerPath';
 
-/* /horses/:id — old shared link. Sends each role to its own horse view (data scope is checked there). */
 export const HorseProfile: React.FC = () => {
   const { id = '' } = useParams();
   const { user } = useAuth();

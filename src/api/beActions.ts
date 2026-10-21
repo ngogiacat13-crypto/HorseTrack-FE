@@ -7,23 +7,18 @@ import type { ProtoPhase, Protocol } from './vetApi/types';
 import type { MoveKind } from './warehouseApi/inventoryApi';
 import type { Requisition, ShipmentOrder, StockCheck, StockItem } from './warehouseApi/types';
 
-/* Write calls of the warehouse, protocol and supply-request screens when running with the backend (`npm run dev:be`).
-   The backend applies the whole business rule itself (stock on hand / held, ledger, protocol state), so these replace
-   the db.json versions instead of going through the bridge — otherwise stock would move twice. */
 
 type Row = Record<string, unknown>;
 const beId = (row: unknown) => {
   const r = row as { beId?: number; id?: string };
   return r.beId ?? Number(String(r.id ?? '').replace(/\D/g, ''));
 };
-/** item code (VT-0019) → backend itemId, from the rows the bridge returns */
 const itemIds = async () => {
   const rows = (await http.get<Row[]>('/inventory')).data;
   return new Map(rows.map((r) => [String(r.id), beId(r)]));
 };
 const after = (...names: string[]) => invalidate(...names);
 
-/* ---------- Bác sĩ: phác đồ ---------- */
 const toBePhases = async (phases: ProtoPhase[]) => {
   const ids = await itemIds();
   return phases.map((ph, i) => ({
@@ -45,7 +40,6 @@ export const vetProtocolBe = {
       horseId: Number(input.horseId), caseId: numOrUndef(input.caseId), diagnosis: input.diagnosis.trim(), requiredBy: iso(input.requiredBy),
       phases: await toBePhases(input.phases),
     };
-    // a replacement is a new version of the old protocol (the old one becomes SUPERSEDED on the backend)
     const p = input.replaces
       ? await beData<Parameters<typeof mapProtocol>[0]>(be.post(`/medical-management/protocols/${numOrUndef(input.replaces)}/new-version`, body))
       : await beData<Parameters<typeof mapProtocol>[0]>(be.post('/medical-management/protocols', body));
@@ -53,7 +47,6 @@ export const vetProtocolBe = {
     await addAudit(actor, { action: 'CREATE_PROTOCOL', label: 'Lập phác đồ', object: `${p.protocolCode} · ${p.horseName}`, area: 'med', to: p.state, reason: body.diagnosis });
     return mapProtocol(p) as unknown as Protocol;
   },
-  /** The backend sends a new protocol to the warehouse right away — nothing left to send. */
   async sendStockCheck(p: Protocol) {
     return p;
   },
@@ -87,7 +80,6 @@ export const vetProtocolBe = {
   },
 };
 
-/* ---------- Quản lý kho ---------- */
 const MOVE: Record<MoveKind, string> = { RECEIVE: 'RECEIVE', ISSUE: 'ISSUE', ADJUST: 'ADJUST' };
 
 export const warehouseBe = {
@@ -109,7 +101,6 @@ export const warehouseBe = {
     return mapItem(r) as unknown as StockItem;
   },
 
-  /* thuốc theo phác đồ */
   async respondStock(p: Protocol, etaFor: Record<string, string | null>) {
     const [items, ships] = await Promise.all([http.get<StockItem[]>('/inventory'), http.get<ShipmentOrder[]>('/shipments')]);
     const need = new Map<string, number>();
@@ -132,7 +123,6 @@ export const warehouseBe = {
     return mapProtocol(r) as unknown as Protocol;
   },
 
-  /* đơn nhập hàng */
   async createShipment(input: { supplier: string; eta: string; lines: { itemId: string; qty: number }[]; forRef: string; requiredBy?: string }) {
     if (!input.lines.length) throw new Error('Thêm ít nhất 1 mặt hàng.');
     const [suppliers, ids] = await Promise.all([beData<{ supplierId: number; supplierName: string; isActive: boolean }[]>(be.get('/inventory/suppliers')), itemIds()]);
@@ -158,7 +148,6 @@ export const warehouseBe = {
     const r = await beData<Parameters<typeof mapPo>[0] & { etaLaterThanRequired?: boolean }>(be.put(`/inventory/purchase-orders/${beId(s)}/eta`, { expectedDeliveryDate: iso(eta), note: reason.trim() }));
     after('shipments', 'protocols');
     const shipment = mapPo(r) as unknown as ShipmentOrder;
-    // the backend flags DELAYED + notifies the vet when the new ETA is later than the date the medicine is needed (BR_07)
     return { shipment, warned: r.etaLaterThanRequired && shipment.forRef.startsWith('PD-') ? [shipment.forRef] : [] };
   },
   async cancelShipment(s: ShipmentOrder, reason: string) {
@@ -178,7 +167,6 @@ export const warehouseBe = {
     return { shipment, notified: shipment.forRef.startsWith('RQ-') ? [shipment.forRef] : [] };
   },
 
-  /* yêu cầu vật tư của Mã phu */
   async issue(r: Requisition, input: { qty: number; to: string }) {
     const x = await beData<Parameters<typeof mapReq>[0]>(be.put(`/inventory/supply-requests/${beId(r)}/issue`, { issuedQuantity: input.qty, note: `Giao cho ${input.to.trim()}` }));
     after('requisitions', 'inventory', 'stockTx');
@@ -196,7 +184,6 @@ export const warehouseBe = {
     return mapReq(x) as unknown as Requisition;
   },
 
-  /* kiểm kê tháng: tạo phiếu rồi chốt (chốt sẽ điều chỉnh tồn theo số đếm) */
   async submitCheck(input: { note: string; lines: { itemId: string; counted: number; reason: string }[] }) {
     if (!input.lines.length) throw new Error('Nhập số đếm cho ít nhất 1 mặt hàng.');
     const ids = await itemIds();
@@ -213,7 +200,6 @@ export const warehouseBe = {
   },
 };
 
-/* ---------- Mã phu: yêu cầu vật tư ---------- */
 export const groomSupplyBe = {
   async createRequisition(input: { itemId: string; qty: number; reason: string; neededBy: string }) {
     if (!Number.isInteger(input.qty) || input.qty < 1) throw new Error('Số lượng phải là số nguyên ≥ 1.');

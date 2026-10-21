@@ -1,0 +1,88 @@
+# Bản đồ tính năng (feature-map)
+
+Tra cứu nhanh: màn hình nằm ở đâu, mở bằng cách nào, bám vào thẻ `data-testid` nào khi viết kịch bản kiểm thử.
+**Cập nhật file này trong mọi PR thêm/sửa màn hình hoặc `data-testid`.**
+
+- Gọi API: `src/api/<vai-trò>Api/` (dữ liệu mẫu) · `src/api/hybridAdapter.ts`, `beDomain.ts`, `beActions.ts` (backend thật, xem `NotesAPI.md`).
+- Route: `src/routers/routerPath.ts` · Menu theo vai trò: `src/components/layout/nav.ts`.
+- Tính năng MỚI viết theo `src/features/<tên-tính-năng>/` (xem `AGENTS.md`) và thêm dòng vào bảng dưới.
+
+Quy ước `data-testid`: menu trái `nav-<đường dẫn bỏ / đầu, / đổi thành ->` (vd `/manager/audit-logs` → `nav-manager-audit-logs`); ô nhập Formik tự có `<name>-input`; tiêu đề trang `page-title`; nút quay lại `back-btn`.
+
+| Tên màn hình / Tính năng | Đường dẫn mã nguồn | Phím tắt / Trigger | Thẻ DOM chính (`data-testid`) |
+| :--- | :--- | :--- | :--- |
+| Trang chủ / chuyển hướng | `src/routers/index.tsx` | `/` → `/login` hoặc trang chủ theo vai trò | — |
+| Giới thiệu | `src/pages/public/Landing/` | `/gioi-thieu` | — |
+| Đăng nhập | `src/pages/auth/Login/` | `/login` (mặc định khi chưa đăng nhập) | `login-form`, `username-input`, `password-input`, `login-submit`, `login-error` |
+| Đăng ký chủ ngựa | `src/pages/auth/Register/` | `/register` | `<tên-trường>-input` |
+| Quên mật khẩu (OTP) | `src/pages/auth/ForgotPassword/` | `/forgot-password` | `<tên-trường>-input` |
+| Đổi mật khẩu (OTP) | `src/pages/auth/ChangePassword/` | `/change-password` · menu tài khoản | `nav-change-password`, `menu-change-password`, `oldPassword-input`, `newPassword-input`, `confirmPassword-input`, `otp-input` |
+| Hồ sơ cá nhân | `src/pages/auth/MyProfile/` | `/my-profile` · menu tài khoản | `nav-my-profile`, `menu-my-profile` |
+| Hồ sơ ngựa (dùng chung) | `src/pages/shared/HorseProfile/` | `/horses/:id` | `page-title`, `back-btn` |
+| Khung ứng dụng: menu trái, thanh trên | `src/components/layout/` | Sau khi đăng nhập | `sidebar`, `nav-<đường-dẫn>`, `user-menu-btn`, `logout-btn`, `notifications-btn` |
+| Hộp thoại xác nhận (dùng chung) | `src/components/ui/Ht/Dialog.tsx` | Các nút hành động | `dialog` (hoặc `testId` riêng), `dialog-confirm`, `dialog-cancel` |
+| Thông báo nhanh / callout | `src/components/ui/Ht/Toast.tsx, Callout.tsx` | Sau thao tác | `toast`, `callout-<tone>` |
+| QL CLB · Bảng điều khiển | `src/pages/manager/ManagerDashboard/` | `/manager` | `nav-manager`, `page-title` |
+| QL CLB · Hàng chờ đăng ký ngựa | `src/pages/manager/ManagerRegistrationQueue/` | `/manager/registrations` | `nav-manager-registrations` |
+| QL CLB · Duyệt hồ sơ ngựa (cấp chuồng) | `src/pages/manager/ManagerRegistrationDetail/` | `/manager/registrations/:id` | `approve-registration-dialog`, `approve-stall-select`, `approve-note-input`, `reject-registration-dialog` |
+| QL CLB · Theo dõi y tế | `src/pages/manager/ManagerMedicalMonitoring/` | `/manager/medical-monitoring` | `nav-manager-medical-monitoring` |
+| QL CLB · Hóa đơn | `src/pages/manager/ManagerInvoices/` | `/manager/invoices` | `nav-manager-invoices` |
+| QL CLB · Báo cáo tài chính | `src/pages/manager/ManagerFinanceReport/` | `/manager/reports` | `nav-manager-reports` |
+| QL CLB · Người dùng & phân quyền | `src/pages/manager/ManagerUsers/` | `/manager/users` | `nav-manager-users` |
+| QL CLB · Nhật ký hệ thống | `src/pages/manager/ManagerAuditLogs/` | `/manager/audit-logs` | `nav-manager-audit-logs` |
+| HLV · Tổng quan đàn ngựa | `src/pages/trainer/TrainerHerdOverview/` | `/trainer` | `nav-trainer` |
+| HLV · Hồ sơ ngựa | `src/pages/trainer/TrainerHorseRecord/` | `/trainer/horses/:id` | `back-btn` |
+| HLV · Giáo án | `src/pages/trainer/TrainerPlans/` | `/trainer/plans` | `nav-trainer-plans` |
+| HLV · Tạo giáo án | `src/pages/trainer/TrainerPlanCreate/` | `/trainer/plans/new` | `back-btn` |
+| HLV · Lịch tập + phân công phiên | `src/pages/trainer/TrainerSchedule/` | `/trainer/schedule` · nút “Phân công phiên tập” | `nav-trainer-schedule`, `assign-session-dialog`, `assign-zone-select`, `assign-horse-select`, `assign-date-input`, `assign-time-input`, `assign-groom-select`, `assign-track-input` |
+| HLV · Chi tiết phiên tập | `src/pages/trainer/TrainerSessionDetail/` | `/trainer/sessions/:id` | `back-btn` |
+| HLV · Giải đua & đề xuất | `src/pages/trainer/TrainerRaces/` | `/trainer/races` | `nav-trainer-races` |
+| HLV · Tạo đề xuất thi đấu | `src/pages/trainer/TrainerProposalCreate/` | `/trainer/races/new` | `back-btn` |
+| HLV · Sơ đồ chuồng | `src/pages/trainer/StableMap/` | `/trainer/stable` | `nav-trainer-stable` |
+| Bác sĩ · Đàn ngựa | `src/pages/vet/VetHerd/` | `/vet` | `nav-vet` |
+| Bác sĩ · Ca bệnh | `src/pages/vet/VetInbox/` | `/vet/cases` | `nav-vet-cases` |
+| Bác sĩ · Sức khỏe ngựa | `src/pages/vet/VetHorseHealth/` | `/vet/horses/:id` | `back-btn` |
+| Bác sĩ · Phác đồ | `src/pages/vet/VetProtocols/` | `/vet/protocols` | `nav-vet-protocols` |
+| Bác sĩ · Tạo phác đồ | `src/pages/vet/VetProtocolCreate/` | `/vet/protocols/new` | `back-btn` |
+| Bác sĩ · Chi tiết phác đồ | `src/pages/vet/VetProtocolDetail/` | `/vet/protocols/:id` | `back-btn` |
+| Bác sĩ · Thuốc | `src/pages/vet/VetMedicines/` | `/vet/medicines` | `nav-vet-medicines` |
+| Bác sĩ · Tiêm phòng | `src/pages/vet/VetVaccinations/` | `/vet/vaccinations` | `nav-vet-vaccinations` |
+| Bác sĩ · Khám trước thi đấu | `src/pages/vet/VetRaceExams/` | `/vet/race-exams` | `nav-vet-race-exams` |
+| Mã phu · Việc hôm nay | `src/pages/groom/GroomTodayTasks/` | `/groom` | `nav-groom` |
+| Mã phu · Chuồng phụ trách | `src/pages/groom/GroomStable/` | `/groom/stable` | `nav-groom-stable` |
+| Mã phu · Phiên tập | `src/pages/groom/GroomSessions/` | `/groom/sessions` | `nav-groom-sessions` |
+| Mã phu · Thực hiện phiên | `src/pages/groom/GroomSessionRun/` | `/groom/sessions/:id` | `back-btn` |
+| Mã phu · Báo sự cố | `src/pages/groom/GroomIncidents/` | `/groom/incidents` | `nav-groom-incidents` |
+| Mã phu · Yêu cầu vật tư | `src/pages/groom/GroomRequests/` | `/groom/requests` | `nav-groom-requests` |
+| Chủ ngựa · Ngựa của tôi | `src/pages/owner/OwnerHorses/` | `/owner` | `nav-owner` |
+| Chủ ngựa · Chi tiết ngựa | `src/pages/owner/OwnerHorseDetail/` | `/owner/horses/:id` | `back-btn` |
+| Chủ ngựa · Xác nhận thi đấu | `src/pages/owner/OwnerRaces/` | `/owner/races` | `nav-owner-races` |
+| Chủ ngựa · Hóa đơn | `src/pages/owner/OwnerInvoices/` | `/owner/invoices` | `nav-owner-invoices` |
+| Chủ ngựa · Chi tiết hóa đơn | `src/pages/owner/OwnerInvoiceDetail/` | `/owner/invoices/:id` | `back-btn` |
+| Chủ ngựa · Lịch sử thanh toán | `src/pages/owner/OwnerPayments/` | `/owner/payments` | `nav-owner-payments` |
+| Chủ ngựa · Đăng ký ngựa mới | `src/pages/owner/OwnerRegistrations/` | `/owner/registrations` | `nav-owner-registrations` |
+| Chủ ngựa · Tạo hồ sơ ngựa | `src/pages/owner/OwnerRegistrationCreate/` | `/owner/registrations/new` | `back-btn` |
+| Chủ ngựa · Thanh toán VNPay (mô phỏng) | `src/pages/owner/VNPayMock/` | `/payment/vnpay/:id` | — |
+| Kho · Tồn kho | `src/pages/warehouse/WarehouseInventory/` | `/warehouse` | `nav-warehouse` |
+| Kho · Phác đồ cần cấp | `src/pages/warehouse/WarehouseMedical/` | `/warehouse/medical` | `nav-warehouse-medical` |
+| Kho · Chi tiết cấp phát | `src/pages/warehouse/WarehouseMedicalDetail/` | `/warehouse/medical/:id` | `back-btn` |
+| Kho · Yêu cầu vật tư | `src/pages/warehouse/WarehouseRequisitions/` | `/warehouse/requisitions` | `nav-warehouse-requisitions` |
+| Kho · Lô hàng nhập | `src/pages/warehouse/WarehouseShipments/` | `/warehouse/shipments` | `nav-warehouse-shipments` |
+| Kho · Kiểm kê | `src/pages/warehouse/WarehouseStockCheck/` | `/warehouse/check` | `nav-warehouse-check` |
+| Kho · Nhật ký kho | `src/pages/warehouse/WarehouseLog/` | `/warehouse/log` | `nav-warehouse-log` |
+| Không tìm thấy (404) | `src/pages/shared/NotFound/` | Địa chỉ không tồn tại | — |
+
+## Kịch bản tự kiểm (`scenarios/`)
+
+| File | Kiểm tra |
+| :--- | :--- |
+| `scenarios/sign-in.spec.ts` | Khách vào `/` → `/login`; sai mật khẩu báo lỗi; 6 vai trò đăng nhập đúng trang chủ và đăng xuất được |
+| `scenarios/menu-pages.spec.ts` | Mỗi vai trò bấm lần lượt mọi mục menu trái: trang mở được, không lỗi console |
+| `scenarios/assign-session.spec.ts` | Hộp phân công phiên tập: ngày mặc định hôm nay, không chọn được ngày đã qua |
+
+## Kịch bản chạy với backend thật (`scenarios-live/`, lệnh `npm run scenarios:live`)
+
+| File | Kiểm tra |
+| :--- | :--- |
+| `scenarios-live/live-endpoints.spec.ts` | Mỗi tài khoản trong `.env.backend` gọi trực tiếp các API GET mà FE dùng, phải trả 2xx |
+| `scenarios-live/live-pages.spec.ts` | Đăng nhập thật, bấm mọi mục menu + mở trang chi tiết bằng id thật; không lỗi 5xx / JavaScript / "Không tải được dữ liệu" |

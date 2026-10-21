@@ -1,15 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { authApi } from '../../../api/authApi';
+import { USE_BACKEND } from '../../../api/beClient';
 import type { ApiError } from '../../../api/http';
 import { OtpInput } from '../../../components/auth/OtpInput';
 import { Icon } from '../../../components/ui/Icon';
-import { Busy, Callout, Field, PasswordInput, StrengthMeter, TextInput } from '../../../components/ui/Ht';
+import { Busy, Callout, Field, PASSWORD_RE, PASSWORD_RULE, PasswordInput, StrengthMeter, TextInput } from '../../../components/ui/Ht';
 import { useForm } from '../../../hooks/useForm';
 
-const SHOW_DEMO = import.meta.env.DEV || import.meta.env.VITE_DEMO === 'true';
-const RESEND_SECONDS = 45;
+const SHOW_DEMO = !USE_BACKEND && (import.meta.env.DEV || import.meta.env.VITE_DEMO === 'true');
+const RESEND_SECONDS = 30;
 
-/* Step 2 — OTP + new password. "Gửi lại mã" is available again after 45 seconds. */
 export const ResetStep: React.FC<{ contact: string; onChangeContact: () => void; onDone: () => void }> = ({ contact, onChangeContact, onDone }) => {
   const [serverError, setServerError] = useState('');
   const [resendIn, setResendIn] = useState(RESEND_SECONDS);
@@ -17,7 +17,7 @@ export const ResetStep: React.FC<{ contact: string; onChangeContact: () => void;
   const otpBox = useRef<HTMLDivElement>(null);
   const form = useForm({ otp: '', newPassword: '', confirmPassword: '' }, (v) => ({
     otp: !v.otp ? 'Vui lòng nhập OTP' : v.otp.length !== 6 ? 'OTP gồm 6 chữ số' : undefined,
-    newPassword: !v.newPassword ? 'Vui lòng nhập mật khẩu mới' : v.newPassword.length < 8 ? 'Tối thiểu 8 ký tự' : undefined,
+    newPassword: !v.newPassword ? 'Vui lòng nhập mật khẩu mới' : !PASSWORD_RE.test(v.newPassword) ? PASSWORD_RULE : undefined,
     confirmPassword: !v.confirmPassword ? 'Vui lòng xác nhận mật khẩu' : v.confirmPassword !== v.newPassword ? 'Mật khẩu xác nhận không khớp' : undefined,
   }));
 
@@ -28,7 +28,16 @@ export const ResetStep: React.FC<{ contact: string; onChangeContact: () => void;
     return () => window.clearTimeout(t);
   }, [resendIn]);
 
-  const resend = async () => { await authApi.sendOtp(contact); setResendIn(RESEND_SECONDS); };
+  const resend = async () => {
+    setServerError('');
+    try {
+      await authApi.sendOtp(contact);
+      setResendIn(RESEND_SECONDS);
+      form.setValues((s) => ({ ...s, otp: '' }));
+    } catch (err) {
+      setServerError((err as ApiError)?.message || 'Không gửi lại được mã OTP.');
+    }
+  };
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setServerError('');
@@ -54,6 +63,7 @@ export const ResetStep: React.FC<{ contact: string; onChangeContact: () => void;
       <p className="ht-auth__sub">
         Mã đã gửi đến <b className="ht-mono" style={{ color: 'var(--foreground)' }}>{contact}</b> ·{' '}
         <button type="button" className="ht-link" style={{ background: 'none', border: 0, padding: 0, cursor: 'pointer', font: 'inherit', fontWeight: 600 }} onClick={onChangeContact}>Đổi</button>
+        {USE_BACKEND && <><br />Nếu email đã đăng ký, mã sẽ tới trong ít phút. Mã có hiệu lực 120 giây và chỉ dùng một lần.</>}
       </p>
       <form onSubmit={submit} noValidate>
         <div className="ht-field" ref={otpBox}>

@@ -4,7 +4,6 @@ import { Icon } from '../../../components/ui/Icon';
 
 const MAX_MB = 10;
 
-/* One required document: PDF / JPG / PNG up to 10 MB. Only the file name and size are kept in the demo. */
 export const DocUpload: React.FC<{ id: string; label: string; hint: string; required?: boolean; value: UploadedDoc | null; onChange: (d: UploadedDoc | null) => void; onError: (m: string) => void }> = ({ id, label, hint, required, value, onChange, onError }) => {
   const pick = (f?: File) => {
     if (!f) return;

@@ -11,13 +11,12 @@ import { useDebounce } from '../../../hooks/useDebounce';
 
 type HealthTab = 'ALL' | HealthStatus;
 
-/* Sức khỏe đàn ngựa — tổng quan của Bác sĩ thú y: việc cần làm hôm nay + tình trạng từng ngựa. */
 export const VetHerd: React.FC = () => {
   const navigate = useNavigate();
   const { data, loading, error, reload } = useFetch(() => vetApi.getOverview());
   const [tab, setTab] = useState<HealthTab>('ALL');
   const [q, setQ] = useState('');
-  const query = useDebounce(q); // filter after the user pauses typing
+  const query = useDebounce(q);
 
   const horses = useMemo(() => data?.horses ?? [], [data]);
   const list = useMemo(() => horses.filter((h) => (tab === 'ALL' || h.health === tab) &&

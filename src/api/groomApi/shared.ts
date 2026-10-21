@@ -1,4 +1,3 @@
-/* Internal helpers for the Groom API. A Groom only works on the zones assigned to them (grooms[].zones). */
 import { DEMO_NOW, http } from '../http';
 import type { Actor } from '../managerApi';
 import type { GroomInfo } from './types';
@@ -12,7 +11,6 @@ export const now = () => DEMO_NOW.short;
 export const min = (v: string, n: number, what: string) => { if (v.trim().length < n) throw new Error(`${what} ít nhất ${n} ký tự.`); return v.trim(); };
 export const toMin = (t: string) => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
 
-/** The signed-in Groom with their zones. */
 export const me = async (actor: Actor): Promise<GroomInfo> => {
   const grooms = await get<GroomInfo[]>('/grooms');
   const g = grooms.find((x) => x.id === actor.id) ?? grooms.find((x) => x.name === actor.name);

@@ -5,7 +5,6 @@ import { useAction } from '../../../hooks/useAction';
 import { Callout, Dialog, ReasonField } from '../../../components/ui/Ht';
 import type { ReqAction } from './RequisitionPanels';
 
-/* Issue (quantity + receiver), wait for an open shipment, or reject with a reason (4.2). Mounted only while open. */
 export const RequisitionDialog: React.FC<{ req: Requisition; kind: ReqAction; openShipments: ShipmentOrder[]; onClose: () => void; onDone: () => void }> = ({ req: r, kind, openShipments, onClose, onDone }) => {
   const actor = useActor();
   const { busy, error, run } = useAction();

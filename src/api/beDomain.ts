@@ -2,9 +2,6 @@ import { be, type ApiResponse } from './beClient';
 import { PROTOCOL_LABEL } from './vetApi/labels';
 import type { ProtocolState } from './managerApi';
 
-/* Backend → screen shapes for the warehouse and treatment-protocol modules (backend `Test API 3`).
-   The screens use codes as ids (VT-0019, PD-0040, SHIP-0005, RQ-0004, KK-2026-10); every mapped row also keeps the
-   backend number in `beId`, which the write calls (beActions.ts) send back. */
 
 type Row = Record<string, unknown>;
 export interface Me { id: string; name: string; role: string }
@@ -18,7 +15,6 @@ export const me = (): Me | null => {
 };
 export const beGet = async <T,>(url: string, params?: Record<string, unknown>) => (await be.get<ApiResponse<T>>(url, { params })).data.data;
 
-/* ---------- formats ---------- */
 export const dmy = (iso?: string | null) => {
   if (!iso) return '—';
   const [y, m, d] = iso.slice(0, 10).split('-');
@@ -26,13 +22,11 @@ export const dmy = (iso?: string | null) => {
 };
 export const dmyhm = (iso?: string | null) => (iso ? `${dmy(iso)}${iso.length > 15 ? ' ' + iso.slice(11, 16) : ''}` : '—');
 export const dmhm = (iso?: string | null) => (iso ? `${iso.slice(8, 10)}/${iso.slice(5, 7)}${iso.length > 15 ? ' ' + iso.slice(11, 16) : ''}` : '—');
-/** dd/mm/yyyy → yyyy-mm-dd (what the backend expects for LocalDate) */
 export const iso = (ddmmyyyy?: string | null) => {
   if (!ddmmyyyy) return undefined;
   const [d, m, y] = ddmmyyyy.split('/');
   return y && m && d ? `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}` : ddmmyyyy;
 };
-/** "mm/yyyy" ↔ backend expiry date */
 const mmYYYY = (isoDate?: string | null) => (isoDate ? `${isoDate.slice(5, 7)}/${isoDate.slice(0, 4)}` : '—');
 export const expiryIso = (mmyyyy?: string) => (mmyyyy && /^\d{2}\/\d{4}$/.test(mmyyyy) ? `${mmyyyy.slice(3)}-${mmyyyy.slice(0, 2)}-28` : undefined);
 
@@ -41,7 +35,6 @@ const CATEGORY: Record<string, string> = {
   STABLE_SUPPLY: 'Vật tư chuồng trại', EQUIPMENT: 'Dụng cụ', OTHER: 'Khác',
 };
 
-/* ---------- inventory ---------- */
 interface BeItem {
   itemId: number; itemCode: string; itemName: string; category: string; itemGroup?: string | null; brand?: string | null; unit: string; unitPrice: number;
   currentStock: number; heldStock: number; minSafetyStock: number; route?: string | null; isControlled?: boolean; requiresPrescription?: boolean;
@@ -62,15 +55,13 @@ export const mapMedicine = (m: BeMedicine): Row => ({
   doseRef: m.doseReference ?? undefined, detectionHours: m.withdrawalHours ?? undefined, controlled: !!m.isControlled,
 });
 
-/** Warehouse: full stock; vet / club manager: the medicine catalogue (used by the protocol form). */
 export const loadInventory = async (): Promise<Row[] | null> => {
   const role = me()?.role;
   if (role === 'WarehouseManager') return (await beGet<BeItem[]>('/inventory/items')).map(mapItem);
   if (role === 'Veterinarian' || role === 'ClubManager') return (await beGet<BeMedicine[]>('/medical-management/medications')).map(mapMedicine);
-  return null; // Groom has no read access to the item list yet (403) → db.json
+  return null;
 };
 
-/* ---------- treatment protocols ---------- */
 interface BeProtocol {
   protocolId: number; protocolCode: string; horseId: number; horseName: string; vetName?: string; caseId?: number | null; versionNo?: number;
   replacesProtocolCode?: string | null; replacedByProtocolCode?: string | null; diagnosis: string; state: string; requiredBy?: string | null;
@@ -110,17 +101,15 @@ export const mapProtocol = (p: BeProtocol): Row => {
   };
 };
 
-/** Vet / club manager: /medical-management/protocols · warehouse: /inventory/protocols. Detail calls give phases and the stock answer. */
 export const loadProtocols = async (): Promise<Row[] | null> => {
   const role = me()?.role;
   const base = role === 'WarehouseManager' ? '/inventory/protocols' : role === 'Veterinarian' || role === 'ClubManager' ? '/medical-management/protocols' : null;
-  if (!base) return null; // other roles: keep the older sample list
+  if (!base) return null;
   const list = await beGet<BeProtocol[]>(base);
   const full = await Promise.all(list.map((p) => beGet<BeProtocol>(`${base}/${p.protocolId}`).catch(() => p)));
   return full.map(mapProtocol);
 };
 
-/* ---------- purchase orders ---------- */
 interface BePo {
   orderId: number; orderCode: string; supplierName: string; purpose: string; status: string; expectedDeliveryDate?: string | null; previousEta?: string | null;
   requiredBy?: string | null; orderedAt?: string; receivedAt?: string | null; createdByName?: string; note?: string | null; protocolId?: number | null; requisitionId?: number | null;
@@ -144,7 +133,6 @@ export const mapPo = (o: BePo): Row => {
 export const loadShipments = async (): Promise<Row[] | null> =>
   me()?.role === 'WarehouseManager' ? (await beGet<BePo[]>('/inventory/purchase-orders')).map(mapPo) : null;
 
-/* ---------- supply requests (Groom → warehouse) ---------- */
 interface BeReq {
   requisitionId: number; requisitionCode: string; requestedByName: string; barnZone: string; itemId: number; itemCode: string; itemName: string; unit: string;
   quantity: number; reason: string; requestedAt: string; neededBy?: string | null; status: string; rejectReason?: string | null; issuedQuantity?: number | null;
@@ -172,7 +160,6 @@ export const loadRequisitions = async (): Promise<Row[] | null> => {
   return null;
 };
 
-/* ---------- monthly stock counts + warehouse log ---------- */
 interface BeCount { countId: number; countCode: string; countMonth: string; status: string; countedByName?: string; countedAt?: string; note?: string | null; lines?: { itemCode: string; itemName: string; unit: string; systemQty: number; countedQty: number; reason?: string | null }[] | null }
 export const loadStockChecks = async (): Promise<Row[] | null> => {
   if (me()?.role !== 'WarehouseManager') return null;
@@ -198,7 +185,6 @@ export const loadStockTx = async (): Promise<Row[] | null> => {
   }));
 };
 
-/* ---------- users + audit log (Club Manager, backend branch `test`) ---------- */
 interface BeUser {
   userId: number; username: string; fullName: string; email: string; phone?: string | null; roleName: string; role?: string | null; status?: string | null;
   isActive?: boolean; lockReason?: string | null; openTasks?: number | null; horsesOwned?: number | null; lastLogin?: string | null;
@@ -207,7 +193,6 @@ const FE_ROLE: Record<string, string> = {
   'Club Manager': 'ClubManager', 'Head Trainer': 'HeadTrainer', Trainer: 'HeadTrainer', Veterinarian: 'Veterinarian', Groom: 'Groom',
   'Warehouse Manager': 'WarehouseManager', 'Horse Owner': 'HorseOwner',
 };
-/** null when the running backend has no /users API yet (older build) → the screen keeps db.json */
 export const loadUsers = async (): Promise<Row[] | null> => {
   if (me()?.role !== 'ClubManager') return null;
   const users = await beGet<BeUser[]>('/users/all').catch(() => null);

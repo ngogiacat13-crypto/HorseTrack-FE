@@ -8,7 +8,6 @@ import type { Dash } from './types';
 import { RecentRegistrations, TodaySessions, VetCostChart } from './MainPanels';
 import { LateTasks, MedicalWatch, OverdueInvoices, SystemLog } from './SidePanels';
 
-/* 4.1 Dashboard Quản lý CLB — KPI, hồ sơ chờ duyệt, y tế cần theo dõi, việc trễ, hóa đơn quá hạn */
 export const ManagerDashboard: React.FC = () => {
   const [d, setD] = useState<Dash | null>(null);
   const navigate = useNavigate();
