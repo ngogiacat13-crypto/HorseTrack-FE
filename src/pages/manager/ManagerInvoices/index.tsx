@@ -9,13 +9,12 @@ import { useDebounce } from '../../../hooks/useDebounce';
 type Filter = 'all' | 'unpaid' | 'overdue' | 'suspended' | 'paid';
 const isOverdue = (i: Invoice) => i.status === 'OVERDUE' || i.status === 'SUSPENDED';
 
-/* 3.1 Danh sách hóa đơn · 3.2 Đình chỉ (BR_13) · 3.3 Kích hoạt lại (BR_14) */
 export const ManagerInvoices: React.FC = () => {
   const toast = useToast();
   const [items, setItems] = useState<Invoice[] | null>(null);
   const [filter, setFilter] = useState<Filter>('all');
   const [q, setQ] = useState('');
-  const query = useDebounce(q); // filter after the user pauses typing
+  const query = useDebounce(q);
   const [dlg, setDlg] = useState<null | { kind: 'suspend' | 'react'; inv: Invoice }>(null);
 
   useEffect(() => { managerApi.getInvoices().then(setItems); }, []);
@@ -31,7 +30,6 @@ export const ManagerInvoices: React.FC = () => {
 
   if (!items) return <div className="ht ht-page"><Loading /></div>;
 
-  // Totals come from the invoice list itself — same "overdue" definition as the finance report.
   const total = (pred: (i: Invoice) => boolean) => items.filter(pred).reduce((s, i) => s + i.amount, 0);
   const update = (id: string, patch: Partial<Invoice>) => setItems((xs) => xs!.map((x) => (x.id === id ? { ...x, ...patch } : x)));
 

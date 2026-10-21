@@ -35,7 +35,6 @@ export const RequisitionTable: React.FC<{ rows: Requisition[]; items: StockItem[
   </Panel>
 );
 
-/* 4.2–4.3 — one request: stock check, then issue / wait for a shipment / reject with a reason. */
 export const RequisitionDetail: React.FC<{ req: Requisition; item?: StockItem; openShipments: ShipmentOrder[]; onAction: (a: ReqAction) => void }> = ({ req: r, item, openShipments, onAction }) => {
   const avail = item ? available(item) : 0;
   const enough = avail >= r.qty;

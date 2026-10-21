@@ -10,8 +10,6 @@ import { LoadState } from '../../../components/trainer/TrainerParts';
 
 type Tab = 'ALL' | Exclude<InvoiceDue['group'], 'PAID'>;
 
-/* 2.1 Danh sách hóa đơn cần xử lý — Chưa thanh toán / Quá hạn / Đình chỉ · 2.5 cảnh báo quá hạn (BR_12, BR_13).
-   Hóa đơn đã thanh toán xem từ Lịch sử thanh toán → “Xem chi tiết hóa đơn”. */
 export const OwnerInvoices: React.FC = () => {
   const actor = useActor();
   const { data, loading, error, reload } = useFetch(() => ownerApi.getOpenInvoices(actor), [actor]);

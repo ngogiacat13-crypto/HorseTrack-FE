@@ -6,11 +6,9 @@ import { http } from '../http';
 
 export type MoveKind = 'RECEIVE' | 'ISSUE' | 'ADJUST';
 
-/* 1.1–1.4 stock list, manual movements with a reason, safety threshold (BR_08) · 4.4 warehouse log */
 export const inventoryApi = {
   async getInventory() {
     const [items, shipments] = await Promise.all([get<StockItem[]>('/inventory'), get<ShipmentOrder[]>('/shipments')]);
-    // Quantity on the way per item, from open shipments — shown as "sắp về", never counted as stock.
     const incoming: Record<string, { qty: number; eta: string; id: string; delayed: boolean }[]> = {};
     shipments.filter((s) => OPEN_SHIPMENT.includes(s.status)).forEach((s) => s.lines.forEach((l) => {
       (incoming[l.itemId] ??= []).push({ qty: l.qty, eta: s.eta, id: s.id, delayed: s.status === 'DELAYED' });
@@ -18,7 +16,6 @@ export const inventoryApi = {
     return { items, incoming };
   },
 
-  /** 1.2 — receive / issue / adjust outside protocols and requisitions. Every movement needs a reason and is logged. */
   async moveStock(item: StockItem, input: { kind: MoveKind; qty: number; lot: string; expiry: string; note: string }, actor: Actor) {
     const note = min(input.note, input.kind === 'RECEIVE' ? 5 : 10, input.kind === 'RECEIVE' ? 'Ghi chú nhập' : 'Lý do');
     let qty = input.qty;
@@ -36,7 +33,6 @@ export const inventoryApi = {
     return data;
   },
 
-  /** 1.3 — safety threshold per item (BR_08). */
   async setSafety(item: StockItem, safety: number, actor: Actor) {
     if (!Number.isInteger(safety) || safety < 0) throw new Error('Ngưỡng an toàn là số nguyên ≥ 0.');
     const { data } = await http.patch<StockItem>(`/inventory/${item.id}`, { safety });
@@ -44,7 +40,6 @@ export const inventoryApi = {
     return data;
   },
 
-  /** 4.4 — warehouse log, newest first. */
   async getLog() {
     const txs = await get<StockTx[]>('/stockTx');
     return [...txs].sort((a, b) => b.id.localeCompare(a.id));

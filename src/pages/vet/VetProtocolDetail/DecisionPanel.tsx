@@ -8,7 +8,6 @@ import type { ProtocolAction } from './ActionDialog';
 
 interface Props { protocol: Protocol; horse: VetHorse; vetCase: VetCase | null; onAction: (a: ProtocolAction) => void; onNewVersion: () => void }
 
-/* What the vet can do now — depends on the protocol state (status machine, spec §5). */
 export const DecisionPanel: React.FC<Props> = ({ protocol: p, horse, vetCase, onAction, onNewVersion }) => {
   const short = stockShort(p);
   const stockComplete = !!p.stock && short.length === 0;

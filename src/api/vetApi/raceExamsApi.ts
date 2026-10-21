@@ -7,7 +7,6 @@ import type { InventoryItem, Protocol, VetHorse } from './types';
 import { get, now, min } from './shared';
 
 export const raceExamsApi = {
-  /* ----- 5.x Pre-race exam (BR_04) ----- */
   async getRaceExams() {
     const [proposals, tournaments, horses, protocols, inventory] = await Promise.all([
       get<RaceProposal[]>('/raceProposals'), get<Tournament[]>('/tournaments'), get<VetHorse[]>('/horses'), get<Protocol[]>('/protocols'), get<InventoryItem[]>('/inventory'),
@@ -15,10 +14,8 @@ export const raceExamsApi = {
     return { proposals, tournaments, horses, protocols, inventory };
   },
 
-  /* ----- Medicine catalogue (read-only for the vet; stock is owned by the warehouse) ----- */
   async getMedicines() {
     if (USE_BACKEND) {
-      // Backend: GET /medical-management/medications (MedicineCatalogDTO: itemCode, itemName, availableStock…)
       const meds = await beData<Parameters<typeof mapMedicine>[0][]>(be.get('/medical-management/medications'));
       return meds.map((m) => mapMedicine(m) as unknown as InventoryItem);
     }

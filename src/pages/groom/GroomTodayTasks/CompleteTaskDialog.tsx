@@ -6,7 +6,6 @@ import { Callout, Dialog } from '../../../components/ui/Ht';
 import { PhotoPicker } from '../../../components/groom/PhotoPicker';
 import { taskState } from './taskState';
 
-/* 1.3 — mark done with a note and an optional photo; the real time is saved (BR_05). */
 export const CompleteTaskDialog: React.FC<{ task: CareTask; onClose: () => void; onDone: () => void }> = ({ task: t, onClose, onDone }) => {
   const actor = useActor();
   const { busy, error, run } = useAction();

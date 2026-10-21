@@ -5,7 +5,6 @@ import { Panel } from '../../../components/ui/Ht';
 import { DietDialog } from './DietDialog';
 import { FeedDecisionDialog } from './FeedDecisionDialog';
 
-/* 3.3 medical diet + 3.4 special feed requests waiting for the vet (BR_03). */
 export const DietPanel: React.FC<{ horse: VetHorse; pendingFeeds: FeedRequest[]; onChanged: () => void }> = ({ horse, pendingFeeds, onChanged }) => {
   const [dietOpen, setDietOpen] = useState(false);
   const [feedFor, setFeedFor] = useState<{ req: FeedRequest; approve: boolean } | null>(null);

@@ -9,10 +9,9 @@ type Role = ManagedUser['role'];
 export type UserAction = 'role' | 'lock' | 'unlock' | 'assign';
 const ROLES = Object.keys(ROLE_LABEL) as Role[];
 
-/* 5.1 — users with search + role/status filters. The signed-in manager cannot act on their own account. */
 export const UserTable: React.FC<{ users: ManagedUser[]; meId?: string; onAction: (kind: UserAction, u: ManagedUser) => void }> = ({ users, meId, onAction }) => {
   const [q, setQ] = useState('');
-  const query = useDebounce(q); // filter after the user pauses typing
+  const query = useDebounce(q);
   const [roleF, setRoleF] = useState('');
   const [stF, setStF] = useState('');
   const list = useMemo(() => users.filter((u) =>

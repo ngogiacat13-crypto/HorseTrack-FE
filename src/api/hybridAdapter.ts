@@ -3,12 +3,6 @@ import { be, type ApiResponse } from './beClient';
 import { fail, mockAdapter, queryRows, respond } from './mockServer';
 import { loadAuditLogs, loadInventory, loadProtocols, loadRequisitions, loadShipments, loadStockChecks, loadStockTx, loadUsers } from './beDomain';
 
-/* Backend bridge (`npm run dev:be`).
-   The screens keep calling the same REST paths as with db.json ('/horses', '/stalls', '/trainingPlans'…).
-   For every collection the Spring Boot backend already serves, this adapter reads the real API and turns each
-   record into the shape the screens expect; writes the backend supports are sent to it.
-   Everything else (invoices, audit log, requisitions…) still comes from db.json in the browser.
-   Changes the backend cannot store yet (e.g. a horse's medical history) are kept in this tab only (`overlay`). */
 
 type Row = Record<string, unknown>;
 interface Me { id: string; name: string; role: string }
@@ -23,10 +17,8 @@ const me = (): Me | null => {
 };
 
 const data = async <T,>(url: string, params?: Record<string, unknown>) => (await be.get<ApiResponse<T>>(url, { params })).data.data;
-/** A read the signed-in role is not allowed to make (403) simply gives an empty list. */
 const orEmpty = async <T,>(p: Promise<T[]>): Promise<T[]> => p.catch(() => []);
 
-/* ---------- value mapping ---------- */
 const ddmmyyyy = (iso?: string | null) => {
   if (!iso) return '—';
   if (/^\d{2}\/\d{2}\/\d{4}/.test(iso)) return iso.slice(0, 10);
@@ -46,7 +38,6 @@ const TASK_TYPE: Record<string, [string, string]> = {
   'ice bath therapy': ['COOL', 'Ngâm lạnh'], 'exercise walk': ['GROOM', 'Dắt đi bộ'], 'hoof care': ['GROOM', 'Chăm sóc móng'],
 };
 
-/* ---------- backend DTOs (Swagger) ---------- */
 interface BeHorse { horseId: number; horseName: string; dob: string; gender: string; breed: string; pedigree?: string | null; weightKg: number; healthStatus: string; isLocked: boolean; ownerId: number; stallId: number | null; stallCode?: string | null; approvalStatus?: string | null; createdAt?: string | null }
 interface BeStall { stallId: number; stallCode: string; barnZone: string; cleanStatus: string; currentHorseId: number | null; horseName: string | null }
 interface BePlan { planId: number; planName: string; horseName: string; startDate: string; endDate: string; status: string; progress: number }
@@ -59,12 +50,11 @@ interface BeExam { proposalCode: string; proposalDate: string; horseName: string
 interface BeProtocol { protocolCode: string; horseName: string; diagnosis: string; caseCode: string; requiredDate: string; estimatedCost: string; status: string; nextStep: string }
 interface BeShipment { lotCode: string; itemName: string; quantity: number; unit: string; eta: string; targetProtocol: string; status: string }
 
-/* ---------- collections served by the backend ---------- */
 const stallsRaw = () => orEmpty(data<BeStall[]>('/stalls'));
 const horsesRaw = async () => {
   const u = me();
-  if (u?.role === 'WarehouseManager') return []; // the warehouse cannot read /horses (403)
-  if (u?.role === 'HorseOwner') return orEmpty(data<BeHorse[]>(`/horses/my-horses/${u.id}`)); // an owner may only read their own horses
+  if (u?.role === 'WarehouseManager') return [];
+  if (u?.role === 'HorseOwner') return orEmpty(data<BeHorse[]>(`/horses/my-horses/${u.id}`));
   return (await data<{ horses: BeHorse[] }>('/horses', { page: 0, size: 500 }).catch(() => ({ horses: [] }))).horses;
 };
 const byName = (rows: Row[], name?: string | null) => rows.find((r) => r.name === name);
@@ -73,12 +63,10 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
   async horses() {
     const u = me();
     const [hs, stalls] = await Promise.all([horsesRaw(), stallsRaw()]);
-    // "Ngựa của tôi" only lists horses the Club Manager approved (a stall assigned); pending ones show under "Đăng ký ngựa mới"
     return hs.filter((h) => u?.role !== 'HorseOwner' || isApproved(h)).map((h) => ({
       id: String(h.horseId), name: h.horseName, breed: h.breed, sex: sex(h.gender), age: age(h.dob), weightKg: h.weightKg,
       owner: u?.role === 'HorseOwner' && String(h.ownerId) === u.id ? u.name : `Chủ ngựa #${h.ownerId}`,
       stall: stalls.find((s) => s.stallId === h.stallId)?.stallCode ?? h.stallCode ?? '—',
-      // The backend has no "trainer in charge" yet: a trainer sees every horse.
       trainerId: u?.role === 'HeadTrainer' ? u.id : '',
       health: health(h.healthStatus), trainingLocked: !!h.isLocked, form: null, pendingCase: null,
       lock: h.isLocked ? { by: 'Bác sĩ thú y', at: '—', reason: 'Khóa từ hệ thống', review: '—' } : null,
@@ -95,7 +83,6 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
     }));
   },
 
-  /* Grooms and their zones: the signed-in groom from the backend profile + the demo grooms. */
   async grooms() {
     const u = me();
     const demo = ((await mockGet('/grooms')) as Row[]) ?? [];
@@ -117,8 +104,6 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
     });
   },
 
-  /* Sessions. Groom: /training-sessions/my-schedule (sessions assigned to them).
-     Trainer: my-schedule only holds sessions assigned to the caller, so read every plan's sessions from /training-plans/{id}. */
   async trainingSessions() {
     const u = me();
     if (!u || !['HeadTrainer', 'Groom'].includes(u.role)) return [];
@@ -128,7 +113,6 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
       return details.flatMap((d, i) => (d?.sessions ?? []).map((s) => ({
         id: String(s.sessionId), horseId: plans[i].horseId, horseName: d!.horseName, planId: String(d!.planId), phaseNo: 1, label: s.activityType,
         date: ddmmyyyy(s.sessionDate), time: hhmm(s.sessionDate), groom: s.assignedToName ?? '—', groomId: s.assignedToId ? String(s.assignedToId) : null,
-        // notes = "<đường tập> · Ghi nhận: <chỉ số>" (written by trainerApi.assignSession)
         track: (s.notes ?? '').split(' · Ghi nhận:')[0] || '—', metrics: (s.notes ?? '').split(' · Ghi nhận:')[1]?.split(',').map((m) => m.trim()).filter(Boolean),
         status: SESSION[s.status?.toUpperCase()] ?? 'SCHEDULED', thresholds: { hr: 180, speed: 60 }, readings: [], decision: null, evaluation: null,
       })));
@@ -172,6 +156,10 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
     }));
   },
 
+  async feedRequests() {
+    return [];
+  },
+
   async vaccinations() {
     const [rows, horses] = await Promise.all([orEmpty(data<BeVacc[]>('/vaccinations')), LOADERS.horses()]);
     const ST: Record<string, string> = { 'sắp đến hạn': 'DUE_SOON', 'đã tiêm': 'DONE', 'hoàn thành': 'DONE', 'đã hoãn': 'POSTPONED' };
@@ -181,7 +169,6 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
     }));
   },
 
-  /* Race proposals the vet must examine (the backend has no proposal API for trainer/owner yet). */
   async raceProposals() {
     const [waiting, done, horses] = await Promise.all([
       orEmpty(data<BeExam[]>('/prerace-exams', { tab: 'CHO_KHAM' })), orEmpty(data<BeExam[]>('/prerace-exams', { tab: 'DA_CO_KET_QUA' })), LOADERS.horses(),
@@ -207,7 +194,7 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
   },
 
   async protocols() {
-    const real = await loadProtocols().catch(() => null); // backend Test API 3: real protocols with phases + stock answer
+    const real = await loadProtocols().catch(() => null);
     if (real) return real;
     const [rows, horses] = await Promise.all([orEmpty(data<BeProtocol[]>('/protocols')), LOADERS.horses()]);
     return rows.map((p) => {
@@ -226,7 +213,7 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
   },
 
   async shipments() {
-    const real = await loadShipments().catch(() => null); // warehouse: real purchase orders
+    const real = await loadShipments().catch(() => null);
     if (real) return real;
     const rows = await orEmpty(data<BeShipment[]>('/protocols/shipments'));
     const ST: Record<string, string> = { 'trễ': 'DELAYED', 'đang giao': 'IN_TRANSIT', 'đã nhận': 'RECEIVED', 'đã đặt': 'ORDERED', 'đã hủy': 'CANCELLED' };
@@ -236,7 +223,6 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
     }));
   },
 
-  /* Warehouse module (backend Test API 3) — other roles fall back to db.json for these collections. */
   async inventory() {
     return (await loadInventory()) ?? ((await mockGet('/inventory')) as Row[]);
   },
@@ -246,8 +232,6 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
   async stockChecks() {
     return (await loadStockChecks()) ?? ((await mockGet('/stockChecks')) as Row[]);
   },
-  /* Horse registrations = rows of the Horses table: no stall yet → waiting for the Club Manager, stall assigned → approved.
-     The backend keeps no checklist, documents or rejection, so those stay in this tab only. */
   async registrations() {
     const u = me();
     if (u?.role !== 'ClubManager' && u?.role !== 'HorseOwner') return (await mockGet('/registrations')) as Row[];
@@ -279,7 +263,6 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
       };
     });
   },
-  /* Club Manager: users + audit log (backend branch `test`); an older backend without these APIs → db.json */
   async users() {
     return (await loadUsers()) ?? ((await mockGet('/users')) as Row[]);
   },
@@ -298,12 +281,9 @@ const unknownHorse = (id: string): Row => ({
 });
 const tourId = (e: BeExam) => `T-${e.tournamentName}-${e.raceDate}`.replace(/\s+/g, '-');
 
-/* ---------- writes the backend supports ---------- */
-/** Returns true when the backend stored the whole change: the rows are then read again instead of kept in this tab. */
 type Write = (id: string | undefined, body: Row, current: Row | undefined) => Promise<boolean | void> | boolean | void;
 const WRITES: Record<string, Partial<Record<'post' | 'patch', Write>>> = {
   registrations: {
-    // owner sends the file → a new horse without a stall (waiting for approval)
     async post(_id, body) {
       const h = body.horse as { name: string; breed: string; sex: string; age: number };
       const x = body.horseExtra as { color: string; weight: number; passport: string };
@@ -315,7 +295,6 @@ const WRITES: Record<string, Partial<Record<'post' | 'patch', Write>>> = {
       });
       return true;
     },
-    // approve = assign a stall; the backend has no rejection yet (kept in this tab)
     async patch(_id, body, current) {
       if (body.status !== 'Approved') return false;
       if (!body.stallId) throw new Error('Chọn chuồng để cấp cho ngựa.');
@@ -361,11 +340,9 @@ const WRITES: Record<string, Partial<Record<'post' | 'patch', Write>>> = {
       if (body.status === 'COMPLETED') await be.put(`/training-sessions/${id}/execute`, { status: 'COMPLETED', notes: 'Hoàn thành phiên' });
       if (body.status === 'STOPPED') await be.put(`/training-sessions/${id}/execute`, { status: 'CANCELLED', notes: (body.decision as Row | undefined)?.note ?? 'Dừng phiên' });
     },
-    // creating a session goes straight to POST /training-plans/{planId}/sessions (trainerApi.assignSession)
   },
 };
 
-/* ---------- cache + per-tab overlay ---------- */
 const cache = new Map<string, { at: number; rows: Promise<Row[]> }>();
 const overlay = new Map<string, { patches: Map<string, Row>; added: Row[] }>();
 const ov = (name: string) => {
@@ -383,7 +360,6 @@ const rowsOf = async (name: string) => {
   const o = ov(name);
   return [...(await load(name)).map((r) => ({ ...r, ...(o.patches.get(String(r.id)) ?? {}) })), ...o.added];
 };
-/** Forget cached rows (and local-only changes) after a write the backend made itself. */
 export const invalidate = (...names: string[]) => names.forEach((n) => { cache.delete(n); overlay.delete(n); });
 const mockGet = async (url: string) => (await mockAdapter({ url, method: 'get', headers: {} } as InternalAxiosRequestConfig)).data;
 
@@ -394,7 +370,7 @@ export const hybridAdapter: AxiosAdapter = async (config) => {
 
   const method = (config.method ?? 'get').toLowerCase();
   const params: Record<string, unknown> = { ...Object.fromEntries(url.searchParams), ...(config.params ?? {}) };
-  if (name === 'tasks') delete params.date; // the backend already returns this groom's current tasks
+  if (name === 'tasks') delete params.date;
   const body = typeof config.data === 'string' && config.data ? (JSON.parse(config.data) as Row) : ((config.data as Row) ?? {});
   const rows = await rowsOf(name);
 
@@ -402,9 +378,7 @@ export const hybridAdapter: AxiosAdapter = async (config) => {
     if (id === undefined) return respond(config, 200, queryRows(rows, params));
     const row = rows.find((r) => String(r.id) === id);
     if (row) return respond(config, 200, row);
-    // Sample records of the backend (pre-race exams, vaccinations, protocols) name horses that are not in the Horses table yet
     if (name === 'horses' && id.startsWith('ten:')) return respond(config, 200, unknownHorse(id));
-    // roles that may not read /horses (warehouse) still open a protocol: build the horse from the protocol row
     if (name === 'horses') {
       const p = (await rowsOf('protocols')).find((r) => String(r.horseId) === id);
       if (p) return respond(config, 200, { ...unknownHorse(`ten:${p.horse}`), id, trainingLocked: !!p.trainingLocked });
@@ -414,7 +388,7 @@ export const hybridAdapter: AxiosAdapter = async (config) => {
 
   const current = id === undefined ? undefined : rows.find((r) => String(r.id) === id);
   const write = WRITES[name]?.[method as 'post' | 'patch'];
-  const stored = write ? await write(id, body, current) : false; // backend errors reach the screen as normal errors
+  const stored = write ? await write(id, body, current) : false;
   cache.delete(name);
   if (stored === true) {
     invalidate(name, 'horses', 'stalls');

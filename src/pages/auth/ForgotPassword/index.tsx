@@ -5,7 +5,6 @@ import { Icon } from '../../../components/ui/Icon';
 import { ContactStep } from './ContactStep';
 import { ResetStep } from './ResetStep';
 
-/* Quên mật khẩu: 1) email → OTP · 2) OTP + mật khẩu mới · 3) xong, tự về trang đăng nhập sau 3 giây. */
 export const ForgotPassword: React.FC = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState<1 | 2 | 3>(1);

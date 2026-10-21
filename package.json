@@ -14,7 +14,11 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,css,json}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,css,json}\"",
     "dev:server": "vite --mode server",
-    "dev:be": "vite --mode backend"
+    "dev:be": "vite --mode backend",
+    "typecheck": "tsc --noEmit -p . && tsc --noEmit -p tsconfig.scenarios.json",
+    "scenarios": "playwright test",
+    "check": "npm run lint && npm run typecheck && npm run scenarios",
+    "scenarios:live": "playwright test -c playwright.live.config.ts"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.2.7",
@@ -31,6 +35,8 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",
+    "@playwright/test": "^1.48.2",
+    "@types/node": "^20.17.6",
     "@types/react": "^18.3.5",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",

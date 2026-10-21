@@ -1,7 +1,5 @@
 import { useState, type ChangeEvent } from 'react';
 
-/* Minimal form state: values, touched, errors. Replaces Formik + Yup for the auth pages.
-   validate() returns { field: 'message' } for every invalid field (same messages as the old Yup schemas). */
 export type Errors<T> = Partial<Record<keyof T, string>>;
 
 export function useForm<T extends Record<string, string>>(initial: T, validate: (v: T) => Errors<T>) {
@@ -30,7 +28,6 @@ export function useForm<T extends Record<string, string>>(initial: T, validate: 
     onBlur: () => { if (values[name]) setTouched((t) => ({ ...t, [name]: true })); },
   });
 
-  /** Marks every field touched; returns true when the form is valid. */
   const check = () => {
     const t: Partial<Record<keyof T, boolean>> = {};
     (Object.keys(values) as (keyof T)[]).forEach((k) => (t[k] = true));

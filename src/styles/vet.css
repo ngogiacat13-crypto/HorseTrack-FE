@@ -1,9 +1,3 @@
-/* ============================================================
-   Veterinarian screens — 2D injury map, case inbox, protocol builder.
-   Uses the tokens from tokens.css and the ht-* base from ht.css.
-   ============================================================ */
-
-/* ---------- 2D injury map ---------- */
 .ht-injury { display: grid; gap: var(--space-3); }
 .ht-injury__canvas { position: relative; width: 100%; max-width: 640px; margin: 0 auto; aspect-ratio: 1280 / 896; border-radius: var(--radius-md); background: var(--bg); user-select: none; }
 .ht-injury__canvas.is-editable { cursor: crosshair; outline: 1px dashed var(--border-strong); outline-offset: 4px; }
@@ -33,7 +27,6 @@
 .ht-injury-tools .ht-select, .ht-injury-tools .ht-input { height: 38px; }
 .ht-injury-tools .ht-input { flex: 1; min-width: 160px; }
 
-/* ---------- Case inbox ---------- */
 .ht-source { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 600; white-space: nowrap; }
 .ht-source .ht-icon { width: 14px; height: 14px; }
 .ht-source[data-src="SESSION_STOP"] { color: var(--danger-ink); }
@@ -54,7 +47,6 @@
 .ht-actions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2); }
 .ht-actions-grid .ht-btn--block { grid-column: 1 / -1; }
 
-/* ---------- Protocol builder ---------- */
 .ht-proto-phase { border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow-card); }
 .ht-proto-phase__head { display: flex; align-items: center; gap: var(--space-3); padding: 16px 20px; }
 .ht-proto-phase__head h3 { margin: 0; font: 600 16px/22px var(--font-sans); flex: 1; }
@@ -76,7 +68,6 @@
 .ht-sum dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
 .ht-sum .total { font: 700 20px/28px var(--font-sans); color: var(--foreground); }
 
-/* Status path of a protocol */
 .ht-path { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 12px; }
 .ht-path span { padding: 3px 8px; border-radius: var(--radius-pill); background: var(--bg); border: 1px solid var(--border); color: var(--muted); font-family: var(--font-mono); }
 .ht-path span[data-state="done"] { background: var(--success-soft); border-color: transparent; color: var(--success-ink); }
@@ -84,7 +75,6 @@
 .ht-path span[data-state="alt"] { background: var(--danger-soft); border-color: var(--danger-line); color: var(--danger-ink); }
 .ht-path .ht-icon { width: 12px; height: 12px; color: var(--muted); }
 
-/* Diet card */
 .ht-meals { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-2); }
 .ht-meals > div { border: 1px solid var(--border); border-radius: var(--radius-md); padding: 8px 10px; font-size: 13px; line-height: 18px; }
 .ht-meals .ht-overline { display: block; margin-bottom: 2px; }

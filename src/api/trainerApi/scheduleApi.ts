@@ -6,13 +6,11 @@ import type { Horse, TrainingPlan, TrainingSession, Vaccination, Stall, Groom } 
 import { horseZone } from './labels';
 import { get, nextId, myHorses, getMyHorse, ofHorses, getHorseChecked, withLiveStatus } from './shared';
 
-/* A plan id that is not a number only exists in this browser tab (e.g. KH-0004, made before plans were sent to the backend). */
 const assertBePlan = (planId: string) => {
   if (!/^\d+$/.test(planId)) throw new Error(`Giáo án ${planId} chưa có trên hệ thống (chỉ lưu tạm trên trình duyệt). Tải lại trang và tạo lại giáo án cho ngựa này.`);
 };
 
 export const scheduleApi = {
-  /* ----- Schedule (1.3, 1.4) ----- */
   async getSchedule(actor: Actor) {
     const [sessions, horses, plans, grooms, vaccinations, stalls] = await Promise.all([
       get<TrainingSession[]>('/trainingSessions'), myHorses(actor), get<TrainingPlan[]>('/trainingPlans'), get<Groom[]>('/grooms'), get<Vaccination[]>('/vaccinations'), get<Stall[]>('/stalls'),
@@ -20,13 +18,11 @@ export const scheduleApi = {
     const zoneOf = (h: Horse) => horseZone(h, stalls);
     return {
       sessions: ofHorses(sessions, horses), horses, plans: await withLiveStatus(ofHorses(plans, horses), sessions), grooms, vaccinations: ofHorses(vaccinations, horses),
-      zones: [...new Set(horses.map(zoneOf))].sort(), // only zones that hold this trainer's horses
+      zones: [...new Set(horses.map(zoneOf))].sort(),
       zoneOf,
     };
   },
 
-  /** Backend: Mã phu who may run this plan's sessions = active grooms of the horse's stable zone
-      (GET /training-plans/assignable-staff?planId=). Mock mode reads db.json grooms in getSchedule instead. */
   async getAssignableGrooms(planId: string): Promise<Groom[]> {
     assertBePlan(planId);
     const rows = await beData<{ userId: number; fullName: string; barnZone?: string | null }[]>(be.get('/training-plans/assignable-staff', { params: { planId } }));
@@ -40,7 +36,6 @@ export const scheduleApi = {
     const day = (d: string) => d.split('/').reverse().join('');
     if (day(input.date) < day(plan.startDate)) throw new Error(`Giáo án “${plan.name}” bắt đầu ngày ${plan.startDate} — không xếp phiên trước ngày này.`);
     if (USE_BACKEND) {
-      // The backend checks the rest: plan running, date inside the plan, horse not locked, groom of the horse's zone.
       assertBePlan(plan.id);
       if (!input.groomId) throw new Error('Chọn Mã phu thực hiện.');
       const [d, m, y] = input.date.split('/');
@@ -50,13 +45,11 @@ export const scheduleApi = {
         notes: `${input.track} · Ghi nhận: ${input.metrics.join(', ')}`, assignedToId: Number(input.groomId),
       });
       invalidate('trainingSessions', 'trainingPlans');
-      // the backend returns no session id; the schedule reloads right after
       return {
         id: '', horseId: horse.id, horseName: horse.name, planId: plan.id, phaseNo: 1, label, date: input.date, time: input.time,
         groom: input.groom, track: input.track, status: 'SCHEDULED', thresholds: { hr: 180, speed: 60 }, readings: [], metrics: input.metrics, decision: null, evaluation: null,
       } as TrainingSession;
     }
-    // Mã phu must be in charge of the horse's stable zone.
     const [stalls, grooms] = await Promise.all([get<Stall[]>('/stalls'), get<Groom[]>('/grooms')]);
     const zone = horseZone(horse, stalls);
     const groom = grooms.find((g) => g.name === input.groom);
@@ -71,7 +64,7 @@ export const scheduleApi = {
       status: 'SCHEDULED', thresholds: { hr: phase.hrLimit, speed: 60 }, readings: [], metrics: input.metrics, decision: null, evaluation: null,
     };
     const { data } = await http.post<TrainingSession>('/trainingSessions', session);
-    await withLiveStatus([plan], [...all, data]); // a session exists and the start date has come → the plan is running
+    await withLiveStatus([plan], [...all, data]);
     await addAudit(actor, { action: 'ASSIGN_SESSION', label: 'Phân công phiên tập', object: `${data.id} · ${horse.name}`, area: 'train', to: `${input.date} ${input.time} · ${input.groom}`, reason: `${data.label} · ${input.track}` });
     return data;
   },

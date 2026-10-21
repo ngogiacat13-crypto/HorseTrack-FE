@@ -6,7 +6,6 @@ import { useAction } from '../../../hooks/useAction';
 import { Icon } from '../../../components/ui/Icon';
 import { Busy, Callout, Panel } from '../../../components/ui/Ht';
 
-/* 2.4 — dispense a protocol the vet confirmed: actual quantity, lot and receiver; on hand goes down now. */
 export const DispenseForm: React.FC<{ protocol: Protocol; items: StockItem[]; groom?: string; onDone: () => void }> = ({ protocol: p, items, groom, onDone }) => {
   const actor = useActor();
   const { busy, error, run } = useAction(onDone);

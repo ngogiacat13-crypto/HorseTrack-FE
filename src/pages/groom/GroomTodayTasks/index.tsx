@@ -21,7 +21,6 @@ import { CompleteTaskDialog } from './CompleteTaskDialog';
 type Tab = 'ALL' | TaskType;
 const TYPE_LABEL: Record<TaskType, string> = { FEED: 'Cho ăn', CLEAN: 'Dọn chuồng', GROOM: 'Chải lông', COOL: 'Chườm lạnh', OTHER: 'Khác' };
 
-/* 1.1 Công việc hôm nay · 1.2 Chi tiết · 1.3 Hoàn thành · 1.4 Cảnh báo trễ SLA (BR_05) */
 export const GroomTodayTasks: React.FC = () => {
   const actor = useActor();
   const { data, loading, error, reload } = useFetch(() => groomApi.getToday(actor), [actor]);
@@ -30,7 +29,6 @@ export const GroomTodayTasks: React.FC = () => {
   if (!data) return <LoadState loading={loading} error={error} onRetry={reload} />;
 
   const { tasks, alerts, groom, horses } = data;
-  // Open tasks first (late, then by time), finished ones at the end.
   const order = { late: 0, soon: 1, todo: 2, done: 3 } as const;
   const list = tasks.filter((t) => tab === 'ALL' || t.type === tab).sort((a, b) => order[taskState(a)] - order[taskState(b)] || a.time.localeCompare(b.time));
   const types = [...new Set(tasks.map((t) => t.type))];

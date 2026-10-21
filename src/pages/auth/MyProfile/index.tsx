@@ -5,7 +5,6 @@ import { PageHeader } from '../../../components/ui/Ht';
 import { AvatarCard } from './AvatarCard';
 import { ProfileDetails, SecurityCard } from './ProfileSections';
 
-/* Hồ sơ cá nhân — the same page for all 6 roles: profile picture, account details, password. */
 export const MyProfile: React.FC = () => {
   const { user } = useAuth();
   if (!user) return null;

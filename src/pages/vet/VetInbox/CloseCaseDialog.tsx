@@ -4,7 +4,6 @@ import { useActor } from '../../../auth/AuthContext';
 import { useAction } from '../../../hooks/useAction';
 import { Callout, Dialog, ReasonField } from '../../../components/ui/Ht';
 
-/* Close a case with a conclusion. The API refuses while a protocol of the case is still open. */
 export const CloseCaseDialog: React.FC<{ vetCase: VetCase; onClose: () => void; onDone: () => void }> = ({ vetCase, onClose, onDone }) => {
   const actor = useActor();
   const { busy, error, run } = useAction();

@@ -14,7 +14,6 @@ type Values = { oldPassword: string; newPassword: string; confirmPassword: strin
 const EMPTY: Values = { oldPassword: '', newPassword: '', confirmPassword: '', otp: '' };
 const RESEND_SECONDS = 30;
 
-/* Yup: the validation rules of the form, declared once. */
 const schema = Yup.object({
   oldPassword: Yup.string().required('Vui lòng nhập mật khẩu hiện tại'),
   newPassword: Yup.string()
@@ -24,7 +23,6 @@ const schema = Yup.object({
   confirmPassword: Yup.string()
     .required('Vui lòng xác nhận mật khẩu mới')
     .oneOf([Yup.ref('newPassword')], 'Mật khẩu xác nhận không khớp'),
-  // backend: a 6-digit code emailed by "Gửi mã OTP"
   otp: USE_BACKEND ? Yup.string().required('Nhập mã OTP gửi tới email').matches(/^\d{6}$/, 'Mã OTP gồm 6 chữ số') : Yup.string(),
 });
 
@@ -33,7 +31,6 @@ export const ChangePassword: React.FC = () => {
   const [status, setStatus] = useState<{ tone: 'success' | 'danger'; msg: React.ReactNode } | null>(null);
   const [reveal, setReveal] = useState(false);
   const [otpState, setOtpState] = useState<{ busy: boolean; sent: boolean; msg: string }>({ busy: false, sent: false, msg: '' });
-  // backend allows a new code only every 30 seconds (app.otp.resend-cooldown-seconds)
   const [resendIn, setResendIn] = useState(0);
   useEffect(() => {
     if (resendIn <= 0) return;
@@ -52,7 +49,6 @@ export const ChangePassword: React.FC = () => {
     }
   };
 
-  // Formik only calls this when the schema passes; isSubmitting stays true until the promise settles.
   const onSubmit = async (v: Values, { resetForm, setFieldError }: FormikHelpers<Values>) => {
     setStatus(null);
     try {
@@ -77,7 +73,6 @@ export const ChangePassword: React.FC = () => {
         sub="Để bảo mật, hãy nhập mật khẩu hiện tại trước khi đặt mật khẩu mới."
       />
 
-      {/* Render props: <Formik> calls this function with the form state, so the side panel can read values too. */}
       <Formik initialValues={EMPTY} validationSchema={schema} onSubmit={onSubmit}>
         {({ values: v, isSubmitting, resetForm }) => (
           <div className="ht-cols" style={{ maxWidth: 1080 }}>

@@ -14,7 +14,6 @@ type Tab = 'TODAY' | 'UPCOMING' | 'PAST';
 const isOpen = (s: TrainingSession) => ['IN_PROGRESS', 'RESUMED', 'PAUSED_PENDING_TRAINER'].includes(s.status);
 const key = (d: string) => d.split('/').reverse().join('');
 
-/* 3. Phiên tập được giao — the trainer assigns, the Groom runs it on the track. */
 export const GroomSessions: React.FC = () => {
   const actor = useActor();
   const { data, loading, error, reload } = useFetch(() => groomApi.getMySessions(actor), [actor]);

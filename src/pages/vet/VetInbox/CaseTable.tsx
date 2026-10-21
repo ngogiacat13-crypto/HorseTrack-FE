@@ -4,7 +4,6 @@ import { Icon } from '../../../components/ui/Icon';
 import { Badge, Panel } from '../../../components/ui/Ht';
 import { CaseSourceTag, SeverityTag } from '../../../components/vet/VetParts';
 
-/* 1.1 — the inbox list. A locked horse shows "ĐÃ KHÓA" instead of the severity. */
 export const CaseTable: React.FC<{ cases: VetCase[]; horses: VetHorse[]; selectedId?: string; onSelect: (id: string) => void }> = ({ cases, horses, selectedId, onSelect }) => (
   <Panel foot={<span style={{ fontSize: 12, color: 'var(--muted)' }}>{cases.length} ca · ưu tiên theo mức độ</span>}>
     <div style={{ overflowX: 'auto' }}>

@@ -5,9 +5,7 @@ import { Icon } from '../../../components/ui/Icon';
 import { Badge, Callout, money, Panel, Timeline } from '../../../components/ui/Ht';
 import { ProtocolBadge } from '../../../components/vet/VetParts';
 
-/* Read-only sections of a protocol page. */
 
-/** Superseded / delayed-shipment banners (2.6). */
 export const ProtocolBanners: React.FC<{ protocol: Protocol }> = ({ protocol: p }) => (
   <>
     {p.state === 'SUPERSEDED' && (
@@ -25,7 +23,6 @@ export const ProtocolBanners: React.FC<{ protocol: Protocol }> = ({ protocol: p 
   </>
 );
 
-/** Phases with their medicines and cost. */
 export const PhaseList: React.FC<{ protocol: Protocol }> = ({ protocol }) => (
   <>
     {protocol.phases.map((ph) => (
@@ -49,7 +46,6 @@ export const PhaseList: React.FC<{ protocol: Protocol }> = ({ protocol }) => (
   </>
 );
 
-/** 2.3 — the warehouse answer: available / held / short + ETA, lot and expiry. */
 export const StockPanel: React.FC<{ protocol: Protocol; shipments: Shipment[] }> = ({ protocol: p, shipments }) => (
   <Panel title={<><Icon name="box" /> Phản hồi kho</>} sub={p.stock ? `Cập nhật ${p.stock.at} bởi ${p.stock.by} · so với ngày cần thuốc ${p.requiredBy}` : undefined}>
     {p.stock ? (
@@ -73,7 +69,6 @@ export const StockPanel: React.FC<{ protocol: Protocol; shipments: Shipment[] }>
   </Panel>
 );
 
-/** 2.7 — treatment progress and outcome. */
 export const ProgressPanel: React.FC<{ protocol: Protocol; onAdd: () => void }> = ({ protocol: p, onAdd }) => {
   if (p.state !== 'IN_TREATMENT' && !p.progress.length && !p.outcome) return null;
   return (
@@ -87,7 +82,6 @@ export const ProgressPanel: React.FC<{ protocol: Protocol; onAdd: () => void }> 
   );
 };
 
-/** All versions of the protocol for the same case (2.4). */
 export const VersionsPanel: React.FC<{ current: string; versions: Protocol[] }> = ({ current, versions }) => {
   if (versions.length < 2) return null;
   return (

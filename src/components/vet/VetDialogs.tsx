@@ -5,9 +5,7 @@ import { Severity, SEVERITY_LABEL, VetCase, vetApi } from '../../api/vetApi';
 import { useActor } from '../../auth/AuthContext';
 import { Callout, Dialog, ReasonField, Segmented, useToast } from '../ui/Ht';
 
-/* Dialogs used from several Veterinarian pages. Each one calls vetApi and reports back with onDone(). */
 
-/** 1.2 — record the exam; optionally lock training in the same step (flow 2.2, step 1). */
 type ExamProps = { vetCase: VetCase | null; horse?: Horse; onClose: () => void; onDone: () => void };
 export const ExamDialog: React.FC<ExamProps> = (props) => (props.vetCase ? <ExamForm key={props.vetCase.id} {...props} vetCase={props.vetCase} /> : null);
 
@@ -51,7 +49,6 @@ const HealthStatusForm: React.FC<HealthStatusProps & { horse: Horse }> = ({ hors
   );
 };
 
-// Mounted only while open, so the form starts from the case every time.
 const ExamForm: React.FC<ExamProps & { vetCase: VetCase }> = ({ vetCase, horse, onClose, onDone }) => {
   const actor = useActor();
   const toast = useToast();
@@ -112,7 +109,6 @@ const ExamForm: React.FC<ExamProps & { vetCase: VetCase }> = ({ vetCase, horse, 
   );
 };
 
-/** 3.1 — BR_01 lock. */
 type HorseDialogProps = { horse: Horse | null; onClose: () => void; onDone: () => void };
 export const LockDialog: React.FC<HorseDialogProps> = (props) => (props.horse ? <LockForm key={props.horse.id} {...props} /> : null);
 const LockForm: React.FC<HorseDialogProps> = ({ horse, onClose, onDone }) => {
@@ -148,7 +144,6 @@ const LockForm: React.FC<HorseDialogProps> = ({ horse, onClose, onDone }) => {
   );
 };
 
-/** 3.2 — BR_01 unlock. */
 export const UnlockDialog: React.FC<HorseDialogProps> = (props) => (props.horse ? <UnlockForm key={props.horse.id} {...props} /> : null);
 const UnlockForm: React.FC<HorseDialogProps> = ({ horse, onClose, onDone }) => {
   const actor = useActor();

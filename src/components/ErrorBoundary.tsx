@@ -5,8 +5,6 @@ import { Icon } from './ui/Icon';
 interface Props { children: React.ReactNode }
 interface State { error: Error | null }
 
-/* Class component with lifecycle methods (Slot 6): catches render errors in the subtree,
-   including a lazy page whose chunk failed to download, and shows a fallback instead of a blank screen. */
 export class ErrorBoundary extends React.Component<Props, State> {
   static propTypes = { children: PropTypes.node };
 

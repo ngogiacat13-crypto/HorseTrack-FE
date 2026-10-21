@@ -10,7 +10,6 @@ import { MetricsPanel } from './MetricsPanel';
 import { DecisionForm } from './DecisionForm';
 import { DecisionRecord, SessionSide } from './SessionSide';
 
-/* 2.1 cảnh báo PAUSED_PENDING_TRAINER · 2.2 biểu đồ chỉ số · 2.3 dừng & gửi bác sĩ · 2.4 điều chỉnh & tiếp tục */
 export const TrainerSessionDetail: React.FC = () => {
   const { id = '' } = useParams<{ id: string }>();
   const actor = useActor();

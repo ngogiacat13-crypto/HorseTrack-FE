@@ -9,13 +9,12 @@ import { InventoryTable } from './InventoryTable';
 import { SafetyDialog, StockMoveDialog } from './StockDialogs';
 import { useDebounce } from '../../../hooks/useDebounce';
 
-/* 1.1 Danh sách tồn kho · 1.2 Nhập/xuất/điều chỉnh · 1.3 Ngưỡng an toàn · 1.4 Cảnh báo dưới ngưỡng (BR_08) */
 export const WarehouseInventory: React.FC = () => {
   const { data, loading, error, reload } = useFetch(() => warehouseApi.getInventory());
   const [category, setCategory] = useState('');
   const [status, setStatus] = useState<'' | 'low' | 'held' | 'expiring'>('');
   const [q, setQ] = useState('');
-  const query = useDebounce(q); // filter after the user pauses typing
+  const query = useDebounce(q);
   const [moveFor, setMoveFor] = useState<StockItem | null>(null);
   const [safetyFor, setSafetyFor] = useState<StockItem | null>(null);
 

@@ -12,7 +12,6 @@ import { CreateShipmentDialog, ReasonDialog, ReceiveDialog } from './ShipmentDia
 
 type Tab = 'open' | 'received' | 'cancelled';
 
-/* 3.1 Tạo đơn nhập · 3.2 Theo dõi lô hàng · 3.3 Nhận hàng & nhập kho · 3.4 Thông báo hàng về (bác sĩ / Mã phu) */
 export const WarehouseShipments: React.FC = () => {
   const actor = useActor();
   const toast = useToast();

@@ -1,4 +1,3 @@
-/* Data shapes of the Veterinarian module (match db.json). */
 import type { ProtocolState } from '../managerApi';
 import type { HealthStatus, Horse } from '../trainerApi';
 
@@ -14,9 +13,7 @@ export interface VetCase {
 
 export interface InventoryItem {
   id: string; name: string; note?: string; category: string; unit: string; unitPrice: number; onHand: number; held: number; safety: number;
-  /** Drug group, route, example brands and a textbook reference dose (the vet decides the real dose). */
   group: string; route: string; brand?: string; doseRef?: string;
-  /** Reference detection time in competition testing (FEI Detection Times 2022) — only where a published value exists. */
   detectionHours?: number;
   rx?: boolean; controlled?: boolean;
 }
@@ -35,7 +32,6 @@ export interface Protocol {
   delayed: boolean;
   progress: { at: string; by: string; text: string }[];
   outcome: string | null;
-  // Fields read by the Club Manager monitor (kept in sync on every change)
   label: string; tone: 'danger' | 'info' | 'success' | 'neutral'; cost: number; trainingLocked?: boolean; open: boolean;
   alertState?: ProtocolState; materials: { item: string; status: string; tone: 'success' | 'danger' | 'neutral' }[]; note: string;
   log: { tone?: 'danger' | 'warning' | 'success'; who: string; text: string; at: string }[];

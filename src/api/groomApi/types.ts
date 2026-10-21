@@ -1,7 +1,5 @@
-/* Data shapes of the Groom module (match db.json). */
 export type TaskType = 'FEED' | 'CLEAN' | 'GROOM' | 'COOL' | 'OTHER';
 
-/** One daily care task. SLA = start time + 45 minutes (BR_05). */
 export interface CareTask {
   id: string; date: string; groom: string; zone: string; type: TaskType; title: string;
   horseId: string | null; horse: string | null; stall: string | null;

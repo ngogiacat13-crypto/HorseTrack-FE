@@ -5,7 +5,6 @@ import { useAction } from '../../../hooks/useAction';
 import { Icon } from '../../../components/ui/Icon';
 import { Dialog } from '../../../components/ui/Ht';
 
-/* 1.4 — score 1–10 + comment after a completed session. */
 export const EvaluateDialog: React.FC<{ session: TrainingSession; onClose: () => void; onDone: () => void }> = ({ session: s, onClose, onDone }) => {
   const actor = useActor();
   const { busy, error, setError, run } = useAction();

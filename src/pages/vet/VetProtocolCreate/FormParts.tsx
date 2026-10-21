@@ -11,7 +11,6 @@ interface HorseCaseProps {
   onHorse: (id: string) => void; onCase: (id: string) => void; onDiagnosis: (v: string) => void; onRequiredBy: (v: string) => void;
 }
 
-/** Horse, examined case, diagnosis and the date the medicine is needed. Locked when making a new version. */
 export const HorseCaseFields: React.FC<HorseCaseProps> = ({ horses, cases, locked, horseId, caseId, diagnosis, requiredBy, onHorse, onCase, onDiagnosis, onRequiredBy }) => (
   <Panel title="Ngựa & chẩn đoán">
     <div className="ht-panel__body ht-proto-phase__grid" style={{ gridTemplateColumns: '1fr 1fr 2fr 1fr' }}>
@@ -46,7 +45,6 @@ interface SummaryProps {
   onSend: () => void; onDraft: () => void;
 }
 
-/** Cost per phase, total, and the two submit buttons (2.2: send to the warehouse — never to the Club Manager). */
 export const SummaryPanel: React.FC<SummaryProps> = ({ horse, vetCase, phases, error, busy, onSend, onDraft }) => (
   <>
     <Panel as="h3" title="Tóm tắt phác đồ">

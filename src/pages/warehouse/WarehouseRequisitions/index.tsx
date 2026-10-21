@@ -14,7 +14,6 @@ const GROUP: Record<Tab, ReqStatus[]> = {
   done: ['ISSUED', 'REJECTED', 'CLOSED'],
 };
 
-/* 4.1 Tiếp nhận yêu cầu vật tư phi y tế · 4.2 Duyệt / cấp phát / từ chối · 4.3 Theo dõi đơn nhập và báo Mã phu */
 export const WarehouseRequisitions: React.FC = () => {
   const actor = useActor();
   const { data, loading, error, reload } = useFetch(() => warehouseApi.getRequisitions());
@@ -26,7 +25,6 @@ export const WarehouseRequisitions: React.FC = () => {
   const list = rows.filter((r) => GROUP[tab].includes(r.status));
   const current: Requisition | undefined = rows.find((r) => r.id === sel && GROUP[tab].includes(r.status)) ?? list[0];
 
-  // Opening a new request marks it "đang kiểm tồn" so the Groom sees it is being handled.
   useEffect(() => {
     if (current?.status === 'SUBMITTED') warehouseApi.startCheck(current, actor).then(reload);
   }, [current?.id]); // eslint-disable-line react-hooks/exhaustive-deps

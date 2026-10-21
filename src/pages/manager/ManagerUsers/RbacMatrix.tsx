@@ -6,7 +6,6 @@ import { ROLE_LABEL } from '../../../components/layout/nav';
 
 type Role = ManagedUser['role'];
 
-/* Spec §4 role × function matrix. 'y' = có quyền, 'n' = không, other text = qualifier. */
 const RBAC: [string, ...string[]][] = [
   ['Đăng nhập · đổi mật khẩu', 'y', 'y', 'y', 'y', 'y', 'y'],
   ['Duyệt hồ sơ ngựa mới', 'y', 'n', 'n', 'n', 'n', 'Gửi hồ sơ'],
@@ -24,7 +23,6 @@ const RBAC: [string, ...string[]][] = [
 ];
 const COLS: Role[] = ['ClubManager', 'HeadTrainer', 'Veterinarian', 'WarehouseManager', 'Groom', 'HorseOwner'];
 
-/** 5.3 — read-only permission matrix (least privilege). */
 export const RbacMatrix: React.FC = () => (
   <Panel title="Ma trận quyền theo vai trò" sub="Nguyên tắc quyền tối thiểu. “Xem” là quyền giám sát, không chỉnh sửa chuyên môn."
     foot={<><span>Bác sĩ thú y là người duy nhất mở khóa y tế (BR_01).</span><span>Nguồn: Đặc tả nghiệp vụ §4</span></>}>

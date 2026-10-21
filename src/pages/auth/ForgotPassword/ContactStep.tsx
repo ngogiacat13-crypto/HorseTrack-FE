@@ -5,7 +5,6 @@ import { Icon } from '../../../components/ui/Icon';
 import { Busy, Callout, Field, TextInput } from '../../../components/ui/Ht';
 import { useForm } from '../../../hooks/useForm';
 
-/* Step 1 — email of the account; the API sends a 6-digit OTP. */
 export const ContactStep: React.FC<{ onSent: (contact: string) => void }> = ({ onSent }) => {
   const [serverError, setServerError] = useState('');
   const form = useForm({ contact: '' }, (v) => ({ contact: v.contact.trim() ? undefined : 'Vui lòng nhập email' }));

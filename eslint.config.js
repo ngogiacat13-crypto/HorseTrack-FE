@@ -4,9 +4,10 @@ import tseslint from 'typescript-eslint';
 import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
 import prettier from 'eslint-config-prettier';
+import noComments from './lint-rules/no-comments.js';
 
 export default tseslint.config(
-  { ignores: ['dist', 'node_modules', 'test_mock.js'] },
+  { ignores: ['dist', 'node_modules', 'test_mock.js', 'playwright-report', 'test-results'] },
   {
     files: ['**/*.{ts,tsx}'],
     extends: [js.configs.recommended, ...tseslint.configs.recommended, prettier],
@@ -17,6 +18,7 @@ export default tseslint.config(
     plugins: {
       'react-hooks': reactHooks,
       'react-refresh': reactRefresh,
+      local: { rules: { 'no-comments': noComments } },
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
@@ -26,9 +28,15 @@ export default tseslint.config(
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
       ],
       '@typescript-eslint/no-explicit-any': 'warn',
-      // Canh bao thay vi chan: xem src/hooks/useFetch.ts
       'react-hooks/set-state-in-effect': 'warn',
-      // Text tieng Viet thuong chua non-breaking space -> chi canh bao ngoai string/JSX
+      'local/no-comments': 'error',
+      'no-empty': ['error', { allowEmptyCatch: true }],
+      'no-restricted-imports': ['error', {
+        paths: [
+          { name: 'lodash', message: 'Import từng hàm (lodash/xxx) hoặc viết hàm nhỏ trong src/utils.' },
+          { name: 'moment', message: 'Dùng Date / Intl hoặc hàm trong src/utils.' },
+        ],
+      }],
       'no-irregular-whitespace': [
         'error',
         { skipStrings: true, skipTemplates: true, skipComments: true, skipJSXText: true },

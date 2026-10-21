@@ -5,7 +5,6 @@ import { useActor } from '../../../auth/AuthContext';
 import { useAction } from '../../../hooks/useAction';
 import { Callout, Dialog, ReasonField } from '../../../components/ui/Ht';
 
-/* 2.3 / BR_03 — the Groom cannot change a vet diet; this sends a request to the vet instead. */
 export const FeedRequestDialog: React.FC<{ horse: VetHorse; onClose: () => void; onDone: () => void }> = ({ horse, onClose, onDone }) => {
   const actor = useActor();
   const { busy, error, run } = useAction();

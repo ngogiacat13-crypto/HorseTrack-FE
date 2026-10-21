@@ -5,7 +5,6 @@ import { Badge, PageHeader, Panel } from '../../../components/ui/Ht';
 import { LoadState } from '../../../components/trainer/TrainerParts';
 import { CountSheet } from './CountSheet';
 
-/* 1.5 Kiểm kê định kỳ — đối chiếu tồn hệ thống với thực tế, lưu biên bản chênh lệch và lý do */
 export const WarehouseStockCheck: React.FC = () => {
   const { data, loading, error, reload } = useFetch(() => warehouseApi.getChecks());
   const [open, setOpen] = useState<string | null>(null);

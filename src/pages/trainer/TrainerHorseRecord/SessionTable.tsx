@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { SESSION_LABEL, TrainingSession } from '../../../api/trainerApi';
 import { Badge } from '../../../components/ui/Ht';
 
-/** Training sessions of one horse: time, content, peak HR (red when over the threshold), status and score. */
 export const SessionTable: React.FC<{ sessions: TrainingSession[] }> = ({ sessions }) => (
   <>
     <table className="ht-table">

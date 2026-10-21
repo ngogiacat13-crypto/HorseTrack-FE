@@ -6,7 +6,6 @@ import { INJURY_SEVERITIES } from './labels';
 import { get, nextId, now, min, addHistory } from './shared';
 
 export const healthApi = {
-  /* ----- Horse health record (1.3, 1.4, 3.1–3.4) ----- */
   async getHorseHealth(id: string) {
     const [horse, cases, protocols, vaccinations, proposals, feedRequests] = await Promise.all([
       get<VetHorse>(`/horses/${id}`), get<VetCase[]>('/vetCases', { horseId: id }), get<Protocol[]>('/protocols', { horseId: id }),
@@ -48,7 +47,6 @@ export const healthApi = {
     return data;
   },
 
-  /** 3.1 — BR_01. Pauses the running training plan; the trainer can no longer schedule or continue sessions. */
   async lockTraining(horse: Horse, input: { reason: string; review: string }, actor: Actor) {
     if (horse.trainingLocked) throw new Error(`${horse.name} đang bị khóa huấn luyện.`);
     const reason = min(input.reason, 10, 'Lý do khóa');
@@ -62,7 +60,6 @@ export const healthApi = {
     return { horse: data, pausedPlans: plans.length };
   },
 
-  /** 3.2 — BR_01. Only the vet unlocks. Paused plans stay paused: the trainer decides when to resume. */
   async unlockTraining(horse: Horse, note: string, actor: Actor) {
     if (!horse.trainingLocked) throw new Error(`${horse.name} không bị khóa huấn luyện.`);
     const why = min(note, 10, 'Đánh giá đủ điều kiện');
@@ -72,7 +69,6 @@ export const healthApi = {
     return data;
   },
 
-  /** 3.3 — BR_03. null removes the medical diet (back to the normal ration). */
   async setDiet(horse: VetHorse, diet: Omit<MedicalDiet, 'by' | 'at'> | null, actor: Actor) {
     if (diet) {
       if (![diet.morning, diet.noon, diet.evening].some((m) => m.trim())) throw new Error('Nhập ít nhất một bữa.');
@@ -87,7 +83,6 @@ export const healthApi = {
     return data;
   },
 
-  /** 3.4 — approve / reject a special feed request. Approved feed is added to the medical diet. */
   async decideFeed(req: FeedRequest, approve: boolean, note: string, actor: Actor) {
     if (req.status !== 'PENDING') throw new Error('Yêu cầu đã được xử lý.');
     if (!approve) min(note, 10, 'Lý do từ chối');

@@ -4,9 +4,7 @@ import { HEALTH_LABEL, Horse, PlanPhase, Reading } from '../../api/trainerApi';
 import { Badge, Callout, Loading } from '../ui/Ht';
 import { Icon } from '../ui/Icon';
 
-/* Building blocks shared by the HeadTrainer pages. */
 
-/** Health + lock + pending case + form badges for one horse. */
 export const HorseBadges: React.FC<{ horse: Horse; compact?: boolean }> = ({ horse, compact }) => {
   const [label, tone] = HEALTH_LABEL[horse.health];
   return (
@@ -18,7 +16,6 @@ export const HorseBadges: React.FC<{ horse: Horse; compact?: boolean }> = ({ hor
     </span>
   );
 };
-// PropTypes (Slot 13) cannot express the TS Horse type exactly, so the shape is checked at runtime only.
 Object.assign(HorseBadges, {
   propTypes: {
     horse: PropTypes.shape({ health: PropTypes.string.isRequired, trainingLocked: PropTypes.bool.isRequired }).isRequired,
@@ -26,7 +23,6 @@ Object.assign(HorseBadges, {
   },
 });
 
-/** Phase progress: done phases, current phase, upcoming phases. */
 export const PhaseBar: React.FC<{ phases: PlanPhase[]; current: number }> = ({ phases, current }) => (
   <div className="ht-phase-bar" aria-label={`Giai đoạn ${current}/${phases.length}`}>
     {phases.map((p) => (
@@ -36,7 +32,6 @@ export const PhaseBar: React.FC<{ phases: PlanPhase[]; current: number }> = ({ p
 );
 PhaseBar.propTypes = { phases: PropTypes.array.isRequired, current: PropTypes.number.isRequired };
 
-/** Loading / error wrapper for useFetch results. */
 export const LoadState: React.FC<{ loading: boolean; error: string | null; onRetry: () => void }> = ({ loading, error, onRetry }) => (
   <div className="ht ht-page">
     {error ? (
@@ -50,7 +45,6 @@ export const LoadState: React.FC<{ loading: boolean; error: string | null; onRet
 );
 LoadState.propTypes = { loading: PropTypes.bool.isRequired, error: PropTypes.string, onRetry: PropTypes.func.isRequired };
 
-/** Heart-rate line chart (SVG): readings, recovery readings (dashed) and the threshold line. */
 export const HrChart: React.FC<{ readings: Reading[]; recovery?: Reading[]; limit: number }> = ({ readings, recovery = [], limit }) => {
   const all = [...readings, ...recovery];
   const W = 640, H = 220, L = 40, R = 16, T = 12, B = 28;

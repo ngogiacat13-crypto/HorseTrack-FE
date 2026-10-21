@@ -1,6 +1,5 @@
 import React, { useRef } from 'react';
 
-/** Six single-digit boxes; typing moves to the next box, Backspace goes back, paste fills all. */
 export const OtpInput: React.FC<{ value: string; onChange: (v: string) => void; invalid?: boolean; labelledBy: string }> = ({ value, onChange, invalid, labelledBy }) => {
   const refs = useRef<(HTMLInputElement | null)[]>([]);
   const digits = Array.from({ length: 6 }, (_, i) => value[i] ?? '');

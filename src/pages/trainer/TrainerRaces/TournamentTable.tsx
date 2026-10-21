@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { Tournament } from '../../../api/trainerApi';
 import { Badge, Panel } from '../../../components/ui/Ht';
 
-/** 3.1 — tournaments entered by the Club Manager; the trainer proposes horses from here. */
 export const TournamentTable: React.FC<{ tournaments: Tournament[] }> = ({ tournaments }) => {
   const navigate = useNavigate();
   return (

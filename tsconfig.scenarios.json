@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": [
+      "node"
+    ],
+    "allowImportingTsExtensions": false
+  },
+  "include": [
+    "scenarios",
+    "scenarios-live",
+    "playwright.config.ts",
+    "playwright.live.config.ts"
+  ]
+}

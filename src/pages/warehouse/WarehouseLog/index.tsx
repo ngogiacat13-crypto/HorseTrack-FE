@@ -8,7 +8,6 @@ import { useDebounce } from '../../../hooks/useDebounce';
 
 const qtyColor = (t: StockTx) => (t.type === 'HOLD' || t.type === 'RELEASE' ? 'var(--muted)' : t.qty < 0 ? 'var(--danger-ink)' : 'var(--success-ink)');
 
-/* Render props: each column draws its own cell. */
 const COLUMNS: Column<StockTx>[] = [
   { header: 'Mã', render: (t) => t.id, className: 'id' },
   { header: 'Thời điểm', render: (t) => t.at, className: 'mono' },
@@ -20,12 +19,11 @@ const COLUMNS: Column<StockTx>[] = [
   { header: 'Người thực hiện · ghi chú', render: (t) => <span style={{ fontSize: 13 }}>{t.by}<span className="sub">{t.note}</span></span> },
 ];
 
-/* 4.4 Nhật ký kho — nhập, cấp phát, giữ tồn, điều chỉnh kiểm kê (không phải "nhật ký chăm sóc") */
 export const WarehouseLog: React.FC = () => {
   const { data, loading, error, reload } = useFetch(() => warehouseApi.getLog());
   const [type, setType] = useState<'' | TxType>('');
   const [q, setQ] = useState('');
-  const query = useDebounce(q); // filter after the user pauses typing
+  const query = useDebounce(q);
   const list = useMemo(() => (data ?? []).filter((t) => (!type || t.type === type) && `${t.item} ${t.itemId} ${t.ref ?? ''} ${t.by} ${t.note}`.toLowerCase().includes(query.trim().toLowerCase())), [data, type, query]);
   if (!data) return <LoadState loading={loading} error={error} onRetry={reload} />;
 

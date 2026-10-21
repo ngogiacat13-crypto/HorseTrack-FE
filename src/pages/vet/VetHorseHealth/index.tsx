@@ -14,7 +14,6 @@ import { CasesTab, RacesTab, VaccinesTab } from './RecordTabs';
 
 type Tab = 'health' | 'cases' | 'vaccines' | 'races';
 
-/* Hồ sơ sức khỏe: 1.3 sơ đồ 2D · 1.4 lịch sử y tế · 3.1–3.2 khóa/mở khóa · 3.3 khẩu phần y tế · 3.4 thức ăn đặc biệt */
 export const VetHorseHealth: React.FC = () => {
   const { id = '' } = useParams<{ id: string }>();
   const { data, loading, error, reload } = useFetch(() => vetApi.getHorseHealth(id), [id]);

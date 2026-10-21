@@ -10,8 +10,6 @@ import { Async } from '../../../components/ui/Async';
 
 const sub: React.CSSProperties = { fontSize: 12, color: 'var(--muted)' };
 
-/* Each column says how to draw its cell (render props); DataTable draws the table around them.
-   The history only holds finished transactions, so the status is VERIFIED or FAILED. */
 const COLUMNS: Column<Payment>[] = [
   { header: 'Mã giao dịch', render: (p) => p.id, className: 'ht-mono' },
   { header: 'Hóa đơn', render: (p) => <span className="ht-mono">{p.invoiceId}</span> },
@@ -36,7 +34,6 @@ const COLUMNS: Column<Payment>[] = [
   },
 ];
 
-/* 2.4 Lịch sử thanh toán — tổng đã thanh toán, số còn nợ, các giao dịch đã hoàn tất (thành công / thất bại). */
 export const OwnerPayments: React.FC = () => {
   const actor = useActor();
   const state = useFetch(() => ownerApi.getPaymentHistory(actor), [actor]);

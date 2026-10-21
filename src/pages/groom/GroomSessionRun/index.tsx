@@ -12,7 +12,6 @@ import { BackButton, Badge, Callout, PageHeader, Panel } from '../../../componen
 import { HorseBadges, HrChart, LoadState } from '../../../components/trainer/TrainerParts';
 import { ReadingForm } from './ReadingForm';
 
-/* 3.1 Bắt đầu phiên · 3.2 Nhập chỉ số · 3.3 Tự tạm dừng khi vượt ngưỡng (BR_02) · 3.4 Kết thúc phiên */
 export const GroomSessionRun: React.FC = () => {
   const { id = '' } = useParams();
   const actor = useActor();

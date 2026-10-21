@@ -10,7 +10,6 @@ const regBadge = (status: string, issue?: string) =>
   : issue && issue.startsWith('Thiếu') ? <Badge tone="warning">Thiếu giấy tờ</Badge>
   : <Badge tone="info">Chờ duyệt</Badge>;
 
-/** Latest horse registrations — click a row to review it. */
 export const RecentRegistrations: React.FC<{ d: Dash }> = ({ d }) => {
   const navigate = useNavigate();
   return (
@@ -30,7 +29,6 @@ export const RecentRegistrations: React.FC<{ d: Dash }> = ({ d }) => {
   );
 };
 
-/** 4.3 — today's sessions, read-only (decisions belong to the HeadTrainer). */
 export const TodaySessions: React.FC<{ d: Dash }> = ({ d }) => (
   <Panel title="Phiên tập hôm nay" sub="Chỉ xem · quyết định thuộc HLV trưởng">
     <table className="ht-table">
@@ -47,7 +45,6 @@ export const TodaySessions: React.FC<{ d: Dash }> = ({ d }) => (
   </Panel>
 );
 
-/** 4.4 — vet cost per month, last 6 months (million ₫). */
 export const VetCostChart: React.FC<{ d: Dash }> = ({ d }) => {
   const max = Math.max(...d.vetCost.map((c) => c.value));
   const total = d.vetCost.reduce((s, c) => s + c.value, 0);

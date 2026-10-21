@@ -1,7 +1,6 @@
 import React from 'react';
 import { GRACE_DAYS as GRACE, Invoice, SUSPEND_AT } from '../../../api/managerApi';
 
-/** BR_12/BR_13 — three-segment bar: grace (10 days) → penalty → suspension (from day 25). */
 export const OverdueMeter: React.FC<{ inv: Invoice }> = ({ inv }) => {
   if (inv.status === 'PAID' || inv.status === 'ACTIVE') return <span className="ht-od__label">—</span>;
   if (inv.status === 'REACTIVATION_PENDING') return <span className="ht-od__label" style={{ color: 'var(--info-ink)' }}>Đã tất toán {inv.paidRef?.split(' · ')[1]}</span>;

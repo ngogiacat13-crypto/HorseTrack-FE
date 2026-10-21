@@ -1,4 +1,3 @@
-// ====================== TYPES & MOCK DATA ======================
 export type Role =
   | 'ClubManager'
   | 'HeadTrainer'
@@ -37,11 +36,9 @@ export interface AuthUser {
   phone: string;
   role: Role;
   avatar?: string;
-  /** Profile picture (data URL, square, 256 px). Empty = show initials. */
   avatarUrl?: string;
 }
 
-// Tài khoản và đăng nhập: xem src/api/authApi.ts (gọi json-server /users).
 
 export interface HorseRegistrationRecord {
   horseId: string;

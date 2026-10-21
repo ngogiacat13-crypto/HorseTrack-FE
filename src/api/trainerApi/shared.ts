@@ -1,4 +1,3 @@
-/* Internal helpers. Ownership: a trainer only reads and acts on horses with horse.trainerId === actor.id. */
 import { DEMO_NOW, http } from '../http';
 import type { Actor } from '../managerApi';
 import type { Horse, TrainingPlan, TrainingSession } from './types';
@@ -10,7 +9,6 @@ export const nextId = (ids: string[], prefix: string, width = 4) => {
   return `${prefix}${String(max + 1).padStart(width, '0')}`;
 };
 
-/* Ownership: each horse has one HeadTrainer (horse.trainerId). A trainer only reads and acts on those horses. */
 export const NOT_MINE = 'Bạn không phụ trách ngựa này — HLV trưởng chỉ xem được ngựa mình được giao.';
 export const trainerIdOf = (actor: Actor) => {
   if (!actor.id) throw new Error('Phiên đăng nhập không có mã người dùng — hãy đăng nhập lại.');
@@ -22,7 +20,6 @@ export const getMyHorse = async (horseId: string, actor: Actor) => {
   if (horse.trainerId !== trainerIdOf(actor)) throw new Error(NOT_MINE);
   return horse;
 };
-/** Keep only rows (plans, sessions, proposals…) that belong to the given horses. */
 export const ofHorses = <T extends { horseId: string }>(rows: T[], horses: Horse[]) => {
   const ids = new Set(horses.map((h) => h.id));
   return rows.filter((r) => ids.has(r.horseId));
@@ -34,11 +31,8 @@ export const getHorseChecked = async (horseId: string, actor: Actor) => {
   return horse;
 };
 
-/** Plan states that count as "the horse's current plan" (one per horse). */
 export const CURRENT_PLAN: TrainingPlan['status'][] = ['PLANNED', 'ACTIVE', 'PAUSED'];
 const dayKey = (ddmmyyyy: string) => ddmmyyyy.split('/').reverse().join('');
-/** A PLANNED plan starts running once its start date has come AND a session has been given to a Mã phu.
-    The switch is saved, so every screen (owner, vet…) sees the same state. */
 export const withLiveStatus = async (plans: TrainingPlan[], sessions?: TrainingSession[]) => {
   const due = plans.filter((p) => p.status === 'PLANNED' && dayKey(p.startDate) <= dayKey(DEMO_NOW.date));
   if (!due.length) return plans;

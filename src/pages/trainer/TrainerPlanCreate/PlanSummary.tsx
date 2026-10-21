@@ -4,7 +4,6 @@ import { Icon } from '../../../components/ui/Icon';
 import { Badge, Busy, Callout, Panel } from '../../../components/ui/Ht';
 import type { PhaseDraft, PlanType } from './templates';
 
-/** Totals + submit button. The submit button belongs to the page form (type="submit"). */
 export const PlanSummary: React.FC<{ name: string; horse?: Horse; type: PlanType; startDate: string; phases: PhaseDraft[]; busy: boolean; disabled: boolean; block: string | null }> = ({ name, horse, type, startDate, phases, busy, disabled, block }) => {
   const totalWeeks = phases.reduce((s, p) => s + (p.weeks || 0), 0);
   const totalSessions = phases.reduce((s, p) => s + (p.weeks || 0) * (p.sessionsPerWeek || 0), 0);

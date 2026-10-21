@@ -1,13 +1,9 @@
-/* ============================================================
-   MANAGER MODULE
-   ============================================================ */
 .manager-page {
   padding: 28px 32px 48px;
   max-width: 1720px;
   margin: 0 auto;
 }
 
-/* ---------- Header ---------- */
 .manager-header {
   display: flex;
   justify-content: space-between;
@@ -43,7 +39,6 @@
 }
 .btn-export:hover { background: #f7faf8; border-color: #b5c9bd; }
 
-/* ---------- Tabs ---------- */
 .manager-tabs {
   display: flex;
   gap: 28px;
@@ -75,7 +70,6 @@
   border-radius: 2px 2px 0 0;
 }
 
-/* ---------- KPI GRID ---------- */
 .kpi-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -97,7 +91,6 @@
 .kpi-card:hover { box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05); }
 .kpi-card.danger-border { border-color: #f4c7c7; background: #fffafa; }
 
-/* Trend ở góc phải trên */
 .kpi-trend {
   position: absolute;
   top: 18px;
@@ -111,7 +104,6 @@
 .kpi-trend.danger  { color: #dc2626; }
 .kpi-trend.neutral { color: #9ca3af; font-weight: 500; }
 
-/* Icon + value */
 .kpi-icon {
   width: 34px;
   height: 34px;
@@ -142,7 +134,6 @@
   line-height: 1.4;
 }
 
-/* ---------- Layout 2 columns ---------- */
 .row-2-col {
   display: grid;
   grid-template-columns: 2.2fr 1fr;
@@ -154,7 +145,6 @@
   .kpi-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
-/* ---------- Section Card ---------- */
 .section-card {
   background: #fff;
   border: 1px solid #e8ede9;
@@ -185,7 +175,6 @@
 }
 .section-header a:hover { text-decoration: underline; }
 
-/* ---------- Table ---------- */
 .mt-table {
   width: 100%;
   border-collapse: collapse;
@@ -214,11 +203,9 @@
 .mt-table .name { font-weight: 600; color: #111827; }
 .mt-table .date { color: #6b7280; font-size: 12.5px; }
 
-/* Hàng danger nền hồng */
 .mt-table tbody tr.row-danger { background: #fef5f5; }
 .mt-table tbody tr.row-danger:hover { background: #fdeded; }
 
-/* ---------- Pills ---------- */
 .pill {
   display: inline-block;
   padding: 4px 10px;
@@ -235,7 +222,6 @@
 .pill-gray    { background: #f3f4f6; color: #4b5563; }
 .pill-darkred { background: #fecaca; color: #991b1b; }
 
-/* ---------- Invoice (right column) ---------- */
 .invoice-list { padding: 4px 0; }
 .invoice-item {
   padding: 16px 20px;
@@ -274,7 +260,6 @@
   color: #dc2626;
 }
 
-/* ---------- Task Item ---------- */
 .task-list { padding: 0; }
 .task-item {
   padding: 14px 20px;
@@ -322,7 +307,6 @@
 }
 .task-footer a:hover { text-decoration: underline; }
 
-/* ---------- Chart ---------- */
 .chart-header {
   padding: 18px 22px 8px;
   display: flex;
@@ -403,7 +387,6 @@
   font-weight: 600;
 }
 
-/* ---------- System Logs ---------- */
 .log-list { padding: 4px 0; }
 .log-item {
   display: flex;

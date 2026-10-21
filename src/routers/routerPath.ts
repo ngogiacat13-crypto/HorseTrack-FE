@@ -1,8 +1,5 @@
-/* Every URL of the app in one place. Use these instead of hard-coded strings in routes and menus. */
 export const PATH = {
-  /** "/" only redirects: guest → login, signed in → their workspace. */
   root: '/',
-  /** Public intro page. */
   landing: '/gioi-thieu',
   login: '/login',
   register: '/register',
@@ -62,7 +59,6 @@ export const PATH = {
     registrations: '/owner/registrations',
     registrationCreate: '/owner/registrations/new',
   },
-  /** VNPay sandbox MOCK — full-page, outside the app layout. */
   vnpay: '/payment/vnpay/:id',
   warehouse: {
     home: '/warehouse',
@@ -75,6 +71,5 @@ export const PATH = {
   },
 } as const;
 
-/** Fill a path pattern, e.g. toPath(PATH.vet.horse, { id: 'h-storm' }) → /vet/horses/h-storm */
 export const toPath = (pattern: string, params: Record<string, string>) =>
   pattern.replace(/:([A-Za-z]+)/g, (_, k: string) => encodeURIComponent(params[k] ?? ''));

@@ -320,3 +320,26 @@ Mã phu Khu B (**Hứa Nghĩa**, id 34) đã có trên backend; chỉ thiếu gi
 - Giáo án tạo trước bản sửa này chỉ tồn tại trong tab cũ: **tải lại trang rồi tạo lại**. Nếu vẫn còn mã dạng `KH-…`, hộp phân công báo rõ "Giáo án … chưa có trên hệ thống" thay vì lỗi máy chủ.
 
 Code: `src/api/trainerApi/plansApi.ts` (`beCreatePlan`), `src/pages/trainer/TrainerPlanCreate/index.tsx` (ngày bắt đầu mặc định), `src/api/trainerApi/scheduleApi.ts` (`assertBePlan`).
+
+---
+
+## 11. Kiểm tra thực tế với backend (21/10/2026)
+
+Chạy: backend nhánh `test` ở cổng 8080, rồi
+
+```bash
+npm run scenarios:live
+```
+
+Bộ `scenarios-live/` (Playwright) **chỉ đọc**, không ghi gì vào DB chung. Nó đăng nhập 5 tài khoản trong `.env.backend`, gọi trực tiếp các API GET, bấm qua mọi mục menu, mở các trang chi tiết bằng id thật, và ghi lại mọi lời gọi `/api/v1` (trạng thái HTTP), lỗi JavaScript và khung báo lỗi. Kết quả chi tiết nằm ở `test-results/live-report/<vai-trò>.jsonl`.
+
+| Vai trò | API đọc (gọi trực tiếp) | Trang + trang chi tiết | Ghi chú |
+|---|---|---|---|
+| Quản lý CLB | 9/9 trả 200 (`/users/all` 32 tài khoản, `/horses` 5, chờ duyệt 1) | ✅ không lỗi; `REG-0016` (chờ duyệt), `REG-0001` (đã duyệt) mở được | Hóa đơn, Báo cáo tài chính vẫn là dữ liệu mẫu (backend chưa có API) |
+| Bác sĩ | 11/11 trả 200 (ca khám 0, phác đồ 3, thuốc 4) | ✅ `/vet/horses/1`, `/vet/protocols/PD-0040` mở được | **Đã sửa:** mục "Thức ăn đặc biệt chờ duyệt" trỏ tới ngựa mẫu `h-wind` → trang báo "Không tìm thấy dữ liệu". Khi chạy backend mục này giờ để trống (backend chưa có API) |
+| HLV | 9/9 trả 200 (giáo án 3, ngựa tập được 2) | ✅ `/trainer/horses/1`, `/trainer/sessions/1` mở được | `assignable-staff?planId=2` trả 0 Mã phu (ngựa của giáo án 2 chưa có Mã phu cùng khu) |
+| Mã phu | 5/5 trả 200 (phiên 1, công việc 0) | ✅ `/groom/sessions/3` mở được | ⚠️ Trang **Báo sự cố** gọi `GET /medical/cases` bị **403**: Mã phu không được đọc ca khám → không thấy lại các sự cố mình đã báo. Cần backend mở quyền đọc ca do chính Mã phu tạo |
+| Quản lý kho | 10/10 trả 200 (vật tư 9, nhật ký 5) | ✅ `/warehouse/medical/PD-0040` mở được | |
+| Chủ ngựa | — | — | Chưa có tài khoản chủ ngựa trong `.env.backend` → chưa thử |
+
+**Chưa kiểm tra:** các thao tác **ghi** (tạo/duyệt/khóa/cấp phát…) vì sẽ thay đổi DB chung của nhóm.

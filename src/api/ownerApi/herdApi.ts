@@ -7,7 +7,6 @@ import type { OwnerInvoice, RaceResult } from './types';
 
 const results = (h: Horse) => h.raceResults ?? [];
 
-/** Starts / wins / top 3 / best rank from the results entered into the system (1.3). */
 export const raceStats = (rs: RaceResult[]) => ({
   starts: rs.length,
   wins: rs.filter((r) => r.rank === 1).length,
@@ -15,7 +14,6 @@ export const raceStats = (rs: RaceResult[]) => ({
   best: rs.length ? Math.min(...rs.map((r) => r.rank)) : null,
 });
 
-/* 1.1–1.3 Ngựa của tôi · 4.1–4.3 thông tin y tế chỉ xem (BR_09) */
 export const herdApi = {
   async getMyHorses(actor: Actor) {
     const [horses, plans, protocols, proposals, invoices] = await Promise.all([
@@ -43,7 +41,6 @@ export const herdApi = {
       get<Tournament[]>('/tournaments'), get<OwnerInvoice[]>('/invoices', { horseId: id }),
     ]);
     const rs = results(horse).slice().sort((a, b) => b.date.split('/').reverse().join('').localeCompare(a.date.split('/').reverse().join('')));
-    // 4.3 — medical costs already billed + the estimate of open protocols (not billed yet).
     const billed = invoices.filter((i) => i.owner === actor.name).flatMap((i) => i.lines.filter((l) => l.kind === 'MED').map((l) => ({ ...l, invoiceId: i.id, paid: isPaid(i) })));
     const shown = protocols.filter((p) => p.state !== 'SUPERSEDED');
     return {

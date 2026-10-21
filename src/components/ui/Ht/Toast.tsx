@@ -2,7 +2,6 @@ import React, { useCallback, useRef, useState } from 'react';
 import { Icon } from '../Icon';
 import { ToastCtx } from './toastContext';
 
-/* ---------- Toast ---------- */
 export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [msg, setMsg] = useState<string | null>(null);
   const timer = useRef<number>();
@@ -14,7 +13,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   return (
     <ToastCtx.Provider value={show}>
       {children}
-      {msg && <div className="ht-toast" role="status"><Icon name="check" /><span>{msg}</span></div>}
+      {msg && <div className="ht-toast" role="status" data-testid="toast"><Icon name="check" /><span>{msg}</span></div>}
     </ToastCtx.Provider>
   );
 };

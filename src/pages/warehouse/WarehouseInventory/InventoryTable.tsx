@@ -4,7 +4,6 @@ import { Badge, Panel } from '../../../components/ui/Ht';
 
 export type Incoming = Record<string, { qty: number; eta: string; id: string; delayed: boolean }[]>;
 
-/* 1.1 — on hand, held, available (BR_08), threshold, nearest lot / expiry, quantity on the way. */
 export const InventoryTable: React.FC<{ items: StockItem[]; incoming: Incoming; onMove: (i: StockItem) => void; onSafety: (i: StockItem) => void }> = ({ items, incoming, onMove, onSafety }) => (
   <Panel title="Tồn kho hiện tại" right={<span style={{ fontSize: 12, color: 'var(--muted)' }}>{items.length} mặt hàng · chỉ hàng đã nhận mới được sử dụng</span>}>
     <div style={{ overflowX: 'auto' }}>

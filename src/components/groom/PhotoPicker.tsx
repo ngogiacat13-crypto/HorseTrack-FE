@@ -2,7 +2,6 @@ import React, { useRef, useState } from 'react';
 import { toSquareAvatar } from '../../utils/image';
 import { Icon } from '../ui/Icon';
 
-/** Optional evidence photo (task done, incident). The picture is cropped square and shrunk before it is stored. */
 export const PhotoPicker: React.FC<{ value: string | null; onChange: (v: string | null) => void; label?: string }> = ({ value, onChange, label = 'Ảnh minh chứng (không bắt buộc)' }) => {
   const input = useRef<HTMLInputElement>(null);
   const [err, setErr] = useState('');

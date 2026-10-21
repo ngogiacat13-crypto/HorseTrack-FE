@@ -21,7 +21,6 @@ export const Login: React.FC = () => {
   const navigate = useNavigate();
   const [serverError, setServerError] = useState('');
 
-  // useFormik = the hook form of <Formik>; used here because the demo buttons outside the <form> also fill it.
   const formik = useFormik({
     initialValues: { username: '', password: '' },
     validationSchema: schema,
@@ -53,10 +52,10 @@ export const Login: React.FC = () => {
       <h1 className="ht-auth__title">Đăng nhập</h1>
       <p className="ht-auth__sub">Dùng tên đăng nhập và mật khẩu để truy cập hệ thống.</p>
 
-      {serverError && <Callout tone="danger" style={{ marginBottom: 16 }}>{serverError}</Callout>}
+      {serverError && <Callout tone="danger" testId="login-error" style={{ marginBottom: 16 }}>{serverError}</Callout>}
 
       <FormikProvider value={formik}>
-      <form onSubmit={formik.handleSubmit} noValidate>
+      <form onSubmit={formik.handleSubmit} noValidate data-testid="login-form">
         <FocusFirstError />
         <FormikField name="username" label="Tên đăng nhập" icon="user" autoComplete="username" placeholder="vd: nguyenminh" />
 
@@ -67,7 +66,7 @@ export const Login: React.FC = () => {
           </div>
         </div>
 
-        <button type="submit" className="ht-btn ht-btn--primary ht-btn--block" style={{ marginTop: 8 }} disabled={submitting} aria-busy={submitting || undefined}>
+        <button type="submit" className="ht-btn ht-btn--primary ht-btn--block" data-testid="login-submit" style={{ marginTop: 8 }} disabled={submitting} aria-busy={submitting || undefined}>
           <Busy busy={submitting} label="Đang đăng nhập…"><span>Đăng nhập</span><Icon name="arrow" /></Busy>
         </button>
       </form>

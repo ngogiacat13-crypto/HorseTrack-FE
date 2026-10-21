@@ -7,12 +7,9 @@ import { Icon } from '../../../components/ui/Icon';
 import { Busy, Callout, Field, PASSWORD_RE, PASSWORD_RULE, PasswordInput, StrengthMeter, TextInput } from '../../../components/ui/Ht';
 import { useForm } from '../../../hooks/useForm';
 
-// backend mode sends a real code by email, so the fixed demo code does not apply
 const SHOW_DEMO = !USE_BACKEND && (import.meta.env.DEV || import.meta.env.VITE_DEMO === 'true');
-// backend: app.otp.resend-cooldown-seconds = 30, code valid for app.otp.ttl-seconds = 120
 const RESEND_SECONDS = 30;
 
-/* Step 2 — OTP + new password. "Gửi lại mã" is available again after 30 seconds. */
 export const ResetStep: React.FC<{ contact: string; onChangeContact: () => void; onDone: () => void }> = ({ contact, onChangeContact, onDone }) => {
   const [serverError, setServerError] = useState('');
   const [resendIn, setResendIn] = useState(RESEND_SECONDS);

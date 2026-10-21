@@ -9,7 +9,6 @@ import { SessionTable } from './SessionTable';
 
 const muted: React.CSSProperties = { margin: 0, color: 'var(--muted)', fontSize: 13 };
 
-/* The four tabs of the trainer's horse record. Health data is read-only here (the vet owns it). */
 
 export const OverviewTab: React.FC<{ horse: Horse; plan?: TrainingPlan; recent: TrainingSession[]; avg: string; vaccinations: Vaccination[]; block: string | null }> = ({ horse, plan, recent, avg, vaccinations, block }) => {
   const phase = plan?.phases.find((p) => p.no === plan.currentPhase);

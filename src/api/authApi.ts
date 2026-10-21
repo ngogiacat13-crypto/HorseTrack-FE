@@ -2,8 +2,6 @@ import { http } from './http';
 import type { AuthUser, Role } from './mockData';
 import { EMAIL_TIMEOUT, USE_BACKEND, be, beData, tokenStore, type ApiResponse, type Tokens } from './beClient';
 
-/* Auth against json-server's /users collection.
-   DEMO ONLY: passwords are stored in plain text in db.json. A real backend must hash them and issue tokens. */
 interface UserRecord {
   id: string;
   username: string;
@@ -38,7 +36,6 @@ const findBy = async (field: 'username' | 'email' | 'phone', value: string) => {
 const findByLogin = async (login: string) =>
   (await findBy('username', login)) ?? (await findBy('email', login)) ?? (await findBy('phone', login));
 
-/* ---------- real backend (npm run dev:be) ---------- */
 interface BeLogin extends Tokens {
   role: string;
   userId: number;
@@ -53,7 +50,6 @@ interface BeProfile {
   isActive?: boolean;
 }
 
-/* Users.role_name in the database → role used by the screens. 'Trainer' has no own screens: it uses the Head Trainer ones. */
 const BE_ROLE: Record<string, Role> = {
   'Club Manager': 'ClubManager',
   'Head Trainer': 'HeadTrainer',
@@ -78,7 +74,6 @@ const fromProfile = (p: BeProfile, avatarUrl?: string): AuthUser => ({
 });
 
 const beAuth = {
-  /** POST /auth/login → keep the tokens → GET /account/my-profile with the Bearer token. */
   async login(username: string, password: string): Promise<AuthUser> {
     const t = await beData<BeLogin>(be.post('/auth/login', { username, password }));
     tokenStore.set({ accessToken: t.accessToken, refreshToken: t.refreshToken });
@@ -109,18 +104,15 @@ const beAuth = {
     });
   },
 
-  /** Change password needs a 6-digit OTP sent to the account email (POST /account/change-password/otp first). */
   async changePassword(oldPassword: string, newPassword: string, otp?: string): Promise<void> {
     await be.put('/account/change-password', { oldPassword, newPassword, confirmNewPassword: newPassword, otp });
   },
 
-  /** Returns the backend message, e.g. "Đã gửi mã OTP tới ng***@gmail.com. Mã có hiệu lực 120 giây." (data is only the masked email). */
   async requestChangePasswordOtp(): Promise<string> {
     const { data } = await be.post<ApiResponse<string>>('/account/change-password/otp', undefined, { timeout: EMAIL_TIMEOUT });
     return data.message || (data.data ? `Đã gửi mã OTP tới ${data.data}.` : '');
   },
 
-  /** Forgot password: the backend emails a 6-digit OTP, then resets with it. */
   async forgotPassword(email: string): Promise<void> {
     await be.post('/auth/forgot-password', { email }, { timeout: EMAIL_TIMEOUT });
   },
@@ -131,7 +123,6 @@ const beAuth = {
 };
 
 export const authApi = {
-  /** Login by username, email or phone (backend: username only). */
   async login(login: string, password: string): Promise<AuthUser> {
     if (USE_BACKEND) return beAuth.login(login, password);
     const user = await findByLogin(login);
@@ -140,8 +131,6 @@ export const authApi = {
     return toAuthUser(user);
   },
 
-  /** Register a HorseOwner account (default role). Throws { field, message } on duplicates. */
-  /** Sign out on the backend too (revokes the refresh token). Mock mode: nothing to do. */
   async logout(): Promise<void> {
     if (USE_BACKEND) await beAuth.logout();
   },
@@ -171,7 +160,6 @@ export const authApi = {
     return toAuthUser(data);
   },
 
-  /** Demo: no real OTP is sent; only checks that the account exists by email. */
   async sendOtp(email: string): Promise<void> {
     if (USE_BACKEND) return beAuth.forgotPassword(email);
     const user = await findBy('email', email);
@@ -195,17 +183,14 @@ export const authApi = {
     await http.patch(`/users/${userId}`, { password: newPassword });
   },
 
-  /** Backend: email a 6-digit code needed to change the password. Mock mode: nothing to send. */
   async requestChangePasswordOtp(): Promise<string> {
     if (USE_BACKEND) return beAuth.requestChangePasswordOtp();
     return '';
   },
 
-  /** Set or remove (null) the profile picture of the signed-in user. */
   async updateAvatar(userId: string, avatarUrl: string | null): Promise<AuthUser> {
     if (avatarUrl && !/^data:image\/(png|jpeg|webp);base64,/.test(avatarUrl)) throw new Error('Ảnh đại diện không hợp lệ.');
     if (avatarUrl && avatarUrl.length > 400_000) throw new Error('Ảnh quá lớn sau khi nén — hãy chọn ảnh khác.');
-    // Backend has no avatar column yet: keep the picture in this browser only.
     if (USE_BACKEND) return fromProfile(await beData<BeProfile>(be.get('/account/my-profile')), avatarUrl ?? undefined);
     const { data } = await http.patch<UserRecord>(`/users/${userId}`, { avatarUrl });
     return toAuthUser(data);

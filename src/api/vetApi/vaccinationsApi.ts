@@ -6,13 +6,11 @@ import { addMonths, isDate, daysFromToday } from './dates';
 import { get, nextId, min, addHistory } from './shared';
 
 export const vaccinationsApi = {
-  /* ----- 4.x Vaccination & deworming ----- */
   async getVaccinations() {
     const [vaccinations, horses] = await Promise.all([get<Vaccination[]>('/vaccinations'), get<VetHorse[]>('/horses')]);
     return { vaccinations, horses };
   },
 
-  /** 4.1 / 4.2 — one schedule line per selected horse. */
   async scheduleVaccination(input: { horseIds: string[]; kind: 'VACCINE' | 'DEWORM'; type: string; due: string; cycleMonths: number; note: string }, actor: Actor) {
     if (!input.horseIds.length) throw new Error('Chọn ít nhất 1 ngựa.');
     const type = min(input.type, 3, input.kind === 'DEWORM' ? 'Loại thuốc tẩy giun' : 'Loại vaccine');
@@ -37,7 +35,6 @@ export const vaccinationsApi = {
     return created;
   },
 
-  /** 4.4 — record it as done and plan the next one from the cycle. */
   async recordVaccination(v: Vaccination, input: { doneAt: string; lot: string; by: string }, actor: Actor) {
     if (v.status === 'DONE') throw new Error('Mũi này đã được ghi nhận.');
     if (!isDate(input.doneAt)) throw new Error('Ngày thực hiện theo dạng dd/mm/yyyy.');

@@ -9,7 +9,6 @@ import { ProtocolBadge } from '../../../components/vet/VetParts';
 
 type Tab = 'act' | 'running' | 'closed';
 
-/** What the vet has to do next for a protocol, in one short line. */
 const nextStep = (p: Protocol) => {
   switch (p.state) {
     case 'DRAFT': return 'Hoàn thiện và gửi kho kiểm tồn';
@@ -24,7 +23,6 @@ const nextStep = (p: Protocol) => {
   }
 };
 
-/* Danh sách phác đồ điều trị (2.1–2.7) — theo trạng thái cần xử lý. */
 export const VetProtocols: React.FC = () => {
   const navigate = useNavigate();
   const { data, loading, error, reload } = useFetch(() => vetApi.getProtocols());

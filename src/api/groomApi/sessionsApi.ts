@@ -5,7 +5,6 @@ import { get, me, toMin } from './shared';
 
 const isTime = (t: string) => /^([01]\d|2[0-3]):[0-5]\d$/.test(t);
 
-/* 3.1–3.4 — the Groom runs the session the trainer assigned: start, enter readings, auto-pause over the threshold (BR_02). */
 export const sessionsApi = {
   async getMySessions(actor: Actor) {
     const g = await me(actor);
@@ -22,7 +21,6 @@ export const sessionsApi = {
     return { session: s, horse, plan };
   },
 
-  /** 3.1 — only a scheduled session of today, and only when the horse is not under a vet lock (BR_01). */
   async start(s: TrainingSession, actor: Actor) {
     if (s.status !== 'SCHEDULED') throw new Error('Phiên không ở trạng thái chờ bắt đầu.');
     if (s.date !== DEMO_NOW.date) throw new Error(`Phiên được lịch ngày ${s.date} — chỉ bắt đầu đúng ngày.`);
@@ -33,7 +31,6 @@ export const sessionsApi = {
     return data;
   },
 
-  /** 3.2 / 3.3 — a reading over the threshold pauses the session and alerts the trainer; the Groom cannot skip it. */
   async addReading(s: TrainingSession, input: { t: string; hr: number; speed: number }, actor: Actor) {
     if (s.status !== 'IN_PROGRESS' && s.status !== 'RESUMED') throw new Error('Chỉ nhập chỉ số khi phiên đang diễn ra.');
     if (!isTime(input.t)) throw new Error('Thời điểm đo theo dạng HH:mm.');
@@ -58,7 +55,6 @@ export const sessionsApi = {
     return { session: data, paused: true };
   },
 
-  /** While paused: recovery heart rate, which the trainer needs before allowing to continue (BR_02). */
   async addRecovery(s: TrainingSession, input: { t: string; hr: number }, actor: Actor) {
     if (s.status !== 'PAUSED_PENDING_TRAINER') throw new Error('Chỉ đo hồi phục khi phiên đang tạm dừng.');
     if (!isTime(input.t)) throw new Error('Thời điểm đo theo dạng HH:mm.');

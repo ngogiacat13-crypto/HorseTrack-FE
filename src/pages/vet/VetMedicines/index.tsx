@@ -9,12 +9,11 @@ import { useDebounce } from '../../../hooks/useDebounce';
 const avail = (i: InventoryItem) => Math.max(0, i.onHand - i.held);
 const days = (h: number) => (h % 24 === 0 ? `${h / 24} ngày` : `${h} giờ`);
 
-/* Danh mục thuốc & vật tư — tra cứu khi lập phác đồ. Số tồn do Quản lý kho cập nhật; bác sĩ chỉ xem. */
 export const VetMedicines: React.FC = () => {
   const { data, loading, error, reload } = useFetch(() => vetApi.getMedicines());
   const [group, setGroup] = useState('');
   const [q, setQ] = useState('');
-  const query = useDebounce(q); // filter after the user pauses typing
+  const query = useDebounce(q);
   const [flag, setFlag] = useState<'' | 'detect' | 'rx' | 'low'>('');
 
   const items = useMemo(() => data ?? [], [data]);

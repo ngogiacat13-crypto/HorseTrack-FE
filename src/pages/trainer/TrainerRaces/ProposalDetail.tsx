@@ -5,7 +5,6 @@ import { Badge, Callout, Panel, Timeline } from '../../../components/ui/Ht';
 
 export type ProposalDialog = 'submit' | 'reject' | 'result';
 
-/* BR_04 pipeline shown as 5 steps. */
 const STEPS = ['Đề xuất', 'Chủ ngựa đồng ý', 'Khám sức khỏe', 'Gửi ban tổ chức', 'Kết quả'] as const;
 const stepOf = (s: ProposalStatus): { at: number; failed: boolean } => ({
   PROPOSED: { at: 0, failed: false }, WAITING_OWNER: { at: 1, failed: false }, OWNER_DECLINED: { at: 1, failed: true },
@@ -32,7 +31,6 @@ const Stepper: React.FC<{ status: ProposalStatus }> = ({ status }) => {
   );
 };
 
-/* One proposal: pipeline, vet/owner answers, manual organizer steps (3.4–3.5). */
 export const ProposalDetail: React.FC<{ proposal: RaceProposal; tournament?: Tournament; onOpen: (d: ProposalDialog) => void }> = ({ proposal: p, tournament: t, onOpen }) => (
   <Panel as="h3" title={<>{p.horseName} · <span className="ht-mono" style={{ fontWeight: 500 }}>{p.id}</span></>} sub={t?.name}
     right={<Badge tone={PROPOSAL_LABEL[p.status][1]}>{PROPOSAL_LABEL[p.status][0]}</Badge>} headStyle={{ alignItems: 'flex-start' }}>

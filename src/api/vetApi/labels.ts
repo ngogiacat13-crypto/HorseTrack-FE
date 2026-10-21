@@ -1,4 +1,3 @@
-/* Display labels + fixed lists used by the vet screens. */
 import type { ProtocolState } from '../managerApi';
 import type { CaseSource, Severity, CaseStatus, Protocol } from './types';
 
@@ -20,15 +19,12 @@ export const PROTOCOL_LABEL: Record<ProtocolState, [string, Tone]> = {
   SUPERSEDED: ['Đã bị thay thế', 'neutral'],
   CANCELLED: ['Đã hủy', 'neutral'],
 };
-/** The main status path from the spec (section 5) — used for the stepper. */
 export const PROTOCOL_FLOW: ProtocolState[] = ['DRAFT', 'WAITING_STOCK_CHECK', 'STOCK_AVAILABLE', 'VET_CONFIRMED', 'READY_FOR_DISPENSING', 'IN_TREATMENT', 'COMPLETED'];
-/** States where the vet has to act. */
 export const VET_ACTION_STATES: ProtocolState[] = ['DRAFT', 'STOCK_SHORTAGE', 'STOCK_AVAILABLE', 'REQUIRES_VET_REVIEW', 'IN_TREATMENT'];
 const CLOSED_STATES: ProtocolState[] = ['COMPLETED', 'SUPERSEDED', 'CANCELLED'];
 export const isOpenProtocol = (p: Pick<Protocol, 'state'>) => !CLOSED_STATES.includes(p.state);
 
 export const INJURY_SEVERITIES = ['Nhẹ', 'Trung bình', 'Nặng'] as const;
-/** Body parts on the 2D map (public/horse-injury-map.svg, horse seen from its left side). x/y are % of the image. */
 export const BODY_PARTS: { part: string; x: number; y: number }[] = [
   { part: 'Đầu', x: 20, y: 17 },
   { part: 'Cổ', x: 33, y: 25 },

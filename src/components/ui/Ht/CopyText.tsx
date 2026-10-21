@@ -2,7 +2,6 @@ import React from 'react';
 import { Icon } from '../Icon';
 import { useToast } from './toastContext';
 
-/** Copy text to the clipboard; falls back to a hidden textarea when the Clipboard API is unavailable. */
 const copy = async (text: string) => {
   try {
     await navigator.clipboard.writeText(text);
@@ -18,7 +17,6 @@ const copy = async (text: string) => {
   }
 };
 
-/* ---------- Plain text + small copy button ---------- */
 export const CopyText: React.FC<{ text: string; label?: string; mono?: boolean }> = ({ text, label = 'mã', mono = true }) => {
   const toast = useToast();
   return (

@@ -13,7 +13,6 @@ import { AuthProvider } from './auth/AuthContext';
 import { ToastProvider } from './components/ui/Ht';
 import { AppRoutes } from './routers';
 
-/* App shell: providers + router. Routes live in src/routers. */
 const App: React.FC = () => (
   <AuthProvider>
     <ToastProvider>

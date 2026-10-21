@@ -28,7 +28,6 @@ const usersSlice = createSlice({
       .addCase(fetchUsers.fulfilled, (state, action) => { state.status = 'succeeded'; state.items = action.payload; })
       .addCase(fetchUsers.rejected, (state, action) => { state.status = 'failed'; state.error = action.error.message ?? 'Lỗi tải người dùng'; });
 
-    // The three mutations share the same lifecycle: mark saving, then replace the updated user.
     for (const thunk of [changeRole, lockUser, unlockUser]) {
       builder
         .addCase(thunk.pending, (state) => { state.saving = true; })

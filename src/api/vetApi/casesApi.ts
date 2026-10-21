@@ -6,12 +6,10 @@ import { PROTOCOL_LABEL, isOpenProtocol } from './labels';
 import { get, now, min, addHistory } from './shared';
 
 export const casesApi = {
-  /* ----- 1.1–1.2 Case inbox ----- */
   async getCases() {
     const [cases, horses, protocols, sessions] = await Promise.all([
       get<VetCase[]>('/vetCases'), get<VetHorse[]>('/horses'), get<Protocol[]>('/protocols'), get<TrainingSession[]>('/trainingSessions'),
     ]);
-    // The vet only sees sessions linked to a case ("Xem ca liên quan" in the permission matrix).
     const linked = new Set(cases.map((c) => c.sessionId).filter(Boolean));
     return { cases, horses, protocols, sessions: sessions.filter((s) => linked.has(s.id)) };
   },

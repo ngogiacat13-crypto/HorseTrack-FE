@@ -3,7 +3,6 @@ import type { Intensity } from '../../../api/trainerApi';
 import { Icon } from '../../../components/ui/Icon';
 import { INTENSITIES, PhaseDraft } from './templates';
 
-/** One editable training phase (weeks, intensity, distance, sessions/week, HR threshold for BR_02). */
 export const PhaseRow: React.FC<{ phase: PhaseDraft; index: number; invalid: boolean; canRemove: boolean; onChange: (patch: Partial<PhaseDraft>) => void; onRemove: () => void }> = ({ phase: p, index: i, invalid, canRemove, onChange, onRemove }) => (
   <div className="ht-phase" style={invalid ? { borderColor: 'var(--danger-line)' } : undefined}>
     <div className="ht-phase__head">

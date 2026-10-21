@@ -7,7 +7,6 @@ import { dateKey, isDate } from './dates';
 import { get, nextId, now, min, addHistory, lastEta, stockShort, watchFields, saveProtocol, goTo, releaseHeld } from './shared';
 
 export const protocolsApi = {
-  /* ----- 2.x Protocols ----- */
   async getProtocols() {
     const [protocols, horses, shipments] = await Promise.all([get<Protocol[]>('/protocols'), get<VetHorse[]>('/horses'), get<Shipment[]>('/shipments')]);
     return { protocols, horses, shipments };
@@ -22,14 +21,12 @@ export const protocolsApi = {
     return { protocol: p, horse, vetCase, versions: versions.sort((a, b) => b.version - a.version), shipments: shipments.filter((s) => s.forRef === p.id) };
   },
 
-  /** Data for the create form: horse + case + the warehouse catalogue, and the version being replaced (2.4). */
   async getProtocolForm(opts: { horseId?: string; caseId?: string; replaceId?: string }) {
     const [horses, cases, inventory] = await Promise.all([get<VetHorse[]>('/horses'), get<VetCase[]>('/vetCases'), get<InventoryItem[]>('/inventory')]);
     const replacing = opts.replaceId ? await get<Protocol>(`/protocols/${opts.replaceId}`) : null;
     return { horses, cases: cases.filter((c) => c.status !== 'CLOSED'), inventory: inventory.filter((i) => i.category !== 'Thức ăn'), replacing };
   },
 
-  /** 2.1 + 2.2 — save a draft, or send it straight to the warehouse stock check (never to the Club Manager). */
   async createProtocol(input: { horseId: string; caseId: string; diagnosis: string; requiredBy: string; phases: ProtoPhase[]; replaces?: string | null }, send: boolean, actor: Actor) {
     const horse = await get<Horse>(`/horses/${input.horseId}`);
     const vetCase = await get<VetCase>(`/vetCases/${input.caseId}`).catch(() => { throw new Error('Chọn ca khám cho phác đồ.'); });
@@ -67,7 +64,6 @@ export const protocolsApi = {
     return data;
   },
 
-  /** 2.2 — a saved draft goes to the warehouse. */
   async sendStockCheck(p: Protocol, actor: Actor) {
     if (p.state !== 'DRAFT') throw new Error('Chỉ gửi kiểm tồn cho bản nháp.');
     const data = await saveProtocol(p, { ...goTo(p, 'WAITING_STOCK_CHECK'), note: 'Đã gửi kho kiểm tra tồn, chờ phản hồi.' }, { who: `BS ${actor.name}`, text: 'gửi kiểm tồn', at: now() });
@@ -86,14 +82,12 @@ export const protocolsApi = {
     return data;
   },
 
-  /** The old version is replaced: it is never dispensed, and its held stock is released. */
   async supersede(old: Protocol, byId: string, actor: Actor) {
     await releaseHeld(old);
     await saveProtocol(old, { ...goTo(old, 'SUPERSEDED'), supersededBy: byId, note: `Đã bị thay bằng ${byId} — không cấp phát theo bản này.` },
       { who: `BS ${actor.name}`, text: `thay bằng ${byId}`, at: now() });
   },
 
-  /** 2.4 / 2.6 — wait for the shipment. When the ETA is after the date the medicine is needed, the vet must justify it. */
   async waitRestock(p: Protocol, note: string, actor: Actor) {
     if (!['STOCK_SHORTAGE', 'REQUIRES_VET_REVIEW'].includes(p.state)) throw new Error('Chỉ chọn chờ hàng khi kho báo thiếu hoặc khi cần đánh giá lại.');
     const short = stockShort(p);
@@ -110,7 +104,6 @@ export const protocolsApi = {
     return data;
   },
 
-  /** 2.5 — the vet confirms after the warehouse can supply everything. Stock must be complete. */
   async confirmProtocol(p: Protocol, note: string, actor: Actor) {
     if (!['STOCK_AVAILABLE', 'REQUIRES_VET_REVIEW', 'WAITING_RESTOCK'].includes(p.state)) throw new Error('Phác đồ chưa ở bước xác nhận.');
     if (!p.stock) throw new Error('Kho chưa phản hồi tồn.');
@@ -124,7 +117,6 @@ export const protocolsApi = {
     return data;
   },
 
-  /** 2.7 — progress notes while in treatment. */
   async addProgress(p: Protocol, text: string, actor: Actor) {
     if (p.state !== 'IN_TREATMENT') throw new Error('Chỉ ghi tiến triển khi đang điều trị.');
     const entry = { at: now(), by: actor.name, text: min(text, 10, 'Tiến triển') };

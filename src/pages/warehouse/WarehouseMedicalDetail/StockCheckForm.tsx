@@ -7,13 +7,11 @@ import { useAction } from '../../../hooks/useAction';
 import { Icon } from '../../../components/ui/Icon';
 import { Badge, Busy, Callout, Panel } from '../../../components/ui/Ht';
 
-/* 2.2 / 2.3 — compare need with available stock. Enough → hold + STOCK_AVAILABLE. Short → report how much and an ETA from a real order, or "chưa xác định". */
 export const StockCheckForm: React.FC<{ protocol: Protocol; items: StockItem[]; openShipments: ShipmentOrder[]; onDone: () => void }> = ({ protocol: p, items, openShipments, onDone }) => {
   const actor = useActor();
   const { busy, error, run } = useAction(onDone);
   const lines = previewStock(p, items);
   const short = lines.filter((l) => l.short > 0);
-  // Default ETA source: the first open shipment that carries the item.
   const [eta, setEta] = useState<Record<string, string>>(() =>
     Object.fromEntries(short.map((l) => [l.itemId, openShipments.find((s) => s.lines.some((x) => x.itemId === l.itemId))?.id ?? ''])));
   const submit = () => run(() => warehouseApi.respondStock(p, Object.fromEntries(short.map((l) => [l.itemId, eta[l.itemId] || null])), actor),

@@ -1,4 +1,3 @@
-/* Internal helpers shared by the warehouse API files. Every stock movement goes through moveStock() so the log (4.4) never misses one. */
 import { DEMO_NOW, http } from '../http';
 import type { Actor } from '../managerApi';
 import { byExpiry } from './labels';
@@ -13,7 +12,6 @@ export const now = () => DEMO_NOW.short;
 export const min = (v: string, n: number, what: string) => { if (v.trim().length < n) throw new Error(`${what} ít nhất ${n} ký tự.`); return v.trim(); };
 export const posInt = (n: number, what: string) => { if (!Number.isInteger(n) || n < 1) throw new Error(`${what} phải là số nguyên ≥ 1.`); return n; };
 
-/** Take qty from the lots, earliest expiry first (or from one chosen lot). Returns the new lots and the lots used. */
 export const takeFromLots = (lots: Lot[] | undefined, qty: number, preferLot?: string) => {
   if (!lots) return { lots, used: [] as { lot: string; qty: number }[] };
   const next = lots.map((l) => ({ ...l }));
@@ -28,11 +26,6 @@ export const takeFromLots = (lots: Lot[] | undefined, qty: number, preferLot?: s
   return { lots: next.filter((l) => l.qty > 0), used };
 };
 
-/**
- * Change on hand / held of one item and write the warehouse log.
- *  - RECEIVE: +onHand (new lot if given) · ISSUE: −onHand (FEFO) and −held when it was held · ADJUST: ±onHand
- *  - HOLD: +held · RELEASE: −held
- */
 export const moveStock = async (item: StockItem, type: TxType, qty: number, info: { ref?: string; note: string; lot?: string; expiry?: string; fromHeld?: number }, actor: Actor) => {
   const patch: Partial<StockItem> = {};
   let lotUsed = info.lot;

@@ -14,7 +14,6 @@ interface RegistrationsState {
 
 const initialState: RegistrationsState = { items: [], status: 'idle', error: null, current: null, currentStatus: 'idle', saving: false };
 
-/* Thunks (redux-thunk is built into configureStore): async work, then the slice reacts to pending/fulfilled/rejected. */
 export const fetchRegistrations = createAsyncThunk('registrations/fetchAll', () => managerApi.getRegistrations());
 export const fetchRegistration = createAsyncThunk('registrations/fetchOne', (id: string) => managerApi.getRegistration(id));
 

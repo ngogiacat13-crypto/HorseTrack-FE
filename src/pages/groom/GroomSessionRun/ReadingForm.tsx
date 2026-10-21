@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { DEMO_NOW } from '../../../api/http';
 import { Icon } from '../../../components/ui/Icon';
 
-/* One measurement row: time + heart rate (+ speed while running). Used for session readings and for recovery while paused. */
 export const ReadingForm: React.FC<{ recovery?: boolean; busy: boolean; onSubmit: (v: { t: string; hr: number; speed: number }) => Promise<boolean> }> = ({ recovery, busy, onSubmit }) => {
   const [t, setT] = useState(DEMO_NOW.time);
   const [hr, setHr] = useState('');

@@ -2,7 +2,6 @@ import React from 'react';
 import { PROPOSAL_LABEL, RaceProposal, Tournament } from '../../../api/trainerApi';
 import { Badge, Panel } from '../../../components/ui/Ht';
 
-/** 3.4 — all race proposals of this trainer's horses. */
 export const ProposalTable: React.FC<{ proposals: RaceProposal[]; tournaments: Tournament[]; selectedId?: string; onSelect: (id: string) => void }> = ({ proposals, tournaments, selectedId, onSelect }) => {
   const t = (id: string) => tournaments.find((x) => x.id === id);
   return (

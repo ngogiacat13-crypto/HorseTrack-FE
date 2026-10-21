@@ -5,7 +5,6 @@ import { Icon } from '../../../components/ui/Icon';
 import { Badge, money, Panel, Timeline } from '../../../components/ui/Ht';
 import type { Dash } from './types';
 
-/** 2.1–2.2 — protocols to follow (no approval button: BR_07). */
 export const MedicalWatch: React.FC<{ d: Dash }> = ({ d }) => (
   <Panel as="h3" title="Y tế cần theo dõi" right={<Link className="ht-more" to="/manager/medical-monitoring">Xem <Icon name="arrow" /></Link>}>
     <ul className="ht-list">
@@ -23,7 +22,6 @@ export const MedicalWatch: React.FC<{ d: Dash }> = ({ d }) => (
   </Panel>
 );
 
-/** Invoices past the grace period, with how close each is to suspension (BR_12/13). */
 export const OverdueInvoices: React.FC<{ d: Dash }> = ({ d }) => (
   <Panel as="h3" title="Hóa đơn quá hạn" right={<span className="ht-count ht-count--danger" style={{ margin: 0 }}>{d.overdueInvoices.length}</span>}
     foot={<><span>+{d.overdueInvoices.filter((i) => i.overdueDays <= GRACE_DAYS).length} hóa đơn trong ân hạn</span><Link className="ht-more" to="/manager/invoices">Tất cả <Icon name="arrow" /></Link></>}>
@@ -44,7 +42,6 @@ export const OverdueInvoices: React.FC<{ d: Dash }> = ({ d }) => (
   </Panel>
 );
 
-/** 4.2 — Groom tasks finished later than the 45-minute SLA (BR_05). */
 export const LateTasks: React.FC<{ d: Dash }> = ({ d }) => (
   <Panel as="h3" title="Công việc trễ SLA" right={<Badge tone="neutral" plain style={{ fontFamily: 'var(--font-mono)' }}>BR_05</Badge>} foot={<span>+{d.moreLateTasks} việc khác</span>}>
     <ul className="ht-list">

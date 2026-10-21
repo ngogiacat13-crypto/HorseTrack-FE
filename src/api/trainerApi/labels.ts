@@ -1,4 +1,3 @@
-/* Display labels + small horse rules (BR_01 blocks) shared by pages. */
 import type { HealthStatus, Horse, PlanStatus, SessionStatus, ProposalStatus, Stall } from './types';
 
 export const HEALTH_LABEL: Record<HealthStatus, [string, 'success' | 'warning' | 'danger' | 'purple']> = {
@@ -17,14 +16,11 @@ export const PLAN_LABEL: Record<PlanStatus, [string, 'success' | 'warning' | 'ne
   PLANNED: ['Chưa bắt đầu', 'neutral'], ACTIVE: ['Đang chạy', 'success'], PAUSED: ['Tạm dừng', 'warning'], COMPLETED: ['Hoàn tất', 'neutral'], REPLACED: ['Đã thay thế', 'neutral'],
 };
 
-/** Stable zone of a horse, from its stall (e.g. A-01 → "Khu A"). */
 export const horseZone = (h: Horse, stalls: Stall[]) =>
   stalls.find((st) => st.id === h.stall)?.zone ?? `Khu ${h.stall.split('-')[0]}`;
 
-/** Two-letter avatar text, e.g. Galaxy → GA. */
 export const horseInitials = (name: string) => name.slice(0, 2).toUpperCase();
 
-/** Why a horse cannot train or race right now (BR_01), or null when it can. */
 export const trainingBlock = (h: Pick<Horse, 'trainingLocked' | 'lock' | 'health'>): string | null =>
   h.trainingLocked ? `Đang khóa huấn luyện bởi BS ${h.lock?.by ?? ''} — ${h.lock?.reason ?? 'lý do y tế'} (BR_01).` : null;
 

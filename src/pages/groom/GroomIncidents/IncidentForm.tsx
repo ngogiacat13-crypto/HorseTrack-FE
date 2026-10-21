@@ -10,7 +10,6 @@ import { PhotoPicker } from '../../../components/groom/PhotoPicker';
 
 const TYPES = ['Mất ăn', 'Đau bụng', 'Sốt', 'Đi khập khiễng', 'Vết thương ngoài da', 'Móng chân'];
 
-/* 4.1 Báo cáo sự cố → hộp thư ca khám của Bác sĩ thú y · 4.2 kèm báo HLV (tạm dừng phiên đang chạy). */
 export const IncidentForm: React.FC<{ horses: Horse[]; initialHorse: string; onDone: () => void }> = ({ horses, initialHorse, onDone }) => {
   const actor = useActor();
   const toast = useToast();

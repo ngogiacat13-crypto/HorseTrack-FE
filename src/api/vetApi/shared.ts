@@ -1,4 +1,3 @@
-/* Internal helpers shared by the vet API files (not used by pages, except protoCost / stockShort). */
 import { DEMO_NOW, http } from '../http';
 import type { ProtocolState } from '../managerApi';
 import type { Horse } from '../trainerApi';
@@ -19,7 +18,6 @@ export const protoCost = (phases: ProtoPhase[]) => phases.reduce((s, p) => s + p
 export const lastEta = (lines: StockLine[]) => lines.filter((l) => l.short > 0 && l.eta).map((l) => l.eta as string).sort((a, b) => dateKey(a).localeCompare(dateKey(b))).pop() ?? null;
 export const stockShort = (p: Pick<Protocol, 'stock'>) => (p.stock?.lines ?? []).filter((l) => l.short > 0);
 
-/** Recompute the fields the Club Manager monitor shows, after any change. */
 export const watchFields = (p: Protocol, horseLocked: boolean): Partial<Protocol> => {
   const [label, tone] = PROTOCOL_LABEL[p.state];
   const materials = p.stock
@@ -44,7 +42,6 @@ export const saveProtocol = async (p: Protocol, change: Partial<Protocol>, logLi
 };
 export const goTo = (p: Protocol, ...states: ProtocolState[]) => ({ state: states[states.length - 1], path: [...p.path, ...states] });
 
-/** Held stock of a protocol that will not be used any more goes back to "available" (BR_08 / §8 note). */
 export const releaseHeld = async (p: Protocol) => {
   const lines = p.stock?.lines.filter((l) => l.held > 0) ?? [];
   await Promise.all(lines.map(async (l) => {

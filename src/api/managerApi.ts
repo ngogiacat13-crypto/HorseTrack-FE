@@ -1,11 +1,7 @@
-// ==================== API — QUẢN LÝ CLB (ClubManager) ====================
-// REST calls to json-server (db.json) through the shared axios instance.
-// Demo clock: 03/10/2026 10:30. The manager monitors medical work but never approves protocols (BR_07).
 import { DEMO_NOW, http } from './http';
 import { EMAIL_TIMEOUT, USE_BACKEND, be, beData, type ApiResponse } from './beClient';
 import { invalidate } from './hybridAdapter';
 
-/* ---------------- Types ---------------- */
 export type RegStatus = 'Pending' | 'Approved' | 'Rejected';
 export interface ChecklistItem { key: string; label: string; detail: string; passed: boolean }
 export interface HistoryItem { tone?: 'danger' | 'warning' | 'success' | 'info'; who: string; text: string; at: string }
@@ -13,9 +9,9 @@ export interface Registration {
   id: string;
   horse: { name: string; breed: string; sex: string; age: number; code: string };
   owner: { fullName: string; email: string; phone: string };
-  submittedAt: string; // dd/MM/yyyy HH:mm
+  submittedAt: string;
   waitingDays: number;
-  passed: number; // checklist items passed (identity, health, ownership)
+  passed: number;
   firstIssue?: string;
   status: RegStatus;
   decidedNote?: string;
@@ -54,14 +50,12 @@ export interface ManagedUser {
   beId?: number;
 }
 export interface GroomAssignment { id: string; name: string; zones: string[] }
-/** Roles the Club Manager can create staff accounts for. */
 export type StaffRole = 'HeadTrainer' | 'Veterinarian' | 'Groom' | 'WarehouseManager';
 export interface StaffInput {
   fullName: string; username: string; email: string; phone: string; password: string; role: StaffRole;
-  /** HLV / Bác sĩ: số chứng chỉ hành nghề */ licenseNumber?: string;
-  /** Bác sĩ: nơi công tác · Mã phu: khu chuồng phụ trách */ specialization?: string;
+  licenseNumber?: string;
+  specialization?: string;
 }
-/* role on the screens → Users.role_name accepted by POST /auth/staff/create (StaffCreateRequestDTO: Trainer | Veterinarian | Groom | Warehouse Manager) */
 export const BE_STAFF_ROLE: Partial<Record<StaffRole, string>> = { HeadTrainer: 'Trainer', Veterinarian: 'Veterinarian', Groom: 'Groom', WarehouseManager: 'Warehouse Manager' };
 export interface AssignedStall { id: string; zone: string; horseId: string | null; horse: string | null; status: string; groom: string }
 export interface AssignedHorse { id: string; name: string; owner: string; stall: string; health: string }
@@ -73,14 +67,11 @@ export interface AuditLog {
   object: string; area: AuditArea; ip: string; from?: string; to?: string; reason?: string; isLogin?: boolean;
 }
 
-/** Who performs an action — written into the audit log (BR_10). */
 export interface Actor { id?: string; name: string; role: string }
 
-/* Business rules shared by pages and API */
-export const GRACE_DAYS = 10;   // BR_12
-export const SUSPEND_AT = 25;   // BR_13
+export const GRACE_DAYS = 10;
+export const SUSPEND_AT = 25;
 
-/* ---------------- Helpers ---------------- */
 const get = async <T,>(url: string, params?: Record<string, unknown>) => (await http.get<T>(url, { params })).data;
 
 export const addAudit = (actor: Actor, e: Omit<AuditLog, 'id' | 'at' | 'who' | 'role' | 'ip'>) =>
@@ -94,7 +85,6 @@ export const addAudit = (actor: Actor, e: Omit<AuditLog, 'id' | 'at' | 'who' | '
   }).then((r) => r.data);
 
 interface UserRecord extends Omit<ManagedUser, 'fullName'> { fullname: string; password?: string }
-/* Backend (branch `test`): PUT /api/v1/users/{id}/lock | unlock | role — the backend writes the audit log itself. */
 const beUserAction = async (url: string, body: Record<string, string>): Promise<ManagedUser> => {
   const u = await beData<{ userId: number; username: string; fullName: string; email: string; role?: string; roleName: string; status?: string; lockReason?: string | null; openTasks?: number; horsesOwned?: number; lastLogin?: string | null }>(be.put(url, body));
   invalidate('users', 'auditLogs');
@@ -105,9 +95,7 @@ const beUserAction = async (url: string, body: Record<string, string>): Promise<
 };
 const toManaged = ({ password: _pw, fullname, ...u }: UserRecord): ManagedUser => ({ ...u, fullName: fullname });
 
-/* ---------------- API ---------------- */
 export const managerApi = {
-  /* ----- Dashboard (composed from several resources) ----- */
   async getDashboard() {
     const [dash, regs, protocols, invoices, shipments, logs] = await Promise.all([
       get<any>('/dashboard'),
@@ -119,7 +107,6 @@ export const managerApi = {
     ]);
     const pending = regs.filter((r) => r.status === 'Pending');
     const delayed = shipments.filter((s) => s.status === 'DELAYED');
-    // ETA is stored as dd/mm/yyyy; the dashboard shows dd/mm.
     const AREA_TONE: Record<AuditArea, 'danger' | 'warning' | 'success' | 'info'> = { train: 'danger', med: 'warning', reg: 'success', fin: 'info', acct: 'info' };
     return {
       ...dash,
@@ -150,11 +137,9 @@ export const managerApi = {
     };
   },
 
-  /* ----- Registrations ----- */
   getRegistrations: () => get<Registration[]>('/registrations'),
   getRegistration: (id: string) => get<Registration>(`/registrations/${id}`),
 
-  /** Backend: approving assigns the horse a stall (`stall` = the stall code shown, `stallId` = its backend id). */
   async approveRegistration(reg: Registration, checklist: ChecklistItem[], note: string, actor: Actor, stall?: { id: number; code: string }) {
     const history: HistoryItem[] = [
       { tone: 'success', who: actor.name, text: `phê duyệt${stall ? ` · cấp chuồng ${stall.code}` : ''} · chuyển APPROVED${note ? `: “${note}”` : ''}`, at: DEMO_NOW.short },
@@ -181,13 +166,11 @@ export const managerApi = {
     return data;
   },
 
-  /* ----- Medical monitoring (read-only) ----- */
   async getMedicalMonitoring() {
     const [protocols, shipments, dash] = await Promise.all([get<ProtocolWatch[]>('/protocols'), get<Shipment[]>('/shipments'), get<any>('/dashboard')]);
     return { protocols, shipments, monthCost: dash.vetCost[dash.vetCost.length - 1].value as number };
   },
 
-  /* ----- Invoices ----- */
   getInvoices: () => get<Invoice[]>('/invoices'),
 
   async suspendService(inv: Invoice, reason: string, actor: Actor) {
@@ -210,7 +193,6 @@ export const managerApi = {
     await addAudit(actor, { action: 'SEND_PAYMENT_REMINDER', label: 'Gửi nhắc thanh toán', object: `${inv.id} · ${inv.owner}`, area: 'fin', reason: `Quá hạn ${inv.overdueDays} ngày.` });
   },
 
-  /* ----- Finance report (aging and debt are derived from invoices) ----- */
   async getFinanceReport() {
     const [base, invoices] = await Promise.all([get<any>('/financeReport'), get<Invoice[]>('/invoices')]);
     const unpaid = invoices.filter((i) => i.status === 'OVERDUE' || i.status === 'SUSPENDED');
@@ -243,11 +225,8 @@ export const managerApi = {
     };
   },
 
-  /* ----- Users & roles ----- */
   getUsers: async () => (await get<UserRecord[]>('/users')).map(toManaged),
 
-  /** Club Manager creates a staff account (staff cannot sign up by themselves; only Horse Owners can).
-      Backend: also emails the username + temporary password; `emailNote` is its message (sent / dev mode / failed to send). */
   async createStaff(input: StaffInput, actor: Actor): Promise<ManagedUser & { emailNote?: string; emailFailed?: boolean }> {
     const v = { ...input, fullName: input.fullName.trim(), username: input.username.trim(), email: input.email.trim(), phone: input.phone.replace(/\s/g, '') };
     let id: string;
@@ -260,7 +239,7 @@ export const managerApi = {
         roleName, licenseNumber: v.licenseNumber?.trim() || undefined, specialization: v.specialization?.trim() || undefined,
       }, { timeout: EMAIL_TIMEOUT });
       emailNote = data.message;
-      id = `be-${v.username}`; // the backend returns no id and has no user list API yet
+      id = `be-${v.username}`;
     } else {
       const users = await get<UserRecord[]>('/users');
       if (users.some((u) => u.username.toLowerCase() === v.username.toLowerCase())) throw new Error('Tên đăng nhập đã tồn tại.');
@@ -302,7 +281,6 @@ export const managerApi = {
     return { zones, horseIds };
   },
 
-  /** BR_06 conflict check — pure function, no request. */
   checkRoleChange(user: ManagedUser, to: UserRole): RoleCheck[] {
     const out: RoleCheck[] = [];
     if (to === 'HorseOwner' && user.role !== 'HorseOwner') out.push({ level: 'fail', text: 'Nhân sự đang chăm sóc / điều trị ngựa của CLB không thể đồng thời là chủ ngựa (xung đột lợi ích).' });
@@ -334,6 +312,5 @@ export const managerApi = {
     return toManaged(data);
   },
 
-  /* ----- Audit log ----- */
   getAuditLogs: () => get<AuditLog[]>('/auditLogs', { _sort: 'id', _order: 'desc' }),
 };

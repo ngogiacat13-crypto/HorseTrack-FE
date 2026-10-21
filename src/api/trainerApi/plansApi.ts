@@ -5,9 +5,6 @@ import { invalidate } from '../hybridAdapter';
 import type { Horse, PlanPhase, TrainingPlan } from './types';
 import { get, nextId, myHorses, ofHorses, getHorseChecked, withLiveStatus, CURRENT_PLAN } from './shared';
 
-/* Backend: POST /training-plans (Trainer) → { horseId, planName, startDate, endDate, goal }, returns the new planId.
-   It stores no plan type or phases: the end date is start + total weeks of the phases, the type goes into the goal.
-   The backend refuses a second ACTIVE plan for the same horse (no automatic "replace"). */
 const beCreatePlan = async (horse: Horse, name: string, input: { type: string; goal: string; startDate: string; phases: PlanPhase[] }): Promise<TrainingPlan> => {
   const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   const [dd, mm, yyyy] = input.startDate.split('/').map(Number);
@@ -24,7 +21,6 @@ const beCreatePlan = async (horse: Horse, name: string, input: { type: string; g
 };
 
 export const plansApi = {
-  /* ----- Training plans (1.2) ----- */
   async getPlans(actor: Actor) {
     const [plans, horses] = await Promise.all([get<TrainingPlan[]>('/trainingPlans'), myHorses(actor)]);
     return { plans: await withLiveStatus(ofHorses(plans, horses)), horses };
@@ -37,12 +33,11 @@ export const plansApi = {
     if (!input.phases.length) throw new Error('Giáo án cần ít nhất 1 giai đoạn.');
     if (USE_BACKEND) return beCreatePlan(horse, name, input);
     const all = await get<TrainingPlan[]>('/trainingPlans');
-    // One current plan per horse: the old PLANNED/ACTIVE/PAUSED one is marked REPLACED.
     const old = all.filter((p) => p.horseId === horse.id && CURRENT_PLAN.includes(p.status));
     await Promise.all(old.map((p) => http.patch(`/trainingPlans/${p.id}`, { status: 'REPLACED' })));
     const plan: TrainingPlan = {
       id: nextId(all.map((p) => p.id), 'KH-'), horseId: horse.id, horseName: horse.name, name, type: input.type, goal: input.goal,
-      phases: input.phases.map((ph, i) => ({ ...ph, no: i + 1 })), currentPhase: 1, week: 1, status: 'PLANNED', // runs from the start date, after the first session is assigned
+      phases: input.phases.map((ph, i) => ({ ...ph, no: i + 1 })), currentPhase: 1, week: 1, status: 'PLANNED',
       startDate: input.startDate, createdBy: actor.name,
     };
     const { data } = await http.post<TrainingPlan>('/trainingPlans', plan);

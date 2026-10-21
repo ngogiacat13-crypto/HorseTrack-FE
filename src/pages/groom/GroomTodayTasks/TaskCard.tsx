@@ -8,7 +8,6 @@ import { taskState, toMin, type TaskState } from './taskState';
 
 const CHIP: Record<TaskState, [string, 'danger' | 'warning' | 'neutral' | 'success']> = { late: ['QUÁ HẠN', 'danger'], soon: ['SẮP HẠN', 'warning'], todo: ['CHỜ', 'neutral'], done: ['XONG', 'success'] };
 
-/* 1.1–1.2 — one task: time, SLA, diet, instructions, warnings; the checkbox opens "hoàn thành" (1.3). */
 export const TaskCard: React.FC<{ task: CareTask; horse?: VetHorse; onDone: (t: CareTask) => void }> = ({ task: t, horse, onDone }) => {
   const state = taskState(t);
   const late = lateBy(t);

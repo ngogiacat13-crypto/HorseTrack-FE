@@ -6,7 +6,6 @@ import { PATH } from '../../../routers/routerPath';
 import { BackButton, BrandMark } from '../../../components/ui/Ht';
 import { useDocumentTitle } from '../../../hooks/useDocumentTitle';
 
-/* 404 — route "*". Shows the wrong address and offers: go back (navigate(-1)) or go to the home page of the role. */
 export const NotFound: React.FC = () => {
   const { user } = useAuth();
   const { pathname } = useLocation();

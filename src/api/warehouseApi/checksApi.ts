@@ -3,7 +3,6 @@ import { addAudit, type Actor } from '../managerApi';
 import { get, moveStock } from './shared';
 import type { StockCheck, StockItem } from './types';
 
-/* 1.5 — monthly count: compare system stock with the real count, save the differences with a reason. */
 export const checksApi = {
   async getChecks() {
     const [checks, items] = await Promise.all([get<StockCheck[]>('/stockChecks'), get<StockItem[]>('/inventory')]);

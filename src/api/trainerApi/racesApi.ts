@@ -5,7 +5,6 @@ import { raceBlock } from './labels';
 import { get, nextId, myHorses, getMyHorse, ofHorses } from './shared';
 
 export const racesApi = {
-  /* ----- Races (3.1–3.5) ----- */
   async getRaces(actor: Actor) {
     const [tournaments, proposals, horses] = await Promise.all([get<Tournament[]>('/tournaments'), get<RaceProposal[]>('/raceProposals'), myHorses(actor)]);
     return { tournaments, proposals: ofHorses(proposals, horses), horses };

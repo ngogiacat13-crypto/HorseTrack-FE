@@ -1,8 +1,3 @@
-/* ============================================================
-   HorseTrack UI kit — React versions of the design-system parts.
-   One component per file; import from 'components/ui/Ht'.
-   Styles live in src/styles/ht.css (ht-* classes).
-   ============================================================ */
 export { money } from './format';
 export { Field } from './Field';
 export { TextInput, PasswordInput } from './Inputs';

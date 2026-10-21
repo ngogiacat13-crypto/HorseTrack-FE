@@ -6,7 +6,6 @@ import { useAction } from '../../../hooks/useAction';
 import { Icon } from '../../../components/ui/Icon';
 import { Busy, Callout, Panel } from '../../../components/ui/Ht';
 
-/* 1.5 — count sheet: enter the real count; every difference needs a reason and becomes an ADJUST in the warehouse log. */
 export const CountSheet: React.FC<{ items: StockItem[]; onDone: () => void }> = ({ items, onDone }) => {
   const actor = useActor();
   const { busy, error, run } = useAction(onDone);

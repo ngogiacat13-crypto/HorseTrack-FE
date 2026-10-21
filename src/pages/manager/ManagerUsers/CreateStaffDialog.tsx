@@ -12,8 +12,6 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const STAFF_ROLES: StaffRole[] = ['HeadTrainer', 'Veterinarian', 'Groom', 'WarehouseManager'];
 const ZONES = ['Khu A', 'Khu B', 'Khu C'];
 
-/* 5.1 — staff accounts are created by the Club Manager (only Horse Owners sign up by themselves).
-   Backend: POST /api/v1/auth/staff/create (Club Manager token). */
 export const CreateStaffDialog: React.FC<{ onClose: () => void; onDone: (u: ManagedUser) => void }> = ({ onClose, onDone }) => {
   const actor = useActor();
   const { busy, error, run } = useAction();
@@ -40,7 +38,6 @@ export const CreateStaffDialog: React.FC<{ onClose: () => void; onDone: (u: Mana
     const ok = await run(async () => {
       const { emailNote, emailFailed, ...user } = await managerApi.createStaff({ ...v, role }, actor);
       out.user = user;
-      // Backend: tell whether the login details were emailed (or failed: the manager must send them another way)
       toast(emailNote ?? `Đã tạo tài khoản ${v.username.trim()} · ${ROLE_LABEL[role]}.`);
       if (emailFailed) window.alert(emailNote);
     });

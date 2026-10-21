@@ -8,7 +8,6 @@ type DietForm = Omit<MedicalDiet, 'by' | 'at'>;
 const EMPTY: DietForm = { morning: '', noon: '', evening: '', special: '', note: '' };
 const MEALS = [['morning', 'Bữa sáng'], ['noon', 'Bữa trưa'], ['evening', 'Bữa chiều'], ['special', 'Thức ăn / phụ gia đặc biệt']] as const;
 
-/* 3.3 — set / clear the medical diet. Mounted only while open, so it starts from the current diet. */
 export const DietDialog: React.FC<{ horse: VetHorse; onClose: () => void; onDone: () => void }> = ({ horse, onClose, onDone }) => {
   const actor = useActor();
   const { busy, error, run } = useAction();

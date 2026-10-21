@@ -10,7 +10,6 @@ import { useDebounce } from '../../../hooks/useDebounce';
 
 type HealthTab = 'ALL' | HealthStatus;
 
-/* 1.1 Tổng quan đàn ngựa · 4.2 tình trạng khóa · 4.3 lịch tiêm sắp tới */
 export const TrainerHerdOverview: React.FC = () => {
   const navigate = useNavigate();
   const actor = useActor();
@@ -19,7 +18,7 @@ export const TrainerHerdOverview: React.FC = () => {
   const [lockF, setLockF] = useState<'all' | 'locked' | 'free'>('all');
   const [breed, setBreed] = useState('');
   const [q, setQ] = useState('');
-  const query = useDebounce(q); // filter after the user pauses typing
+  const query = useDebounce(q);
 
   const horses = useMemo(() => data?.horses ?? [], [data]);
   const activePlan = useMemo(() => {

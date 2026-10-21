@@ -24,7 +24,6 @@ const NEXT: Partial<Record<Protocol['state'], string>> = {
   IN_TREATMENT: 'Đã cấp phát',
 };
 
-/* 2.1 — requests created by the vet from protocols. The warehouse answers stock, holds, and dispenses (BR_07). */
 export const WarehouseMedical: React.FC = () => {
   const navigate = useNavigate();
   const { data, loading, error, reload } = useFetch(() => warehouseApi.getRequests());

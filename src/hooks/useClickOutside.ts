@@ -1,7 +1,5 @@
 import { RefObject, useEffect, useRef } from 'react';
 
-/* Custom hook: call onOutside when the user clicks outside `ref` or presses Escape (menus, popovers).
-   The latest callback is kept in a ref so the listeners are added once, not on every render. */
 export function useClickOutside<T extends HTMLElement>(ref: RefObject<T>, onOutside: () => void, enabled = true) {
   const cb = useRef(onOutside);
   useEffect(() => { cb.current = onOutside; });

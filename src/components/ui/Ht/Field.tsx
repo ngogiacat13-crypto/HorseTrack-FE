@@ -1,14 +1,13 @@
 import React from 'react';
 import { Icon } from '../Icon';
 
-/* ---------- Field ---------- */
 interface FieldProps {
   label: React.ReactNode;
   htmlFor?: string;
   required?: boolean;
   error?: string;
   hint?: React.ReactNode;
-  aside?: React.ReactNode; // right side of the label row (e.g. "Quên mật khẩu?")
+  aside?: React.ReactNode;
   children: React.ReactNode;
   style?: React.CSSProperties;
 }

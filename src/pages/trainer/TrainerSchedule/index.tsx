@@ -10,7 +10,6 @@ import { DaySessions, EvaluateQueue, PausedBanners, VaccinesSoon, WeekStrip } fr
 import { AssignDialog } from './AssignDialog';
 import { EvaluateDialog } from './EvaluateDialog';
 
-/* 1.3 Phân công lịch tập cho Groom · 1.4 Đánh giá phong độ sau buổi tập */
 export const TrainerSchedule: React.FC = () => {
   const toast = useToast();
   const actor = useActor();

@@ -12,7 +12,6 @@ import { LoadState } from '../../../components/trainer/TrainerParts';
 const STATUS: Record<Registration['status'], [string, 'warning' | 'success' | 'danger']> = { Pending: ['Chờ duyệt (PENDING_REVIEW)', 'warning'], Approved: ['Đã duyệt', 'success'], Rejected: ['Bị từ chối', 'danger'] };
 const canResubmit = (r: Registration) => r.status === 'Rejected' && r.decidedNote === 'Cho phép nộp lại';
 
-/* 1.4 Đăng ký ngựa mới — theo dõi trạng thái duyệt của Quản lý CLB (Flow 1). */
 export const OwnerRegistrations: React.FC = () => {
   const actor = useActor();
   const { data, loading, error, reload } = useFetch(() => ownerApi.getMyRegistrations(actor), [actor]);

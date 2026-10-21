@@ -9,7 +9,6 @@ import { HorseBadges, LoadState, PhaseBar } from '../../../components/trainer/Tr
 import { HealthTab } from './HealthTab';
 import { PerformanceTab } from './PerformanceTab';
 
-/* 1.2 Hồ sơ chi tiết ngựa · 1.3 Phong độ · 4.1–4.3 Thông tin y tế chỉ xem (BR_09) */
 export const OwnerHorseDetail: React.FC = () => {
   const { id = '' } = useParams();
   const actor = useActor();

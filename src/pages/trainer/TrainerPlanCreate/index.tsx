@@ -14,7 +14,6 @@ import { PlanSummary } from './PlanSummary';
 
 const MIN_START = USE_BACKEND ? DEMO_NOW.date.split('/').reverse().join('-') : '2026-10-05';
 
-/* 1.2 Xây dựng giáo án huấn luyện — chặn ngựa đang bị khóa y tế (BR_01) */
 export const TrainerPlanCreate: React.FC = () => {
   const navigate = useNavigate();
   const toast = useToast();
@@ -26,7 +25,6 @@ export const TrainerPlanCreate: React.FC = () => {
   const [name, setName] = useState('');
   const [type, setType] = useState<PlanType>('Sức bền');
   const [goal, setGoal] = useState('');
-  // backend: start date may not be in the past (real clock); demo data: fixed demo day
   const [startDate, setStartDate] = useState(MIN_START);
   const [phases, setPhases] = useState<PhaseDraft[]>(TEMPLATES['Sức bền'].map((p) => ({ ...p })));
   const [tried, setTried] = useState(false);

@@ -8,7 +8,6 @@ export type ProtocolAction = 'send' | 'cancel' | 'wait' | 'confirm' | 'progress'
 
 interface Spec { title: string; sub?: string; label: string; field?: [label: string, placeholder: string, min?: number]; danger?: boolean; ok: string }
 
-/** Text, button and success message of each action, for one protocol. */
 const specFor = (p: Protocol, a: ProtocolAction): Spec => {
   const short = stockShort(p);
   const late = short.some((l) => l.eta && dateKey(l.eta) > dateKey(p.requiredBy));
@@ -30,7 +29,6 @@ const specFor = (p: Protocol, a: ProtocolAction): Spec => {
   }
 };
 
-/* One dialog for every protocol action (2.2, 2.4, 2.5, 2.7). Mounted only while open. */
 export const ActionDialog: React.FC<{ protocol: Protocol; action: ProtocolAction; onClose: () => void; onDone: () => void }> = ({ protocol: p, action, onClose, onDone }) => {
   const actor = useActor();
   const { busy, error, run } = useAction();

@@ -7,7 +7,6 @@ import type { ProposalDialog } from './ProposalDetail';
 
 interface Props { kind: ProposalDialog; proposal: RaceProposal; tournament?: Tournament; onClose: () => void; onDone: () => void }
 
-/* Manual organizer steps (no integration yet): mark submitted, organizer rejected, record the result. Mounted only while open. */
 export const OrganizerDialog: React.FC<Props> = ({ kind, proposal: p, tournament: t, onClose, onDone }) => {
   const actor = useActor();
   const { busy, error, run } = useAction();

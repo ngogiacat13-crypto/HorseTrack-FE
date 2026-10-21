@@ -5,7 +5,6 @@ import { Badge, Panel } from '../../../components/ui/Ht';
 
 type Check = Registration['checklist'][number];
 
-/* 1.2 — review checklist; approval is only possible when every item passes. */
 export const ChecklistPanel: React.FC<{ checks: Check[]; locked: boolean; onSet: (key: string, ok: boolean) => void }> = ({ checks, locked, onSet }) => {
   const passed = checks.filter((c) => c.passed).length;
   const allPassed = passed === checks.length;

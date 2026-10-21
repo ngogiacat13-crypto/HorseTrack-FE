@@ -16,7 +16,6 @@ const STATUS: Record<Vaccination['status'], [string, 'info' | 'neutral' | 'warni
 };
 const byDue = (a: Vaccination, b: Vaccination) => dateKey(a.due).localeCompare(dateKey(b.due));
 
-/* 4.1 Lịch tiêm phòng · 4.2 Lịch tẩy giun · 4.3 Đến hạn trong 7 ngày · 4.4 Ghi nhận đã tiêm */
 export const VetVaccinations: React.FC = () => {
   const actor = useActor();
   const toast = useToast();

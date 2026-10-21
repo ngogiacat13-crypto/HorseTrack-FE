@@ -4,7 +4,6 @@ import { CaseSource, Protocol, PROTOCOL_FLOW, PROTOCOL_LABEL, Severity, SEVERITY
 import { Badge } from '../ui/Ht';
 import { Icon, IconName } from '../ui/Icon';
 
-/* Small building blocks shared by the Veterinarian pages. */
 
 const SOURCE_ICON: Record<CaseSource, IconName> = { SESSION_STOP: 'pulse', GROOM_REPORT: 'warn', TRAINER_REQUEST: 'send' };
 
@@ -21,7 +20,6 @@ export const ProtocolBadge: React.FC<{ state: ProtocolState; delayed?: boolean }
   return <span style={{ display: 'inline-flex', gap: 6, flexWrap: 'wrap' }}><Badge tone={tone}>{label}</Badge>{delayed && state !== 'COMPLETED' && <Badge tone="danger" plain>Hàng trễ mốc</Badge>}</span>;
 };
 
-/** The protocol's real path; main-flow steps not reached yet are shown faded. */
 export const ProtocolPath: React.FC<{ protocol: Pick<Protocol, 'path' | 'state'> }> = ({ protocol }) => {
   const seen = protocol.path;
   const rest = PROTOCOL_FLOW.filter((s) => !seen.includes(s) && PROTOCOL_FLOW.indexOf(s) > Math.max(...seen.map((x) => PROTOCOL_FLOW.indexOf(x))));
