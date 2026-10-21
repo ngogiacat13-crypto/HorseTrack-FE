@@ -33,13 +33,17 @@ export const WeekStrip: React.FC<{ sessions: TrainingSession[]; day: string; onD
   </div>
 );
 
-export const DaySessions: React.FC<{ day: string; sessions: TrainingSession[]; onEvaluate: (s: TrainingSession) => void }> = ({ day, sessions, onEvaluate }) => {
+// Buổi tập chưa kết thúc: HLV được dừng và gửi bác sĩ
+const STOPPABLE = ['SCHEDULED', 'IN_PROGRESS', 'RESUMED'];
+
+export const DaySessions: React.FC<{ day: string; sessions: TrainingSession[]; onEvaluate: (s: TrainingSession) => void; onStop: (s: TrainingSession) => void }> = ({ day, sessions, onEvaluate, onStop }) => {
   const navigate = useNavigate();
   const action = (s: TrainingSession) => {
     if (s.status === 'PAUSED_PENDING_TRAINER') return <Link className="ht-btn ht-btn--danger ht-btn--sm" to={`/trainer/sessions/${s.id}`}>Xử lý</Link>;
     if (s.status === 'COMPLETED' && !s.evaluation) return <button type="button" className="ht-btn ht-btn--primary ht-btn--sm" onClick={() => onEvaluate(s)}>Đánh giá</button>;
     if (s.evaluation) return <span className="ht-score-chip" title={s.evaluation.comment}>{s.evaluation.score}/10</span>;
-    if (s.status === 'STOPPED' || s.status === 'RESUMED') return <Link className="ht-more" to={`/trainer/sessions/${s.id}`}>Xem <Icon name="arrow" /></Link>;
+    if (STOPPABLE.includes(s.status)) return <button type="button" className="ht-btn ht-btn--danger ht-btn--sm" onClick={() => onStop(s)}><Icon name="alarm" />Dừng &amp; gửi bác sĩ</button>;
+    if (s.status === 'STOPPED' || s.status === 'WAITING_VET') return <Link className="ht-more" to={`/trainer/sessions/${s.id}`}>Xem <Icon name="arrow" /></Link>;
     return <span style={{ color: 'var(--muted)', fontSize: 13 }}>—</span>;
   };
   return (
@@ -48,7 +52,7 @@ export const DaySessions: React.FC<{ day: string; sessions: TrainingSession[]; o
         <thead><tr><th>Giờ</th><th>Phiên · ngựa</th><th>Giáo án</th><th>Mã phu</th><th>Trạng thái</th><th style={{ textAlign: 'right' }}>Phong độ / thao tác</th></tr></thead>
         <tbody>
           {sessions.map((s) => (
-            <tr key={s.id} className={s.status === 'PAUSED_PENDING_TRAINER' || s.status === 'STOPPED' ? 'is-danger' : undefined}
+            <tr key={s.id} className={s.status === 'PAUSED_PENDING_TRAINER' || s.status === 'STOPPED' || s.status === 'WAITING_VET' ? 'is-danger' : undefined}
               data-href tabIndex={0} onKeyDown={(e) => e.key === 'Enter' && navigate(`/trainer/sessions/${s.id}`)} onDoubleClick={() => navigate(`/trainer/sessions/${s.id}`)}>
               <td className="mono">{s.time}</td>
               <td><span className="strong">{s.horseName}</span><span className="sub mono">{s.id}</span></td>
