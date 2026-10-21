@@ -6,9 +6,6 @@ import { Icon } from '../../../components/ui/Icon';
 import { Callout, Dialog, ReasonField } from '../../../components/ui/Ht';
 import { ROLE_LABEL } from '../../../components/layout/nav';
 
-type Role = ManagedUser['role'];
-const ROLES = Object.keys(ROLE_LABEL) as Role[];
-
 const useReason = () => {
   const [reason, setReason] = useState('');
   const [err, setErr] = useState('');
@@ -17,13 +14,17 @@ const useReason = () => {
   return { reason, err, check, onChange };
 };
 
-export const GroomAssignmentDialog: React.FC<{ user: ManagedUser; data: { grooms: GroomAssignment[]; stalls: AssignedStall[]; horses: AssignedHorse[] }; onClose: () => void; onDone: () => void }> = ({ user, data, onClose, onDone }) => {
+export const AssignmentDialog: React.FC<{ user: ManagedUser; data: { grooms: GroomAssignment[]; stalls: AssignedStall[]; horses: AssignedHorse[] }; onClose: () => void; onDone: () => void }> = ({ user, data, onClose, onDone }) => {
   const actor = useActor();
   const { busy, error, run } = useAction();
   const current = data.grooms.find((g) => g.id === user.id || g.name === user.fullName);
   const [zones, setZones] = useState<string[]>(current?.zones ?? []);
-  const [horseIds, setHorseIds] = useState<string[]>(() => data.horses.filter((h) => (current?.zones ?? []).includes(data.stalls.find((s) => s.horseId === h.id)?.zone ?? '')).map((h) => h.id));
-  const available = data.horses.filter((h) => zones.includes(data.stalls.find((s) => s.horseId === h.id)?.zone ?? ''));
+  const [horseIds, setHorseIds] = useState<string[]>(() => user.role === 'HeadTrainer'
+    ? data.horses.filter((h) => h.trainerId === user.id).map((h) => h.id)
+    : data.horses.filter((h) => (current?.zones ?? []).includes(data.stalls.find((s) => s.horseId === h.id)?.zone ?? '')).map((h) => h.id));
+  const available = user.role === 'HeadTrainer'
+    ? data.horses
+    : data.horses.filter((h) => zones.includes(data.stalls.find((s) => s.horseId === h.id)?.zone ?? ''));
   const toggle = (value: string, values: string[], setValues: React.Dispatch<React.SetStateAction<string[]>>) => setValues(values.includes(value) ? values.filter((x) => x !== value) : [...values, value]);
   const toggleZone = (zone: string) => {
     const adding = !zones.includes(zone);
@@ -31,58 +32,21 @@ export const GroomAssignmentDialog: React.FC<{ user: ManagedUser; data: { grooms
     const ids = data.horses.filter((h) => data.stalls.find((s) => s.horseId === h.id)?.zone === zone).map((h) => h.id);
     setHorseIds((xs) => adding ? [...new Set([...xs, ...ids])] : xs.filter((id) => !ids.includes(id)));
   };
-  const save = async () => { if (await run(() => managerApi.assignGroom(user, zones, horseIds, actor), `Đã phân công ${user.fullName}: ${zones.join(', ')} · ${horseIds.length} ngựa.`)) onDone(); };
+  const save = async () => {
+    const ok = user.role === 'HeadTrainer'
+      ? await run(() => managerApi.assignTrainer(user, horseIds, actor), `Đã phân công ${user.fullName}: ${horseIds.length} ngựa.`)
+      : await run(() => managerApi.assignGroom(user, zones, horseIds, actor), `Đã phân công ${user.fullName}: ${zones.join(', ')} · ${horseIds.length} ngựa.`);
+    if (ok) onDone();
+  };
   return (
-    <Dialog open onClose={onClose} icon="stable" tone="brand" width={700} busy={busy} busyLabel="Đang lưu…" title={`Phân công chăm sóc · ${user.fullName}`} sub="Chọn khu làm việc và những ngựa người chăm được phụ trách trong các khu đó." confirmLabel="Lưu phân công" onConfirm={save}>
+    <Dialog open onClose={onClose} icon="stable" tone="brand" width={700} busy={busy} busyLabel="Đang lưu…" title={`Phân công ${user.role === 'HeadTrainer' ? 'huấn luyện' : 'chăm sóc'} · ${user.fullName}`} sub={user.role === 'HeadTrainer' ? 'Chọn những ngựa HLV trưởng phụ trách huấn luyện.' : 'Chọn khu làm việc và những ngựa người chăm được phụ trách trong các khu đó.'} confirmLabel="Lưu phân công" onConfirm={save}>
       {error && <Callout tone="danger" style={{ marginBottom: 14 }}>{error}</Callout>}
-      <div className="ht-label" style={{ marginBottom: 8 }}>Khu chăm sóc</div>
-      <div className="ht-roles">{['Khu A', 'Khu B', 'Khu C'].map((z) => <label key={z} className="ht-role"><input type="checkbox" checked={zones.includes(z)} onChange={() => toggleZone(z)} />{z}</label>)}</div>
+      {user.role === 'Groom' && <><div className="ht-label" style={{ marginBottom: 8 }}>Khu chăm sóc</div><div className="ht-roles">{['Khu A', 'Khu B', 'Khu C'].map((z) => <label key={z} className="ht-role"><input type="checkbox" checked={zones.includes(z)} onChange={() => toggleZone(z)} />{z}</label>)}</div></>}
       <div className="ht-label" style={{ margin: '16px 0 8px' }}>Ngựa được giao</div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, maxHeight: 280, overflowY: 'auto' }}>
         {available.map((h) => { const stall = data.stalls.find((s) => s.horseId === h.id); return <label key={h.id} className="ht-role" style={{ alignItems: 'flex-start' }}><input type="checkbox" checked={horseIds.includes(h.id)} onChange={() => toggle(h.id, horseIds, setHorseIds)} /><span><b>{h.name}</b><small className="sub">{stall?.id} · {stall?.zone} · Chủ: {h.owner}</small></span></label>; })}
       </div>
-      {!available.length && <div className="ht-empty">Chọn khu để hiện danh sách ngựa.</div>}
-    </Dialog>
-  );
-};
-
-export const RoleDialog: React.FC<{ user: ManagedUser; onClose: () => void; onDone: (patch: Partial<ManagedUser>) => void }> = ({ user, onClose, onDone }) => {
-  const actor = useActor();
-  const { busy, error, run } = useAction();
-  const r = useReason();
-  const [newRole, setNewRole] = useState<Role>(user.role === 'Groom' ? 'HeadTrainer' : 'Groom');
-  const checks = managerApi.checkRoleChange(user, newRole);
-  const blocked = checks.some((c) => c.level === 'fail');
-  const confirm = async () => {
-    if (!r.check()) return;
-    if (await run(() => managerApi.changeRole(user, newRole, r.reason, actor), `Đã đổi vai trò ${user.fullName} → ${ROLE_LABEL[newRole]} · ghi Audit Log.`)) onDone({ role: newRole, openTasks: 0 });
-  };
-  return (
-    <Dialog open onClose={onClose} icon="usercog" tone="brand" width={560} busy={busy} busyLabel="Đang lưu…"
-      title={`Đổi vai trò · ${user.fullName}`} sub={<>Hiện tại: <b>{ROLE_LABEL[user.role]}</b> · <span className="ht-mono">{user.username}</span></>}
-      confirmLabel="Áp dụng vai trò" onConfirm={confirm} disabled={blocked}>
-      {error && <Callout tone="danger" style={{ marginBottom: 14 }}>{error}</Callout>}
-      <div className="ht-label" style={{ marginBottom: 8 }}>Vai trò mới</div>
-      <div className="ht-roles">
-        {ROLES.map((x) => (
-          <label key={x} className="ht-role">
-            <input type="radio" name="role" value={x} checked={newRole === x} disabled={x === user.role} onChange={() => setNewRole(x)} />
-            {ROLE_LABEL[x]}{x === user.role && ' · hiện tại'}
-          </label>
-        ))}
-      </div>
-      <div className="ht-label" style={{ margin: '16px 0 8px' }}>Kiểm tra xung đột · BR_06</div>
-      <ul className="ht-checks">
-        {checks.map((c, i) => (
-          <li key={i} className="ht-checkrow" data-state={c.level} style={{ padding: '10px 12px' }}>
-            <span className="ht-checkrow__icon"><Icon name={c.level === 'pass' ? 'check' : c.level === 'warn' ? 'warn' : 'x'} /></span>
-            <div><small style={{ margin: 0, color: 'var(--foreground)' }}>{c.text}</small></div><span />
-          </li>
-        ))}
-      </ul>
-      <div style={{ marginTop: 16 }}>
-        <ReasonField id="role-reason" label="Lý do" value={r.reason} error={r.err} minHeight={64} placeholder="VD: Bổ nhiệm HLV phụ trách nhóm ngựa Khu B từ 05/10." onChange={r.onChange} />
-      </div>
+      {!available.length && <div className="ht-empty">Chưa có ngựa để phân công.</div>}
     </Dialog>
   );
 };

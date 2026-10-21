@@ -58,7 +58,7 @@ export interface StaffInput {
 }
 export const BE_STAFF_ROLE: Partial<Record<StaffRole, string>> = { HeadTrainer: 'Trainer', Veterinarian: 'Veterinarian', Groom: 'Groom', WarehouseManager: 'Warehouse Manager' };
 export interface AssignedStall { id: string; zone: string; horseId: string | null; horse: string | null; status: string; groom: string }
-export interface AssignedHorse { id: string; name: string; owner: string; stall: string; health: string }
+export interface AssignedHorse { id: string; name: string; owner: string; stall: string; health: string; trainerId?: string }
 export interface RoleCheck { level: 'pass' | 'warn' | 'fail'; text: string }
 
 export type AuditArea = 'reg' | 'med' | 'train' | 'fin' | 'acct';
@@ -279,6 +279,19 @@ export const managerApi = {
     }));
     await addAudit(actor, { action: 'ASSIGN_GROOM_SCOPE', label: 'Phân công khu và ngựa cho mã phu', object: user.fullName, area: 'acct', from: target.zones.join(', '), to: `${zones.join(', ')} · ${horseIds.length} ngựa`, reason: 'Cập nhật phạm vi chăm sóc' });
     return { zones, horseIds };
+  },
+
+  async assignTrainer(user: ManagedUser, horseIds: string[], actor: Actor) {
+    if (user.role !== 'HeadTrainer') throw new Error('Chỉ có thể phân công cho HLV trưởng.');
+    const assignments = await managerApi.getGroomAssignments();
+    const selected = new Set(horseIds);
+    await Promise.all(assignments.horses.map((h) => {
+      if (selected.has(h.id)) return http.patch(`/horses/${h.id}`, { trainerId: user.id });
+      if (h.trainerId === user.id) return http.patch(`/horses/${h.id}`, { trainerId: '' });
+      return Promise.resolve();
+    }));
+    await addAudit(actor, { action: 'ASSIGN_TRAINER_SCOPE', label: 'Phân công ngựa cho HLV trưởng', object: user.fullName, area: 'acct', from: '—', to: `${horseIds.length} ngựa`, reason: 'Cập nhật phạm vi phụ trách huấn luyện' });
+    return { horseIds };
   },
 
   checkRoleChange(user: ManagedUser, to: UserRole): RoleCheck[] {
