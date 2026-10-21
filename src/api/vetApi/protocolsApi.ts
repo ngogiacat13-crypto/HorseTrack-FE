@@ -4,7 +4,7 @@ import type { Horse } from '../trainerApi';
 import type { VetCase, InventoryItem, ProtoPhase, Protocol, Shipment, VetHorse } from './types';
 import { isOpenProtocol } from './labels';
 import { dateKey, isDate } from './dates';
-import { get, nextId, now, min, addHistory, lastEta, stockShort, watchFields, saveProtocol, goTo, releaseHeld } from './shared';
+import { get, nextId, now, min, addHistory, lastEta, phaseRequiredBy, stockShort, watchFields, saveProtocol, goTo, releaseHeld } from './shared';
 
 export const protocolsApi = {
   async getProtocols() {
@@ -24,7 +24,15 @@ export const protocolsApi = {
   async getProtocolForm(opts: { horseId?: string; caseId?: string; replaceId?: string }) {
     const [horses, cases, inventory] = await Promise.all([get<VetHorse[]>('/horses'), get<VetCase[]>('/vetCases'), get<InventoryItem[]>('/inventory')]);
     const replacing = opts.replaceId ? await get<Protocol>(`/protocols/${opts.replaceId}`) : null;
-    return { horses, cases: cases.filter((c) => c.status !== 'CLOSED'), inventory: inventory.filter((i) => i.category !== 'Thức ăn'), replacing };
+    // Khi thay thuốc, vẫn hiển thị ca khám đã gắn với phác đồ cũ để ô bị khóa
+    // vẫn có giá trị hiện tại, thay vì rơi về "— Chọn ca —".
+    const replacingCase = replacing
+      ? cases.find((c) => String(c.id) === String(replacing.caseId))
+        ?? await get<VetCase>(`/vetCases/${replacing.caseId}`).catch(() => null)
+      : null;
+    const visibleCases = cases.filter((c) => c.status !== 'CLOSED' || (replacing && String(c.id) === String(replacing.caseId)));
+    if (replacingCase && !visibleCases.some((c) => String(c.id) === String(replacingCase.id))) visibleCases.push(replacingCase);
+    return { horses, cases: visibleCases, inventory: inventory.filter((i) => i.category !== 'Thức ăn'), replacing };
   },
 
   async createProtocol(input: { horseId: string; caseId: string; diagnosis: string; requiredBy: string; phases: ProtoPhase[]; replaces?: string | null }, send: boolean, actor: Actor) {
@@ -89,16 +97,17 @@ export const protocolsApi = {
   },
 
   async waitRestock(p: Protocol, note: string, actor: Actor) {
-    if (!['STOCK_SHORTAGE', 'REQUIRES_VET_REVIEW'].includes(p.state)) throw new Error('Chỉ chọn chờ hàng khi kho báo thiếu hoặc khi cần đánh giá lại.');
+    if (p.state !== 'REQUIRES_VET_REVIEW') throw new Error('Không thể chọn chờ hàng khi kho đã báo thiếu — hãy đổi thuốc bằng phiên bản mới.');
     const short = stockShort(p);
     if (!short.length) throw new Error('Kho không còn báo thiếu — xác nhận phác đồ thay vì chờ hàng.');
     const eta = lastEta(short);
     if (!eta) throw new Error('Kho chưa có ngày dự kiến hàng về — chưa thể chọn chờ.');
-    const late = dateKey(eta) > dateKey(p.requiredBy);
+    const requiredBy = phaseRequiredBy(p, short.map((l) => l.itemId));
+    const late = dateKey(eta) > dateKey(requiredBy);
     const why = min(note, late ? 15 : 10, late ? 'Đánh giá an toàn khi chờ quá mốc cần thuốc' : 'Ghi chú');
     const data = await saveProtocol(p,
-      { ...goTo(p, 'WAITING_RESTOCK'), wait: { eta, requiredBy: p.requiredBy, at: now(), note: why }, delayed: late,
-        note: late ? `Chờ hàng về ${eta.slice(0, 5)} — trễ so với mốc cần thuốc ${p.requiredBy.slice(0, 5)}; BS đã đánh giá chờ vẫn an toàn.` : `Chờ hàng về ${eta.slice(0, 5)}, trước mốc cần thuốc ${p.requiredBy.slice(0, 5)}.` },
+      { ...goTo(p, 'WAITING_RESTOCK'), wait: { eta, requiredBy, at: now(), note: why }, delayed: late,
+        note: late ? `Chờ hàng về ${eta.slice(0, 5)} — trễ so với mốc cần thuốc ${requiredBy.slice(0, 5)}; BS đã đánh giá chờ vẫn an toàn.` : `Chờ hàng về ${eta.slice(0, 5)}, trước mốc cần thuốc ${requiredBy.slice(0, 5)}.` },
       { tone: 'warning', who: `BS ${actor.name}`, text: `chọn chờ hàng (ETA ${eta.slice(0, 5)})`, at: now() });
     await addAudit(actor, { action: 'WAIT_RESTOCK', label: 'Chờ nhập hàng', object: `${p.id} · ${p.horse}`, area: 'med', from: p.state, to: 'WAITING_RESTOCK', reason: why });
     return data;

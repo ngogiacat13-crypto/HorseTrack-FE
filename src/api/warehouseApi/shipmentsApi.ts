@@ -144,9 +144,9 @@ export const shipmentsApi = {
         } else stockLines.push(l);
       }
       const done = stockLines.every((l) => l.short === 0);
-      await saveProtocol(p, { stock: { ...p.stock, lines: stockLines }, ...(done && p.state !== 'REQUIRES_VET_REVIEW' ? goTo(p, 'REQUIRES_VET_REVIEW') : {}),
-        note: done ? `Hàng đã về (${s.id}) — bác sĩ rà soát lại tình trạng ngựa trước khi cấp phát.` : p.note },
-      { who: actor.name, text: `hàng về ${s.id}${isLate ? ' (trễ so với mốc cần thuốc)' : ''} · báo BS ${p.vet} rà soát lại`, at: now() });
+      await saveProtocol(p, { stock: { ...p.stock, lines: stockLines }, ...(done ? goTo(p, 'STOCK_AVAILABLE') : {}),
+        note: done ? `Hàng đã về (${s.id}) — kho đủ hàng, chờ bác sĩ xác nhận để cấp phát.` : p.note },
+      { who: actor.name, text: `hàng về ${s.id}${isLate ? ' (trễ so với mốc cần thuốc)' : ''} · ${done ? 'đủ hàng, báo BS xác nhận' : `còn thiếu ${stockLines.filter((l) => l.short > 0).length} mặt hàng`}`, at: now() });
       notified.push(p.id);
     }
     const reqs = (await get<Requisition[]>('/requisitions')).filter((r) => r.status === 'WAITING_RESTOCK' && (r.shipmentId === s.id || r.id === s.forRef));

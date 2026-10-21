@@ -11,7 +11,7 @@ export * from './types';
 export * from './labels';
 export * from './dates';
 export * from './drugs';
-export { protoCost, stockShort } from './shared';
+export { phaseRequiredBy, protoCost, stockShort } from './shared';
 
 const base = { ...overviewApi, ...casesApi, ...healthApi, ...protocolsApi, ...vaccinationsApi, ...raceExamsApi };
 export const vetApi: typeof base = USE_BACKEND ? { ...base, ...vetProtocolBe } : base;

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { dateKey, isOpenProtocol, Protocol, stockShort, VetCase, VetHorse } from '../../../api/vetApi';
+import { dateKey, isOpenProtocol, phaseRequiredBy, Protocol, stockShort, VetCase, VetHorse } from '../../../api/vetApi';
 import { Icon } from '../../../components/ui/Icon';
 import { Callout, money, Panel } from '../../../components/ui/Ht';
 import { HorseBadges } from '../../../components/trainer/TrainerParts';
@@ -11,7 +11,8 @@ interface Props { protocol: Protocol; horse: VetHorse; vetCase: VetCase | null; 
 export const DecisionPanel: React.FC<Props> = ({ protocol: p, horse, vetCase, onAction, onNewVersion }) => {
   const short = stockShort(p);
   const stockComplete = !!p.stock && short.length === 0;
-  const etaLate = p.wait && dateKey(p.wait.eta) > dateKey(p.requiredBy);
+  const requiredBy = phaseRequiredBy(p, short.map((l) => l.itemId));
+  const etaLate = p.wait && dateKey(p.wait.eta) > dateKey(requiredBy);
   const btn = (cls: string, icon: React.ComponentProps<typeof Icon>['name'], label: string, onClick: () => void) => (
     <button type="button" className={`ht-btn ${cls} ht-btn--block`} onClick={onClick}><Icon name={icon} />{label}</button>
   );
@@ -38,7 +39,7 @@ export const DecisionPanel: React.FC<Props> = ({ protocol: p, horse, vetCase, on
             {short.map((l) => <div key={l.itemId}>{l.name}: thiếu {l.short} {l.unit}{l.eta ? ` · về ${l.eta}` : ' · chưa có ETA'}</div>)}
           </Callout>
           {btn('ht-btn--primary', 'refresh', 'Đổi thuốc — tạo phiên bản mới', onNewVersion)}
-          {btn('ht-btn--secondary', 'clock', p.state === 'REQUIRES_VET_REVIEW' ? 'Tiếp tục chờ hàng' : 'Chờ nhập hàng', () => onAction('wait'))}
+          {p.state === 'REQUIRES_VET_REVIEW' && btn('ht-btn--secondary', 'clock', 'Tiếp tục chờ hàng', () => onAction('wait'))}
           {stockComplete && btn('ht-btn--secondary', 'check', 'Hàng đã đủ — xác nhận', () => onAction('confirm'))}
         </>}
 

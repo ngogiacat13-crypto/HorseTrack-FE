@@ -17,6 +17,8 @@ export const addHistory = (h: Horse, title: string, tone: 'danger' | 'warning' |
 export const protoCost = (phases: ProtoPhase[]) => phases.reduce((s, p) => s + p.items.reduce((t, i) => t + i.qty * i.unitPrice, 0), 0);
 export const lastEta = (lines: StockLine[]) => lines.filter((l) => l.short > 0 && l.eta).map((l) => l.eta as string).sort((a, b) => dateKey(a).localeCompare(dateKey(b))).pop() ?? null;
 export const stockShort = (p: Pick<Protocol, 'stock'>) => (p.stock?.lines ?? []).filter((l) => l.short > 0);
+export const phaseRequiredBy = (p: Pick<Protocol, 'phases' | 'requiredBy'>, itemIds: string[]) =>
+  p.phases.filter((ph) => ph.items.some((it) => itemIds.includes(it.itemId))).map((ph) => ph.startDate).sort((a, b) => dateKey(a).localeCompare(dateKey(b)))[0] ?? p.requiredBy;
 
 export const watchFields = (p: Protocol, horseLocked: boolean): Partial<Protocol> => {
   const [label, tone] = PROTOCOL_LABEL[p.state];

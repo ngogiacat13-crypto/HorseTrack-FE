@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { dateKey, Protocol, stockShort, vetApi } from '../../../api/vetApi';
+import { dateKey, phaseRequiredBy, Protocol, stockShort, vetApi } from '../../../api/vetApi';
 import { useActor } from '../../../auth/AuthContext';
 import { useAction } from '../../../hooks/useAction';
 import { Callout, Dialog, ReasonField } from '../../../components/ui/Ht';
@@ -10,13 +10,14 @@ interface Spec { title: string; sub?: string; label: string; field?: [label: str
 
 const specFor = (p: Protocol, a: ProtocolAction): Spec => {
   const short = stockShort(p);
-  const late = short.some((l) => l.eta && dateKey(l.eta) > dateKey(p.requiredBy));
+  const requiredBy = phaseRequiredBy(p, short.map((l) => l.itemId));
+  const late = short.some((l) => l.eta && dateKey(l.eta) > dateKey(requiredBy));
   switch (a) {
     case 'send': return { title: `Gửi ${p.id} cho kho kiểm tồn`, label: 'Gửi kiểm tồn', ok: `${p.id} đã gửi kho kiểm tồn.`,
       sub: p.replaces ? `Khi gửi, ${p.replaces} chuyển SUPERSEDED và không được cấp phát.` : 'Kho đối chiếu tồn, lô/hạn dùng và phản hồi đủ hoặc thiếu kèm ETA.' };
     case 'cancel': return { title: `Hủy bản nháp ${p.id}`, label: 'Hủy bản nháp', danger: true, ok: `Đã hủy bản nháp ${p.id}.` };
     case 'wait': return { title: 'Chờ hàng về', label: 'Chọn chờ hàng', ok: `${p.id}: chờ hàng về.`,
-      sub: `Hàng thiếu dự kiến về ${short.map((l) => l.eta).filter(Boolean).join(', ') || '—'}; mốc cần thuốc ${p.requiredBy}.`,
+      sub: `Hàng thiếu dự kiến về ${short.map((l) => l.eta).filter(Boolean).join(', ') || '—'}; mốc cần thuốc ${requiredBy}.`,
       field: [late ? 'Đánh giá chờ vẫn an toàn về chuyên môn' : 'Ghi chú', 'VD: Ngựa ổn định, chườm lạnh thay thế đến khi hàng về.', late ? 15 : 10] };
     case 'confirm': return { title: `Xác nhận phác đồ ${p.id}`, label: 'Xác nhận & chuyển kho cấp phát', ok: `${p.id} đã xác nhận — kho chuẩn bị cấp phát.`,
       sub: 'Kho đã đủ khả năng cấp. Xác nhận phác đồ vẫn phù hợp với tình trạng ngựa hiện tại.',

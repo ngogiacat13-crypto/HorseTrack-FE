@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { isOpenProtocol, Protocol, protoCost, Shipment } from '../../../api/vetApi';
+import { isOpenProtocol, phaseRequiredBy, Protocol, protoCost, Shipment, stockShort } from '../../../api/vetApi';
 import { Icon } from '../../../components/ui/Icon';
 import { Badge, Callout, money, Panel, Timeline } from '../../../components/ui/Ht';
 import { ProtocolBadge } from '../../../components/vet/VetParts';
@@ -16,7 +16,7 @@ export const ProtocolBanners: React.FC<{ protocol: Protocol }> = ({ protocol: p 
         <Icon name="truck" />
         <div>
           <b>{p.state === 'REQUIRES_VET_REVIEW' ? 'Cảnh báo lô hàng trễ — cần đánh giá lại ngựa (2.6).' : 'Đang chờ hàng về sau mốc cần thuốc.'}</b>
-          <p>Cần thuốc từ <span className="ht-mono">{p.requiredBy}</span>, hàng dự kiến về <span className="ht-mono">{p.wait?.eta ?? '—'}</span>. {p.state === 'REQUIRES_VET_REVIEW' ? 'Chọn: sửa phác đồ (phiên bản mới), hoặc tiếp tục chờ nếu vẫn an toàn.' : `BS đã đánh giá: ${p.wait?.note ?? ''}`}</p>
+          <p>Cần thuốc từ <span className="ht-mono">{phaseRequiredBy(p, stockShort(p).map((l) => l.itemId))}</span>, hàng dự kiến về <span className="ht-mono">{p.wait?.eta ?? '—'}</span>. {p.state === 'REQUIRES_VET_REVIEW' ? 'Chọn: sửa phác đồ (phiên bản mới), hoặc tiếp tục chờ nếu vẫn an toàn.' : `BS đã đánh giá: ${p.wait?.note ?? ''}`}</p>
         </div>
       </div>
     )}

@@ -24,7 +24,7 @@ export const VetVaccinations: React.FC = () => {
   const [planOpen, setPlanOpen] = useState(false);
   const [plan, setPlan] = useState({ kind: 'VACCINE' as Kind, type: '', due: addDays(DEMO_NOW.date, 7), cycleMonths: 6, note: '', horseIds: [] as string[] });
   const [recFor, setRecFor] = useState<Vaccination | null>(null);
-  const [rec, setRec] = useState({ doneAt: DEMO_NOW.date, lot: '', by: '' });
+  const [rec, setRec] = useState({ doneAt: DEMO_NOW.date, by: '' });
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -75,8 +75,8 @@ export const VetVaccinations: React.FC = () => {
                     <td>{v.cycleMonths ? `${v.cycleMonths} tháng` : '—'}</td>
                     <td><Badge tone={STATUS[v.status][1]}>{STATUS[v.status][0]}</Badge></td>
                     <td className="num">{v.status === 'DONE'
-                      ? <span style={{ fontSize: 13 }}><span className="ht-mono">{v.doneAt}</span> · lô {v.lot}<span className="sub">{v.by}</span></span>
-                      : <button type="button" className="ht-btn ht-btn--secondary ht-btn--sm" onClick={() => { setRecFor(v); setRec({ doneAt: DEMO_NOW.date, lot: '', by: actor.name }); setErr(''); }}><Icon name="check" />Ghi nhận đã tiêm</button>}</td>
+                      ? <span style={{ fontSize: 13 }}><span className="ht-mono">{v.doneAt}</span><span className="sub">{v.by}</span></span>
+                      : <button type="button" className="ht-btn ht-btn--secondary ht-btn--sm" onClick={() => { setRecFor(v); setRec({ doneAt: DEMO_NOW.date, by: actor.name }); setErr(''); }}><Icon name="check" />Ghi nhận đã tiêm</button>}</td>
                   </tr>
                 );
               })}
@@ -132,7 +132,6 @@ export const VetVaccinations: React.FC = () => {
         {err && <Callout tone="danger" style={{ marginBottom: 14 }}>{err}</Callout>}
         <div style={{ display: 'grid', gap: 12 }}>
           <div className="ht-field" style={{ margin: 0 }}><label className="ht-label" htmlFor="rc-date">Ngày thực hiện</label><input id="rc-date" className="ht-input ht-mono" value={rec.doneAt} onChange={(e) => setRec({ ...rec, doneAt: e.target.value })} /></div>
-          <div className="ht-field" style={{ margin: 0 }}><label className="ht-label" htmlFor="rc-lot">Số lô thuốc<span className="ht-req">*</span></label><input id="rc-lot" className="ht-input ht-mono" value={rec.lot} onChange={(e) => setRec({ ...rec, lot: e.target.value })} placeholder="VD: VX-CUM-2610" /></div>
           <div className="ht-field" style={{ margin: 0 }}><label className="ht-label" htmlFor="rc-by">Người thực hiện<span className="ht-req">*</span></label><input id="rc-by" className="ht-input" value={rec.by} onChange={(e) => setRec({ ...rec, by: e.target.value })} /></div>
         </div>
       </Dialog>
