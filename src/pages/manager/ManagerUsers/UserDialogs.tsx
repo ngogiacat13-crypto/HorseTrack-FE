@@ -17,24 +17,16 @@ export const AssignmentDialog: React.FC<{ user: ManagedUser; data: { grooms: Gro
   const actor = useActor();
   const { busy, error, run } = useAction();
   const current = data.grooms.find((g) => g.id === user.id || g.name === user.fullName);
-  const currentTrainerHorseIds = data.horses.filter((h) => h.trainerId === user.id).map((h) => h.id);
-  const trainerZones = [...new Set(currentTrainerHorseIds.map((id) => data.stalls.find((s) => s.horseId === id)?.zone).filter((z): z is string => !!z))];
+  const trainerZones = [...new Set(data.horses.filter((h) => h.trainerId === user.id).map((h) => data.stalls.find((s) => s.horseId === h.id)?.zone).filter((z): z is string => !!z))];
   const [zones, setZones] = useState<string[]>(current?.zones ?? trainerZones);
-  const [horseIds, setHorseIds] = useState<string[]>(() => user.role === 'HeadTrainer'
-    ? currentTrainerHorseIds.filter((id) => zones.includes(data.stalls.find((s) => s.horseId === id)?.zone ?? ''))
-    : data.horses.filter((h) => (current?.zones ?? []).includes(data.stalls.find((s) => s.horseId === h.id)?.zone ?? '')).map((h) => h.id));
-  const available = data.horses.filter((h) => zones.includes(data.stalls.find((s) => s.horseId === h.id)?.zone ?? ''));
-  const toggle = (value: string, values: string[], setValues: React.Dispatch<React.SetStateAction<string[]>>) => setValues(values.includes(value) ? values.filter((x) => x !== value) : [...values, value]);
   const toggleZone = (zone: string) => {
     const adding = !zones.includes(zone);
     setZones((xs) => adding ? [...xs, zone] : xs.filter((x) => x !== zone));
-    const ids = data.horses.filter((h) => data.stalls.find((s) => s.horseId === h.id)?.zone === zone).map((h) => h.id);
-    setHorseIds((xs) => adding ? [...new Set([...xs, ...ids])] : xs.filter((id) => !ids.includes(id)));
   };
   const save = async () => {
     const ok = user.role === 'HeadTrainer'
-      ? await run(() => managerApi.assignTrainer(user, zones, horseIds, actor), `Đã phân công ${user.fullName}: ${zones.join(', ')} · ${horseIds.length} ngựa.`)
-      : await run(() => managerApi.assignGroom(user, zones, horseIds, actor), `Đã phân công ${user.fullName}: ${zones.join(', ')} · ${horseIds.length} ngựa.`);
+      ? await run(() => managerApi.assignTrainer(user, zones, actor), `Đã cập nhật khu cho ${user.fullName}: ${zones.join(', ')}.`)
+      : await run(() => managerApi.assignGroom(user, zones, actor), `Đã cập nhật khu cho ${user.fullName}: ${zones.join(', ')}.`);
     if (ok) onDone();
   };
   return (
@@ -42,11 +34,7 @@ export const AssignmentDialog: React.FC<{ user: ManagedUser; data: { grooms: Gro
       {error && <Callout tone="danger" style={{ marginBottom: 14 }}>{error}</Callout>}
       <div className="ht-label" style={{ marginBottom: 8 }}>{user.role === 'HeadTrainer' ? 'Khu phụ trách' : 'Khu chăm sóc'}</div>
       <div className="ht-roles">{['Khu A', 'Khu B', 'Khu C'].map((z) => <label key={z} className="ht-role"><input type="checkbox" checked={zones.includes(z)} onChange={() => toggleZone(z)} />{z}</label>)}</div>
-      <div className="ht-label" style={{ margin: '16px 0 8px' }}>Ngựa được giao</div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, maxHeight: 280, overflowY: 'auto' }}>
-        {available.map((h) => { const stall = data.stalls.find((s) => s.horseId === h.id); return <label key={h.id} className="ht-role" style={{ alignItems: 'flex-start' }}><input type="checkbox" checked={horseIds.includes(h.id)} onChange={() => toggle(h.id, horseIds, setHorseIds)} /><span><b>{h.name}</b><small className="sub">{stall?.id} · {stall?.zone} · Chủ: {h.owner}</small></span></label>; })}
-      </div>
-      {!available.length && <div className="ht-empty">Chưa có ngựa để phân công.</div>}
+      <Callout tone="info" style={{ marginTop: 16 }}>Ngựa đã được duyệt trong khu đã chọn sẽ tự động do HLV phụ trách. Groom sẽ tự động phụ trách các chuồng trong khu đó.</Callout>
     </Dialog>
   );
 };

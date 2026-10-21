@@ -24,7 +24,7 @@ export const CreateStaffDialog: React.FC<{ onClose: () => void; onDone: (u: Mana
       email: !v.email.trim() ? 'Vui lòng nhập email' : !EMAIL_RE.test(v.email.trim()) ? 'Email không hợp lệ' : undefined,
       phone: v.phone && !PHONE_RE.test(v.phone.replace(/\s/g, '')) ? 'Số điện thoại không hợp lệ' : undefined,
       password: !v.password ? 'Vui lòng nhập mật khẩu tạm' : !PASSWORD_RE.test(v.password) ? PASSWORD_RULE : undefined,
-      specialization: v.role === 'Groom' && !v.specialization ? 'Chọn khu chuồng phụ trách' : undefined,
+      specialization: (v.role === 'HeadTrainer' || v.role === 'Groom') && !v.specialization ? 'Chọn khu chuồng phụ trách' : undefined,
     }),
   );
   const role = form.values.role as StaffRole;
@@ -80,19 +80,17 @@ export const CreateStaffDialog: React.FC<{ onClose: () => void; onDone: (u: Mana
         </Field>
       </div>
 
-      {(role === 'HeadTrainer' || role === 'Veterinarian') && (
+      {role === 'Veterinarian' && (
         <div className="ht-grid-2">
           <Field label="Số chứng chỉ hành nghề" htmlFor="licenseNumber" hint="Không bắt buộc">
-            <TextInput icon="file" placeholder={role === 'Veterinarian' ? 'VD: BSTY-2021-0456' : 'VD: HLV-2020-0123'} {...form.field('licenseNumber')} />
+            <TextInput icon="file" placeholder="VD: BSTY-2021-0456" {...form.field('licenseNumber')} />
           </Field>
-          {role === 'Veterinarian' && (
-            <Field label="Nơi công tác / phòng khám" htmlFor="specialization" hint="Không bắt buộc">
-              <TextInput icon="heart" placeholder="VD: Phòng khám thú y CLB" {...form.field('specialization')} />
-            </Field>
-          )}
+          <Field label="Nơi công tác / phòng khám" htmlFor="specialization" hint="Không bắt buộc">
+            <TextInput icon="heart" placeholder="VD: Phòng khám thú y CLB" {...form.field('specialization')} />
+          </Field>
         </div>
       )}
-      {role === 'Groom' && (
+      {(role === 'HeadTrainer' || role === 'Groom') && (
         <Field label="Khu chuồng phụ trách" htmlFor="specialization" required error={form.errors.specialization}>
           <select id="specialization" className="ht-input" value={form.values.specialization}
             onChange={(e) => form.setValues((s) => ({ ...s, specialization: e.target.value }))}>
