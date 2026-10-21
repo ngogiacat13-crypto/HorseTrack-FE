@@ -113,8 +113,7 @@ export const shipmentsApi = {
       if (!Number.isInteger(qty) || qty < 0) throw new Error(`${l.name}: số lượng nhận phải là số nguyên ≥ 0.`);
       const it = items.find((i) => i.id === l.itemId) as StockItem;
       if (qty > 0 && tracksLots(it)) {
-        if (!r?.lot.trim()) throw new Error(`${l.name}: nhập số lô.`);
-        if (!/^(0[1-9]|1[0-2])\/\d{4}$/.test(r.expiry)) throw new Error(`${l.name}: hạn dùng theo dạng mm/yyyy.`);
+        if (!/^(0[1-9]|1[0-2])\/\d{4}$/.test(r?.expiry ?? "")) throw new Error(`${l.name}: hạn dùng theo dạng mm/yyyy.`);
       }
       return { ...l, received: qty, lot: r?.lot.trim() || null, expiry: r?.expiry.trim() || null };
     });
