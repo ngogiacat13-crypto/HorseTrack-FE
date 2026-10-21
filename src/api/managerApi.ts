@@ -274,9 +274,11 @@ export const managerApi = {
   },
 
   async getGroomAssignments() {
-    const [grooms, stalls, horses] = await Promise.all([
+    const [grooms, stalls, allHorses] = await Promise.all([
       get<GroomAssignment[]>('/grooms'), get<AssignedStall[]>('/stalls'), get<AssignedHorse[]>('/horses'),
     ]);
+    // Chỉ ngựa đã được duyệt mới có chuồng và được phép phân công.
+    const horses = allHorses.filter((h) => h.stall && h.stall !== '—' && h.stall !== 'Chưa cấp chuồng');
     return { grooms, stalls, horses };
   },
 
@@ -299,17 +301,20 @@ export const managerApi = {
     return { zones, horseIds };
   },
 
-  async assignTrainer(user: ManagedUser, horseIds: string[], actor: Actor) {
+  async assignTrainer(user: ManagedUser, zones: string[], horseIds: string[], actor: Actor) {
     if (user.role !== 'HeadTrainer') throw new Error('Chỉ có thể phân công cho HLV trưởng.');
+    if (!zones.length) throw new Error('Chọn ít nhất một khu chuồng.');
     const assignments = await managerApi.getGroomAssignments();
     const selected = new Set(horseIds);
+    const invalid = assignments.horses.find((h) => selected.has(h.id) && !zones.includes(assignments.stalls.find((s) => s.horseId === h.id)?.zone ?? ''));
+    if (invalid) throw new Error(`${invalid.name} không thuộc khu đã chọn.`);
     await Promise.all(assignments.horses.map((h) => {
       if (selected.has(h.id)) return http.patch(`/horses/${h.id}`, { trainerId: user.id });
       if (h.trainerId === user.id) return http.patch(`/horses/${h.id}`, { trainerId: '' });
       return Promise.resolve();
     }));
-    await addAudit(actor, { action: 'ASSIGN_TRAINER_SCOPE', label: 'Phân công ngựa cho HLV trưởng', object: user.fullName, area: 'acct', from: '—', to: `${horseIds.length} ngựa`, reason: 'Cập nhật phạm vi phụ trách huấn luyện' });
-    return { horseIds };
+    await addAudit(actor, { action: 'ASSIGN_TRAINER_SCOPE', label: 'Phân công khu và ngựa cho HLV trưởng', object: user.fullName, area: 'acct', from: '—', to: `${zones.join(', ')} · ${horseIds.length} ngựa`, reason: 'Cập nhật phạm vi phụ trách huấn luyện' });
+    return { zones, horseIds };
   },
 
   checkRoleChange(user: ManagedUser, to: UserRole): RoleCheck[] {

@@ -17,13 +17,13 @@ export const AssignmentDialog: React.FC<{ user: ManagedUser; data: { grooms: Gro
   const actor = useActor();
   const { busy, error, run } = useAction();
   const current = data.grooms.find((g) => g.id === user.id || g.name === user.fullName);
-  const [zones, setZones] = useState<string[]>(current?.zones ?? []);
+  const currentTrainerHorseIds = data.horses.filter((h) => h.trainerId === user.id).map((h) => h.id);
+  const trainerZones = [...new Set(currentTrainerHorseIds.map((id) => data.stalls.find((s) => s.horseId === id)?.zone).filter((z): z is string => !!z))];
+  const [zones, setZones] = useState<string[]>(current?.zones ?? trainerZones);
   const [horseIds, setHorseIds] = useState<string[]>(() => user.role === 'HeadTrainer'
-    ? data.horses.filter((h) => h.trainerId === user.id).map((h) => h.id)
+    ? currentTrainerHorseIds.filter((id) => zones.includes(data.stalls.find((s) => s.horseId === id)?.zone ?? ''))
     : data.horses.filter((h) => (current?.zones ?? []).includes(data.stalls.find((s) => s.horseId === h.id)?.zone ?? '')).map((h) => h.id));
-  const available = user.role === 'HeadTrainer'
-    ? data.horses
-    : data.horses.filter((h) => zones.includes(data.stalls.find((s) => s.horseId === h.id)?.zone ?? ''));
+  const available = data.horses.filter((h) => zones.includes(data.stalls.find((s) => s.horseId === h.id)?.zone ?? ''));
   const toggle = (value: string, values: string[], setValues: React.Dispatch<React.SetStateAction<string[]>>) => setValues(values.includes(value) ? values.filter((x) => x !== value) : [...values, value]);
   const toggleZone = (zone: string) => {
     const adding = !zones.includes(zone);
@@ -33,14 +33,15 @@ export const AssignmentDialog: React.FC<{ user: ManagedUser; data: { grooms: Gro
   };
   const save = async () => {
     const ok = user.role === 'HeadTrainer'
-      ? await run(() => managerApi.assignTrainer(user, horseIds, actor), `Đã phân công ${user.fullName}: ${horseIds.length} ngựa.`)
+      ? await run(() => managerApi.assignTrainer(user, zones, horseIds, actor), `Đã phân công ${user.fullName}: ${zones.join(', ')} · ${horseIds.length} ngựa.`)
       : await run(() => managerApi.assignGroom(user, zones, horseIds, actor), `Đã phân công ${user.fullName}: ${zones.join(', ')} · ${horseIds.length} ngựa.`);
     if (ok) onDone();
   };
   return (
     <Dialog open onClose={onClose} icon="stable" tone="brand" width={700} busy={busy} busyLabel="Đang lưu…" title={`Phân công ${user.role === 'HeadTrainer' ? 'huấn luyện' : 'chăm sóc'} · ${user.fullName}`} sub={user.role === 'HeadTrainer' ? 'Chọn những ngựa HLV trưởng phụ trách huấn luyện.' : 'Chọn khu làm việc và những ngựa người chăm được phụ trách trong các khu đó.'} confirmLabel="Lưu phân công" onConfirm={save}>
       {error && <Callout tone="danger" style={{ marginBottom: 14 }}>{error}</Callout>}
-      {user.role === 'Groom' && <><div className="ht-label" style={{ marginBottom: 8 }}>Khu chăm sóc</div><div className="ht-roles">{['Khu A', 'Khu B', 'Khu C'].map((z) => <label key={z} className="ht-role"><input type="checkbox" checked={zones.includes(z)} onChange={() => toggleZone(z)} />{z}</label>)}</div></>}
+      <div className="ht-label" style={{ marginBottom: 8 }}>{user.role === 'HeadTrainer' ? 'Khu phụ trách' : 'Khu chăm sóc'}</div>
+      <div className="ht-roles">{['Khu A', 'Khu B', 'Khu C'].map((z) => <label key={z} className="ht-role"><input type="checkbox" checked={zones.includes(z)} onChange={() => toggleZone(z)} />{z}</label>)}</div>
       <div className="ht-label" style={{ margin: '16px 0 8px' }}>Ngựa được giao</div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, maxHeight: 280, overflowY: 'auto' }}>
         {available.map((h) => { const stall = data.stalls.find((s) => s.horseId === h.id); return <label key={h.id} className="ht-role" style={{ alignItems: 'flex-start' }}><input type="checkbox" checked={horseIds.includes(h.id)} onChange={() => toggle(h.id, horseIds, setHorseIds)} /><span><b>{h.name}</b><small className="sub">{stall?.id} · {stall?.zone} · Chủ: {h.owner}</small></span></label>; })}
