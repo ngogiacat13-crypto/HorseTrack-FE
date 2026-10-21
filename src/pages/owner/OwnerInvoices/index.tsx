@@ -1,19 +1,28 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { invoiceLabel, ownerApi, POLICY, type InvoiceDue } from '../../../api/ownerApi';
 import { useActor } from '../../../auth/AuthContext';
 import { useFetch } from '../../../hooks/useFetch';
 import { PATH, toPath } from '../../../routers/routerPath';
 import { Icon } from '../../../components/ui/Icon';
-import { Badge, money, PageHeader, Panel, StatCard, Tabs } from '../../../components/ui/Ht';
+import { Badge, Callout, money, PageHeader, Panel, StatCard, Tabs } from '../../../components/ui/Ht';
 import { LoadState } from '../../../components/trainer/TrainerParts';
 
 type Tab = 'ALL' | Exclude<InvoiceDue['group'], 'PAID'>;
+
+const VNPAY_RESULT: Record<string, ['success' | 'danger' | 'info', string]> = {
+  SUCCESS: ['success', 'Thanh toán VNPay thành công — máy chủ đã xác minh giao dịch.'],
+  PENDING: ['info', 'VNPay đang xử lý giao dịch — hóa đơn sẽ cập nhật khi máy chủ xác minh xong.'],
+  FAILED: ['danger', 'Thanh toán VNPay không thành công. Bạn có thể thử lại.'],
+  INVALID: ['danger', 'Kết quả VNPay không hợp lệ (sai chữ ký hoặc số tiền) — giao dịch không được ghi nhận.'],
+};
 
 export const OwnerInvoices: React.FC = () => {
   const actor = useActor();
   const { data, loading, error, reload } = useFetch(() => ownerApi.getOpenInvoices(actor), [actor]);
   const [tab, setTab] = useState<Tab>('ALL');
+  const [params] = useSearchParams();
+  const vnpay = VNPAY_RESULT[params.get('status') ?? ''];
   if (!data) return <LoadState loading={loading} error={error} onRetry={reload} />;
 
   const rows = data.invoices.filter((x) => tab === 'ALL' || x.due.group === tab);
@@ -25,6 +34,7 @@ export const OwnerInvoices: React.FC = () => {
   return (
     <div className="ht ht-page">
       <PageHeader title="Hóa đơn" sub={`Dịch vụ huấn luyện, lưu chuồng và y tế cho ngựa của ${actor.name}`} />
+      {vnpay && <Callout tone={vnpay[0]} testId="vnpay-result" style={{ marginBottom: 16 }}>{vnpay[1]}{params.get('txnRef') ? ` Mã giao dịch: ${params.get('txnRef')}.` : ''}</Callout>}
       {late.map(({ invoice: i, due }) => (
         <div key={i.id} className="ht-banner" role="alert">
           <Icon name={due.group === 'SUSPENDED' ? 'lock' : 'alarm'} />

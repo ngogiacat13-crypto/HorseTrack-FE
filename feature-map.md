@@ -57,7 +57,7 @@ Quy ước `data-testid`: menu trái `nav-<đường dẫn bỏ / đầu, / đ�
 | Chủ ngựa · Ngựa của tôi | `src/pages/owner/OwnerHorses/` | `/owner` | `nav-owner` |
 | Chủ ngựa · Chi tiết ngựa | `src/pages/owner/OwnerHorseDetail/` | `/owner/horses/:id` | `back-btn` |
 | Chủ ngựa · Xác nhận thi đấu | `src/pages/owner/OwnerRaces/` | `/owner/races` | `nav-owner-races` |
-| Chủ ngựa · Hóa đơn | `src/pages/owner/OwnerInvoices/` | `/owner/invoices` | `nav-owner-invoices` |
+| Chủ ngựa · Hóa đơn | `src/pages/owner/OwnerInvoices/` | `/owner/invoices` (VNPay quay về `?status=`) | `nav-owner-invoices`, `vnpay-result` |
 | Chủ ngựa · Chi tiết hóa đơn | `src/pages/owner/OwnerInvoiceDetail/` | `/owner/invoices/:id` | `back-btn` |
 | Chủ ngựa · Lịch sử thanh toán | `src/pages/owner/OwnerPayments/` | `/owner/payments` | `nav-owner-payments` |
 | Chủ ngựa · Đăng ký ngựa mới | `src/pages/owner/OwnerRegistrations/` | `/owner/registrations` | `nav-owner-registrations` |

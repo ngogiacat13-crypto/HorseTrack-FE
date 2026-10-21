@@ -4,7 +4,7 @@ import { liveAccounts, recordFinding, type LiveRole } from './live-support';
 const SCHEDULE_RANGE = 'startDate=2020-01-01&endDate=2030-12-31';
 
 const READS: Record<LiveRole, string[]> = {
-  ClubManager: ['/account/my-profile', '/horses?page=0&size=50', '/horses?status=PENDING&page=0&size=50', '/horses?status=REJECTED&page=0&size=50', '/stalls', '/users/all', '/audit-logs/paged?page=0&size=20', '/protocols', '/protocols/shipments', '/care-tasks/overdue'],
+  ClubManager: ['/account/my-profile', '/horses?page=0&size=50', '/horses?status=PENDING&page=0&size=50', '/horses?status=REJECTED&page=0&size=50', '/stalls', '/users/all', '/audit-logs/paged?page=0&size=20', '/protocols', '/protocols/shipments', '/care-tasks/overdue', '/billing/invoices?page=0&size=50', '/reports/finance'],
   Veterinarian: ['/account/my-profile', '/horses?page=0&size=50', '/stalls', '/medical/cases', '/protocols', '/medical-management/protocols', '/medical-management/medications', '/vaccinations', '/prerace-exams?tab=CHO_KHAM', '/prerace-exams?tab=DA_CO_KET_QUA'],
   HeadTrainer: ['/account/my-profile', '/horses?page=0&size=50', '/stalls', '/training-plans?page=0&size=50', `/training-sessions/my-schedule?${SCHEDULE_RANGE}`, '/horses/available-for-training', '/prerace-exams?tab=CHO_KHAM'],
   Groom: ['/account/my-profile', '/stalls', '/care-tasks/my-tasks', `/training-sessions/my-schedule?${SCHEDULE_RANGE}`, '/supply-requests/my'],

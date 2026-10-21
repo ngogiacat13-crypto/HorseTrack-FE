@@ -1,6 +1,7 @@
 import { DEMO_NOW, http } from './http';
 import { EMAIL_TIMEOUT, USE_BACKEND, be, beData, type ApiResponse } from './beClient';
 import { invalidate } from './hybridAdapter';
+import { financeBe } from './beFinance';
 
 export type RegStatus = 'Pending' | 'Approved' | 'Rejected';
 export interface ChecklistItem { key: string; label: string; detail: string; passed: boolean }
@@ -24,7 +25,7 @@ export interface Registration {
 
 export type ProtocolState =
   | 'DRAFT' | 'WAITING_STOCK_CHECK' | 'STOCK_SHORTAGE' | 'STOCK_AVAILABLE' | 'WAITING_RESTOCK' | 'REQUIRES_VET_REVIEW'
-  | 'VET_CONFIRMED' | 'READY_FOR_DISPENSING' | 'IN_TREATMENT' | 'COMPLETED' | 'SUPERSEDED' | 'CANCELLED';
+  | 'VET_CONFIRMED' | 'READY_FOR_DISPENSING' | 'IN_TREATMENT' | 'ON_HOLD_PAYMENT' | 'COMPLETED' | 'SUPERSEDED' | 'CANCELLED';
 export interface ProtocolWatch {
   id: string; horse: string; diagnosis: string; vet: string;
   state: ProtocolState; label: string; tone: 'danger' | 'info' | 'success' | 'neutral';
@@ -192,6 +193,11 @@ export const managerApi = {
   getInvoices: () => get<Invoice[]>('/invoices'),
 
   async suspendService(inv: Invoice, reason: string, actor: Actor) {
+    if (USE_BACKEND) {
+      await financeBe.suspendOwner(Number((inv as Invoice & { beOwnerId?: number }).beOwnerId), reason.trim());
+      invalidate('invoices', 'auditLogs');
+      return { ...inv, status: 'SUSPENDED' as const };
+    }
     const { data } = await http.patch<Invoice>(`/invoices/${inv.id}`, { status: 'SUSPENDED', suspendedSince: DEMO_NOW.date.slice(0, 5) });
     const [owner] = await get<UserRecord[]>('/users', { fullname: inv.owner });
     if (owner) await http.patch(`/users/${owner.id}`, { serviceSuspended: true });
@@ -200,6 +206,11 @@ export const managerApi = {
   },
 
   async reactivateService(inv: Invoice, actor: Actor) {
+    if (USE_BACKEND) {
+      await financeBe.reactivateOwner(Number((inv as Invoice & { beOwnerId?: number }).beOwnerId));
+      invalidate('invoices', 'auditLogs');
+      return { ...inv, status: 'ACTIVE' as const };
+    }
     const { data } = await http.patch<Invoice>(`/invoices/${inv.id}`, { status: 'ACTIVE' });
     const [owner] = await get<UserRecord[]>('/users', { fullname: inv.owner });
     if (owner) await http.patch(`/users/${owner.id}`, { serviceSuspended: false });
@@ -212,6 +223,7 @@ export const managerApi = {
   },
 
   async getFinanceReport() {
+    if (USE_BACKEND) return financeBe.report();
     const [base, invoices] = await Promise.all([get<any>('/financeReport'), get<Invoice[]>('/invoices')]);
     const unpaid = invoices.filter((i) => i.status === 'OVERDUE' || i.status === 'SUSPENDED');
     const bucket = (pred: (i: Invoice) => boolean) => { const xs = unpaid.filter(pred); return { ids: xs.map((x) => x.id).join(' · ') || '—', count: xs.length, amount: xs.reduce((s, x) => s + x.amount, 0) }; };
