@@ -314,7 +314,6 @@ export const managerApi = {
     if (USE_BACKEND) {
       const same = target.zones.length === zones.length && zones.every((z) => target.zones.includes(z));
       if (same) return { zones };
-      // zones rỗng = bỏ phân công khu
       await be.put(`/users/${target.id}/barn-zone`, { barnZone: zones[0] ?? null });
       invalidate('users', 'auditLogs');
       return { zones };
@@ -338,7 +337,6 @@ export const managerApi = {
     const added = assignments.horses.filter((h) => selected.has(h.id) && h.trainerId !== user.id);
     if (USE_BACKEND) {
       for (const h of added) await be.put(`/horses/${h.id}/assign-trainer`, { trainerId: Number(user.id) });
-      // Bỏ phân công: backend chặn nếu ngựa còn giáo án chưa kết thúc (cần phân công HLV khác để bàn giao)
       for (const h of dropped) await be.delete(`/horses/${h.id}/assign-trainer`);
       invalidate('horses', 'auditLogs');
       return { horseIds };

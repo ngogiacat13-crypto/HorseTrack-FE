@@ -24,8 +24,6 @@ export const protocolsApi = {
   async getProtocolForm(opts: { horseId?: string; caseId?: string; replaceId?: string }) {
     const [horses, cases, inventory] = await Promise.all([get<VetHorse[]>('/horses'), get<VetCase[]>('/vetCases'), get<InventoryItem[]>('/inventory')]);
     const replacing = opts.replaceId ? await get<Protocol>(`/protocols/${opts.replaceId}`) : null;
-    // Khi thay thuốc, vẫn hiển thị ca khám đã gắn với phác đồ cũ để ô bị khóa
-    // vẫn có giá trị hiện tại, thay vì rơi về "— Chọn ca —".
     const replacingCase = replacing
       ? cases.find((c) => String(c.id) === String(replacing.caseId))
         ?? await get<VetCase>(`/vetCases/${replacing.caseId}`).catch(() => null)

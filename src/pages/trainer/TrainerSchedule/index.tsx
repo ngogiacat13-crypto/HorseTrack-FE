@@ -9,6 +9,7 @@ import { TODAY } from './constants';
 import { DaySessions, EvaluateQueue, PausedBanners, VaccinesSoon, WeekStrip } from './ScheduleParts';
 import { AssignDialog } from './AssignDialog';
 import { EvaluateDialog } from './EvaluateDialog';
+import { StopSessionDialog } from './StopSessionDialog';
 
 export const TrainerSchedule: React.FC = () => {
   const toast = useToast();
@@ -17,6 +18,7 @@ export const TrainerSchedule: React.FC = () => {
   const [day, setDay] = useState(TODAY);
   const [assignOpen, setAssignOpen] = useState(false);
   const [evalFor, setEvalFor] = useState<TrainingSession | null>(null);
+  const [stopFor, setStopFor] = useState<TrainingSession | null>(null);
 
   const sessions = useMemo(() => data?.sessions ?? [], [data]);
   const dayList = useMemo(() => sessions.filter((s) => s.date === day).sort((a, b) => a.time.localeCompare(b.time)), [sessions, day]);
@@ -39,7 +41,7 @@ export const TrainerSchedule: React.FC = () => {
       <WeekStrip sessions={sessions} day={day} onDay={setDay} />
 
       <div className="ht-cols">
-        <div><DaySessions day={day} sessions={dayList} onEvaluate={setEvalFor} /></div>
+        <div><DaySessions day={day} sessions={dayList} onEvaluate={setEvalFor} onStop={setStopFor} /></div>
         <div>
           <EvaluateQueue sessions={sessions.filter((s) => s.status === 'COMPLETED' && !s.evaluation)} onEvaluate={setEvalFor} />
           <VaccinesSoon vaccinations={data.vaccinations.filter((v) => v.status === 'DUE_SOON' || v.status === 'POSTPONED')} />
@@ -47,6 +49,7 @@ export const TrainerSchedule: React.FC = () => {
       </div>
 
       {assignOpen && <AssignDialog data={data} onClose={() => setAssignOpen(false)} onDone={assigned} />}
+      {stopFor && <StopSessionDialog session={stopFor} onClose={() => setStopFor(null)} onDone={() => { setStopFor(null); reload(); }} />}
       {evalFor && <EvaluateDialog session={evalFor} onClose={() => setEvalFor(null)} onDone={() => { setEvalFor(null); reload(); }} />}
     </div>
   );
