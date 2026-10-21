@@ -40,7 +40,7 @@ interface BeItem {
   currentStock: number; heldStock: number; minSafetyStock: number; route?: string | null; isControlled?: boolean; requiresPrescription?: boolean;
   withdrawalHours?: number | null; doseReference?: string | null; note?: string | null; lots?: { lotNo: string; expiryDate: string; quantity: number }[] | null;
 }
-interface BeMedicine { itemId: number; itemCode: string; itemName: string; category: string; unit: string; unitPrice: number; availableStock: number; route?: string | null; isControlled?: boolean; withdrawalHours?: number | null; doseReference?: string | null }
+interface BeMedicine { itemId: number; itemCode: string; itemName: string; category: string; itemGroup?: string | null; unit: string; unitPrice: number; availableStock: number; route?: string | null; isControlled?: boolean; withdrawalHours?: number | null; doseReference?: string | null }
 
 export const mapItem = (i: BeItem): Row => ({
   id: i.itemCode, beId: i.itemId, name: i.itemName, category: CATEGORY[i.category] ?? i.category, group: i.itemGroup || CATEGORY[i.category] || i.category,
@@ -50,7 +50,7 @@ export const mapItem = (i: BeItem): Row => ({
   lots: i.lots ? i.lots.map((l) => ({ lot: l.lotNo, expiry: mmYYYY(l.expiryDate), qty: Number(l.quantity) || 0 })) : undefined,
 });
 export const mapMedicine = (m: BeMedicine): Row => ({
-  id: m.itemCode, beId: m.itemId, name: m.itemName, category: CATEGORY[m.category] ?? m.category, group: CATEGORY[m.category] ?? m.category,
+  id: m.itemCode, beId: m.itemId, name: m.itemName, category: CATEGORY[m.category] ?? m.category, group: m.itemGroup || CATEGORY[m.category] || m.category,
   route: m.route ?? '—', unit: m.unit, unitPrice: Number(m.unitPrice) || 0, onHand: Number(m.availableStock) || 0, held: 0, safety: 0,
   doseRef: m.doseReference ?? undefined, detectionHours: m.withdrawalHours ?? undefined, controlled: !!m.isControlled,
 });
