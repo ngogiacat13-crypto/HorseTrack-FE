@@ -46,6 +46,8 @@ const PLAN_STATUS: Record<string, string> = { PENDING: 'PLANNED', ACTIVE: 'ACTIV
 const TASK_TYPE: Record<string, [string, string]> = {
   feeding: ['FEED', 'Cho ăn'], 'stall cleaning': ['CLEAN', 'Dọn chuồng'], 'grooming & bath': ['GROOM', 'Chải lông & tắm'],
   'ice bath therapy': ['COOL', 'Ngâm lạnh'], 'exercise walk': ['GROOM', 'Dắt đi bộ'], 'hoof care': ['GROOM', 'Chăm sóc móng'],
+  feed: ['FEED', 'Cho ăn'], clean: ['CLEAN', 'Dọn chuồng'], groom: ['GROOM', 'Chải lông'], walk: ['GROOM', 'Dắt đi bộ'],
+  cool: ['COOL', 'Chườm lạnh'], hoof: ['GROOM', 'Chăm sóc móng'], medication: ['OTHER', 'Cho thuốc'], other: ['OTHER', 'Khác'],
 };
 
 interface BeHorse { horseId: number; horseName: string; dob: string; gender: string; breed: string; pedigree?: string | null; weightKg: number; healthStatus: string; isLocked: boolean; ownerId: number; stallId: number | null; stallCode?: string | null; approvalStatus?: string | null; createdAt?: string | null;
@@ -57,7 +59,7 @@ interface BeStall { stallId: number; stallCode: string; barnZone: string; cleanS
 interface BePlan { planId: number; planName: string; horseName: string; startDate: string; endDate: string; status: string; progress: number }
 interface BePlanDetail { planId: number; planName: string; horseId: number | null; horseName: string; startDate: string; endDate: string; status: string; sessions: { sessionId: number; sessionDate: string; activityType: string; status: string; notes: string | null; assignedToId: number | null; assignedToName: string | null; evaluationScore?: number | null; evaluationComment?: string | null; evaluatedBy?: string | null; evaluatedAt?: string | null }[] }
 interface BeSchedule { sessionId: number; sessionDate: string; activityType: string; status: string; planName: string; horseName: string; stallZone: string }
-interface BeTask { taskId: number; taskCode?: string | null; taskType: string; title?: string | null; status: string; taskDate?: string | null; scheduledTime?: string | null; dueDate?: string | null; instructions?: string | null; completedAt?: string | null; horseName: string; stallCode?: string | null; stallZone: string; groomName?: string | null; warningNote?: string | null; overdue?: boolean | null }
+interface BeTask { taskId: number; taskCode?: string | null; taskType: string; title?: string | null; status: string; taskDate?: string | null; scheduledTime?: string | null; dueDate?: string | null; instructions?: string | null; completedAt?: string | null; horseName: string; stallCode?: string | null; stallZone: string; groomName?: string | null; warningNote?: string | null; dietNote?: string | null; overdue?: boolean | null }
 interface BeCase { caseId: string; id?: number; horseId: number; horseName: string; source: string; issueType: string; severity: string; status: string; description: string; imageUrl?: string | null; reportedByName?: string | null; assignedVetName?: string | null; maxHeartRate: number; vetResult: string | null; createdAt: string; closedAt?: string | null }
 interface BeVacc { recordCode: string; horseName: string; typeName: string; category: string; expectedDate: string; cycleMonths: number; status: string }
 interface BeExam { proposalCode: string; proposalDate: string; horseName: string; ownerName: string; tournamentName: string; raceDate: string; distance: string; location: string; trainerName: string; tabStatus: string; resultStatus: string | null; vetNotes: string | null }
@@ -149,7 +151,7 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
     const u = me();
     if (u?.role !== 'Groom') return [];
     const [rows, horses] = await Promise.all([orEmpty(data<BeTask[]>('/care-tasks/my-tasks')), LOADERS.horses()]);
-    return rows.map((t) => {
+    return rows.filter((t) => (t.status ?? '').toUpperCase() !== 'SKIPPED').map((t) => {
       const [type, typeTitle] = TASK_TYPE[(t.taskType ?? '').toLowerCase()] ?? ['GROOM', t.taskType];
       const h = byName(horses, t.horseName);
       const time = t.scheduledTime ? t.scheduledTime.slice(0, 5) : hhmm(t.dueDate);
@@ -159,6 +161,7 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
         status: (t.status ?? '').toUpperCase() === 'COMPLETED' || (t.status ?? '').toUpperCase() === 'DONE' ? 'DONE' : 'TODO',
         doneAt: t.completedAt ? hhmm(t.completedAt) : null, note: t.warningNote ?? '', photo: null,
         instructions: t.instructions ? t.instructions.split(/\r?\n|;\s*/).map((line) => line.trim()).filter(Boolean) : [],
+        diet: t.dietNote ?? undefined, medicalDiet: /khẩu phần y tế/i.test(t.title ?? ''),
         overdue: !!t.overdue,
       };
     });

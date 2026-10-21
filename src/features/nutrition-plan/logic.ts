@@ -14,7 +14,7 @@ let seq = 0;
 export const newLine = (mealType: MealType = 'MORNING'): DraftLine => ({ key: `l${(seq += 1)}`, mealType, itemId: '', quantity: '' });
 
 export const editBlock = (role: string, locked: boolean): string | null => {
-  if (role === 'ClubManager') return null;
+  if (role === 'ClubManager') return 'Club Manager chỉ xem thực đơn — HLV lên thực đơn khi ngựa khỏe, bác sĩ khi ngựa bị khóa y tế (BR_03).';
   if (role === 'Veterinarian') return locked ? null : 'Ngựa đang khỏe — thực đơn do HLV lên. Bác sĩ chỉ định khẩu phần khi ngựa bị khóa y tế (BR_03).';
   if (role === 'HeadTrainer') return locked ? 'Ngựa đang bị khóa y tế — chỉ Bác sĩ thú y được chỉnh thực đơn (BR_03).' : null;
   return 'Bạn chỉ được xem thực đơn.';
