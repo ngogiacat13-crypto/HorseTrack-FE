@@ -9,6 +9,8 @@ import { Icon } from '../../../components/ui/Icon';
 import { Badge, Callout, PageHeader, Panel, StatCard } from '../../../components/ui/Ht';
 import { HorseBadges, LoadState } from '../../../components/trainer/TrainerParts';
 import { FeedRequestDialog } from './FeedRequestDialog';
+import { USE_BACKEND } from '../../../api/beClient';
+import { NutritionPlanPanel } from '../../../features/nutrition-plan';
 
 const STALL: Record<Stall['status'], [string, 'success' | 'warning' | 'danger']> = { CLEAN: ['Sạch', 'success'], NEEDS_CLEANING: ['Cần dọn', 'warning'], MAINTENANCE: ['Bảo trì', 'danger'] };
 
@@ -33,6 +35,7 @@ export const GroomStable: React.FC = () => {
   const count = (st: Stall['status']) => stalls.filter((s) => s.status === st).length;
   const diet = horse?.medicalDiet;
   const pendingFeed = horse ? feeds.filter((f) => f.horseId === horse.id && f.status === 'PENDING') : [];
+  const feedRequest = horse && <>{pendingFeed.map((f) => <div key={f.id} style={{ fontSize: 13, color: 'var(--info-ink)' }}><Icon name="clock" size={13} /> Đề nghị “{f.item}” đang chờ Bác sĩ duyệt</div>)}<button type="button" className="ht-btn ht-btn--secondary ht-btn--sm" data-testid="feed-request-btn" onClick={() => setFeedFor(horse)}><Icon name="send" size={14} />Đề nghị chỉnh khẩu phần</button></>;
 
   return (
     <div className="ht ht-page">
@@ -66,10 +69,11 @@ export const GroomStable: React.FC = () => {
               {horse?.lock && <Callout tone="danger" icon="lock">Khóa tập: {horse.lock.reason} (BS {horse.lock.by}).</Callout>}
             </div>
           </Panel>
-          {horse && <Panel as="h3" title="Khẩu phần ăn" right={diet ? <Badge tone="danger" plain><Icon name="lock" size={12} />&nbsp;Bác sĩ chỉ định</Badge> : <Badge tone="neutral" plain>Khẩu phần thường</Badge>}><div className="ht-panel__body" style={{ display: 'grid', gap: 10 }}>
+          {horse && !USE_BACKEND && <Panel as="h3" title="Khẩu phần ăn" right={diet ? <Badge tone="danger" plain><Icon name="lock" size={12} />&nbsp;Bác sĩ chỉ định</Badge> : <Badge tone="neutral" plain>Khẩu phần thường</Badge>}><div className="ht-panel__body" style={{ display: 'grid', gap: 10 }}>
             {diet ? <><div className="ht-meals"><div><span className="ht-overline">Sáng</span>{diet.morning || '—'}</div><div><span className="ht-overline">Trưa</span>{diet.noon || '—'}</div><div><span className="ht-overline">Chiều</span>{diet.evening || '—'}</div></div>{diet.special && <div><b>Đặc biệt:</b> {diet.special}</div>}<Callout tone="demo" icon="lock">Khẩu phần y tế — chỉ thực hiện, không tự sửa (BR_03).</Callout></> : <p style={{ margin: 0, fontSize: 13 }}>Sáng: 3 kg cám + 2 kg cỏ khô · Trưa: 2 kg cỏ khô · Chiều: 2 kg cám + 1 kg cỏ khô</p>}
-            {pendingFeed.map((f) => <div key={f.id} style={{ fontSize: 13, color: 'var(--info-ink)' }}><Icon name="clock" size={13} /> Đề nghị “{f.item}” đang chờ Bác sĩ duyệt</div>)}<button type="button" className="ht-btn ht-btn--secondary ht-btn--sm" onClick={() => setFeedFor(horse)}><Icon name="send" size={14} />Đề nghị chỉnh khẩu phần</button>
+            {feedRequest}
           </div></Panel>}
+          {horse && USE_BACKEND && <NutritionPlanPanel key={`${horse.id}-${pendingFeed.length}`} horseId={horse.id} horseName={horse.name} locked={horse.trainingLocked} role="Groom">{feedRequest}</NutritionPlanPanel>}
           {cur.status === 'MAINTENANCE' && <Callout tone="danger" title={`${cur.id} đang bảo trì`}>Không bố trí ngựa vào chuồng cho đến khi bảo trì hoàn tất.</Callout>}
         </div>}
       </div>

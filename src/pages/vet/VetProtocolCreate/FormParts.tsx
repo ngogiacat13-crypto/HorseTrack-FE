@@ -23,7 +23,7 @@ export const HorseCaseFields: React.FC<HorseCaseProps> = ({ horses, cases, locke
       </div>
       <div className="ht-field">
         <label className="ht-label" htmlFor="pc-case">Ca khám<span className="ht-req">*</span></label>
-        <select id="pc-case" className="ht-select" style={selectStyle} value={caseId} disabled={!horseId || locked} onChange={(e) => onCase(e.target.value)}>
+        <select id="pc-case" className="ht-select" style={selectStyle} value={caseId} disabled={!horseId} onChange={(e) => onCase(e.target.value)}>
           <option value="">{horseId ? '— Chọn ca —' : '— Chọn ngựa trước —'}</option>
           {cases.map((c) => <option key={c.id} value={c.id} disabled={!c.exam}>#{c.id} · {c.type}{!c.exam ? ' — chưa khám' : ''}</option>)}
         </select>

@@ -46,7 +46,7 @@ export const ManagerMedicalMonitoring: React.FC = () => {
               <thead><tr><th>Mã</th><th>Ngựa · chẩn đoán</th><th>Bác sĩ</th><th>Trạng thái</th><th className="num">Chi phí</th></tr></thead>
               <tbody>
                 {rows.map((p) => (
-                  <tr key={p.id} data-href tabIndex={0} className={p.id === d.id ? 'is-selected' : undefined}
+                  <tr key={p.id} data-href tabIndex={0} className={p.id === d?.id ? 'is-selected' : undefined}
                     onClick={() => setSel(p.id)} onKeyDown={(e) => e.key === 'Enter' && setSel(p.id)}>
                     <td className="id">{p.id}</td>
                     <td>
@@ -59,13 +59,14 @@ export const ManagerMedicalMonitoring: React.FC = () => {
                     <td className="num">{money(p.cost)}</td>
                   </tr>
                 ))}
+                {rows.length === 0 && <tr><td colSpan={5} data-testid="medical-monitoring-empty" style={{ textAlign: 'center', color: 'var(--muted)', padding: 24 }}>Chưa có phác đồ điều trị nào.</td></tr>}
               </tbody>
             </table>
           </Panel>
         </div>
 
         <div>
-          <Panel as="h3" title={<>{d.horse} · <span className="ht-mono" style={{ fontWeight: 500 }}>{d.id}</span></>} sub={d.diagnosis}
+          {d && <Panel as="h3" title={<>{d.horse} · <span className="ht-mono" style={{ fontWeight: 500 }}>{d.id}</span></>} sub={d.diagnosis}
             right={<Badge tone={d.tone}>{d.label}</Badge>} headStyle={{ alignItems: 'flex-start' }}>
             <div className="ht-panel__body" style={{ display: 'grid', gap: 16 }}>
               <div className="ht-pipe" aria-label="Tiến trình trạng thái">
@@ -92,7 +93,7 @@ export const ManagerMedicalMonitoring: React.FC = () => {
                 <span>Phụ trách: <b style={{ color: 'var(--foreground)' }}>BS {d.vet}</b></span>
               </div>
             </div>
-          </Panel>
+          </Panel>}
 
           <Panel as="h3" title="Lô hàng y tế" right={<span className="ht-mono" style={{ fontSize: 12, color: 'var(--muted)' }}>Kho · chỉ xem</span>}>
             <ul className="ht-list">

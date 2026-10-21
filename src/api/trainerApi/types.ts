@@ -12,7 +12,7 @@ export interface Horse {
 
 export type Intensity = 'Nhẹ' | 'Vừa' | 'Cao';
 export interface PlanPhase { no: number; name: string; weeks: number; intensity: Intensity; distanceM: number; sessionsPerWeek: number; hrLimit: number }
-export type PlanStatus = 'PLANNED' | 'ACTIVE' | 'PAUSED' | 'COMPLETED' | 'REPLACED';
+export type PlanStatus = 'PLANNED' | 'ACTIVE' | 'PAUSED' | 'COMPLETED' | 'REPLACED' | 'CANCELLED';
 export interface TrainingPlan {
   id: string; horseId: string; horseName: string;
   name: string;
@@ -20,11 +20,11 @@ export interface TrainingPlan {
   currentPhase: number; week: number; status: PlanStatus; startDate: string; createdBy: string; pausedReason?: string;
 }
 
-export type SessionStatus = 'SCHEDULED' | 'IN_PROGRESS' | 'PAUSED_PENDING_TRAINER' | 'RESUMED' | 'STOPPED' | 'COMPLETED';
+export type SessionStatus = 'SCHEDULED' | 'IN_PROGRESS' | 'PAUSED_PENDING_TRAINER' | 'RESUMED' | 'WAITING_VET' | 'STOPPED' | 'COMPLETED';
 export interface Reading { t: string; hr: number; speed: number }
 export interface TrainingSession {
   id: string; horseId: string; horseName: string; planId: string; phaseNo: number; label: string;
-  date: string; time: string; groom: string; track: string; status: SessionStatus;
+  date: string; time: string; groom: string; track: string; status: SessionStatus; confirmed?: boolean;
   thresholds: { hr: number; speed: number };
   readings: Reading[]; recovery?: Reading[];
   pausedAt?: string; pausedReason?: string;

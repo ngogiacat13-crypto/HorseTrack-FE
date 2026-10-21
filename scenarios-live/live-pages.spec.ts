@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { liveAccounts, liveSignIn, recordFinding, settle, watchLive } from './live-support';
+import { LIVE_HOME, liveAccounts, liveSignIn, recordFinding, settle, watchLive } from './live-support';
 
 const DETAIL_LINK: Record<string, RegExp> = {
   'nav-manager-registrations': /\/manager\/registrations\/[^/]+$/,
@@ -69,7 +69,8 @@ for (const account of liveAccounts()) {
     };
 
     for (const id of ids) {
-      await page.getByTestId(id).click();
+      if (!(await page.getByTestId(id).isVisible())) await page.goto(LIVE_HOME[account.role]);
+      await page.getByTestId(id).click({ timeout: 15_000 });
       await settle(page);
       await check(id);
 

@@ -1,0 +1,45 @@
+import { be, beData } from '../../api/beClient';
+import { invalidate } from '../../api/hybridAdapter';
+import { type MealType, type PlanDraft, validateDraft } from './logic';
+
+export interface FeedItem { itemId: number; itemCode: string; itemName: string; unit: string; availableStock: number; itemGroup?: string | null }
+export interface PlanLine { detailId?: number; inventoryItemId: number; itemCode?: string | null; itemName?: string | null; unit?: string | null; mealType: MealType; quantity: number }
+export interface NutritionPlan {
+  planId: number; horseId: number; horseName: string; createdByName?: string | null; createdDate?: string | null; startDate: string; endDate: string;
+  planType: 'STANDARD' | 'MEDICAL' | string; status: 'ACTIVE' | 'CANCELLED' | string; notes?: string | null; specialInstructions?: string | null; details: PlanLine[];
+}
+export interface TodayLine { mealType: MealType; inventoryItemName: string; quantity: number; inventoryItemId: number | null }
+
+const toBody = (horseId: number, draft: PlanDraft) => ({
+  horseId, startDate: draft.startDate, endDate: draft.endDate, notes: draft.notes.trim() || undefined,
+  details: draft.lines.map((l) => ({ inventoryItemId: Number(l.itemId), mealType: l.mealType, quantity: Number(l.quantity) })),
+});
+
+const changed = () => invalidate('feedRequests', 'horses');
+
+export const nutritionApi = {
+  feedItems: () => beData<FeedItem[]>(be.get('/nutrition-plans/feed-items')),
+
+  listPlans: (horseId: number) => beData<NutritionPlan[]>(be.get('/nutrition-plans', { params: { horseId } })),
+
+  today: (horseId: number) => beData<TodayLine[]>(be.get(`/horses/${horseId}/nutrition-plan/today`)),
+
+  async create(horseId: number, draft: PlanDraft) {
+    validateDraft(draft);
+    const planId = await beData<number>(be.post('/nutrition-plans', toBody(horseId, draft)));
+    changed();
+    return planId;
+  },
+
+  async update(planId: number, horseId: number, draft: PlanDraft) {
+    validateDraft(draft);
+    const plan = await beData<NutritionPlan>(be.put(`/nutrition-plans/${planId}`, toBody(horseId, draft)));
+    changed();
+    return plan;
+  },
+
+  async cancel(planId: number) {
+    await be.put(`/nutrition-plans/${planId}/cancel`);
+    changed();
+  },
+};

@@ -93,7 +93,7 @@ export const ReceiveDialog: React.FC<{ shipment: ShipmentOrder; items: StockItem
       sub="Đối chiếu hàng thực nhận. Nếu lô hàng phục vụ phác đồ, hệ thống giữ hàng và báo bác sĩ rà soát lại trước khi cấp phát." confirmLabel="Xác nhận nhập kho" onConfirm={save}>
       {error && <Callout tone="danger" style={{ marginBottom: 14 }}>{error}</Callout>}
       <table className="ht-proto-items">
-        <thead><tr><th>Mặt hàng</th><th className="num">Đặt</th><th className="num">Thực nhận</th><th>Số lô</th><th>HSD (mm/yyyy)</th></tr></thead>
+        <thead><tr><th>Mặt hàng</th><th className="num">Đặt</th><th className="num">Thực nhận</th><th>HSD (mm/yyyy)</th></tr></thead>
         <tbody>
           {s.lines.map((l, i) => {
             const lots = tracksLots(items.find((x) => x.id === l.itemId) ?? { category: '' });
@@ -101,7 +101,6 @@ export const ReceiveDialog: React.FC<{ shipment: ShipmentOrder; items: StockItem
               <tr key={l.itemId}>
                 <td><b>{l.name}</b></td><td className="num">{l.qty} {l.unit}</td>
                 <td className="num"><input className="ht-input" type="number" min={0} value={rows[i].received} onChange={(e) => set(i, { received: e.target.value })} aria-label={`Thực nhận ${l.name}`} /></td>
-                <td>{lots ? <input className="ht-input ht-mono" style={{ width: 130, textAlign: 'left' }} value={rows[i].lot} onChange={(e) => set(i, { lot: e.target.value })} aria-label={`Số lô ${l.name}`} /> : <span style={{ color: 'var(--muted)' }}>—</span>}</td>
                 <td>{lots ? <input className="ht-input ht-mono" style={{ width: 100, textAlign: 'left' }} value={rows[i].expiry} placeholder="mm/yyyy" onChange={(e) => set(i, { expiry: e.target.value })} aria-label={`Hạn dùng ${l.name}`} /> : <span style={{ color: 'var(--muted)' }}>—</span>}</td>
               </tr>
             );

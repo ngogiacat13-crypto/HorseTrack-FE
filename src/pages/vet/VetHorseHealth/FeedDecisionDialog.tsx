@@ -9,7 +9,7 @@ export const FeedDecisionDialog: React.FC<{ request: FeedRequest; approve: boole
   const { busy, error, run } = useAction();
   const [note, setNote] = useState('');
   const confirm = async () => {
-    if (await run(() => vetApi.decideFeed(request, approve, note, actor), approve ? 'Đã duyệt và thêm vào khẩu phần y tế.' : 'Đã từ chối yêu cầu.')) onDone();
+    if (await run(() => vetApi.decideFeed(request, approve, note, actor), approve ? 'Đã duyệt và thêm vào thực đơn của ngựa.' : 'Đã từ chối yêu cầu.')) onDone();
   };
   return (
     <Dialog open onClose={onClose} icon={approve ? 'check' : 'x'} tone={approve ? 'brand' : 'danger'} danger={!approve} busy={busy}

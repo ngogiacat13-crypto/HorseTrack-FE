@@ -17,6 +17,9 @@ http.interceptors.response.use(
   (res) => res,
   (error) => {
     if (!error.response) {
+      if (error instanceof Error && error.message && !error.message.includes('mock://')) {
+        return Promise.reject(error);
+      }
       return Promise.reject(new Error(`Không kết nối được máy chủ dữ liệu (${API_URL}). Hãy chạy "npm run server", hoặc bỏ VITE_API_URL để dùng dữ liệu mẫu trong trình duyệt.`));
     }
     const status = error.response.status;

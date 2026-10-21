@@ -1,4 +1,5 @@
 import { DEMO_NOW, http } from '../http';
+import { USE_BACKEND } from '../beClient';
 import { addAudit, type Actor } from '../managerApi';
 import type { Horse, TrainingPlan, TrainingSession } from '../trainerApi';
 import { get, me, toMin } from './shared';
@@ -21,8 +22,16 @@ export const sessionsApi = {
     return { session: s, horse, plan };
   },
 
+  async confirm(s: TrainingSession, actor: Actor) {
+    if (s.status !== 'SCHEDULED' || s.confirmed) throw new Error('Chỉ xác nhận được phiên đang chờ xác nhận.');
+    const { data } = await http.patch<TrainingSession>(`/trainingSessions/${s.id}`, { confirmed: true });
+    await addAudit(actor, { action: 'CONFIRM_SESSION', label: 'Xác nhận nhận phiên tập', object: `${s.id} · ${s.horseName}`, area: 'train', from: 'PENDING', to: 'CONFIRMED' });
+    return data;
+  },
+
   async start(s: TrainingSession, actor: Actor) {
     if (s.status !== 'SCHEDULED') throw new Error('Phiên không ở trạng thái chờ bắt đầu.');
+    if (USE_BACKEND && !s.confirmed) throw new Error('Xác nhận nhận phiên tập trước khi bắt đầu.');
     if (s.date !== DEMO_NOW.date) throw new Error(`Phiên được lịch ngày ${s.date} — chỉ bắt đầu đúng ngày.`);
     const horse = await get<Horse>(`/horses/${s.horseId}`);
     if (horse.trainingLocked) throw new Error(`${horse.name} đang bị khóa huấn luyện bởi BS ${horse.lock?.by} — không được bắt đầu (BR_01).`);

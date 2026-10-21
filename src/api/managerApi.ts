@@ -1,6 +1,7 @@
 import { DEMO_NOW, http } from './http';
 import { EMAIL_TIMEOUT, USE_BACKEND, be, beData, type ApiResponse } from './beClient';
 import { invalidate } from './hybridAdapter';
+import { financeBe } from './beFinance';
 
 export type RegStatus = 'Pending' | 'Approved' | 'Rejected';
 export interface ChecklistItem { key: string; label: string; detail: string; passed: boolean }
@@ -24,7 +25,7 @@ export interface Registration {
 
 export type ProtocolState =
   | 'DRAFT' | 'WAITING_STOCK_CHECK' | 'STOCK_SHORTAGE' | 'STOCK_AVAILABLE' | 'WAITING_RESTOCK' | 'REQUIRES_VET_REVIEW'
-  | 'VET_CONFIRMED' | 'READY_FOR_DISPENSING' | 'IN_TREATMENT' | 'COMPLETED' | 'SUPERSEDED' | 'CANCELLED';
+  | 'VET_CONFIRMED' | 'READY_FOR_DISPENSING' | 'IN_TREATMENT' | 'ON_HOLD_PAYMENT' | 'COMPLETED' | 'SUPERSEDED' | 'CANCELLED';
 export interface ProtocolWatch {
   id: string; horse: string; diagnosis: string; vet: string;
   state: ProtocolState; label: string; tone: 'danger' | 'info' | 'success' | 'neutral';
@@ -47,9 +48,10 @@ export interface ManagedUser {
   id: string; fullName: string; username: string; email: string; role: UserRole;
   lastLogin: string; status: 'ACTIVE' | 'LOCKED'; lockReason?: string;
   openTasks?: number; horsesOwned?: number; serviceSuspended?: boolean; avatarUrl?: string | null;
+  zones?: string[];
   beId?: number;
 }
-export interface GroomAssignment { id: string; name: string; zones: string[] }
+export interface GroomAssignment { id: string; name: string; zones: string[]; role?: UserRole }
 export type StaffRole = 'HeadTrainer' | 'Veterinarian' | 'Groom' | 'WarehouseManager';
 export interface StaffInput {
   fullName: string; username: string; email: string; phone: string; password: string; role: StaffRole;
@@ -58,7 +60,7 @@ export interface StaffInput {
 }
 export const BE_STAFF_ROLE: Partial<Record<StaffRole, string>> = { HeadTrainer: 'Trainer', Veterinarian: 'Veterinarian', Groom: 'Groom', WarehouseManager: 'Warehouse Manager' };
 export interface AssignedStall { id: string; zone: string; horseId: string | null; horse: string | null; status: string; groom: string }
-export interface AssignedHorse { id: string; name: string; owner: string; stall: string; health: string; trainerId?: string }
+export interface AssignedHorse { id: string; name: string; owner: string; stall: string; health: string; trainerId?: string; trainerName?: string | null }
 export interface RoleCheck { level: 'pass' | 'warn' | 'fail'; text: string }
 
 export type AuditArea = 'reg' | 'med' | 'train' | 'fin' | 'acct';
@@ -95,23 +97,41 @@ const beUserAction = async (url: string, body: Record<string, string>): Promise<
 };
 const toManaged = ({ password: _pw, fullname, ...u }: UserRecord): ManagedUser => ({ ...u, fullName: fullname });
 
+interface BeOverdueTask { taskCode?: string | null; title?: string | null; taskType: string; horseName?: string | null; groomName?: string | null; taskDate?: string | null; scheduledTime?: string | null }
+const lateBy = (task: BeOverdueTask) => {
+  if (!task.taskDate || !task.scheduledTime) return '—';
+  const minutes = Math.max(0, Math.round((Date.now() - new Date(`${task.taskDate}T${task.scheduledTime}`).getTime()) / 60000));
+  return minutes >= 60 ? `+${Math.floor(minutes / 60)} giờ ${String(minutes % 60).padStart(2, '0')}` : `+${minutes} phút`;
+};
+const loadOverdueTasks = async () => {
+  if (!USE_BACKEND) return null;
+  const rows = await beData<BeOverdueTask[]>(be.get('/care-tasks/overdue')).catch(() => null);
+  return rows?.map((task) => ({
+    title: `${task.title || task.taskType}${task.horseName ? ` — ${task.horseName}` : ''}`,
+    groom: task.groomName ?? '—', due: task.scheduledTime?.slice(0, 5) ?? '—', late: lateBy(task),
+  })) ?? null;
+};
+
 export const managerApi = {
   async getDashboard() {
-    const [dash, regs, protocols, invoices, shipments, logs] = await Promise.all([
+    const [dash, regs, protocols, invoices, shipments, logs, overdueTasks] = await Promise.all([
       get<any>('/dashboard'),
       get<Registration[]>('/registrations'),
       get<ProtocolWatch[]>('/protocols'),
       get<Invoice[]>('/invoices'),
       get<Shipment[]>('/shipments'),
       get<AuditLog[]>('/auditLogs', { _sort: 'id', _order: 'desc', _limit: 10 }),
+      loadOverdueTasks(),
     ]);
     const pending = regs.filter((r) => r.status === 'Pending');
     const delayed = shipments.filter((s) => s.status === 'DELAYED');
     const AREA_TONE: Record<AuditArea, 'danger' | 'warning' | 'success' | 'info'> = { train: 'danger', med: 'warning', reg: 'success', fin: 'info', acct: 'info' };
     return {
       ...dash,
+      ...(overdueTasks ? { lateTasks: overdueTasks.slice(0, 4), moreLateTasks: Math.max(0, overdueTasks.length - 4) } : {}),
       kpi: {
         ...dash.kpi,
+        ...(overdueTasks ? { lateTasks: overdueTasks.length, lateTasksToday: overdueTasks.length } : {}),
         pendingRegs: pending.length,
         oldestPendingDays: Math.max(0, ...pending.map((r) => r.waitingDays)),
         medicalWatch: protocols.filter((p) => p.state === 'REQUIRES_VET_REVIEW' || p.state === 'WAITING_STOCK_CHECK').length,
@@ -147,7 +167,7 @@ export const managerApi = {
     ];
     const { data } = await http.patch<Registration>(`/registrations/${reg.id}`, {
       status: 'Approved', decidedNote: stall ? `Cấp chuồng ${stall.code}` : `Duyệt ${DEMO_NOW.date.slice(0, 5)}`, checklist, passed: checklist.length, firstIssue: null, history,
-      stallId: stall?.id,
+      stallId: stall?.id, decisionNote: note.trim() || undefined,
     });
     await addAudit(actor, { action: 'APPROVE_REGISTRATION', label: 'Phê duyệt hồ sơ ngựa', object: `${reg.id} · ${reg.horse.name}`, area: 'reg', from: 'PENDING_REVIEW', to: 'APPROVED', reason: note || `Checklist ${checklist.length}/${checklist.length} đạt.` });
     return data;
@@ -160,7 +180,7 @@ export const managerApi = {
       ...reg.history,
     ];
     const { data } = await http.patch<Registration>(`/registrations/${reg.id}`, {
-      status: 'Rejected', decidedNote: allowResubmit ? 'Cho phép nộp lại' : 'Không cho nộp lại', checklist, history,
+      status: 'Rejected', decidedNote: allowResubmit ? 'Cho phép nộp lại' : 'Không cho nộp lại', checklist, history, reason: reason.trim(), allowResubmit,
     });
     await addAudit(actor, { action: 'REJECT_REGISTRATION', label: 'Từ chối hồ sơ ngựa', object: `${reg.id} · ${reg.horse.name}`, area: 'reg', from: 'PENDING_REVIEW', to: allowResubmit ? 'REJECTED · cho phép nộp lại' : 'REJECTED', reason: reason.trim() });
     return data;
@@ -174,6 +194,11 @@ export const managerApi = {
   getInvoices: () => get<Invoice[]>('/invoices'),
 
   async suspendService(inv: Invoice, reason: string, actor: Actor) {
+    if (USE_BACKEND) {
+      await financeBe.suspendOwner(Number((inv as Invoice & { beOwnerId?: number }).beOwnerId), reason.trim());
+      invalidate('invoices', 'auditLogs');
+      return { ...inv, status: 'SUSPENDED' as const };
+    }
     const { data } = await http.patch<Invoice>(`/invoices/${inv.id}`, { status: 'SUSPENDED', suspendedSince: DEMO_NOW.date.slice(0, 5) });
     const [owner] = await get<UserRecord[]>('/users', { fullname: inv.owner });
     if (owner) await http.patch(`/users/${owner.id}`, { serviceSuspended: true });
@@ -182,6 +207,11 @@ export const managerApi = {
   },
 
   async reactivateService(inv: Invoice, actor: Actor) {
+    if (USE_BACKEND) {
+      await financeBe.reactivateOwner(Number((inv as Invoice & { beOwnerId?: number }).beOwnerId));
+      invalidate('invoices', 'auditLogs');
+      return { ...inv, status: 'ACTIVE' as const };
+    }
     const { data } = await http.patch<Invoice>(`/invoices/${inv.id}`, { status: 'ACTIVE' });
     const [owner] = await get<UserRecord[]>('/users', { fullname: inv.owner });
     if (owner) await http.patch(`/users/${owner.id}`, { serviceSuspended: false });
@@ -194,6 +224,7 @@ export const managerApi = {
   },
 
   async getFinanceReport() {
+    if (USE_BACKEND) return financeBe.report();
     const [base, invoices] = await Promise.all([get<any>('/financeReport'), get<Invoice[]>('/invoices')]);
     const unpaid = invoices.filter((i) => i.status === 'OVERDUE' || i.status === 'SUSPENDED');
     const bucket = (pred: (i: Invoice) => boolean) => { const xs = unpaid.filter(pred); return { ids: xs.map((x) => x.id).join(' · ') || '—', count: xs.length, amount: xs.reduce((s, x) => s + x.amount, 0) }; };
@@ -240,12 +271,13 @@ export const managerApi = {
       }, { timeout: EMAIL_TIMEOUT });
       emailNote = data.message;
       id = `be-${v.username}`;
+      invalidate('users', 'auditLogs');
     } else {
       const users = await get<UserRecord[]>('/users');
       if (users.some((u) => u.username.toLowerCase() === v.username.toLowerCase())) throw new Error('Tên đăng nhập đã tồn tại.');
       if (users.some((u) => u.email.toLowerCase() === v.email.toLowerCase())) throw new Error('Email đã được sử dụng.');
       id = String(Math.max(0, ...users.map((u) => Number(u.id) || 0)) + 1);
-      await http.post('/users', { id, username: v.username, password: v.password, fullname: v.fullName, email: v.email, phone: v.phone, role: v.role, status: 'ACTIVE', lastLogin: '—', openTasks: 0 });
+      await http.post('/users', { id, username: v.username, password: v.password, fullname: v.fullName, email: v.email, phone: v.phone, role: v.role, status: 'ACTIVE', lastLogin: '—', openTasks: 0, zones: v.specialization && (v.role === 'HeadTrainer' || v.role === 'Groom') ? [v.specialization] : [] });
       if (v.role === 'Groom') await http.post('/grooms', { id, name: v.fullName, zones: v.specialization ? [v.specialization] : [] });
     }
     await addAudit(actor, { action: 'CREATE_ACCOUNT', label: 'Tạo tài khoản nhân viên', object: `${v.username} · ${v.fullName}`, area: 'acct', from: '—', to: v.role, reason: 'Quản lý CLB cấp tài khoản cho nhân viên' });
@@ -256,41 +288,64 @@ export const managerApi = {
   },
 
   async getGroomAssignments() {
-    const [grooms, stalls, horses] = await Promise.all([
-      get<GroomAssignment[]>('/grooms'), get<AssignedStall[]>('/stalls'), get<AssignedHorse[]>('/horses'),
+    const [grooms, users, stalls, allHorses] = await Promise.all([
+      get<GroomAssignment[]>('/grooms'), get<UserRecord[]>('/users'), get<AssignedStall[]>('/stalls'), get<AssignedHorse[]>('/horses'),
     ]);
-    return { grooms, stalls, horses };
+    const horses = allHorses.filter((h) => h.stall && h.stall !== '—' && h.stall !== 'Chưa cấp chuồng')
+      .map((h) => ({ ...h, trainerName: h.trainerName ?? users.find((u) => u.id === h.trainerId)?.fullname ?? null }));
+    const zonesOfTrainer = (id: string) => [...new Set(horses.filter((h) => h.trainerId === id).map((h) => stalls.find((s) => s.horseId === h.id)?.zone).filter((z): z is string => !!z))];
+    const staffZones = users
+      .filter((u) => u.role === 'HeadTrainer' || u.role === 'Groom')
+      .map((u) => ({ id: u.id, name: u.fullname, role: u.role, zones: u.role === 'HeadTrainer' ? zonesOfTrainer(u.id) : u.zones ?? [] }));
+    if (USE_BACKEND) return { grooms: staffZones, stalls, horses };
+    const allAssignments = [
+      ...grooms.map((g) => ({ ...g, role: g.role ?? 'Groom' as const })),
+      ...staffZones.filter((s) => !grooms.some((g) => g.id === s.id)),
+    ];
+    return { grooms: allAssignments, stalls, horses };
   },
 
-  async assignGroom(user: ManagedUser, zones: string[], horseIds: string[], actor: Actor) {
+  async assignGroom(user: ManagedUser, zones: string[], actor: Actor) {
     if (user.role !== 'Groom') throw new Error('Chỉ có thể phân công cho Người chăm ngựa.');
-    if (!zones.length) throw new Error('Chọn ít nhất một khu chăm sóc.');
+    if (zones.length > 1) throw new Error('Chỉ chọn một khu chăm sóc.');
     const assignments = await managerApi.getGroomAssignments();
     const target = assignments.grooms.find((g) => g.id === user.id || g.name === user.fullName);
     if (!target) throw new Error('Không tìm thấy hồ sơ phân công của người chăm ngựa.');
-    const selected = new Set(horseIds);
-    const invalid = assignments.horses.find((h) => selected.has(h.id) && !zones.includes(assignments.stalls.find((s) => s.horseId === h.id)?.zone ?? ''));
-    if (invalid) throw new Error(`${invalid.name} không thuộc khu đã chọn.`);
+    if (USE_BACKEND) {
+      const same = target.zones.length === zones.length && zones.every((z) => target.zones.includes(z));
+      if (same) return { zones };
+      await be.put(`/users/${target.id}/barn-zone`, { barnZone: zones[0] ?? null });
+      invalidate('users', 'auditLogs');
+      return { zones };
+    }
     await http.patch(`/grooms/${target.id}`, { zones });
     await Promise.all(assignments.stalls.map((s) => {
-      if (selected.has(s.horseId ?? '')) return http.patch(`/stalls/${s.id}`, { groom: user.fullName });
+      if (zones.includes(s.zone)) return http.patch(`/stalls/${s.id}`, { groom: user.fullName });
       if (s.groom === user.fullName) return http.patch(`/stalls/${s.id}`, { groom: 'Chưa phân công' });
       return Promise.resolve();
     }));
-    await addAudit(actor, { action: 'ASSIGN_GROOM_SCOPE', label: 'Phân công khu và ngựa cho mã phu', object: user.fullName, area: 'acct', from: target.zones.join(', '), to: `${zones.join(', ')} · ${horseIds.length} ngựa`, reason: 'Cập nhật phạm vi chăm sóc' });
-    return { zones, horseIds };
+    await http.patch(`/users/${user.id}`, { zones });
+    await addAudit(actor, { action: 'ASSIGN_GROOM_SCOPE', label: 'Phân công khu cho mã phu', object: user.fullName, area: 'acct', from: target.zones.join(', '), to: zones.join(', '), reason: 'Cập nhật khu chăm sóc' });
+    return { zones };
   },
 
   async assignTrainer(user: ManagedUser, horseIds: string[], actor: Actor) {
     if (user.role !== 'HeadTrainer') throw new Error('Chỉ có thể phân công cho HLV trưởng.');
     const assignments = await managerApi.getGroomAssignments();
     const selected = new Set(horseIds);
-    await Promise.all(assignments.horses.map((h) => {
-      if (selected.has(h.id)) return http.patch(`/horses/${h.id}`, { trainerId: user.id });
-      if (h.trainerId === user.id) return http.patch(`/horses/${h.id}`, { trainerId: '' });
-      return Promise.resolve();
-    }));
-    await addAudit(actor, { action: 'ASSIGN_TRAINER_SCOPE', label: 'Phân công ngựa cho HLV trưởng', object: user.fullName, area: 'acct', from: '—', to: `${horseIds.length} ngựa`, reason: 'Cập nhật phạm vi phụ trách huấn luyện' });
+    const dropped = assignments.horses.filter((h) => h.trainerId === user.id && !selected.has(h.id));
+    const added = assignments.horses.filter((h) => selected.has(h.id) && h.trainerId !== user.id);
+    if (USE_BACKEND) {
+      for (const h of added) await be.put(`/horses/${h.id}/assign-trainer`, { trainerId: Number(user.id) });
+      for (const h of dropped) await be.delete(`/horses/${h.id}/assign-trainer`);
+      invalidate('horses', 'auditLogs');
+      return { horseIds };
+    }
+    await Promise.all([
+      ...added.map((h) => http.patch(`/horses/${h.id}`, { trainerId: user.id })),
+      ...dropped.map((h) => http.patch(`/horses/${h.id}`, { trainerId: '' })),
+    ]);
+    await addAudit(actor, { action: 'ASSIGN_TRAINER_HORSES', label: 'Phân công ngựa cho HLV trưởng', object: user.fullName, area: 'acct', from: `${assignments.horses.filter((h) => h.trainerId === user.id).length} ngựa`, to: `${horseIds.length} ngựa`, reason: 'Cập nhật ngựa phụ trách huấn luyện' });
     return { horseIds };
   },
 

@@ -25,10 +25,10 @@ Quy ước `data-testid`: menu trái `nav-<đường dẫn bỏ / đầu, / đ�
 | QL CLB · Bảng điều khiển | `src/pages/manager/ManagerDashboard/` | `/manager` | `nav-manager`, `page-title` |
 | QL CLB · Hàng chờ đăng ký ngựa | `src/pages/manager/ManagerRegistrationQueue/` | `/manager/registrations` | `nav-manager-registrations` |
 | QL CLB · Duyệt hồ sơ ngựa (cấp chuồng) | `src/pages/manager/ManagerRegistrationDetail/` | `/manager/registrations/:id` | `approve-registration-dialog`, `approve-stall-select`, `approve-note-input`, `reject-registration-dialog` |
-| QL CLB · Theo dõi y tế | `src/pages/manager/ManagerMedicalMonitoring/` | `/manager/medical-monitoring` | `nav-manager-medical-monitoring` |
-| QL CLB · Hóa đơn | `src/pages/manager/ManagerInvoices/` | `/manager/invoices` | `nav-manager-invoices` |
+| QL CLB · Theo dõi y tế | `src/pages/manager/ManagerMedicalMonitoring/` | `/manager/medical-monitoring` | `nav-manager-medical-monitoring`, `medical-monitoring-empty` |
+| QL CLB · Hóa đơn | `src/pages/manager/ManagerInvoices/` | `/manager/invoices` | `nav-manager-invoices`, `generate-invoices-btn`, `generate-invoices-dialog`, `generate-month-input`, `stall-fee-btn`, `stall-fee-dialog`, `cancel-invoice-btn`, `cancel-invoice-dialog` |
 | QL CLB · Báo cáo tài chính | `src/pages/manager/ManagerFinanceReport/` | `/manager/reports` | `nav-manager-reports` |
-| QL CLB · Người dùng & phân quyền | `src/pages/manager/ManagerUsers/` | `/manager/users` | `nav-manager-users` |
+| QL CLB · Người dùng & phân quyền | `src/pages/manager/ManagerUsers/` | `/manager/users` · nút "Phân công" | `nav-manager-users`, `assign-<username>`, `trainer-horses-dialog`, `trainer-horse-<horseId>`, `groom-zone-dialog`, `groom-zone-<Khu X>` |
 | QL CLB · Nhật ký hệ thống | `src/pages/manager/ManagerAuditLogs/` | `/manager/audit-logs` | `nav-manager-audit-logs` |
 | HLV · Tổng quan đàn ngựa | `src/pages/trainer/TrainerHerdOverview/` | `/trainer` | `nav-trainer` |
 | HLV · Hồ sơ ngựa | `src/pages/trainer/TrainerHorseRecord/` | `/trainer/horses/:id` | `back-btn` |
@@ -51,13 +51,13 @@ Quy ước `data-testid`: menu trái `nav-<đường dẫn bỏ / đầu, / đ�
 | Mã phu · Việc hôm nay | `src/pages/groom/GroomTodayTasks/` | `/groom` | `nav-groom` |
 | Mã phu · Chuồng phụ trách | `src/pages/groom/GroomStable/` | `/groom/stable` | `nav-groom-stable` |
 | Mã phu · Phiên tập | `src/pages/groom/GroomSessions/` | `/groom/sessions` | `nav-groom-sessions` |
-| Mã phu · Thực hiện phiên | `src/pages/groom/GroomSessionRun/` | `/groom/sessions/:id` | `back-btn` |
+| Mã phu · Thực hiện phiên | `src/pages/groom/GroomSessionRun/` | `/groom/sessions/:id` | `back-btn`, `confirm-session-btn`, `start-session-btn` |
 | Mã phu · Báo sự cố | `src/pages/groom/GroomIncidents/` | `/groom/incidents` | `nav-groom-incidents` |
-| Mã phu · Yêu cầu vật tư | `src/pages/groom/GroomRequests/` | `/groom/requests` | `nav-groom-requests` |
+| Mã phu · Yêu cầu vật tư | `src/pages/groom/GroomRequests/` | `/groom/requests` | `nav-groom-requests`, `cancel-requisition-btn` |
 | Chủ ngựa · Ngựa của tôi | `src/pages/owner/OwnerHorses/` | `/owner` | `nav-owner` |
 | Chủ ngựa · Chi tiết ngựa | `src/pages/owner/OwnerHorseDetail/` | `/owner/horses/:id` | `back-btn` |
 | Chủ ngựa · Xác nhận thi đấu | `src/pages/owner/OwnerRaces/` | `/owner/races` | `nav-owner-races` |
-| Chủ ngựa · Hóa đơn | `src/pages/owner/OwnerInvoices/` | `/owner/invoices` | `nav-owner-invoices` |
+| Chủ ngựa · Hóa đơn | `src/pages/owner/OwnerInvoices/` | `/owner/invoices` (VNPay quay về `?status=`) | `nav-owner-invoices`, `vnpay-result` |
 | Chủ ngựa · Chi tiết hóa đơn | `src/pages/owner/OwnerInvoiceDetail/` | `/owner/invoices/:id` | `back-btn` |
 | Chủ ngựa · Lịch sử thanh toán | `src/pages/owner/OwnerPayments/` | `/owner/payments` | `nav-owner-payments` |
 | Chủ ngựa · Đăng ký ngựa mới | `src/pages/owner/OwnerRegistrations/` | `/owner/registrations` | `nav-owner-registrations` |
@@ -70,6 +70,8 @@ Quy ước `data-testid`: menu trái `nav-<đường dẫn bỏ / đầu, / đ�
 | Kho · Lô hàng nhập | `src/pages/warehouse/WarehouseShipments/` | `/warehouse/shipments` | `nav-warehouse-shipments` |
 | Kho · Kiểm kê | `src/pages/warehouse/WarehouseStockCheck/` | `/warehouse/check` | `nav-warehouse-check` |
 | Kho · Nhật ký kho | `src/pages/warehouse/WarehouseLog/` | `/warehouse/log` | `nav-warehouse-log` |
+| QL CLB · Phát hành / hủy hóa đơn, phí lưu chuồng (tính năng mới) | `src/features/invoice-billing/` | Nút trên trang `/manager/invoices` (chỉ khi chạy backend) | `generate-invoices-btn`, `stall-fee-btn`, `cancel-invoice-btn` |
+| HLV / Bác sĩ / Mã phu · Thực đơn dinh dưỡng (tính năng mới) | `src/features/nutrition-plan/` | Panel trong `/trainer/horses/:id` (Tổng quan), `/vet/horses/:id` (Khẩu phần / thực đơn), `/groom/stable` (Thực đơn hôm nay) — chỉ khi chạy backend | `nutrition-panel`, `nutrition-create-btn`, `nutrition-edit-btn`, `nutrition-cancel-btn`, `nutrition-plan-dialog`, `nutrition-start-input`, `nutrition-end-input`, `nutrition-meal-select-<i>`, `nutrition-item-select-<i>`, `nutrition-qty-input-<i>`, `nutrition-remove-line-<i>`, `nutrition-add-line`, `nutrition-notes-input`, `nutrition-cancel-dialog`, `nutrition-history-toggle`, `feed-request-btn`, `feed-approve-<mã>`, `feed-reject-<mã>` |
 | Không tìm thấy (404) | `src/pages/shared/NotFound/` | Địa chỉ không tồn tại | — |
 
 ## Kịch bản tự kiểm (`scenarios/`)
@@ -78,11 +80,13 @@ Quy ước `data-testid`: menu trái `nav-<đường dẫn bỏ / đầu, / đ�
 | :--- | :--- |
 | `scenarios/sign-in.spec.ts` | Khách vào `/` → `/login`; sai mật khẩu báo lỗi; 6 vai trò đăng nhập đúng trang chủ và đăng xuất được |
 | `scenarios/menu-pages.spec.ts` | Mỗi vai trò bấm lần lượt mọi mục menu trái: trang mở được, không lỗi console |
+| `scenarios/trainer-horses.spec.ts` | QL CLB giao cho HLV ngựa ở nhiều khu (không chọn khu), có bàn giao ngựa của HLV khác |
+| `scenarios/groom-zone.spec.ts` | Mã phu chỉ một khu; khu đã có Mã phu khác bị khóa |
 | `scenarios/assign-session.spec.ts` | Hộp phân công phiên tập: ngày mặc định hôm nay, không chọn được ngày đã qua |
 
 ## Kịch bản chạy với backend thật (`scenarios-live/`, lệnh `npm run scenarios:live`)
 
 | File | Kiểm tra |
 | :--- | :--- |
-| `scenarios-live/live-endpoints.spec.ts` | Mỗi tài khoản trong `.env.backend` gọi trực tiếp các API GET mà FE dùng, phải trả 2xx |
+| `scenarios-live/live-endpoints.spec.ts` | Mỗi tài khoản trong `.env.live.local` / `.env.backend` (vai trò nhận theo tên: `*hlv*`, `*bacsi*`, `*maphu*`, `*kho*`, `*chungua*`, `admin`) gọi trực tiếp các API GET mà FE dùng, phải trả 2xx |
 | `scenarios-live/live-pages.spec.ts` | Đăng nhập thật, bấm mọi mục menu + mở trang chi tiết bằng id thật; không lỗi 5xx / JavaScript / "Không tải được dữ liệu" |

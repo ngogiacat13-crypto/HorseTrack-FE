@@ -10,15 +10,23 @@ import { Badge, Busy, Callout, Panel } from '../../../components/ui/Ht';
 export const StockCheckForm: React.FC<{ protocol: Protocol; items: StockItem[]; openShipments: ShipmentOrder[]; onDone: () => void }> = ({ protocol: p, items, openShipments, onDone }) => {
   const actor = useActor();
   const { busy, error, run } = useAction(onDone);
-  const lines = previewStock(p, items);
+  const remaining = p.phases.filter((ph) => !(p.approvedPhases ?? []).includes(ph.no));
+  const [phaseNos, setPhaseNos] = useState<number[]>(remaining.map((ph) => ph.no));
+  const lines = previewStock(p, items, phaseNos);
   const short = lines.filter((l) => l.short > 0);
-  const [eta, setEta] = useState<Record<string, string>>(() =>
-    Object.fromEntries(short.map((l) => [l.itemId, openShipments.find((s) => s.lines.some((x) => x.itemId === l.itemId))?.id ?? ''])));
-  const submit = () => run(() => warehouseApi.respondStock(p, Object.fromEntries(short.map((l) => [l.itemId, eta[l.itemId] || null])), actor),
-    short.length ? `${p.id}: đã báo thiếu cho bác sĩ.` : `${p.id}: đủ hàng, đã giữ — chờ bác sĩ xác nhận.`);
+  const [eta, setEta] = useState<Record<string, string>>({});
+  const submit = () => run(() => warehouseApi.respondStock(p, Object.fromEntries(short.map((l) => [`${l.phaseNo}:${l.itemId}`, eta[`${l.phaseNo}:${l.itemId}`] || null])), actor, phaseNos),
+    short.length ? `${p.id}: đã phản hồi ${phaseNos.length} giai đoạn.` : `${p.id}: đã duyệt ${phaseNos.length} giai đoạn.`);
 
   return (
-    <Panel title="Kiểm tồn & phản hồi" sub={`Đối chiếu số cần với tồn khả dụng (tồn thực tế − đã giữ). Mốc cần thuốc ${p.requiredBy}.`}>
+    <Panel title="Kiểm tồn & phản hồi" sub={`Đối chiếu thuốc cho ${phaseNos.length} giai đoạn đang chọn · tồn khả dụng.`}>
+      <div className="ht-panel__body" style={{ display: 'grid', gap: 8, paddingBottom: 0 }}>
+        <div className="ht-label">Chọn giai đoạn cần duyệt</div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8 }}>
+          {p.phases.map((ph) => { const done = (p.approvedPhases ?? []).includes(ph.no); return <label key={ph.no} className="ht-role" style={{ opacity: done ? 0.6 : 1 }}><input type="checkbox" checked={done || phaseNos.includes(ph.no)} disabled={done} onChange={() => setPhaseNos((xs) => xs.includes(ph.no) ? xs.filter((x) => x !== ph.no) : [...xs, ph.no])} /><span><b>Giai đoạn {ph.no} · {ph.name}</b><small className="sub">Bắt đầu {ph.startDate} · {ph.items.length} thuốc/vật tư{done ? ' · Đã duyệt' : ''}</small></span></label>; })}
+        </div>
+        <Callout tone="info">Chỉ giai đoạn được chọn mới được kiểm tồn và giữ thuốc. Giai đoạn còn lại sẽ xử lý khi thuốc nhập về.</Callout>
+      </div>
       <table className="ht-table">
         <thead><tr><th>Vật tư</th><th className="num">Cần</th><th className="num">Khả dụng</th><th className="num">Sẽ giữ</th><th>Lô xuất trước (FEFO)</th><th>Thiếu · ETA</th></tr></thead>
         <tbody>
@@ -35,7 +43,7 @@ export const StockCheckForm: React.FC<{ protocol: Protocol; items: StockItem[]; 
                   {l.short === 0 ? <Badge tone="success">Đủ</Badge> : (
                     <div style={{ display: 'grid', gap: 6 }}>
                       <Badge tone="danger">Thiếu {l.short} {l.unit}</Badge>
-                      <select className="ht-select" style={{ height: 34 }} value={eta[l.itemId] ?? ''} onChange={(e) => setEta({ ...eta, [l.itemId]: e.target.value })} aria-label={`ETA cho ${l.name}`}>
+                      <select className="ht-select" style={{ height: 34 }} value={eta[`${l.phaseNo}:${l.itemId}`] ?? ''} onChange={(e) => setEta({ ...eta, [`${l.phaseNo}:${l.itemId}`]: e.target.value })} aria-label={`ETA cho ${l.name}`}>
                         <option value="">ETA chưa xác định</option>
                         {ships.map((s) => <option key={s.id} value={s.id}>{s.id} · về {s.eta.slice(0, 5)}{s.status === 'DELAYED' ? ' (trễ)' : ''}</option>)}
                       </select>
@@ -55,8 +63,8 @@ export const StockCheckForm: React.FC<{ protocol: Protocol; items: StockItem[]; 
         )}
         {error && <Callout tone="danger">{error}</Callout>}
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <button type="button" className="ht-btn ht-btn--primary" onClick={submit} disabled={busy}>
-            <Busy busy={busy} label="Đang gửi…"><Icon name="send" />{short.length ? 'Giữ phần có sẵn & báo thiếu cho bác sĩ' : 'Xác nhận đủ hàng & giữ tồn'}</Busy>
+          <button type="button" className="ht-btn ht-btn--primary" onClick={submit} disabled={busy || !phaseNos.length}>
+            <Busy busy={busy} label="Đang gửi…"><Icon name="send" />{short.length ? `Giữ phần có sẵn & báo thiếu (${phaseNos.length} giai đoạn)` : `Duyệt đủ thuốc cho ${phaseNos.length} giai đoạn`}</Busy>
           </button>
         </div>
       </div>

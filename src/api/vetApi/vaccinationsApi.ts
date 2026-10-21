@@ -35,23 +35,22 @@ export const vaccinationsApi = {
     return created;
   },
 
-  async recordVaccination(v: Vaccination, input: { doneAt: string; lot: string; by: string }, actor: Actor) {
+  async recordVaccination(v: Vaccination, input: { doneAt: string; by: string }, actor: Actor) {
     if (v.status === 'DONE') throw new Error('Mũi này đã được ghi nhận.');
     if (!isDate(input.doneAt)) throw new Error('Ngày thực hiện theo dạng dd/mm/yyyy.');
     if (daysFromToday(input.doneAt) > 0) throw new Error('Ngày thực hiện không được sau hôm nay.');
-    const lot = min(input.lot, 3, 'Số lô');
     const by = min(input.by, 3, 'Người thực hiện');
     const ext = v as Vaccination & { cycleMonths?: number; kind?: string };
-    const { data } = await http.patch<Vaccination>(`/vaccinations/${v.id}`, { status: 'DONE', doneAt: input.doneAt, lot, by });
+    const { data } = await http.patch<Vaccination>(`/vaccinations/${v.id}`, { status: 'DONE', doneAt: input.doneAt, by });
     let next: Vaccination | null = null;
     if (ext.cycleMonths) {
       const all = await get<Vaccination[]>('/vaccinations');
       const due = addMonths(input.doneAt, ext.cycleMonths);
-      next = (await http.post<Vaccination>('/vaccinations', { ...ext, id: nextId(all.map((x) => x.id), 'VC-', 3), due, status: 'SCHEDULED', note: `Nhắc lại sau ${ext.cycleMonths} tháng`, doneAt: undefined, lot: undefined, by: undefined })).data;
+      next = (await http.post<Vaccination>('/vaccinations', { ...ext, id: nextId(all.map((x) => x.id), 'VC-', 3), due, status: 'SCHEDULED', note: `Nhắc lại sau ${ext.cycleMonths} tháng`, doneAt: undefined, by: undefined })).data;
     }
     const horse = await get<Horse>(`/horses/${v.horseId}`);
-    await addHistory(horse, `${v.type} · lô ${lot}`, 'success');
-    await addAudit(actor, { action: 'RECORD_VACCINATION', label: ext.kind === 'DEWORM' ? 'Ghi nhận tẩy giun' : 'Ghi nhận đã tiêm', object: `${v.id} · ${v.horse}`, area: 'med', from: v.status, to: 'DONE', reason: `${v.type} · lô ${lot} · ${by}${next ? ` · nhắc lại ${next.due}` : ''}` });
+    await addHistory(horse, `${v.type}`, 'success');
+    await addAudit(actor, { action: 'RECORD_VACCINATION', label: ext.kind === 'DEWORM' ? 'Ghi nhận tẩy giun' : 'Ghi nhận đã tiêm', object: `${v.id} · ${v.horse}`, area: 'med', from: v.status, to: 'DONE', reason: `${v.type} · ${by}${next ? ` · nhắc lại ${next.due}` : ''}` });
     return { done: data, next };
   },
 

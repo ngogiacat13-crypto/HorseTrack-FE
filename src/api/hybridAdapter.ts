@@ -1,5 +1,6 @@
 import type { AxiosAdapter, InternalAxiosRequestConfig } from 'axios';
 import { be, type ApiResponse } from './beClient';
+import { loadInvoices, loadPayments } from './beFinance';
 import { fail, mockAdapter, queryRows, respond } from './mockServer';
 import { loadAuditLogs, loadInventory, loadProtocols, loadRequisitions, loadShipments, loadStockChecks, loadStockTx, loadUsers } from './beDomain';
 
@@ -26,25 +27,38 @@ const ddmmyyyy = (iso?: string | null) => {
   return d && m && y ? `${d}/${m}/${y}` : iso;
 };
 const hhmm = (iso?: string | null) => (iso && iso.length > 15 ? iso.slice(11, 16) : '—');
+const stamp = (iso?: string | null) => (iso ? `${ddmmyyyy(iso)} ${hhmm(iso)}` : '—');
+const CARE_SLA_MINUTES = 45;
+const plusMinutes = (time: string, minutes: number) => {
+  const [h, m] = time.split(':').map(Number);
+  if (!Number.isFinite(h) || !Number.isFinite(m)) return '—';
+  const total = (h * 60 + m + minutes) % (24 * 60);
+  return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
+};
 const zone = (z?: string | null) => (z ? z.replace(/^Zone\s+/i, 'Khu ') : '—');
 const age = (dob?: string | null) => (dob ? Math.max(0, new Date().getFullYear() - Number(dob.slice(0, 4))) : 0);
 const HEALTH: Record<string, string> = { healthy: 'HEALTHY', injured: 'INJURED', watch: 'WATCH', monitoring: 'WATCH', 'theo dõi': 'WATCH', quarantine: 'QUARANTINE', sick: 'WATCH', 'khỏe mạnh': 'HEALTHY' };
 const health = (h?: string | null) => HEALTH[(h ?? '').toLowerCase()] ?? 'HEALTHY';
 const sex = (g?: string | null) => (['mare', 'filly'].includes((g ?? '').toLowerCase()) ? '♀' : '♂');
 const CLEAN: Record<string, string> = { clean: 'CLEAN', 'needs cleaning': 'NEEDS_CLEANING', needs_cleaning: 'NEEDS_CLEANING', 'under maintenance': 'MAINTENANCE', maintenance: 'MAINTENANCE' };
-const SESSION: Record<string, string> = { PENDING: 'SCHEDULED', COMPLETED: 'COMPLETED', CANCELLED: 'STOPPED', IN_PROGRESS: 'IN_PROGRESS' };
+const SESSION: Record<string, string> = { PENDING: 'SCHEDULED', CONFIRMED: 'SCHEDULED', COMPLETED: 'COMPLETED', CANCELLED: 'STOPPED', STOPPED: 'STOPPED', WAITING_VET: 'WAITING_VET', IN_PROGRESS: 'IN_PROGRESS' };
+const PLAN_STATUS: Record<string, string> = { PENDING: 'PLANNED', ACTIVE: 'ACTIVE', PAUSED: 'PAUSED', COMPLETED: 'COMPLETED', CANCELLED: 'CANCELLED' };
 const TASK_TYPE: Record<string, [string, string]> = {
   feeding: ['FEED', 'Cho ăn'], 'stall cleaning': ['CLEAN', 'Dọn chuồng'], 'grooming & bath': ['GROOM', 'Chải lông & tắm'],
   'ice bath therapy': ['COOL', 'Ngâm lạnh'], 'exercise walk': ['GROOM', 'Dắt đi bộ'], 'hoof care': ['GROOM', 'Chăm sóc móng'],
 };
 
-interface BeHorse { horseId: number; horseName: string; dob: string; gender: string; breed: string; pedigree?: string | null; weightKg: number; healthStatus: string; isLocked: boolean; ownerId: number; stallId: number | null; stallCode?: string | null; approvalStatus?: string | null; createdAt?: string | null }
+interface BeHorse { horseId: number; horseName: string; dob: string; gender: string; breed: string; pedigree?: string | null; weightKg: number; healthStatus: string; isLocked: boolean; ownerId: number; stallId: number | null; stallCode?: string | null; approvalStatus?: string | null; createdAt?: string | null;
+  horseCode?: string | null; color?: string | null; heightHands?: number | null; passportNo?: string | null; healthCertIssuer?: string | null; healthCertExpiry?: string | null;
+  registrationCode?: string | null; rejectReason?: string | null; allowResubmit?: boolean | null; assignedTrainerId?: number | null; assignedTrainerName?: string | null }
+interface BeRegCheck { checkKey: string; passed: boolean; detail?: string | null; checkedByName?: string | null; checkedAt?: string | null }
+interface BeRegistration { registrationCode?: string | null; ownerName?: string | null; submittedAt?: string | null; status: string; ownerNote?: string | null; decisionNote?: string | null; allowResubmit?: boolean | null; decidedByName?: string | null; decidedAt?: string | null; checks?: BeRegCheck[] | null }
 interface BeStall { stallId: number; stallCode: string; barnZone: string; cleanStatus: string; currentHorseId: number | null; horseName: string | null }
 interface BePlan { planId: number; planName: string; horseName: string; startDate: string; endDate: string; status: string; progress: number }
-interface BePlanDetail { planId: number; planName: string; horseId: number | null; horseName: string; startDate: string; endDate: string; status: string; sessions: { sessionId: number; sessionDate: string; activityType: string; status: string; notes: string | null; assignedToId: number | null; assignedToName: string | null }[] }
+interface BePlanDetail { planId: number; planName: string; horseId: number | null; horseName: string; startDate: string; endDate: string; status: string; sessions: { sessionId: number; sessionDate: string; activityType: string; status: string; notes: string | null; assignedToId: number | null; assignedToName: string | null; evaluationScore?: number | null; evaluationComment?: string | null; evaluatedBy?: string | null; evaluatedAt?: string | null }[] }
 interface BeSchedule { sessionId: number; sessionDate: string; activityType: string; status: string; planName: string; horseName: string; stallZone: string }
-interface BeTask { taskId: number; taskType: string; status: string; dueDate: string; horseName: string; stallZone: string }
-interface BeCase { caseId: string; horseId: number; horseName: string; source: string; issueType: string; severity: string; status: string; description: string; maxHeartRate: number; vetResult: string; createdAt: string }
+interface BeTask { taskId: number; taskCode?: string | null; taskType: string; title?: string | null; status: string; taskDate?: string | null; scheduledTime?: string | null; dueDate?: string | null; instructions?: string | null; completedAt?: string | null; horseName: string; stallCode?: string | null; stallZone: string; groomName?: string | null; warningNote?: string | null; overdue?: boolean | null }
+interface BeCase { caseId: string; id?: number; horseId: number; horseName: string; source: string; issueType: string; severity: string; status: string; description: string; imageUrl?: string | null; reportedByName?: string | null; assignedVetName?: string | null; maxHeartRate: number; vetResult: string | null; createdAt: string; closedAt?: string | null }
 interface BeVacc { recordCode: string; horseName: string; typeName: string; category: string; expectedDate: string; cycleMonths: number; status: string }
 interface BeExam { proposalCode: string; proposalDate: string; horseName: string; ownerName: string; tournamentName: string; raceDate: string; distance: string; location: string; trainerName: string; tabStatus: string; resultStatus: string | null; vetNotes: string | null }
 interface BeProtocol { protocolCode: string; horseName: string; diagnosis: string; caseCode: string; requiredDate: string; estimatedCost: string; status: string; nextStep: string }
@@ -67,7 +81,7 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
       id: String(h.horseId), name: h.horseName, breed: h.breed, sex: sex(h.gender), age: age(h.dob), weightKg: h.weightKg,
       owner: u?.role === 'HorseOwner' && String(h.ownerId) === u.id ? u.name : `Chủ ngựa #${h.ownerId}`,
       stall: stalls.find((s) => s.stallId === h.stallId)?.stallCode ?? h.stallCode ?? '—',
-      trainerId: u?.role === 'HeadTrainer' ? u.id : '',
+      trainerId: h.assignedTrainerId ? String(h.assignedTrainerId) : u?.role === 'HeadTrainer' ? u.id : '', trainerName: h.assignedTrainerName ?? null,
       health: health(h.healthStatus), trainingLocked: !!h.isLocked, form: null, pendingCase: null,
       lock: h.isLocked ? { by: 'Bác sĩ thú y', at: '—', reason: 'Khóa từ hệ thống', review: '—' } : null,
       injuries: [], medicalHistory: [], raceResults: [], medicalDiet: null,
@@ -88,10 +102,11 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
     const demo = ((await mockGet('/grooms')) as Row[]) ?? [];
     if (u?.role !== 'Groom') return demo;
     const p = await data<{ specialization?: string | null }>('/account/my-profile').catch(() => ({ specialization: null }));
-    return [{ id: u.id, name: u.name, zones: p.specialization ? [zone(p.specialization)] : ['Khu A'] }, ...demo.filter((g) => g.id !== u.id)];
+    return [{ id: u.id, name: u.name, zones: p.specialization ? [zone(p.specialization)] : [] }, ...demo.filter((g) => g.id !== u.id)];
   },
 
   async trainingPlans() {
+    if (me()?.role === 'HorseOwner') return (await ownerProgress()).map(({ plan }) => plan);
     const [page, horses] = await Promise.all([data<{ content: BePlan[] }>('/training-plans', { page: 0, size: 500 }).catch(() => ({ content: [] })), LOADERS.horses()]);
     return page.content.map((p) => {
       const weeks = Math.max(1, Math.round((new Date(p.endDate).getTime() - new Date(p.startDate).getTime()) / (7 * 864e5)));
@@ -99,13 +114,14 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
         id: String(p.planId), horseId: (byName(horses, p.horseName)?.id as string) ?? '', horseName: p.horseName, name: p.planName,
         type: 'Thể lực', goal: '', startDate: ddmmyyyy(p.startDate), createdBy: '—',
         phases: [{ no: 1, name: 'Toàn giáo án', weeks, intensity: 'Vừa', distanceM: 1200, sessionsPerWeek: 3, hrLimit: 180 }],
-        currentPhase: 1, week: Math.max(1, Math.round((p.progress ?? 0) * weeks / 100)), status: p.status === 'COMPLETED' ? 'COMPLETED' : p.status === 'ACTIVE' ? 'ACTIVE' : 'PAUSED',
+        currentPhase: 1, week: Math.max(1, Math.round((p.progress ?? 0) * weeks / 100)), status: PLAN_STATUS[(p.status ?? '').toUpperCase()] ?? 'PAUSED',
       };
     });
   },
 
   async trainingSessions() {
     const u = me();
+    if (u?.role === 'HorseOwner') return (await ownerProgress()).flatMap(({ sessions }) => sessions);
     if (!u || !['HeadTrainer', 'Groom'].includes(u.role)) return [];
     if (u.role === 'HeadTrainer') {
       const plans = await LOADERS.trainingPlans();
@@ -114,7 +130,8 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
         id: String(s.sessionId), horseId: plans[i].horseId, horseName: d!.horseName, planId: String(d!.planId), phaseNo: 1, label: s.activityType,
         date: ddmmyyyy(s.sessionDate), time: hhmm(s.sessionDate), groom: s.assignedToName ?? '—', groomId: s.assignedToId ? String(s.assignedToId) : null,
         track: (s.notes ?? '').split(' · Ghi nhận:')[0] || '—', metrics: (s.notes ?? '').split(' · Ghi nhận:')[1]?.split(',').map((m) => m.trim()).filter(Boolean),
-        status: SESSION[s.status?.toUpperCase()] ?? 'SCHEDULED', thresholds: { hr: 180, speed: 60 }, readings: [], decision: null, evaluation: null,
+        status: SESSION[s.status?.toUpperCase()] ?? 'SCHEDULED', confirmed: s.status?.toUpperCase() === 'CONFIRMED', thresholds: { hr: 180, speed: 60 }, readings: [], decision: null,
+        evaluation: s.evaluationScore ? { score: s.evaluationScore, comment: s.evaluationComment ?? '', by: s.evaluatedBy ?? 'HLV', at: s.evaluatedAt ?? '' } : null,
       })));
     }
     const [rows, horses, plans] = await Promise.all([
@@ -124,7 +141,7 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
       id: String(s.sessionId), horseId: (byName(horses, s.horseName)?.id as string) ?? '', horseName: s.horseName,
       planId: (plans.find((p) => p.name === s.planName)?.id as string) ?? '', phaseNo: 1, label: s.activityType,
       date: ddmmyyyy(s.sessionDate), time: hhmm(s.sessionDate), groom: u.role === 'Groom' ? u.name : '—', track: zone(s.stallZone),
-      status: SESSION[s.status?.toUpperCase()] ?? 'SCHEDULED', thresholds: { hr: 180, speed: 60 }, readings: [], decision: null, evaluation: null,
+      status: SESSION[s.status?.toUpperCase()] ?? 'SCHEDULED', confirmed: s.status?.toUpperCase() === 'CONFIRMED', thresholds: { hr: 180, speed: 60 }, readings: [], decision: null, evaluation: null,
     }));
   },
 
@@ -133,31 +150,55 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
     if (u?.role !== 'Groom') return [];
     const [rows, horses] = await Promise.all([orEmpty(data<BeTask[]>('/care-tasks/my-tasks')), LOADERS.horses()]);
     return rows.map((t) => {
-      const [type, title] = TASK_TYPE[(t.taskType ?? '').toLowerCase()] ?? ['GROOM', t.taskType];
+      const [type, typeTitle] = TASK_TYPE[(t.taskType ?? '').toLowerCase()] ?? ['GROOM', t.taskType];
       const h = byName(horses, t.horseName);
+      const time = t.scheduledTime ? t.scheduledTime.slice(0, 5) : hhmm(t.dueDate);
       return {
-        id: String(t.taskId), date: ddmmyyyy(t.dueDate), groom: u.name, zone: zone(t.stallZone), type, title,
-        horseId: (h?.id as string) ?? null, horse: t.horseName, stall: (h?.stall as string) ?? '—', time: hhmm(t.dueDate), sla: '—',
+        id: String(t.taskId), code: t.taskCode ?? null, date: ddmmyyyy(t.taskDate ?? t.dueDate), groom: u.name, zone: zone(t.stallZone), type, title: t.title || typeTitle,
+        horseId: (h?.id as string) ?? null, horse: t.horseName, stall: t.stallCode ?? (h?.stall as string) ?? '—', time, sla: plusMinutes(time, CARE_SLA_MINUTES),
         status: (t.status ?? '').toUpperCase() === 'COMPLETED' || (t.status ?? '').toUpperCase() === 'DONE' ? 'DONE' : 'TODO',
-        doneAt: null, note: '', photo: null, instructions: [],
+        doneAt: t.completedAt ? hhmm(t.completedAt) : null, note: t.warningNote ?? '', photo: null,
+        instructions: t.instructions ? t.instructions.split(/\r?\n|;\s*/).map((line) => line.trim()).filter(Boolean) : [],
+        overdue: !!t.overdue,
       };
     });
   },
 
   async vetCases() {
+    if (me()?.role === 'HorseOwner') return [];
     const rows = await orEmpty(data<BeCase[]>('/medical/cases'));
     const SRC: Record<string, string> = { GROOM: 'GROOM_REPORT', GROOM_REPORT: 'GROOM_REPORT', TRAINER: 'TRAINER_REQUEST', TRAINER_REQUEST: 'TRAINER_REQUEST' };
-    const ST: Record<string, string> = { NEW: 'NEW', PENDING: 'NEW', MONITORING: 'MONITORING', CLOSED: 'CLOSED', RESOLVED: 'CLOSED' };
-    return rows.map((c) => ({
-      id: c.caseId, horseId: String(c.horseId), horse: c.horseName, source: SRC[(c.source ?? '').toUpperCase()] ?? 'SESSION_STOP',
-      type: c.issueType ?? 'Khám', severity: ['HIGH', 'MEDIUM', 'LOW'].includes((c.severity ?? '').toUpperCase()) ? c.severity.toUpperCase() : 'MEDIUM',
-      status: ST[(c.status ?? '').toUpperCase()] ?? 'NEW', sender: '—', at: ddmmyyyy(c.createdAt), note: c.description ?? '',
-      exam: null, protocolId: null, outcome: c.vetResult ?? undefined,
-    }));
+    const ST: Record<string, string> = { NEW: 'NEW', PENDING: 'NEW', IN_EXAM: 'NEW', MONITORING: 'MONITORING', CLOSED: 'CLOSED', RESOLVED: 'CLOSED', CANCELLED: 'CLOSED' };
+    const SEVERITY: Record<string, string> = { CRITICAL: 'HIGH', HIGH: 'HIGH', MEDIUM: 'MEDIUM', LOW: 'LOW' };
+    return rows.map((c) => {
+      const status = ST[(c.status ?? '').toUpperCase()] ?? 'NEW';
+      const severity = SEVERITY[(c.severity ?? '').toUpperCase()] ?? 'MEDIUM';
+      const examined = status !== 'NEW' && !!c.vetResult;
+      return {
+        id: c.caseId, beId: c.id, horseId: String(c.horseId), horse: c.horseName, source: SRC[(c.source ?? '').toUpperCase()] ?? 'SESSION_STOP',
+        type: c.issueType ?? 'Khám', severity, status, sender: c.reportedByName ?? '—', at: stamp(c.createdAt), note: c.description ?? '',
+        photo: c.imageUrl ?? null, protocolId: null, outcome: status === 'CLOSED' ? c.vetResult ?? undefined : undefined,
+        exam: examined ? { symptoms: c.description ?? '', diagnosis: c.vetResult ?? '', plan: '', severity, health: 'WATCH', by: c.assignedVetName ?? 'Bác sĩ thú y', at: '—' } : null,
+      };
+    });
   },
 
   async feedRequests() {
-    return [];
+    const rows = await orEmpty(data<Row[]>('/diet-requests'));
+    return rows.map((r) => ({
+      id: String(r.requestCode || 'FR-' + r.requestId),
+      beId: r.requestId,
+      horseId: String(r.horseId),
+      horse: r.horseName,
+      item: r.item ?? r.requestDetail,
+      reason: r.reason,
+      by: r.requestedByName,
+      at: r.requestedAt ? ddmmyyyy(r.requestedAt as string) : '—',
+      status: r.status,
+      vetNote: r.vetNote ?? undefined,
+      decidedBy: r.decidedByName ?? undefined,
+      decidedAt: r.decidedAt ? ddmmyyyy(r.decidedAt as string) : undefined,
+    }));
   },
 
   async vaccinations() {
@@ -236,32 +277,18 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
     const u = me();
     if (u?.role !== 'ClubManager' && u?.role !== 'HorseOwner') return (await mockGet('/registrations')) as Row[];
     const [hs, users] = await Promise.all([horsesRaw(), u.role === 'ClubManager' ? LOADERS.users() : Promise.resolve([] as Row[])]);
+    const histories = await Promise.all(hs.map((h) => orEmpty(data<BeRegistration[]>(`/horses/${h.horseId}/registrations`))));
     const ownerOf = (h: BeHorse) => (u.role === 'HorseOwner' ? { fullName: u.name, email: '', phone: '—' } : (() => {
       const o = users.find((x) => x.beId === h.ownerId);
       return { fullName: (o?.fullname as string) ?? `Chủ ngựa #${h.ownerId}`, email: (o?.email as string) ?? '', phone: (o?.phone as string) || '—' };
     })());
-    return hs.map((h) => {
-      const ok = isApproved(h);
-      const code = String(h.horseId).padStart(4, '0');
-      const sent = h.createdAt ? `${ddmmyyyy(h.createdAt)} ${hhmm(h.createdAt)}` : '—';
-      const stall = h.stallCode ?? `#${h.stallId}`;
-      return {
-        id: `REG-${code}`, beId: h.horseId,
-        horse: { name: h.horseName, breed: h.breed, sex: sex(h.gender), age: age(h.dob), code: `HT-${code}` },
-        owner: ownerOf(h), submittedAt: sent,
-        waitingDays: !ok && h.createdAt ? Math.max(0, Math.floor((Date.now() - new Date(h.createdAt).getTime()) / 86400000)) : 0,
-        passed: ok ? REG_CHECKS.length : 0, status: ok ? 'Approved' : 'Pending', decidedNote: ok ? `Cấp chuồng ${stall}` : undefined,
-        ownerExtra: { otherHorses: hs.filter((x) => x.ownerId === h.ownerId && x.horseId !== h.horseId).map((x) => x.horseName).join(', ') || '—' },
-        horseExtra: { color: '—', height: '—', weight: h.weightKg, passport: h.pedigree || '—', healthCert: '—' },
-        checklist: REG_CHECKS.map(([key, label]) => ({ key, label, detail: ok ? 'Đã kiểm tra thủ công.' : 'Chờ Quản lý CLB kiểm tra.', passed: ok })),
-        attachments: [],
-        history: [
-          ...(ok ? [{ tone: 'success', who: 'Quản lý CLB', text: `phê duyệt · cấp chuồng ${stall} · chuyển APPROVED`, at: '—' }] : []),
-          { who: 'Hệ thống', text: 'kiểm tra trường bắt buộc: đủ · chuyển PENDING_REVIEW', at: sent },
-          { who: ownerOf(h).fullName, text: 'gửi hồ sơ', at: sent },
-        ],
-      };
-    });
+    return hs.map((h, index) => toRegistration(h, histories[index], ownerOf(h), hs));
+  },
+  async invoices() {
+    return ((await loadInvoices(me()?.role)) as Row[] | null) ?? ((await mockGet('/invoices')) as Row[]);
+  },
+  async payments() {
+    return ((await loadPayments(me()?.role)) as Row[] | null) ?? ((await mockGet('/payments')) as Row[]);
   },
   async users() {
     return (await loadUsers()) ?? ((await mockGet('/users')) as Row[]);
@@ -273,32 +300,139 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
     return (await loadStockTx()) ?? ((await mockGet('/stockTx')) as Row[]);
   },
 };
+interface BeOwnerProgress {
+  planId: number;
+  planName: string;
+  startDate: string;
+  endDate: string;
+  status: string;
+  progress?: number | null;
+  sessions?: {
+    sessionId: number;
+    sessionDate: string;
+    activityType: string;
+    status: string;
+    notes?: string | null;
+    assignedToName?: string | null;
+    evaluationScore?: number | null;
+    evaluationComment?: string | null;
+    evaluatedBy?: string | null;
+    evaluatedAt?: string | null;
+  }[] | null;
+}
+const ownerProgress = async () => {
+  const horses = await LOADERS.horses();
+  const rows = await Promise.all(horses.map(async (h) => ({ h, p: await data<BeOwnerProgress | null>(`/owner/training/horses/${h.id}/progress`).catch(() => null) })));
+  return rows.filter((r): r is { h: Row; p: BeOwnerProgress } => !!r.p?.planId).map(({ h, p }) => {
+    const weeks = Math.max(1, Math.round((new Date(p.endDate).getTime() - new Date(p.startDate).getTime()) / (7 * 864e5)));
+    const plan: Row = {
+      id: String(p.planId), horseId: h.id, horseName: h.name, name: p.planName, type: 'Thể lực', goal: '', startDate: ddmmyyyy(p.startDate), createdBy: '—',
+      phases: [{ no: 1, name: 'Toàn giáo án', weeks, intensity: 'Vừa', distanceM: 1200, sessionsPerWeek: 3, hrLimit: 180 }],
+      currentPhase: 1, week: Math.max(1, Math.round(((p.progress ?? 0) * weeks) / 100)), status: PLAN_STATUS[(p.status ?? '').toUpperCase()] ?? 'PAUSED',
+    };
+    const sessions: Row[] = (p.sessions ?? []).map((x) => ({
+      id: String(x.sessionId), horseId: h.id, horseName: h.name, planId: String(p.planId), phaseNo: 1, label: x.activityType,
+      date: ddmmyyyy(x.sessionDate), time: hhmm(x.sessionDate), groom: x.assignedToName ?? '—', track: (x.notes ?? '').split(' · Ghi nhận:')[0] || '—',
+      status: SESSION[x.status?.toUpperCase()] ?? 'SCHEDULED', confirmed: x.status?.toUpperCase() === 'CONFIRMED', thresholds: { hr: 180, speed: 60 }, readings: [], decision: null,
+      evaluation: x.evaluationScore ? { score: x.evaluationScore, comment: x.evaluationComment ?? '', by: x.evaluatedBy ?? 'HLV', at: x.evaluatedAt ?? '' } : null,
+    }));
+    return { plan, sessions };
+  });
+};
 const isApproved = (h: BeHorse) => (h.approvalStatus ? h.approvalStatus === 'APPROVED' : h.stallId != null);
 const REG_CHECKS: [string, string][] = [['identity', 'Danh tính chủ ngựa'], ['health', 'Giấy chứng nhận sức khỏe còn hiệu lực'], ['ownership', 'Giấy tờ sở hữu hợp lệ']];
+const REG_STATUS: Record<string, string> = { APPROVED: 'Approved', REJECTED: 'Rejected', PENDING: 'Pending' };
+const RESUBMIT_ALLOWED = 'Cho phép nộp lại';
+const regHistory = (r: BeRegistration, owner: string, first: boolean) => {
+  const items: Row[] = [];
+  if (r.status === 'APPROVED') items.push({ tone: 'success', who: r.decidedByName ?? 'Quản lý CLB', text: `phê duyệt · chuyển APPROVED${r.decisionNote ? `: “${r.decisionNote}”` : ''}`, at: stamp(r.decidedAt) });
+  if (r.status === 'REJECTED') items.push({ tone: 'danger', who: r.decidedByName ?? 'Quản lý CLB', text: `từ chối${r.allowResubmit ? ' · cho phép nộp lại' : ''}: “${r.decisionNote ?? ''}”`, at: stamp(r.decidedAt) });
+  items.push({ who: 'Hệ thống', text: `${r.registrationCode ?? ''} kiểm tra trường bắt buộc: đủ · chuyển PENDING_REVIEW`.trim(), at: stamp(r.submittedAt) });
+  items.push({ who: r.ownerName ?? owner, text: `${first ? 'gửi hồ sơ' : 'nộp lại hồ sơ (RESUBMITTED)'}${r.ownerNote ? `: “${r.ownerNote}”` : ''}`, at: stamp(r.submittedAt) });
+  return items;
+};
+const toRegistration = (h: BeHorse, history: BeRegistration[], owner: { fullName: string; email: string; phone: string }, all: BeHorse[]): Row => {
+  const status = REG_STATUS[(h.approvalStatus ?? '').toUpperCase()] ?? (isApproved(h) ? 'Approved' : 'Pending');
+  const latest = history[0];
+  const checks = latest?.checks ?? [];
+  const checklist = REG_CHECKS.map(([key, label]) => {
+    const found = checks.find((c) => c.checkKey.toLowerCase() === key);
+    const detail = found?.detail || (found ? `Kiểm tra bởi ${found.checkedByName ?? 'Quản lý CLB'}` : status === 'Approved' ? 'Đã kiểm tra thủ công.' : 'Chờ Quản lý CLB kiểm tra.');
+    return { key, label, detail, passed: found ? found.passed : status === 'Approved' };
+  });
+  const firstFailed = checklist.find((c) => !c.passed && checks.length > 0);
+  const code = String(h.horseId).padStart(4, '0');
+  const stall = h.stallCode ?? `#${h.stallId}`;
+  const submitted = latest?.submittedAt ?? h.createdAt;
+  const heldSince = submitted ? new Date(submitted).getTime() : Date.now();
+  const decidedNote = status === 'Approved' ? `Cấp chuồng ${stall}` : status === 'Rejected' ? ((h.allowResubmit ?? latest?.allowResubmit) ? RESUBMIT_ALLOWED : 'Không cho nộp lại') : undefined;
+  const healthCert = [h.healthCertIssuer, h.healthCertExpiry && `hết hạn ${ddmmyyyy(h.healthCertExpiry)}`].filter(Boolean).join(' · ');
+  return {
+    id: `REG-${code}`, beId: h.horseId, registrationCode: latest?.registrationCode ?? h.registrationCode ?? null,
+    horse: { name: h.horseName, breed: h.breed, sex: sex(h.gender), age: age(h.dob), code: h.horseCode ?? `HT-${code}` },
+    owner, submittedAt: stamp(submitted),
+    waitingDays: status === 'Pending' ? Math.max(0, Math.floor((Date.now() - heldSince) / 86400000)) : 0,
+    passed: checklist.filter((c) => c.passed).length, status, decidedNote,
+    firstIssue: status === 'Rejected' ? h.rejectReason ?? latest?.decisionNote ?? undefined : firstFailed?.label,
+    ownerExtra: { otherHorses: all.filter((x) => x.ownerId === h.ownerId && x.horseId !== h.horseId).map((x) => x.horseName).join(', ') || '—' },
+    horseExtra: { color: h.color || '—', height: h.heightHands ? `${h.heightHands} hands` : '—', weight: h.weightKg, passport: h.passportNo || h.pedigree || '—', healthCert: healthCert || '—' },
+    checklist, attachments: [],
+    history: history.length
+      ? history.flatMap((r, index) => regHistory(r, owner.fullName, index === history.length - 1))
+      : [{ who: owner.fullName, text: 'gửi hồ sơ', at: stamp(h.createdAt) }],
+  };
+};
+const regChecks = (checklist: unknown) => ((checklist as { key: string; passed: boolean; detail?: string }[] | undefined) ?? [])
+  .map((c) => ({ checkKey: c.key.toUpperCase(), passed: !!c.passed, detail: c.detail?.slice(0, 500) }));
+const regExtra = (x: { color?: string; height?: string; passport?: string; healthCert?: string }) => {
+  const heightHands = Number.parseFloat(String(x.height ?? '').replace(',', '.'));
+  const expiry = String(x.healthCert ?? '').match(/(\d{1,2})\/(\d{1,2})\/(\d{4})|(\d{1,2})\/(\d{4})/);
+  const healthCertExpiry = expiry
+    ? expiry[3] ? `${expiry[3]}-${expiry[2].padStart(2, '0')}-${expiry[1].padStart(2, '0')}` : new Date(Date.UTC(Number(expiry[5]), Number(expiry[4]), 0)).toISOString().slice(0, 10)
+    : undefined;
+  const clean = (v?: string) => (v && v.trim() && v.trim() !== '—' ? v.trim() : undefined);
+  return {
+    color: clean(x.color)?.slice(0, 50),
+    heightHands: Number.isFinite(heightHands) && heightHands >= 1 && heightHands <= 25 ? Math.round(heightHands * 10) / 10 : undefined,
+    passportNo: clean(x.passport)?.slice(0, 50),
+    healthCertIssuer: clean(x.healthCert)?.slice(0, 150),
+    healthCertExpiry,
+  };
+};
 const unknownHorse = (id: string): Row => ({
   id, name: id.slice(4), breed: '—', sex: '♂', age: 0, owner: '—', stall: '—', trainerId: '', health: 'HEALTHY', trainingLocked: false,
   form: null, pendingCase: null, lock: null, injuries: [], medicalHistory: [], raceResults: [], medicalDiet: null,
 });
 const tourId = (e: BeExam) => `T-${e.tournamentName}-${e.raceDate}`.replace(/\s+/g, '-');
 
-type Write = (id: string | undefined, body: Row, current: Row | undefined) => Promise<boolean | void> | boolean | void;
-const WRITES: Record<string, Partial<Record<'post' | 'patch', Write>>> = {
+type Write = (id: string | undefined, body: Row, current: Row | undefined) => Promise<boolean | Row | void> | boolean | Row | void;
+const WRITES: Record<string, Partial<Record<'post' | 'patch' | 'put', Write>>> = {
   registrations: {
     async post(_id, body) {
       const h = body.horse as { name: string; breed: string; sex: string; age: number };
-      const x = body.horseExtra as { color: string; weight: number; passport: string };
+      const x = body.horseExtra as { color: string; height: string; weight: number; passport: string; healthCert: string };
       if (!(Number(x.weight) >= 0.1)) throw new Error('Nhập cân nặng của ngựa (kg).');
       await be.post('/horses/register', {
         horseName: h.name, dob: `${new Date().getFullYear() - h.age}-01-01`, gender: h.sex === '♀' ? 'Mare' : 'Stallion', breed: h.breed,
-        pedigree: [x.passport && `Hộ chiếu ${x.passport}`, x.color && `màu ${x.color}`].filter(Boolean).join(' · ') || null,
-        weightKg: Number(x.weight), ownerId: Number(me()?.id),
+        weightKg: Number(x.weight), ownerId: Number(me()?.id), ...regExtra(x),
       });
       return true;
     },
     async patch(_id, body, current) {
-      if (body.status !== 'Approved') return false;
-      if (!body.stallId) throw new Error('Chọn chuồng để cấp cho ngựa.');
-      await be.put(`/horses/${current?.beId}/approve`, { stallId: Number(body.stallId) });
+      if (body.status === 'Approved') {
+        if (!body.stallId) throw new Error('Chọn chuồng để cấp cho ngựa.');
+        await be.put(`/horses/${current?.beId}/approve`, { stallId: Number(body.stallId), checks: regChecks(body.checklist), note: (body.decisionNote as string | undefined)?.slice(0, 500) || undefined });
+        return true;
+      }
+      if (body.status === 'Rejected') {
+        await be.put(`/horses/${current?.beId}/reject`, { reason: body.reason, allowResubmit: !!body.allowResubmit, checks: regChecks(body.checklist) });
+        return true;
+      }
+      return false;
+    },
+    async put(_id, body, current) {
+      const x = body.horseExtra as { color: string; height: string; weight: number; passport: string; healthCert: string };
+      await be.put(`/horses/${current?.beId}/resubmit`, { weightKg: Number(x.weight) >= 0.1 ? Number(x.weight) : undefined, ...regExtra(x), note: 'Đã sửa thông tin theo yêu cầu của Quản lý CLB' });
       return true;
     },
   },
@@ -330,15 +464,100 @@ const WRITES: Record<string, Partial<Record<'post' | 'patch', Write>>> = {
     },
   },
   vetCases: {
+    async post(_id, body) {
+      const created = (await be.post<ApiResponse<BeCase>>('/medical/cases', {
+        horseId: Number(body.horseId), caseType: body.type, severity: body.severity, description: body.note,
+        imageUrl: typeof body.photo === 'string' && /^https?:\/\//.test(body.photo) ? body.photo : undefined,
+      })).data.data;
+      return { id: created.caseId, beId: created.id, status: 'NEW' };
+    },
     async patch(id, body) {
       const exam = body.exam as { diagnosis: string; plan: string } | undefined;
-      if (exam) await be.post('/medical/cases/action', { caseId: id, vetNotes: exam.diagnosis, treatmentDirection: exam.plan }, { params: { vetId: me()?.id } });
+      if (exam) {
+        await be.post('/medical/cases/action', { caseId: id, vetNotes: exam.diagnosis, treatmentDirection: exam.plan });
+        return true;
+      }
+      if (body.status === 'CLOSED') {
+        await be.put(`/medical/cases/${encodeURIComponent(id ?? '')}/close`, { outcome: body.outcome });
+        return true;
+      }
+      return false;
+    },
+  },
+  feedRequests: {
+    async post(_id, body) {
+      const horses = await LOADERS.horses();
+      const h = horses.find((x) => x.id === body.horseId || x.name === body.horse);
+      const res = await be.post<ApiResponse<Row>>('/diet-requests', {
+        horseId: Number(h?.id ?? body.horseId),
+        item: body.item,
+        reason: body.reason,
+      });
+      invalidate('feedRequests');
+      const d = res.data.data;
+      return {
+        id: String(d.requestCode || 'FR-' + d.requestId),
+        beId: d.requestId,
+        horseId: String(d.horseId),
+        horse: d.horseName,
+        item: d.item ?? d.requestDetail,
+        reason: d.reason,
+        by: d.requestedByName,
+        at: d.requestedAt ? ddmmyyyy(d.requestedAt as string) : '—',
+        status: d.status,
+      };
+    },
+    async patch(id, body, current) {
+      const beId = current?.beId ?? id;
+      const isApproved = body.status === 'APPROVED';
+      await be.put(`/diet-requests/${beId}/decide`, {
+        approve: isApproved,
+        note: body.vetNote ?? (isApproved ? 'Duyệt thức ăn đặc biệt' : 'Từ chối thức ăn đặc biệt'),
+      });
+      invalidate('feedRequests', 'horses');
+      return true;
+    },
+  },
+  requisitions: {
+    async post(_id, body) {
+      const items = await LOADERS.inventory();
+      const found = items.find((i) => i.id === body.itemId);
+      let neededByIso: string | undefined = undefined;
+      if (body.neededBy && typeof body.neededBy === 'string' && body.neededBy.includes('/')) {
+        const [d, m, y] = body.neededBy.split('/');
+        neededByIso = `${y}-${m}-${d}`;
+      }
+      const res = await be.post<ApiResponse<Row>>('/supply-requests', {
+        itemId: Number(found?.beId ?? body.itemId),
+        quantity: Number(body.qty),
+        reason: body.reason,
+        neededBy: neededByIso,
+      });
+      invalidate('requisitions');
+      return res.data.data;
+    },
+    async patch(id, body, current) {
+      if (body.status !== 'CLOSED' || current?.status !== 'ISSUED') return false;
+      await be.put(`/supply-requests/${current?.beId ?? id}/confirm-received`);
+      invalidate('requisitions');
+      return true;
     },
   },
   trainingSessions: {
     async patch(id, body) {
+      if (body.confirmed === true) {
+        await be.put(`/training-sessions/${id}/confirm`);
+        invalidate('trainingPlans');
+        return true;
+      }
       if (body.status === 'COMPLETED') await be.put(`/training-sessions/${id}/execute`, { status: 'COMPLETED', notes: 'Hoàn thành phiên' });
       if (body.status === 'STOPPED') await be.put(`/training-sessions/${id}/execute`, { status: 'CANCELLED', notes: (body.decision as Row | undefined)?.note ?? 'Dừng phiên' });
+      if (body.evaluation) {
+        const ev = body.evaluation as { score: number; comment?: string };
+        await be.put(`/training-sessions/${id}/evaluate`, { score: Number(ev.score), comment: ev.comment ?? '' });
+        invalidate('trainingPlans', 'trainingSessions');
+        return true;
+      }
     },
   },
 };
@@ -387,12 +606,12 @@ export const hybridAdapter: AxiosAdapter = async (config) => {
   }
 
   const current = id === undefined ? undefined : rows.find((r) => String(r.id) === id);
-  const write = WRITES[name]?.[method as 'post' | 'patch'];
+  const write = WRITES[name]?.[method as 'post' | 'patch' | 'put'];
   const stored = write ? await write(id, body, current) : false;
   cache.delete(name);
-  if (stored === true) {
+  if (stored) {
     invalidate(name, 'horses', 'stalls');
-    return respond(config, method === 'post' ? 201 : 200, { ...(current ?? {}), ...body });
+    return respond(config, method === 'post' ? 201 : 200, { ...(current ?? {}), ...body, ...(stored === true ? {} : stored) });
   }
 
   if (method === 'post') {

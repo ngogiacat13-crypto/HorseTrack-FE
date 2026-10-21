@@ -201,6 +201,12 @@ export const warehouseBe = {
 };
 
 export const groomSupplyBe = {
+  async cancelRequisition(r: Requisition, _actor: Actor) {
+    await be.put(`/supply-requests/${(r as Requisition & { beId?: number }).beId}/cancel`);
+    after('requisitions');
+    return { ...r, status: 'CLOSED' as const };
+  },
+
   async createRequisition(input: { itemId: string; qty: number; reason: string; neededBy: string }) {
     if (!Number.isInteger(input.qty) || input.qty < 1) throw new Error('Số lượng phải là số nguyên ≥ 1.');
     if (input.reason.trim().length < 10) throw new Error('Lý do ít nhất 10 ký tự.');

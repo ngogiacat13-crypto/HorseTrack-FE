@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { isOpenProtocol, Protocol, protoCost, Shipment } from '../../../api/vetApi';
+import { isOpenProtocol, phaseRequiredBy, Protocol, protoCost, Shipment, stockLines, stockShort } from '../../../api/vetApi';
 import { Icon } from '../../../components/ui/Icon';
 import { Badge, Callout, money, Panel, Timeline } from '../../../components/ui/Ht';
 import { ProtocolBadge } from '../../../components/vet/VetParts';
@@ -16,7 +16,7 @@ export const ProtocolBanners: React.FC<{ protocol: Protocol }> = ({ protocol: p 
         <Icon name="truck" />
         <div>
           <b>{p.state === 'REQUIRES_VET_REVIEW' ? 'Cảnh báo lô hàng trễ — cần đánh giá lại ngựa (2.6).' : 'Đang chờ hàng về sau mốc cần thuốc.'}</b>
-          <p>Cần thuốc từ <span className="ht-mono">{p.requiredBy}</span>, hàng dự kiến về <span className="ht-mono">{p.wait?.eta ?? '—'}</span>. {p.state === 'REQUIRES_VET_REVIEW' ? 'Chọn: sửa phác đồ (phiên bản mới), hoặc tiếp tục chờ nếu vẫn an toàn.' : `BS đã đánh giá: ${p.wait?.note ?? ''}`}</p>
+          <p>Cần thuốc từ <span className="ht-mono">{phaseRequiredBy(p, stockShort(p).map((l) => l.itemId))}</span>, hàng dự kiến về <span className="ht-mono">{p.wait?.eta ?? '—'}</span>. {p.state === 'REQUIRES_VET_REVIEW' ? 'Chọn: sửa phác đồ (phiên bản mới), hoặc tiếp tục chờ nếu vẫn an toàn.' : `BS đã đánh giá: ${p.wait?.note ?? ''}`}</p>
         </div>
       </div>
     )}
@@ -53,7 +53,7 @@ export const StockPanel: React.FC<{ protocol: Protocol; shipments: Shipment[] }>
         <table className="ht-table">
           <thead><tr><th>Vật tư</th><th className="num">Cần</th><th className="num">Có thể cấp</th><th className="num">Đã giữ</th><th>Lô · hạn dùng</th><th>Trạng thái</th></tr></thead>
           <tbody>
-            {p.stock.lines.map((l) => (
+                  {stockLines(p).map((l) => (
               <tr key={l.itemId}>
                 <td className="strong">{l.name}</td><td className="num">{l.need} {l.unit}</td>
                 <td className="num" style={{ color: l.short ? 'var(--danger-ink)' : undefined }}>{l.available}</td><td className="num">{l.held}</td>

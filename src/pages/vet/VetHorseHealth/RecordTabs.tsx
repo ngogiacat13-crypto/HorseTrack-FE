@@ -56,7 +56,7 @@ export const VaccinesTab: React.FC<{ vaccinations: Vaccination[] }> = ({ vaccina
           <tr key={v.id}>
             <td className="id">{v.id}</td><td className="strong">{v.type}{v.note && <span className="sub">{v.note}</span>}</td><td className="mono">{v.due}</td>
             <td><Badge tone={VAC_STATUS[v.status][1]}>{VAC_STATUS[v.status][0]}</Badge></td>
-            <td>{v.doneAt ? <><span className="ht-mono">{v.doneAt}</span> · lô {v.lot}</> : '—'}</td>
+            <td>{v.doneAt ? <span className="ht-mono">{v.doneAt}</span> : '—'}</td>
           </tr>
         ))}
       </tbody>

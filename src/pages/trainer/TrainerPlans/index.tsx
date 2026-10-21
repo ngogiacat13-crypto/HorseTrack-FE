@@ -8,7 +8,7 @@ import { Badge, PageHeader, Panel, StatCard, Tabs } from '../../../components/ui
 import { LoadState, PhaseBar } from '../../../components/trainer/TrainerParts';
 
 type Filter = 'planned' | 'running' | 'paused' | 'history';
-const MATCH: Record<Filter, PlanStatus[]> = { planned: ['PLANNED'], running: ['ACTIVE'], paused: ['PAUSED'], history: ['COMPLETED', 'REPLACED'] };
+const MATCH: Record<Filter, PlanStatus[]> = { planned: ['PLANNED'], running: ['ACTIVE'], paused: ['PAUSED'], history: ['COMPLETED', 'REPLACED', 'CANCELLED'] };
 
 export const TrainerPlans: React.FC = () => {
   const actor = useActor();

@@ -20,7 +20,7 @@ export interface InventoryItem {
 export interface ProtoItem { itemId: string; name: string; unit: string; unitPrice: number; qty: number }
 export interface ProtoPhase { no: number; name: string; startDate: string; days: number; goal: string; items: ProtoItem[] }
 export interface StockLine {
-  itemId: string; name: string; unit: string; need: number; available: number; held: number; short: number;
+  itemId: string; phaseNo?: number; name: string; unit: string; need: number; available: number; held: number; short: number;
   eta: string | null; lot: string | null; expiry: string | null; shipment?: string;
 }
 export interface Protocol {
@@ -28,6 +28,7 @@ export interface Protocol {
   horseId: string; horse: string; caseId: string; diagnosis: string; vet: string; createdAt: string; requiredBy: string;
   phases: ProtoPhase[]; state: ProtocolState; path: ProtocolState[];
   stock: null | { at: string; by: string; lines: StockLine[] };
+  approvedPhases?: number[]; dispensedPhases?: number[];
   wait: null | { eta: string; requiredBy: string; at: string; note: string };
   delayed: boolean;
   progress: { at: string; by: string; text: string }[];

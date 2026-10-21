@@ -40,7 +40,7 @@ interface BeItem {
   currentStock: number; heldStock: number; minSafetyStock: number; route?: string | null; isControlled?: boolean; requiresPrescription?: boolean;
   withdrawalHours?: number | null; doseReference?: string | null; note?: string | null; lots?: { lotNo: string; expiryDate: string; quantity: number }[] | null;
 }
-interface BeMedicine { itemId: number; itemCode: string; itemName: string; category: string; unit: string; unitPrice: number; availableStock: number; route?: string | null; isControlled?: boolean; withdrawalHours?: number | null; doseReference?: string | null }
+interface BeMedicine { itemId: number; itemCode: string; itemName: string; category: string; itemGroup?: string | null; unit: string; unitPrice: number; availableStock: number; route?: string | null; isControlled?: boolean; withdrawalHours?: number | null; doseReference?: string | null }
 
 export const mapItem = (i: BeItem): Row => ({
   id: i.itemCode, beId: i.itemId, name: i.itemName, category: CATEGORY[i.category] ?? i.category, group: i.itemGroup || CATEGORY[i.category] || i.category,
@@ -50,7 +50,7 @@ export const mapItem = (i: BeItem): Row => ({
   lots: i.lots ? i.lots.map((l) => ({ lot: l.lotNo, expiry: mmYYYY(l.expiryDate), qty: Number(l.quantity) || 0 })) : undefined,
 });
 export const mapMedicine = (m: BeMedicine): Row => ({
-  id: m.itemCode, beId: m.itemId, name: m.itemName, category: CATEGORY[m.category] ?? m.category, group: CATEGORY[m.category] ?? m.category,
+  id: m.itemCode, beId: m.itemId, name: m.itemName, category: CATEGORY[m.category] ?? m.category, group: m.itemGroup || CATEGORY[m.category] || m.category,
   route: m.route ?? '—', unit: m.unit, unitPrice: Number(m.unitPrice) || 0, onHand: Number(m.availableStock) || 0, held: 0, safety: 0,
   doseRef: m.doseReference ?? undefined, detectionHours: m.withdrawalHours ?? undefined, controlled: !!m.isControlled,
 });
@@ -59,6 +59,7 @@ export const loadInventory = async (): Promise<Row[] | null> => {
   const role = me()?.role;
   if (role === 'WarehouseManager') return (await beGet<BeItem[]>('/inventory/items')).map(mapItem);
   if (role === 'Veterinarian' || role === 'ClubManager') return (await beGet<BeMedicine[]>('/medical-management/medications')).map(mapMedicine);
+  if (role === 'Groom') return (await beGet<BeItem[]>('/supply-requests/items').catch(() => null))?.map(mapItem) ?? null;
   return null;
 };
 
@@ -145,6 +146,7 @@ export const mapReq = (r: BeReq): Row => {
   if (r.status === 'REJECTED') history.unshift({ at: '—', who: 'Kho', text: `từ chối: ${r.rejectReason ?? ''}`, tone: 'danger' });
   if (r.issuedAt) history.unshift({ at: dmhm(r.issuedAt), who: r.issuedByName ?? 'Kho', text: `cấp ${r.issuedQuantity} ${r.unit}`, tone: 'success' });
   if (r.status === 'CANCELLED') history.unshift({ at: '—', who: r.requestedByName, text: 'hủy yêu cầu' });
+  if (r.status === 'CLOSED') history.unshift({ at: '—', who: r.requestedByName, text: 'xác nhận đã nhận vật tư', tone: 'success' });
   return {
     id: r.requisitionCode, beId: r.requisitionId, by: r.requestedByName, zone: r.barnZone, itemId: r.itemCode, beItemId: r.itemId, item: r.itemName, unit: r.unit,
     qty: Number(r.quantity) || 0, reason: r.reason, at: dmhm(r.requestedAt), neededBy: dmy(r.neededBy), status: REQ_STATUS[r.status] ?? r.status,
@@ -187,7 +189,7 @@ export const loadStockTx = async (): Promise<Row[] | null> => {
 
 interface BeUser {
   userId: number; username: string; fullName: string; email: string; phone?: string | null; roleName: string; role?: string | null; status?: string | null;
-  isActive?: boolean; lockReason?: string | null; openTasks?: number | null; horsesOwned?: number | null; lastLogin?: string | null;
+  isActive?: boolean; lockReason?: string | null; openTasks?: number | null; horsesOwned?: number | null; lastLogin?: string | null; zones?: string[] | null; specialization?: string | null;
 }
 const FE_ROLE: Record<string, string> = {
   'Club Manager': 'ClubManager', 'Head Trainer': 'HeadTrainer', Trainer: 'HeadTrainer', Veterinarian: 'Veterinarian', Groom: 'Groom',
@@ -200,6 +202,7 @@ export const loadUsers = async (): Promise<Row[] | null> => {
   return users.map((u) => ({
     id: String(u.userId), beId: u.userId, username: u.username, fullname: u.fullName, email: u.email, phone: u.phone ?? '',
     role: u.role || FE_ROLE[u.roleName] || u.roleName, status: u.status ?? (u.isActive === false ? 'LOCKED' : 'ACTIVE'),
+    zones: u.zones ?? (u.specialization ? [u.specialization] : []),
     lockReason: u.lockReason ?? undefined, openTasks: u.openTasks ?? 0, horsesOwned: u.horsesOwned ?? 0, lastLogin: u.lastLogin && /^\d{4}-\d{2}-\d{2}/.test(u.lastLogin) ? dmhm(u.lastLogin) : u.lastLogin || '—',
   }));
 };
@@ -212,6 +215,7 @@ const AREA: Record<string, string> = {
 const ACTION_LABEL: Record<string, string> = {
   LOGIN: 'Đăng nhập', LOGOUT: 'Đăng xuất', LOCK_ACCOUNT: 'Khóa tài khoản', UNLOCK_ACCOUNT: 'Mở khóa tài khoản', CHANGE_ROLE: 'Đổi vai trò',
   CREATE: 'Tạo mới', UPDATE: 'Cập nhật', DELETE: 'Xóa', CREATE_STAFF: 'Tạo tài khoản nhân viên',
+  APPROVE_HORSE: 'Phê duyệt hồ sơ ngựa', REJECT_HORSE: 'Từ chối hồ sơ ngựa', VET_LOCK: 'Khóa huấn luyện', VET_UNLOCK: 'Mở khóa huấn luyện', ASSIGN_TRAINER: 'Phân công HLV phụ trách ngựa',
 };
 export const loadAuditLogs = async (): Promise<Row[] | null> => {
   if (me()?.role !== 'ClubManager') return null;

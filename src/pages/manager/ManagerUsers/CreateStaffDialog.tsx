@@ -80,16 +80,14 @@ export const CreateStaffDialog: React.FC<{ onClose: () => void; onDone: (u: Mana
         </Field>
       </div>
 
-      {(role === 'HeadTrainer' || role === 'Veterinarian') && (
+      {role === 'Veterinarian' && (
         <div className="ht-grid-2">
           <Field label="Số chứng chỉ hành nghề" htmlFor="licenseNumber" hint="Không bắt buộc">
-            <TextInput icon="file" placeholder={role === 'Veterinarian' ? 'VD: BSTY-2021-0456' : 'VD: HLV-2020-0123'} {...form.field('licenseNumber')} />
+            <TextInput icon="file" placeholder="VD: BSTY-2021-0456" {...form.field('licenseNumber')} />
           </Field>
-          {role === 'Veterinarian' && (
-            <Field label="Nơi công tác / phòng khám" htmlFor="specialization" hint="Không bắt buộc">
-              <TextInput icon="heart" placeholder="VD: Phòng khám thú y CLB" {...form.field('specialization')} />
-            </Field>
-          )}
+          <Field label="Nơi công tác / phòng khám" htmlFor="specialization" hint="Không bắt buộc">
+            <TextInput icon="heart" placeholder="VD: Phòng khám thú y CLB" {...form.field('specialization')} />
+          </Field>
         </div>
       )}
       {role === 'Groom' && (

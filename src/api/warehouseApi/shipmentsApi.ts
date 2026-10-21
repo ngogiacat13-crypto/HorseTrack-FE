@@ -1,6 +1,6 @@
 import { http } from '../http';
 import { addAudit, type Actor } from '../managerApi';
-import { dateKey, isDate, type Protocol } from '../vetApi';
+import { dateKey, isDate, type Protocol, type StockLine } from '../vetApi';
 import { goTo, saveProtocol } from '../vetApi/shared';
 import { available, OPEN_SHIPMENT, tracksLots } from './labels';
 import { get, min, moveStock, nextId, now, posInt } from './shared';
@@ -113,8 +113,7 @@ export const shipmentsApi = {
       if (!Number.isInteger(qty) || qty < 0) throw new Error(`${l.name}: số lượng nhận phải là số nguyên ≥ 0.`);
       const it = items.find((i) => i.id === l.itemId) as StockItem;
       if (qty > 0 && tracksLots(it)) {
-        if (!r?.lot.trim()) throw new Error(`${l.name}: nhập số lô.`);
-        if (!/^(0[1-9]|1[0-2])\/\d{4}$/.test(r.expiry)) throw new Error(`${l.name}: hạn dùng theo dạng mm/yyyy.`);
+        if (!/^(0[1-9]|1[0-2])\/\d{4}$/.test(r?.expiry ?? "")) throw new Error(`${l.name}: hạn dùng theo dạng mm/yyyy.`);
       }
       return { ...l, received: qty, lot: r?.lot.trim() || null, expiry: r?.expiry.trim() || null };
     });
@@ -132,7 +131,7 @@ export const shipmentsApi = {
     items = await get<StockItem[]>('/inventory');
     for (const p of await linkedProtocols(s)) {
       if (!p.stock) continue;
-      const stockLines = [];
+      const stockLines: StockLine[] = [];
       for (const l of p.stock.lines) {
         const it = items.find((i) => i.id === l.itemId);
         if (l.short > 0 && it && lines.some((x) => x.itemId === l.itemId)) {
@@ -145,9 +144,13 @@ export const shipmentsApi = {
         } else stockLines.push(l);
       }
       const done = stockLines.every((l) => l.short === 0);
-      await saveProtocol(p, { stock: { ...p.stock, lines: stockLines }, ...(done && p.state !== 'REQUIRES_VET_REVIEW' ? goTo(p, 'REQUIRES_VET_REVIEW') : {}),
-        note: done ? `Hàng đã về (${s.id}) — bác sĩ rà soát lại tình trạng ngựa trước khi cấp phát.` : p.note },
-      { who: actor.name, text: `hàng về ${s.id}${isLate ? ' (trễ so với mốc cần thuốc)' : ''} · báo BS ${p.vet} rà soát lại`, at: now() });
+      const approvedPhases = [...new Set([...(p.approvedPhases ?? []), ...p.phases.filter((ph) => {
+        const phaseLines = stockLines.filter((l) => l.phaseNo === ph.no);
+        return phaseLines.length > 0 && phaseLines.every((l) => l.short === 0);
+      }).map((ph) => ph.no)])];
+      await saveProtocol(p, { stock: { ...p.stock, lines: stockLines }, ...(done ? goTo(p, 'STOCK_AVAILABLE') : {}), approvedPhases,
+        note: done ? `Hàng đã về (${s.id}) — kho đủ hàng, chờ bác sĩ xác nhận để cấp phát.` : p.note },
+      { who: actor.name, text: `hàng về ${s.id}${isLate ? ' (trễ so với mốc cần thuốc)' : ''} · ${done ? 'đủ hàng, báo BS xác nhận' : `còn thiếu ${stockLines.filter((l) => l.short > 0).length} mặt hàng`}`, at: now() });
       notified.push(p.id);
     }
     const reqs = (await get<Requisition[]>('/requisitions')).filter((r) => r.status === 'WAITING_RESTOCK' && (r.shipmentId === s.id || r.id === s.forRef));

@@ -6,6 +6,7 @@ import { Icon } from '../../../components/ui/Icon';
 import { BackButton, Badge, Callout, PageHeader, Panel, Timeline } from '../../../components/ui/Ht';
 import { LoadState } from '../../../components/trainer/TrainerParts';
 import { ProtocolBadge, ProtocolPath } from '../../../components/vet/VetParts';
+import { stockLines } from '../../../api/vetApi';
 import { StockCheckForm } from './StockCheckForm';
 import { DispenseForm } from './DispenseForm';
 
@@ -45,7 +46,7 @@ export const WarehouseMedicalDetail: React.FC = () => {
               <table className="ht-table">
                 <thead><tr><th>Vật tư</th><th className="num">Cần</th><th className="num">Đã giữ</th><th>Lô</th><th>Thiếu · ETA</th></tr></thead>
                 <tbody>
-                  {p.stock.lines.map((l) => (
+                  {stockLines(p).map((l) => (
                     <tr key={l.itemId}>
                       <td className="strong">{l.name}</td><td className="num">{l.need} {l.unit}</td><td className="num">{l.held}</td>
                       <td className="mono" style={{ fontSize: 12 }}>{l.lot ? `${l.lot} · ${l.expiry}` : '—'}</td>

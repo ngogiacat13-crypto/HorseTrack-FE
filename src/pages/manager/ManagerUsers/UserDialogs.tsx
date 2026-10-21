@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { AssignedHorse, AssignedStall, GroomAssignment, ManagedUser, managerApi } from '../../../api/managerApi';
 import { useActor } from '../../../auth/AuthContext';
 import { useAction } from '../../../hooks/useAction';
-import { Icon } from '../../../components/ui/Icon';
 import { Callout, Dialog, ReasonField } from '../../../components/ui/Ht';
 import { ROLE_LABEL } from '../../../components/layout/nav';
+import { TrainerHorsesDialog } from './TrainerHorsesDialog';
 
 const useReason = () => {
   const [reason, setReason] = useState('');
@@ -14,39 +14,34 @@ const useReason = () => {
   return { reason, err, check, onChange };
 };
 
-export const AssignmentDialog: React.FC<{ user: ManagedUser; data: { grooms: GroomAssignment[]; stalls: AssignedStall[]; horses: AssignedHorse[] }; onClose: () => void; onDone: () => void }> = ({ user, data, onClose, onDone }) => {
+export const AssignmentDialog: React.FC<{ user: ManagedUser; data: { grooms: GroomAssignment[]; stalls: AssignedStall[]; horses: AssignedHorse[] }; onClose: () => void; onDone: () => void }> = ({ user, data, onClose, onDone }) => (
+  user.role === 'HeadTrainer'
+    ? <TrainerHorsesDialog user={user} stalls={data.stalls} horses={data.horses} onClose={onClose} onDone={onDone} />
+    : <GroomZoneDialog user={user} data={data} onClose={onClose} onDone={onDone} />
+);
+
+const GroomZoneDialog: React.FC<{ user: ManagedUser; data: { grooms: GroomAssignment[]; stalls: AssignedStall[]; horses: AssignedHorse[] }; onClose: () => void; onDone: () => void }> = ({ user, data, onClose, onDone }) => {
   const actor = useActor();
   const { busy, error, run } = useAction();
   const current = data.grooms.find((g) => g.id === user.id || g.name === user.fullName);
-  const [zones, setZones] = useState<string[]>(current?.zones ?? []);
-  const [horseIds, setHorseIds] = useState<string[]>(() => user.role === 'HeadTrainer'
-    ? data.horses.filter((h) => h.trainerId === user.id).map((h) => h.id)
-    : data.horses.filter((h) => (current?.zones ?? []).includes(data.stalls.find((s) => s.horseId === h.id)?.zone ?? '')).map((h) => h.id));
-  const available = user.role === 'HeadTrainer'
-    ? data.horses
-    : data.horses.filter((h) => zones.includes(data.stalls.find((s) => s.horseId === h.id)?.zone ?? ''));
-  const toggle = (value: string, values: string[], setValues: React.Dispatch<React.SetStateAction<string[]>>) => setValues(values.includes(value) ? values.filter((x) => x !== value) : [...values, value]);
-  const toggleZone = (zone: string) => {
-    const adding = !zones.includes(zone);
-    setZones((xs) => adding ? [...xs, zone] : xs.filter((x) => x !== zone));
-    const ids = data.horses.filter((h) => data.stalls.find((s) => s.horseId === h.id)?.zone === zone).map((h) => h.id);
-    setHorseIds((xs) => adding ? [...new Set([...xs, ...ids])] : xs.filter((id) => !ids.includes(id)));
-  };
+  const currentZone = current?.zones[0] ?? '';
+  const occupied = new Set(data.grooms.filter((g) => g.id !== user.id && g.role === 'Groom').flatMap((g) => g.zones));
+  const [zone, setZone] = useState(currentZone);
   const save = async () => {
-    const ok = user.role === 'HeadTrainer'
-      ? await run(() => managerApi.assignTrainer(user, horseIds, actor), `Đã phân công ${user.fullName}: ${horseIds.length} ngựa.`)
-      : await run(() => managerApi.assignGroom(user, zones, horseIds, actor), `Đã phân công ${user.fullName}: ${zones.join(', ')} · ${horseIds.length} ngựa.`);
-    if (ok) onDone();
+    const done = zone ? `Đã cập nhật khu cho ${user.fullName}: ${zone}.` : `Đã bỏ phân công khu của ${user.fullName}.`;
+    if (await run(() => managerApi.assignGroom(user, zone ? [zone] : [], actor), done)) onDone();
   };
   return (
-    <Dialog open onClose={onClose} icon="stable" tone="brand" width={700} busy={busy} busyLabel="Đang lưu…" title={`Phân công ${user.role === 'HeadTrainer' ? 'huấn luyện' : 'chăm sóc'} · ${user.fullName}`} sub={user.role === 'HeadTrainer' ? 'Chọn những ngựa HLV trưởng phụ trách huấn luyện.' : 'Chọn khu làm việc và những ngựa người chăm được phụ trách trong các khu đó.'} confirmLabel="Lưu phân công" onConfirm={save}>
+    <Dialog open onClose={onClose} icon="stable" tone="brand" width={700} busy={busy} busyLabel="Đang lưu…" testId="groom-zone-dialog" title={`Phân công chăm sóc · ${user.fullName}`} sub="Chọn một khu làm việc; người chăm phụ trách mọi chuồng trong khu đó." confirmLabel="Lưu phân công" onConfirm={save}>
       {error && <Callout tone="danger" style={{ marginBottom: 14 }}>{error}</Callout>}
-      {user.role === 'Groom' && <><div className="ht-label" style={{ marginBottom: 8 }}>Khu chăm sóc</div><div className="ht-roles">{['Khu A', 'Khu B', 'Khu C'].map((z) => <label key={z} className="ht-role"><input type="checkbox" checked={zones.includes(z)} onChange={() => toggleZone(z)} />{z}</label>)}</div></>}
-      <div className="ht-label" style={{ margin: '16px 0 8px' }}>Ngựa được giao</div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, maxHeight: 280, overflowY: 'auto' }}>
-        {available.map((h) => { const stall = data.stalls.find((s) => s.horseId === h.id); return <label key={h.id} className="ht-role" style={{ alignItems: 'flex-start' }}><input type="checkbox" checked={horseIds.includes(h.id)} onChange={() => toggle(h.id, horseIds, setHorseIds)} /><span><b>{h.name}</b><small className="sub">{stall?.id} · {stall?.zone} · Chủ: {h.owner}</small></span></label>; })}
+      <div className="ht-label" style={{ marginBottom: 8 }}>Khu chăm sóc</div>
+      <div className="ht-roles">{['Khu A', 'Khu B', 'Khu C'].map((z) => {
+        const disabled = occupied.has(z) && z !== currentZone;
+        return <label key={z} className="ht-role" style={disabled ? { opacity: 0.5 } : undefined}><input type="radio" name={`zone-${user.id}`} data-testid={`groom-zone-${z}`} checked={zone === z} disabled={disabled} onChange={() => setZone(z)} />{z}{disabled && <small className="sub"> · đã có người chăm</small>}</label>;
+      })}
+        {currentZone && <label className="ht-role"><input type="radio" name={`zone-${user.id}`} data-testid="groom-zone-none" checked={zone === ''} onChange={() => setZone('')} />Bỏ phân công</label>}
       </div>
-      {!available.length && <div className="ht-empty">Chưa có ngựa để phân công.</div>}
+      <Callout tone="info" style={{ marginTop: 16 }}>Mỗi người chăm phụ trách đúng một khu và mọi chuồng trong khu đó; mỗi khu chỉ có một người chăm. Chỉ đổi hoặc bỏ khu được khi người chăm không còn việc chăm sóc / buổi tập chưa thực hiện ở khu hiện tại.</Callout>
     </Dialog>
   );
 };

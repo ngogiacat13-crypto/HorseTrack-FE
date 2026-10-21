@@ -1,5 +1,5 @@
 import React from 'react';
-import { groomApi } from '../../../api/groomApi';
+import { CANCELLABLE, groomApi } from '../../../api/groomApi';
 import { REQ_LABEL, type Requisition } from '../../../api/warehouseApi';
 import { useActor } from '../../../auth/AuthContext';
 import { useAction } from '../../../hooks/useAction';
@@ -38,7 +38,11 @@ export const GroomRequests: React.FC = () => {
                     <td className="ht-mono" style={{ whiteSpace: 'nowrap' }}>{r.qty} {r.unit}</td>
                     <td className="ht-mono">{r.neededBy}</td>
                     <td><Badge tone={REQ_LABEL[r.status][1]}>{REQ_LABEL[r.status][0]}</Badge></td>
-                    <td>{r.status === 'ISSUED' && (
+                    <td>{CANCELLABLE.includes(r.status) && (
+                      <button type="button" className="ht-btn ht-btn--ghost ht-btn--sm" data-testid="cancel-requisition-btn" disabled={act.busy} onClick={() => act.run(() => groomApi.cancelRequisition(r, actor), `Đã hủy yêu cầu ${r.id}.`)}>
+                        <Icon name="x" size={14} />Hủy
+                      </button>
+                    )}{r.status === 'ISSUED' && (
                       <button type="button" className="ht-btn ht-btn--secondary ht-btn--sm" disabled={act.busy} onClick={() => act.run(() => groomApi.confirmReceived(r, actor), `Đã xác nhận nhận ${r.item}.`)}>
                         <Icon name="check" size={14} />Đã nhận
                       </button>
