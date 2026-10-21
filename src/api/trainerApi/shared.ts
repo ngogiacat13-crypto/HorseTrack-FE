@@ -1,4 +1,5 @@
 import { DEMO_NOW, http } from '../http';
+import { USE_BACKEND } from '../beClient';
 import type { Actor } from '../managerApi';
 import type { Horse, TrainingPlan, TrainingSession } from './types';
 import { trainingBlock } from './labels';
@@ -34,6 +35,7 @@ export const getHorseChecked = async (horseId: string, actor: Actor) => {
 export const CURRENT_PLAN: TrainingPlan['status'][] = ['PLANNED', 'ACTIVE', 'PAUSED'];
 const dayKey = (ddmmyyyy: string) => ddmmyyyy.split('/').reverse().join('');
 export const withLiveStatus = async (plans: TrainingPlan[], sessions?: TrainingSession[]) => {
+  if (USE_BACKEND) return plans;
   const due = plans.filter((p) => p.status === 'PLANNED' && dayKey(p.startDate) <= dayKey(DEMO_NOW.date));
   if (!due.length) return plans;
   const all = sessions ?? (await get<TrainingSession[]>('/trainingSessions'));

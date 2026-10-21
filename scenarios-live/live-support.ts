@@ -1,4 +1,4 @@
-import { appendFileSync, mkdirSync, readFileSync } from 'node:fs';
+import { appendFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { expect, type Page } from '@playwright/test';
 
 export type LiveRole = 'ClubManager' | 'HeadTrainer' | 'Veterinarian' | 'Groom' | 'WarehouseManager' | 'HorseOwner';
@@ -24,11 +24,20 @@ const USERNAME_ROLE: Record<string, LiveRole> = {
 
 export interface LiveAccount { username: string; password: string; role: LiveRole }
 
+const ACCOUNT_FILES = ['../.env.live.local', '../.env.backend'];
+
+const readIfPresent = (relative: string) => {
+  const file = new URL(relative, import.meta.url);
+  return existsSync(file) ? readFileSync(file, 'utf8') : '';
+};
+
 export const liveAccounts = (): LiveAccount[] => {
-  const envFile = readFileSync(new URL('../.env.backend', import.meta.url), 'utf8');
+  const envFile = ACCOUNT_FILES.map(readIfPresent).join('\n');
+  const seen = new Set<string>();
   return envFile.split(/\r?\n/)
     .map((line) => line.match(/^#\s+(\S+)\s+\/\s+(\S+)/))
     .filter((match): match is RegExpMatchArray => !!match && match[1] in USERNAME_ROLE)
+    .filter((match) => !seen.has(match[1]) && !!seen.add(match[1]))
     .map(([, username, password]) => ({ username, password, role: USERNAME_ROLE[username] }));
 };
 

@@ -277,7 +277,6 @@ export const managerApi = {
     const [grooms, stalls, allHorses] = await Promise.all([
       get<GroomAssignment[]>('/grooms'), get<AssignedStall[]>('/stalls'), get<AssignedHorse[]>('/horses'),
     ]);
-    // Chỉ ngựa đã được duyệt mới có chuồng và được phép phân công.
     const horses = allHorses.filter((h) => h.stall && h.stall !== '—' && h.stall !== 'Chưa cấp chuồng');
     return { grooms, stalls, horses };
   },
@@ -308,6 +307,15 @@ export const managerApi = {
     const selected = new Set(horseIds);
     const invalid = assignments.horses.find((h) => selected.has(h.id) && !zones.includes(assignments.stalls.find((s) => s.horseId === h.id)?.zone ?? ''));
     if (invalid) throw new Error(`${invalid.name} không thuộc khu đã chọn.`);
+    if (USE_BACKEND) {
+      const dropped = assignments.horses.filter((h) => h.trainerId === user.id && !selected.has(h.id));
+      if (dropped.length) throw new Error(`Backend chưa hỗ trợ bỏ phân công. Hãy phân công HLV khác cho: ${dropped.map((h) => h.name).join(', ')}.`);
+      for (const h of assignments.horses.filter((x) => selected.has(x.id) && x.trainerId !== user.id)) {
+        await be.put(`/horses/${h.id}/assign-trainer`, { trainerId: Number(user.id) });
+      }
+      invalidate('horses', 'auditLogs');
+      return { horseIds };
+    }
     await Promise.all(assignments.horses.map((h) => {
       if (selected.has(h.id)) return http.patch(`/horses/${h.id}`, { trainerId: user.id });
       if (h.trainerId === user.id) return http.patch(`/horses/${h.id}`, { trainerId: '' });

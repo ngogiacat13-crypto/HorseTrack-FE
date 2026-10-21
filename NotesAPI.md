@@ -393,3 +393,25 @@ Backend tự chặn thêm (FE hiện nguyên thông báo lỗi): Mã phu bị ph
 ### FE của nhóm (`4191b17` bỏ "Đổi vai trò", `b3de28e` "Phân công cho HLV")
 - ⚠️ **Phân công ngựa cho HLV** chỉ lưu tạm trên trình duyệt khi chạy backend (`PATCH /horses/{id}` `trainerId` không có API backend tương ứng) → tải lại trang là mất. Backend hiện cho mọi HLV thấy mọi ngựa. Cần nhóm backend thêm API phân công nếu muốn giữ chức năng này.
 - Đã xóa import `Icon` thừa trong `UserDialogs.tsx` (cảnh báo lint sau khi bỏ "Đổi vai trò").
+
+---
+
+## 14. Backend `86cc948` + `6b843c8` (nhánh `test`, 21/10/2026 14:21–14:55)
+
+**Backend đang chạy ở 8080 vẫn là bản trước `9745ab6`** → `npm run scenarios:live` báo `GET /care-tasks/overdue` 500. Cần pull `test` + chạy lại backend, và chạy script `DATABASE_training_plan_pending_status.sql` (cho phép giáo án `PENDING`), `DATABASE_backfill_assigned_trainer.sql`.
+
+Tài khoản cho `npm run scenarios:live` giờ đặt trong **`.env.live.local`** (chỉ ở máy, đã gitignore), mỗi dòng `#   <username> / <password>`; `.env.backend` không còn chứa mật khẩu.
+
+### Đã nối
+| Màn hình | API | |
+|---|---|---|
+| QL CLB → Người dùng → "Phân công" cho HLV (chức năng của nhóm, trước chỉ lưu trên trình duyệt) | `PUT /horses/{id}/assign-trainer` `{trainerId}` | ☑️ — backend **chưa có API bỏ phân công**: bỏ chọn ngựa sẽ báo "Hãy phân công HLV khác" |
+| Danh sách ngựa: hiện HLV phụ trách (`assignedTrainerId/Name`); HLV chỉ thấy ngựa được phân công (backend lọc) | `GET /horses` | ☑️ |
+| Mã phu: nút **"Xác nhận nhận phiên"** (bắt buộc trước khi bắt đầu/hoàn thành; backend chặn xác nhận phiên đã qua giờ) | `PUT /training-sessions/{id}/confirm` | ☑️ |
+| Giáo án `PENDING` → "Chưa bắt đầu", `CANCELLED` → "Đã hủy" (tab Lịch sử). Trạng thái chạy do backend quyết định (bỏ tự chuyển ACTIVE phía FE khi chạy backend) | `GET /training-plans` | ☑️ |
+| Nhật ký: nhãn "Phân công HLV phụ trách ngựa" (`ASSIGN_TRAINER`) | `GET /audit-logs/paged` | ✅ |
+
+### Lưu ý nghiệp vụ mới từ backend
+- Giáo án chỉ **ACTIVE** khi có ít nhất 1 phiên được Mã phu xác nhận **và** đã tới ngày bắt đầu (tự kiểm 5 phút/lần).
+- HLV chỉ thấy/giao việc cho ngựa được Quản lý CLB phân công → HLV mới tạo sẽ thấy danh sách ngựa trống cho tới khi được phân công.
+- Chỉ phân công HLV cho ngựa đã duyệt (có chuồng).
