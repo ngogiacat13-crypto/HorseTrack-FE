@@ -6,7 +6,7 @@ import { MEALS, dmy, editBlock, isCurrent, isUpcoming, toMealType } from './logi
 import { type NutritionPlan, type TodayLine, nutritionApi } from './nutritionApi';
 import { NutritionPlanDialog } from './NutritionPlanDialog';
 
-const STATUS: Record<string, string> = { ACTIVE: 'Đang áp dụng', CANCELLED: 'Đã hủy' };
+const STATUS: Record<string, string> = { ACTIVE: 'Đang áp dụng', ENDED: 'Đã kết thúc', CANCELLED: 'Đã hủy' };
 const fmtQty = (q: number) => (Number.isInteger(q) ? String(q) : q.toLocaleString('vi-VN'));
 
 const Meals: React.FC<{ lines: { mealType: string; name: string; quantity: number; unit?: string | null }[] }> = ({ lines }) => (
