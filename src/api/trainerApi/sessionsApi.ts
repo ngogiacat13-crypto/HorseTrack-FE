@@ -21,8 +21,6 @@ export const sessionsApi = {
 
   async stopAndRequestVet(s: TrainingSession, note: string, actor: Actor) {
     if (USE_BACKEND) {
-      // Backend dừng buổi tập (WAITING_VET) và tự tạo ca SESSION_STOP cho bác sĩ.
-      // Bác sĩ khóa huấn luyện hoặc đóng ca thì buổi tập kết thúc và giáo án đóng lại để lập giáo án mới.
       if (note.trim().length < 10) throw new Error('Mô tả dấu hiệu cho bác sĩ ít nhất 10 ký tự.');
       const peak = s.readings[s.readings.length - 1];
       await be.put(`/training-sessions/${s.id}/stop`, { reason: note.trim(), requestVet: true, severity: 'HIGH', heartRate: peak?.hr });
@@ -49,7 +47,6 @@ export const sessionsApi = {
     return data;
   },
 
-  // Dừng buổi tập chưa kết thúc từ lịch tập (chỉ số vượt ngưỡng) và gửi ca cho bác sĩ
   async stopSessionForVet(s: TrainingSession, input: { reason: string; heartRate?: number; speedKmh?: number; severity: 'MEDIUM' | 'HIGH' | 'CRITICAL' }, actor: Actor) {
     if (['STOPPED', 'WAITING_VET', 'COMPLETED'].includes(s.status)) throw new Error('Buổi tập này đã kết thúc.');
     if (input.reason.trim().length < 10) throw new Error('Mô tả dấu hiệu cho bác sĩ ít nhất 10 ký tự.');

@@ -7,7 +7,6 @@ import { Callout, Dialog } from '../../../components/ui/Ht';
 
 type Severity = 'MEDIUM' | 'HIGH' | 'CRITICAL';
 
-// HLV dừng buổi tập vì chỉ số sức khỏe vượt ngưỡng và gửi ca cho bác sĩ thú y
 export const StopSessionDialog: React.FC<{ session: TrainingSession; onClose: () => void; onDone: () => void }> = ({ session: s, onClose, onDone }) => {
   const actor = useActor();
   const { busy, error, setError, run } = useAction();

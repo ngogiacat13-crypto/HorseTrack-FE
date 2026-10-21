@@ -33,7 +33,6 @@ export const WeekStrip: React.FC<{ sessions: TrainingSession[]; day: string; onD
   </div>
 );
 
-// Buổi tập chưa kết thúc: HLV được dừng và gửi bác sĩ
 const STOPPABLE = ['SCHEDULED', 'IN_PROGRESS', 'RESUMED'];
 
 export const DaySessions: React.FC<{ day: string; sessions: TrainingSession[]; onEvaluate: (s: TrainingSession) => void; onStop: (s: TrainingSession) => void }> = ({ day, sessions, onEvaluate, onStop }) => {
