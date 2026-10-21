@@ -415,3 +415,32 @@ Tài khoản cho `npm run scenarios:live` giờ đặt trong **`.env.live.local`
 - Giáo án chỉ **ACTIVE** khi có ít nhất 1 phiên được Mã phu xác nhận **và** đã tới ngày bắt đầu (tự kiểm 5 phút/lần).
 - HLV chỉ thấy/giao việc cho ngựa được Quản lý CLB phân công → HLV mới tạo sẽ thấy danh sách ngựa trống cho tới khi được phân công.
 - Chỉ phân công HLV cho ngựa đã duyệt (có chuồng).
+
+---
+
+## 15. Backend `705c9f4` — Tài chính, VNPay, phác đồ chờ thanh toán (nhánh `test`, 21/10/2026 15:51)
+
+Backend đang chạy ở 8080 **đã có** bản này (134 API). DB chưa có hóa đơn nào (`POST /billing/invoices/generate` chưa chạy) → các màn tài chính hiện số 0.
+
+### Đã nối (code: `src/api/beFinance.ts`)
+| Màn hình | API | |
+|---|---|---|
+| QL CLB · Hóa đơn: danh sách, quá hạn, đình chỉ, chờ kích hoạt lại | `GET /billing/invoices` | ✅ đọc (0 hóa đơn) |
+| QL CLB · Đình chỉ dịch vụ (lý do 10–255 ký tự, chỉ khi nợ ≥ 25 ngày) | `PUT /billing/owners/{ownerId}/suspend` | ☑️ |
+| QL CLB · Kích hoạt lại (sau khi chủ ngựa trả đủ qua VNPay) | `PUT /billing/owners/{ownerId}/reactivate` | ☑️ |
+| QL CLB · Báo cáo tài chính: đã thu, phát hành, tỷ lệ thu, theo tháng, theo dịch vụ, tuổi nợ, nợ theo chủ ngựa | `GET /reports/finance` | ✅ đọc |
+| Chủ ngựa · Hóa đơn + chi tiết (dòng phí, phí trễ hạn, phí kích hoạt lại, số tiền phải trả hôm nay theo backend) | `GET /owner/invoices?includeClosed=true`, `GET /owner/invoices/{id}` | ☑️ (chưa có tài khoản chủ ngựa để thử) |
+| Chủ ngựa · Lịch sử thanh toán | `GET /owner/invoices/payment-history` | ☑️ |
+| Chủ ngựa · Thanh toán → chuyển sang trang **VNPay Sandbox thật** | `POST /owner/invoices/{id}/vnpay` → `paymentUrl` | ☑️ |
+| Chủ ngựa · Quay về sau VNPay: trang Hóa đơn hiện kết quả (`?status=SUCCESS/FAILED/PENDING/INVALID`, testid `vnpay-result`) | `GET /payments/vnpay/return` (backend chuyển hướng) | ☑️ |
+| Phác đồ `ON_HOLD_PAYMENT` → "Tạm dừng · chờ chủ ngựa thanh toán" (trước đây FE không biết trạng thái này → hiện sai thành "Chờ kho kiểm tồn") | `GET /medical-management/protocols` | ✅ |
+
+Chưa nối (FE chưa có nút): phát hành hóa đơn tháng `POST /billing/invoices/generate`, hủy hóa đơn `PUT /billing/invoices/{id}/cancel`, đặt phí lưu chuồng `PUT /billing/stalls/{stallId}/monthly-fee`. "Gửi nhắc thanh toán" chưa có API backend (chỉ ghi nhật ký trên trình duyệt).
+
+### Cấu hình VNPay (backend, IntelliJ → Environment variables)
+`VNPAY_TMN_CODE=…;VNPAY_HASH_SECRET=…` (đăng ký tại sandbox.vnpayment.vn/devreg) và
+`VNPAY_FRONTEND_RESULT_URL=http://localhost:5173/owner/invoices` để VNPay quay về đúng trang Hóa đơn của FE.
+Script DB cần chạy: `DATABASE_protocol_payment_hold.sql`.
+
+### Còn lại
+- Một số chữ cố định trên màn tài chính vẫn là dữ liệu demo ("Quý 3/2026", "tháng 09", "điểm so với Q2", "Tính theo đồng hồ demo 03/10/2026").

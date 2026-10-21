@@ -12,9 +12,9 @@ export const ManagerFinanceReport: React.FC = () => {
   useEffect(() => { managerApi.getFinanceReport().then(setR); }, []);
   if (!r) return <div className="ht ht-page"><Loading /></div>;
 
-  const max = Math.max(...r.months.map((m) => m.billed));
-  const agingTotal = r.aging.reduce((s, a) => s + a.amount, 0);
-  const serviceTotal = r.byService.reduce((s, a) => s + a.amount, 0);
+  const max = Math.max(1, ...r.months.map((m) => m.billed));
+  const agingTotal = r.aging.reduce((s, a) => s + a.amount, 0) || 1;
+  const serviceTotal = r.byService.reduce((s, a) => s + a.amount, 0) || 1;
 
   return (
     <div className="ht ht-page">

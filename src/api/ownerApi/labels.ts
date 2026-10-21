@@ -13,8 +13,15 @@ export const POLICY = {
 const PAID_STATES = ['PAID', 'ACTIVE', 'REACTIVATION_PENDING'];
 export const isPaid = (i: Pick<OwnerInvoice, 'status'>) => PAID_STATES.includes(i.status);
 
+type BackendDue = { lateFee?: number; reactivationFee?: number; amountDue?: number };
+
 export const invoiceDue = (i: OwnerInvoice): InvoiceDue => {
   if (isPaid(i)) return { overdueDays: 0, penalty: 0, reactivationFee: 0, total: i.amount, group: 'PAID' };
+  const backend = i as OwnerInvoice & BackendDue;
+  if (typeof backend.amountDue === 'number') {
+    const group = i.status === 'SUSPENDED' ? 'SUSPENDED' : i.overdueDays > 0 ? 'OVERDUE' : 'UNPAID';
+    return { overdueDays: i.overdueDays, penalty: backend.lateFee ?? 0, reactivationFee: backend.reactivationFee ?? 0, total: backend.amountDue, group };
+  }
   const overdueDays = Math.max(0, -daysFromToday(i.dueDate));
   const penalty = overdueDays > POLICY.graceDays ? Math.round((i.amount * POLICY.penaltyRate) / 1000) * 1000 : 0;
   const suspended = i.status === 'SUSPENDED';

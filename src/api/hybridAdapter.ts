@@ -1,5 +1,6 @@
 import type { AxiosAdapter, InternalAxiosRequestConfig } from 'axios';
 import { be, type ApiResponse } from './beClient';
+import { loadInvoices, loadPayments } from './beFinance';
 import { fail, mockAdapter, queryRows, respond } from './mockServer';
 import { loadAuditLogs, loadInventory, loadProtocols, loadRequisitions, loadShipments, loadStockChecks, loadStockTx, loadUsers } from './beDomain';
 
@@ -264,6 +265,12 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
       return { fullName: (o?.fullname as string) ?? `Chủ ngựa #${h.ownerId}`, email: (o?.email as string) ?? '', phone: (o?.phone as string) || '—' };
     })());
     return hs.map((h, index) => toRegistration(h, histories[index], ownerOf(h), hs));
+  },
+  async invoices() {
+    return ((await loadInvoices(me()?.role)) as Row[] | null) ?? ((await mockGet('/invoices')) as Row[]);
+  },
+  async payments() {
+    return ((await loadPayments(me()?.role)) as Row[] | null) ?? ((await mockGet('/payments')) as Row[]);
   },
   async users() {
     return (await loadUsers()) ?? ((await mockGet('/users')) as Row[]);
