@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { DEMO_NOW } from '../../../api/http';
+import { USE_BACKEND } from '../../../api/beClient';
 import { groomApi } from '../../../api/groomApi';
 import { SESSION_LABEL } from '../../../api/trainerApi';
 import { useActor } from '../../../auth/AuthContext';
@@ -109,9 +110,15 @@ export const GroomSessionRun: React.FC = () => {
           </Panel>
           <Panel as="h3" title="Thao tác">
             <div className="ht-panel__body" style={{ display: 'grid', gap: 10 }}>
+              {s.status === 'SCHEDULED' && USE_BACKEND && !s.confirmed && (
+                <button type="button" className="ht-btn ht-btn--primary" data-testid="confirm-session-btn" disabled={act.busy || !!horse.trainingLocked}
+                  onClick={() => act.run(() => groomApi.confirm(s, actor), `Đã xác nhận nhận phiên ${s.id}.`)}>
+                  <Icon name="check" size={16} />Xác nhận nhận phiên
+                </button>
+              )}
               {s.status === 'SCHEDULED' && (
                 <>
-                  <button type="button" className="ht-btn ht-btn--primary" disabled={act.busy || s.date !== DEMO_NOW.date || !!horse.trainingLocked}
+                  <button type="button" className="ht-btn ht-btn--primary" data-testid="start-session-btn" disabled={act.busy || s.date !== DEMO_NOW.date || !!horse.trainingLocked || (USE_BACKEND && !s.confirmed)}
                     onClick={() => act.run(() => groomApi.start(s, actor), `Đã bắt đầu phiên ${s.id}.`)}>
                     <Icon name="pulse" size={16} />Bắt đầu phiên
                   </button>

@@ -303,6 +303,15 @@ export const managerApi = {
     if (user.role !== 'HeadTrainer') throw new Error('Chỉ có thể phân công cho HLV trưởng.');
     const assignments = await managerApi.getGroomAssignments();
     const selected = new Set(horseIds);
+    if (USE_BACKEND) {
+      const dropped = assignments.horses.filter((h) => h.trainerId === user.id && !selected.has(h.id));
+      if (dropped.length) throw new Error(`Backend chưa hỗ trợ bỏ phân công. Hãy phân công HLV khác cho: ${dropped.map((h) => h.name).join(', ')}.`);
+      for (const h of assignments.horses.filter((x) => selected.has(x.id) && x.trainerId !== user.id)) {
+        await be.put(`/horses/${h.id}/assign-trainer`, { trainerId: Number(user.id) });
+      }
+      invalidate('horses', 'auditLogs');
+      return { horseIds };
+    }
     await Promise.all(assignments.horses.map((h) => {
       if (selected.has(h.id)) return http.patch(`/horses/${h.id}`, { trainerId: user.id });
       if (h.trainerId === user.id) return http.patch(`/horses/${h.id}`, { trainerId: '' });

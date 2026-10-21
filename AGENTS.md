@@ -34,7 +34,7 @@ Xem trình duyệt chạy: `npx playwright test --headed`; xem lại lỗi: `npx
 
 - Sửa màn hình nào ⇒ thêm/sửa kịch bản tương ứng trong `scenarios/` (đặt tên theo hành vi, vd `assign-session.spec.ts`).
 - Tài khoản dữ liệu mẫu lấy từ `db.json` (xem `scenarios/support.ts`), không ghi mật khẩu thật vào code.
-- Khi nối backend thật: bật backend (cổng 8080) rồi chạy `npm run scenarios:live` (thư mục `scenarios-live/`, chỉ đọc, tài khoản lấy từ `.env.backend`).
+- Khi nối backend thật: bật backend (cổng 8080) rồi chạy `npm run scenarios:live` (thư mục `scenarios-live/`, chỉ đọc; tài khoản đặt trong `.env.live.local` — file chỉ ở máy, không commit — mỗi dòng `#   <username> / <password>`).
   Mọi trang phải không có lỗi 5xx/JavaScript; kết quả chi tiết ở `test-results/live-report/`. Ghi kết luận vào `NotesAPI.md`.
 
 ## 5. Quy tắc 2 lần
