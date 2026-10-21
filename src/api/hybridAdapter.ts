@@ -165,6 +165,7 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
   },
 
   async vetCases() {
+    if (me()?.role === 'HorseOwner') return [];
     const rows = await orEmpty(data<BeCase[]>('/medical/cases'));
     const SRC: Record<string, string> = { GROOM: 'GROOM_REPORT', GROOM_REPORT: 'GROOM_REPORT', TRAINER: 'TRAINER_REQUEST', TRAINER_REQUEST: 'TRAINER_REQUEST' };
     const ST: Record<string, string> = { NEW: 'NEW', PENDING: 'NEW', IN_EXAM: 'NEW', MONITORING: 'MONITORING', CLOSED: 'CLOSED', RESOLVED: 'CLOSED', CANCELLED: 'CLOSED' };
@@ -536,12 +537,8 @@ const WRITES: Record<string, Partial<Record<'post' | 'patch' | 'put', Write>>> =
       return res.data.data;
     },
     async patch(id, body, current) {
-      const beId = current?.beId ?? id;
-      if (current?.status === 'ISSUED') {
-        await be.put(`/supply-requests/${beId}/confirm-received`);
-      } else {
-        await be.put(`/supply-requests/${beId}/cancel`);
-      }
+      if (body.status !== 'CLOSED' || current?.status !== 'ISSUED') return false;
+      await be.put(`/supply-requests/${current?.beId ?? id}/confirm-received`);
       invalidate('requisitions');
       return true;
     },
@@ -555,13 +552,13 @@ const WRITES: Record<string, Partial<Record<'post' | 'patch' | 'put', Write>>> =
       }
       if (body.status === 'COMPLETED') await be.put(`/training-sessions/${id}/execute`, { status: 'COMPLETED', notes: 'Hoàn thành phiên' });
       if (body.status === 'STOPPED') await be.put(`/training-sessions/${id}/execute`, { status: 'CANCELLED', notes: (body.decision as Row | undefined)?.note ?? 'Dừng phiên' });
-            if (body.evaluation) {
-          const ev = body.evaluation as { score: number; comment?: string };
-          await be.put(`/training-sessions/${id}/evaluate`, { score: Number(ev.score), comment: ev.comment ?? '' });
-          invalidate('trainingPlans', 'trainingSessions');
-          return true;
-        }
-},
+      if (body.evaluation) {
+        const ev = body.evaluation as { score: number; comment?: string };
+        await be.put(`/training-sessions/${id}/evaluate`, { score: Number(ev.score), comment: ev.comment ?? '' });
+        invalidate('trainingPlans', 'trainingSessions');
+        return true;
+      }
+    },
   },
 };
 

@@ -6,6 +6,8 @@ import { Badge, Callout, Panel, Timeline } from '../../../components/ui/Ht';
 import { HorseBadges, PhaseBar } from '../../../components/trainer/TrainerParts';
 import { InjuryMap } from '../../../components/vet/InjuryMap';
 import { SessionTable } from './SessionTable';
+import { USE_BACKEND } from '../../../api/beClient';
+import { NutritionPlanPanel } from '../../../features/nutrition-plan';
 
 const muted: React.CSSProperties = { margin: 0, color: 'var(--muted)', fontSize: 13 };
 
@@ -39,6 +41,7 @@ export const OverviewTab: React.FC<{ horse: Horse; plan?: TrainingPlan; recent: 
         </Panel>
       </div>
       <div>
+        {USE_BACKEND && <NutritionPlanPanel horseId={horse.id} horseName={horse.name} locked={horse.trainingLocked} role="HeadTrainer" />}
         <Panel as="h3" title="Lịch tiêm phòng">
           <div className="ht-panel__body">
             {vaccinations.length ? <Timeline items={vaccinations.map((v) => ({ tone: v.status === 'POSTPONED' ? 'warning' : 'info', what: <><b>{v.type}</b>{v.note && <> — {v.note}</>}</>, when: v.due }))} />

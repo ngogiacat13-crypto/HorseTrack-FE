@@ -582,3 +582,33 @@ Cách test: 95 bước gọi thẳng API backend (**94/95 đạt**) + đăng nh�
 13. `npm run lint` lỗi 2 comment ở `src/api/managerApi.ts` (dòng 317, 341 — commit `3be3166`) → CI đỏ.
 14. Còn dữ liệu demo trên màn QL CLB: bảng điều khiển (ngày 03/10/2026, phiên S-0023 Galaxy, 12 ngựa, bảng phiên tập, chi phí thú y), Báo cáo tài chính ("Quý 3/2026", ô "Nợ quá hạn" thực ra là tổng nợ chưa trả), Hóa đơn ("tháng 09", "hạn 10/10", "đồng hồ demo 03/10/2026"), Theo dõi y tế ("9,8 tr chi phí thú y tháng này").
 15. Trang Đăng ký ngựa (QL CLB) tải chậm 5–8 giây (gọi lịch sử hồ sơ cho từng ngựa); nhật ký hiện "Issue phase invoice" chưa có nhãn tiếng Việt.
+
+---
+
+## 20. Nối thực đơn dinh dưỡng + rà soát code mới (22/10/2026)
+
+Code lúc kiểm tra: BE nhánh `test` `28105c6` · FE nhánh `dev` `6413d01`. Đối chiếu tự động: FE gọi 98 API, **0 API không có trên backend**.
+
+### Backend — đã sửa (chưa commit, cần đẩy lên nhánh `test`)
+1. ❌→✅ **Tạo / sửa thực đơn luôn lỗi 500**: DB có ràng buộc `CHK_NPD_meal_type` chỉ nhận `MORNING / NOON / EVENING`, backend lại lưu `AFTERNOON`. Sửa: nhận cả `NOON` và `AFTERNOON`, lưu thành `NOON` (`NutritionPlanDetailCreateDTO`, `NutritionPlanServiceImpl.normalizeMealType`). Không đổi DB.
+2. ❌→✅ **Thực đơn đã hủy vẫn hiện là "thực đơn hôm nay"** và vẫn nhận ghi chú khi Bác sĩ duyệt thức ăn đặc biệt: `findActivePlansForHorseOnDate` thêm điều kiện `status = 'ACTIVE'`.
+3. ➕ `GET /api/v1/nutrition-plans/feed-items` (HLV, Bác sĩ, Mã phu, QL CLB): danh sách thức ăn / phụ gia uống trong kho để chọn món. Trước đây chỉ Kho đọc được `/inventory/items` nên HLV/Bác sĩ không chọn được món.
+
+### Frontend — đã sửa
+| Việc | File |
+|---|---|
+| **Tính năng mới: Thực đơn dinh dưỡng** — HLV lên/sửa/hủy thực đơn ngựa khỏe; Bác sĩ chỉ định khẩu phần y tế khi ngựa bị khóa; Mã phu xem "Thực đơn hôm nay" (`/horses/{id}/nutrition-plan/today`) kèm ghi chú đặc biệt đã được Bác sĩ duyệt | `src/features/nutrition-plan/`, gắn vào `TrainerHorseRecord/RecordTabs.tsx`, `VetHorseHealth/DietPanel.tsx`, `GroomStable/index.tsx` |
+| ❌→✅ Commit `6413d01`: mọi `PATCH /requisitions` không phải ISSUED đều gọi `/supply-requests/{id}/cancel` → Kho mở yêu cầu (tự chuyển "đang kiểm tồn") là bắn nhầm API hủy. Giờ chỉ gọi `confirm-received` khi Mã phu xác nhận đã nhận | `src/api/hybridAdapter.ts` |
+| Dọn khối chấm điểm phiên tập (`/training-sessions/{id}/evaluate`) bị lệch ngoặc trong `6413d01` | `src/api/hybridAdapter.ts` |
+| Yêu cầu vật tư đã nhận hiện dòng lịch sử "xác nhận đã nhận vật tư" | `src/api/beDomain.ts` |
+| Chủ ngựa không gọi `/medical/cases` nữa (trước bị 403 ở "Ngựa của tôi") | `src/api/hybridAdapter.ts` |
+| `scenarios:live` nhận vai trò theo tên tài khoản (`*hlv*`, `*bacsi*`…) → chạy được cả 6 vai trò | `scenarios-live/live-support.ts` |
+
+### Kết quả kiểm tra
+- Luồng API thực đơn (QA Alpha, ngựa khỏe): **13/13** — HLV lấy danh mục, lên thực đơn, BS bị chặn khi ngựa khỏe, Mã phu xem hôm nay, Mã phu đề nghị thức ăn đặc biệt, BS từ chối < 10 ký tự bị chặn, BS duyệt → ghi vào thực đơn, HLV sửa, HLV hủy → Mã phu không còn thấy.
+- Ngựa khóa y tế (QA Gamma): **6/6** — HLV bị chặn, BS lên khẩu phần `MEDICAL`, Mã phu thấy, mở khóa lại.
+- Giao diện (5173, backend): HLV sửa thực đơn, Mã phu gửi đề nghị + bấm "Đã nhận" (F5 vẫn giữ), BS duyệt đề nghị — đều lưu thật.
+- `npm run check`: lint 0 lỗi, typecheck đạt, **17/17** kịch bản. `npm run scenarios:live`: **12/12** (6 vai trò × API + mọi trang).
+
+### API backend FE vẫn chưa dùng (không ảnh hưởng demo)
+`DELETE /nutrition-plans/{id}` (dùng "Hủy" thay vì xóa), `/horses/available-for-training`, `/inventory/low-stock` (FE tự tính từ tồn kho), `PUT /inventory/suppliers/{id}`, `/training-plans/dashboard-stats`, `/billing/owners/{id}/service`, `/owner/training/my-horses`, `/owner/payments/medical-records/{id}/vnpay`, API hồ sơ y tế kiểu cũ (`/veterinary/medical-records`, `/manager/medical-records/{id}/approve`). `/payments/vnpay/ipn|return` do VNPay gọi.

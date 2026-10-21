@@ -12,15 +12,15 @@ export const LIVE_HOME: Record<LiveRole, string> = {
   HorseOwner: '/owner',
 };
 
-const USERNAME_ROLE: Record<string, LiveRole> = {
-  admin: 'ClubManager',
-  manager_admin: 'ClubManager',
-  test_hlv: 'HeadTrainer',
-  test_bacsi: 'Veterinarian',
-  test_maphu: 'Groom',
-  test_kho: 'WarehouseManager',
-  test_chungua: 'HorseOwner',
-};
+const USERNAME_ROLE: [RegExp, LiveRole][] = [
+  [/^(admin|manager_admin)$/, 'ClubManager'],
+  [/hlv/, 'HeadTrainer'],
+  [/bacsi/, 'Veterinarian'],
+  [/maphu/, 'Groom'],
+  [/kho/, 'WarehouseManager'],
+  [/chungua/, 'HorseOwner'],
+];
+const roleOf = (username: string) => USERNAME_ROLE.find(([pattern]) => pattern.test(username))?.[1];
 
 export interface LiveAccount { username: string; password: string; role: LiveRole }
 
@@ -36,9 +36,9 @@ export const liveAccounts = (): LiveAccount[] => {
   const seen = new Set<string>();
   return envFile.split(/\r?\n/)
     .map((line) => line.match(/^#\s+(\S+)\s+\/\s+(\S+)/))
-    .filter((match): match is RegExpMatchArray => !!match && match[1] in USERNAME_ROLE)
+    .filter((match): match is RegExpMatchArray => !!match && !!roleOf(match[1]))
     .filter((match) => !seen.has(match[1]) && !!seen.add(match[1]))
-    .map(([, username, password]) => ({ username, password, role: USERNAME_ROLE[username] }));
+    .map(([, username, password]) => ({ username, password, role: roleOf(username) as LiveRole }));
 };
 
 export interface ApiCall { method: string; path: string; status: number }

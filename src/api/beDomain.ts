@@ -146,6 +146,7 @@ export const mapReq = (r: BeReq): Row => {
   if (r.status === 'REJECTED') history.unshift({ at: '—', who: 'Kho', text: `từ chối: ${r.rejectReason ?? ''}`, tone: 'danger' });
   if (r.issuedAt) history.unshift({ at: dmhm(r.issuedAt), who: r.issuedByName ?? 'Kho', text: `cấp ${r.issuedQuantity} ${r.unit}`, tone: 'success' });
   if (r.status === 'CANCELLED') history.unshift({ at: '—', who: r.requestedByName, text: 'hủy yêu cầu' });
+  if (r.status === 'CLOSED') history.unshift({ at: '—', who: r.requestedByName, text: 'xác nhận đã nhận vật tư', tone: 'success' });
   return {
     id: r.requisitionCode, beId: r.requisitionId, by: r.requestedByName, zone: r.barnZone, itemId: r.itemCode, beItemId: r.itemId, item: r.itemName, unit: r.unit,
     qty: Number(r.quantity) || 0, reason: r.reason, at: dmhm(r.requestedAt), neededBy: dmy(r.neededBy), status: REQ_STATUS[r.status] ?? r.status,

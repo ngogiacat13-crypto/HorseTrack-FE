@@ -71,6 +71,7 @@ Quy ước `data-testid`: menu trái `nav-<đường dẫn bỏ / đầu, / đ�
 | Kho · Kiểm kê | `src/pages/warehouse/WarehouseStockCheck/` | `/warehouse/check` | `nav-warehouse-check` |
 | Kho · Nhật ký kho | `src/pages/warehouse/WarehouseLog/` | `/warehouse/log` | `nav-warehouse-log` |
 | QL CLB · Phát hành / hủy hóa đơn, phí lưu chuồng (tính năng mới) | `src/features/invoice-billing/` | Nút trên trang `/manager/invoices` (chỉ khi chạy backend) | `generate-invoices-btn`, `stall-fee-btn`, `cancel-invoice-btn` |
+| HLV / Bác sĩ / Mã phu · Thực đơn dinh dưỡng (tính năng mới) | `src/features/nutrition-plan/` | Panel trong `/trainer/horses/:id` (Tổng quan), `/vet/horses/:id` (Khẩu phần / thực đơn), `/groom/stable` (Thực đơn hôm nay) — chỉ khi chạy backend | `nutrition-panel`, `nutrition-create-btn`, `nutrition-edit-btn`, `nutrition-cancel-btn`, `nutrition-plan-dialog`, `nutrition-start-input`, `nutrition-end-input`, `nutrition-meal-select-<i>`, `nutrition-item-select-<i>`, `nutrition-qty-input-<i>`, `nutrition-remove-line-<i>`, `nutrition-add-line`, `nutrition-notes-input`, `nutrition-cancel-dialog`, `nutrition-history-toggle`, `feed-request-btn`, `feed-approve-<mã>`, `feed-reject-<mã>` |
 | Không tìm thấy (404) | `src/pages/shared/NotFound/` | Địa chỉ không tồn tại | — |
 
 ## Kịch bản tự kiểm (`scenarios/`)
@@ -87,5 +88,5 @@ Quy ước `data-testid`: menu trái `nav-<đường dẫn bỏ / đầu, / đ�
 
 | File | Kiểm tra |
 | :--- | :--- |
-| `scenarios-live/live-endpoints.spec.ts` | Mỗi tài khoản trong `.env.backend` gọi trực tiếp các API GET mà FE dùng, phải trả 2xx |
+| `scenarios-live/live-endpoints.spec.ts` | Mỗi tài khoản trong `.env.live.local` / `.env.backend` (vai trò nhận theo tên: `*hlv*`, `*bacsi*`, `*maphu*`, `*kho*`, `*chungua*`, `admin`) gọi trực tiếp các API GET mà FE dùng, phải trả 2xx |
 | `scenarios-live/live-pages.spec.ts` | Đăng nhập thật, bấm mọi mục menu + mở trang chi tiết bằng id thật; không lỗi 5xx / JavaScript / "Không tải được dữ liệu" |
