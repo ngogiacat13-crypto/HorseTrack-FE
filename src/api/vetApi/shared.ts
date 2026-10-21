@@ -16,7 +16,17 @@ export const addHistory = (h: Horse, title: string, tone: 'danger' | 'warning' |
   http.patch(`/horses/${h.id}`, { medicalHistory: [{ date: DEMO_NOW.date, title, tone }, ...h.medicalHistory] });
 export const protoCost = (phases: ProtoPhase[]) => phases.reduce((s, p) => s + p.items.reduce((t, i) => t + i.qty * i.unitPrice, 0), 0);
 export const lastEta = (lines: StockLine[]) => lines.filter((l) => l.short > 0 && l.eta).map((l) => l.eta as string).sort((a, b) => dateKey(a).localeCompare(dateKey(b))).pop() ?? null;
-export const stockShort = (p: Pick<Protocol, 'stock'>) => (p.stock?.lines ?? []).filter((l) => l.short > 0);
+export const stockLines = (p: Pick<Protocol, 'stock'>) => {
+  const merged = new Map<string, StockLine>();
+  for (const line of p.stock?.lines ?? []) {
+    const key = `${line.phaseNo ?? 0}:${line.itemId}`;
+    const prev = merged.get(key);
+    if (!prev) { merged.set(key, { ...line }); continue; }
+    merged.set(key, { ...prev, need: prev.need + line.need, available: prev.available + line.available, held: prev.held + line.held, short: prev.short + line.short, eta: prev.eta ?? line.eta, lot: prev.lot ?? line.lot, expiry: prev.expiry ?? line.expiry, shipment: prev.shipment ?? line.shipment });
+  }
+  return [...merged.values()];
+};
+export const stockShort = (p: Pick<Protocol, 'stock'>) => stockLines(p).filter((l) => l.short > 0);
 export const phaseRequiredBy = (p: Pick<Protocol, 'phases' | 'requiredBy'>, itemIds: string[]) =>
   p.phases.filter((ph) => ph.items.some((it) => itemIds.includes(it.itemId))).map((ph) => ph.startDate).sort((a, b) => dateKey(a).localeCompare(dateKey(b)))[0] ?? p.requiredBy;
 

@@ -9,17 +9,22 @@ import { Busy, Callout, Panel } from '../../../components/ui/Ht';
 export const DispenseForm: React.FC<{ protocol: Protocol; items: StockItem[]; groom?: string; onDone: () => void }> = ({ protocol: p, items, groom, onDone }) => {
   const actor = useActor();
   const { busy, error, run } = useAction(onDone);
+  const approved = (p.approvedPhases ?? p.phases.map((ph) => ph.no)).filter((no) => !(p.dispensedPhases ?? []).includes(no));
+  const [phaseNos, setPhaseNos] = useState<number[]>(approved);
   const [receiver, setReceiver] = useState(groom ?? '');
-  const [lines, setLines] = useState(() => needs(p).map((n) => {
+  const [lines, setLines] = useState(() => needs(p, approved).map((n) => {
     const it = items.find((i) => i.id === n.itemId);
-    const held = p.stock?.lines.find((l) => l.itemId === n.itemId);
-    return { itemId: n.itemId, name: n.name, unit: n.unit, need: n.need, qty: String(n.need), lot: held?.lot ?? byExpiry((it?.lots ?? []).filter((l) => l.qty > 0))[0]?.lot ?? '', lots: it?.lots?.filter((l) => l.qty > 0) ?? [] };
+    const held = p.stock?.lines.find((l) => l.itemId === n.itemId && l.phaseNo === n.phaseNo);
+    return { itemId: n.itemId, phaseNo: n.phaseNo, name: n.name, unit: n.unit, need: n.need, qty: String(n.need), lot: held?.lot ?? byExpiry((it?.lots ?? []).filter((l) => l.qty > 0))[0]?.lot ?? '', lots: it?.lots?.filter((l) => l.qty > 0) ?? [] };
   }));
   const set = (i: number, patch: Partial<(typeof lines)[number]>) => setLines(lines.map((l, k) => (k === i ? { ...l, ...patch } : l)));
-  const submit = () => run(() => warehouseApi.dispense(p, { receiver, lines: lines.map((l) => ({ itemId: l.itemId, qty: Number(l.qty), lot: l.lot })) }, actor), `${p.id}: đã cấp phát cho ${receiver}.`);
+  const submit = () => run(() => warehouseApi.dispense(p, { receiver, phaseNos, lines: lines.filter((l) => phaseNos.includes(l.phaseNo)).map((l) => ({ itemId: l.itemId, phaseNo: l.phaseNo, qty: Number(l.qty), lot: l.lot })) }, actor), `${p.id}: đã cấp phát ${phaseNos.length} giai đoạn cho ${receiver}.`);
 
   return (
-    <Panel title="Cấp phát theo phác đồ" sub="Bác sĩ đã xác nhận phác đồ. Ghi số lượng thực xuất, lô thuốc và người nhận.">
+    <Panel title="Cấp phát theo phác đồ" sub="Chọn các giai đoạn đã đủ thuốc để cấp phát.">
+      <div className="ht-panel__body" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', paddingBottom: 12 }}>
+        {approved.map((no) => { const ph = p.phases.find((x) => x.no === no); return <label key={no} className="ht-role"><input type="checkbox" checked={phaseNos.includes(no)} onChange={() => setPhaseNos((xs) => xs.includes(no) ? xs.filter((x) => x !== no) : [...xs, no])} />Giai đoạn {no} · {ph?.name}</label>; })}
+      </div>
       <table className="ht-table">
         <thead><tr><th>Vật tư</th><th className="num">Theo phác đồ</th><th className="num">Thực xuất</th><th>Lô</th></tr></thead>
         <tbody>
@@ -44,7 +49,7 @@ export const DispenseForm: React.FC<{ protocol: Protocol; items: StockItem[]; gr
         </div>
         {error && <Callout tone="danger">{error}</Callout>}
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <button type="button" className="ht-btn ht-btn--primary" onClick={submit} disabled={busy}><Busy busy={busy} label="Đang cấp phát…"><Icon name="check" />Xác nhận đã cấp phát</Busy></button>
+          <button type="button" className="ht-btn ht-btn--primary" onClick={submit} disabled={busy || !phaseNos.length}><Busy busy={busy} label="Đang cấp phát…"><Icon name="check" />Cấp phát {phaseNos.length} giai đoạn</Busy></button>
         </div>
       </div>
     </Panel>
