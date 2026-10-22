@@ -6,6 +6,7 @@ import { useAction } from '../../../hooks/useAction';
 import { PATH, toPath } from '../../../routers/routerPath';
 import { Icon } from '../../../components/ui/Icon';
 import { Badge, Callout, money, Panel } from '../../../components/ui/Ht';
+import { USE_BACKEND } from '../../../api/beClient';
 
 export const PayPanel: React.FC<{ invoice: OwnerInvoice; due: InvoiceDue; payments: Payment[]; onChange: () => void }> = ({ invoice: i, due, payments, onChange }) => {
   const actor = useActor();
@@ -42,12 +43,12 @@ export const PayPanel: React.FC<{ invoice: OwnerInvoice; due: InvoiceDue; paymen
         {waiting && (
           <Callout tone="demo" icon="clock" title={`Giao dịch ${waiting.id} · ${PAYMENT_LABEL[waiting.status][0]}`}>
             Cổng VNPay đã trả kết quả nhưng hóa đơn <b>chưa</b> được ghi nhận thanh toán — chờ máy chủ xác minh (IPN / đối soát).
-            <div style={{ marginTop: 10 }}>
+            {!USE_BACKEND && <div style={{ marginTop: 10 }}>
               <button type="button" className="ht-btn ht-btn--secondary ht-btn--sm" disabled={act.busy || waiting.status !== 'PENDING_VERIFY'}
                 onClick={() => act.run(() => ownerApi.serverVerify(waiting), 'Máy chủ đã xác minh giao dịch.')}>
                 <Icon name="refresh" size={14} />Mô phỏng IPN từ máy chủ (demo)
               </button>
-            </div>
+            </div>}
           </Callout>
         )}
         {i.status === 'REACTIVATION_PENDING' && <Callout tone="info" title="Đã tất toán — chờ kích hoạt lại">Quản lý CLB kiểm tra điều kiện và mở lại dịch vụ (BR_14). Thanh toán không tự động khôi phục dịch vụ.</Callout>}

@@ -4,6 +4,8 @@ import { useActor } from '../../../auth/AuthContext';
 import { Icon } from '../../../components/ui/Icon';
 import { Badge, money, Panel, useToast } from '../../../components/ui/Ht';
 import { OverdueMeter } from './OverdueMeter';
+import { USE_BACKEND } from '../../../api/beClient';
+import { DEMO_NOW } from '../../../api/http';
 
 const BADGE: Record<InvoiceStatus, [React.ComponentProps<typeof Badge>['tone'], string]> = {
   SUSPENDED: ['danger', 'Đình chỉ'], OVERDUE: ['warning', 'Quá hạn'], REACTIVATION_PENDING: ['info', 'Chờ kích hoạt lại'],
@@ -38,8 +40,8 @@ export const InvoiceTable: React.FC<Props> = ({ invoices, q, onSearch, onSuspend
         </div>
       </>}
       foot={<>
-        <span>Tính theo đồng hồ demo <span className="ht-mono">03/10/2026</span> · quá hạn đếm từ ngày sau hạn thanh toán</span>
-        <span>Phí phạt BR_12: <b style={{ color: 'var(--warning-ink)' }}>chờ cấu hình công thức</b></span>
+        <span>{USE_BACKEND ? 'Tính đến hôm nay' : 'Tính theo đồng hồ demo'} <span className="ht-mono">{USE_BACKEND ? DEMO_NOW.date : '03/10/2026'}</span> · quá hạn đếm từ ngày sau hạn thanh toán</span>
+        {!USE_BACKEND && <span>Phí phạt BR_12: <b style={{ color: 'var(--warning-ink)' }}>chờ cấu hình công thức</b></span>}
       </>}
     >
       <table className="ht-table">

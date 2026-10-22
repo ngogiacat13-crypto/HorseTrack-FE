@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Horse, horseInitials, TrainingPlan, TrainingSession } from '../../../api/trainerApi';
 import { Badge, Callout, Panel } from '../../../components/ui/Ht';
 import { HorseBadges } from '../../../components/trainer/TrainerParts';
+import { USE_BACKEND } from '../../../api/beClient';
 
 export const DecisionRecord: React.FC<{ decision: NonNullable<TrainingSession['decision']> }> = ({ decision: d }) => (
   <Panel title="Quyết định đã ghi nhận" right={<Badge tone={d.type === 'STOP_VET' ? 'danger' : 'info'}>{d.type === 'STOP_VET' ? 'Dừng & gửi BS' : 'Điều chỉnh & tiếp tục'}</Badge>}>
@@ -48,8 +49,8 @@ export const SessionSide: React.FC<{ session: TrainingSession; horse: Horse; pla
       </Panel>
     )}
 
-    <Callout tone="demo" title="Ngưỡng an toàn · DEMO ONLY">
+    {!USE_BACKEND && <Callout tone="demo" title="Ngưỡng an toàn · DEMO ONLY">
       Giá trị {s.thresholds.hr} bpm / {s.thresholds.speed} km/h chỉ để trình diễn. Ngưỡng sản xuất cần được Bác sĩ thú y xác nhận.
-    </Callout>
+    </Callout>}
   </>
 );

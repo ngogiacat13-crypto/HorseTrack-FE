@@ -622,3 +622,32 @@ Code lúc kiểm tra: BE nhánh `test` `28105c6` · FE nhánh `dev` `6413d01`. �
 - Luồng API thực đơn mới (QA Alpha / QA Gamma): **25/25** — khẩu phần mới thay khẩu phần cũ (`ENDED`), tự tạo việc cho ăn 3 bữa cho Mã phu, BS duyệt đề xuất → ghi lưu ý vào thực đơn và việc cho ăn, Mã phu cho ăn → trừ kho (Cám 120→117, Cỏ 500→498), HLV hủy → việc cho ăn chưa làm chuyển `SKIPPED`, khóa ngựa → khẩu phần thường kết thúc, chỉ BS lập khẩu phần `MEDICAL`, HLV không sửa được, mở khóa → khẩu phần y tế kết thúc.
 - ❌→✅ FE (`hybridAdapter.ts`, việc của Mã phu): việc đã hủy `SKIPPED` hiện như "Chờ" (14 việc, trùng lặp) và loại việc mã mới `FEED/CLEAN/...` bị xếp nhầm "Chải lông". Đã ẩn việc `SKIPPED`, nhận loại việc theo mã, hiện lưu ý khẩu phần (`dietNote`).
 - `npm run check` 17/17, `npm run scenarios:live` 12/12 (6 vai trò, không 4xx/5xx, không lỗi JS).
+
+---
+
+## 22. Tách dữ liệu thật / dữ liệu mẫu (22/10/2026)
+
+Quy tắc: `npm run dev` → chỉ dùng `db.json`; `npm run dev:be` → chỉ dùng backend, **không bao giờ lấy `db.json`**, chỗ nào chưa có số liệu thật thì ẩn.
+
+### Trước khi sửa — dữ liệu giả lọt vào chế độ backend
+| Nguồn | Hiện ở đâu |
+|---|---|
+| `db.json` → `dashboard` | Bảng điều khiển: ngày "03/10/2026", banner phiên S-0023 Galaxy, 12 ngựa "+2 tháng này", bảng "Phiên tập hôm nay" (Bolt, Flash, Galaxy…), "Chi phí thú y theo tháng" 42,7 tr; Theo dõi y tế "9,8 tr chi phí tháng này" |
+| `db.json` (9 chỗ dự phòng trong `hybridAdapter.ts`) | Khi backend không trả dữ liệu cho vai trò đó: Mã phu mẫu, tồn kho, yêu cầu vật tư, kiểm kê, hồ sơ đăng ký, hóa đơn, thanh toán, người dùng, nhật ký, nhật ký kho |
+| Backend viết cứng `GET /protocols`, `/protocols/shipments` | "1 lô hàng kho bị trễ · ETA 10/10" (SHIP-0024), phác đồ PD-0013 Comet / PD-0012 Bolt cho HLV, chủ ngựa |
+| Chữ viết cứng trong giao diện | "1 thiếu thuốc", "Bông gạc thiếu 12 cuộn · Cần 08/10 · ETA 10/10", "· 1 giai đoạn", "tháng 09", "hạn 10/10", "đồng hồ demo 03/10/2026", "Quý 3/2026", "0 điểm so với Q2", ô "Nợ quá hạn" = tổng nợ chưa trả |
+
+### Đã sửa
+- **FE `hybridAdapter.ts`**: bỏ toàn bộ dự phòng `db.json`; tài nguyên không có backend → 404 (GET) / bỏ qua (ghi); không cộng nhật ký do FE tự tạo vào Nhật ký hệ thống; danh sách Mã phu lấy từ người dùng thật (QL CLB) hoặc chính mình (Mã phu).
+- **FE Bảng điều khiển (`managerApi.ts` + `ManagerDashboard/`)**: ngày/thứ/lời chào theo giờ thật; số ngựa = ngựa đã duyệt; "Phiên tập hôm nay" từ chi tiết giáo án; banner phiên bị dừng hôm nay (nếu có); chi phí thú y 6 tháng = tổng tiền phác đồ theo tháng lập; số thiếu thuốc, lô hàng trễ tính từ dữ liệu; ẩn ô chọn kỳ và nút "Xuất báo cáo" (chưa có chức năng).
+- **FE Theo dõi y tế / Hóa đơn / Báo cáo tài chính**: chi phí tháng theo phác đồ; "Đã thu" = tất cả kỳ; "hạn sớm nhất" từ hóa đơn chưa trả; "Nợ quá hạn" = các nhóm tuổi nợ đã quá hạn; ẩn nút xuất PDF/Excel giả, ô chọn kỳ, so sánh quý, chú thích "đồng hồ demo".
+- **FE khác**: ẩn khung "DEMO" ở Danh mục thuốc, Ngưỡng an toàn phiên tập, nút "Mô phỏng IPN" của chủ ngựa khi chạy backend.
+- **BE `ProtocolController.java`**: `GET /protocols` trả phác đồ thật (chủ ngựa chỉ thấy ngựa của mình, HLV chỉ thấy ngựa được giao); `GET /protocols/shipments` trả đơn nhập đang mở phục vụ phác đồ (quá ETA = "Trễ").
+
+### Giữ nguyên (đã là dữ liệu thật)
+Nhật ký hệ thống, Đăng ký ngựa, Hóa đơn quá hạn, Công việc trễ SLA, danh sách phác đồ, người dùng.
+
+### Còn là giá trị FE tự điền (không phải `db.json`, backend chưa có)
+Giáo án hiển thị 1 giai đoạn mặc định (cường độ "Vừa", 1200 m, 3 buổi/tuần, ngưỡng 180 bpm); ngưỡng phiên tập 180 bpm / 60 km/h (backend không có ngưỡng BR_02); tên chủ ngựa "Chủ ngựa #id" ở màn HLV.
+
+Kiểm tra: `npm run check` 17/17, `npm run scenarios:live` 12/12.

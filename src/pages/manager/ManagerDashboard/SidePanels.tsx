@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { GRACE_DAYS, SUSPEND_AT } from '../../../api/managerApi';
+import { USE_BACKEND } from '../../../api/beClient';
 import { Icon } from '../../../components/ui/Icon';
 import { Badge, money, Panel, Timeline } from '../../../components/ui/Ht';
 import type { Dash } from './types';
@@ -8,7 +9,15 @@ import type { Dash } from './types';
 export const MedicalWatch: React.FC<{ d: Dash }> = ({ d }) => (
   <Panel as="h3" title="Y tế cần theo dõi" right={<Link className="ht-more" to="/manager/medical-monitoring">Xem <Icon name="arrow" /></Link>}>
     <ul className="ht-list">
-      {d.medicalWatch.map((p) => (
+      {d.medicalWatch.length === 0 && <li className="ht-list-row" style={{ color: 'var(--muted)' }}>Không có ca y tế cần theo dõi.</li>}
+      {USE_BACKEND && d.medicalWatch.map((p) => (
+        <li key={p.id} className={`ht-list-row${p.tone === 'danger' ? ' ht-list-row--danger' : ''}`}>
+          <div className="r1"><span className="ht-mono" style={{ fontSize: 12, color: 'var(--muted)' }}>{p.id} · {p.horse}</span><Badge tone={p.tone}>{p.label}</Badge></div>
+          <div className="r2">{p.diagnosis}{(p as { phases?: unknown[] }).phases?.length ? ` · ${(p as { phases?: unknown[] }).phases?.length} giai đoạn` : ''}</div>
+          {p.note && <div className="r3"><span style={{ fontSize: 12, color: 'var(--muted)' }}>{p.note}</span></div>}
+        </li>
+      ))}
+      {!USE_BACKEND && d.medicalWatch.map((p) => (
         <li key={p.id} className={`ht-list-row${p.tone === 'danger' ? ' ht-list-row--danger' : ''}`}>
           <div className="r1"><span className="ht-mono" style={{ fontSize: 12, color: 'var(--muted)' }}>{p.id} · {p.horse}</span><Badge tone={p.tone}>{p.tone === 'danger' ? 'Thuốc về trễ' : p.label}</Badge></div>
           <div className="r2">{p.tone === 'danger' ? 'Bông gạc thiếu 12 cuộn' : `${p.diagnosis} · 1 giai đoạn`}</div>
@@ -45,6 +54,7 @@ export const OverdueInvoices: React.FC<{ d: Dash }> = ({ d }) => (
 export const LateTasks: React.FC<{ d: Dash }> = ({ d }) => (
   <Panel as="h3" title="Công việc trễ SLA" right={<Badge tone="neutral" plain style={{ fontFamily: 'var(--font-mono)' }}>BR_05</Badge>} foot={<span>+{d.moreLateTasks} việc khác</span>}>
     <ul className="ht-list">
+      {d.lateTasks.length === 0 && <li className="ht-list-row" style={{ color: 'var(--muted)' }}>Không có việc trễ SLA.</li>}
       {d.lateTasks.map((t) => (
         <li key={t.title} className="ht-list-row">
           <div className="r1"><span className="r2">{t.title}</span><span className="late">{t.late}</span></div>

@@ -112,10 +112,63 @@ const loadOverdueTasks = async () => {
   })) ?? null;
 };
 
+interface BeHorseLite { horseId: number; horseName: string; approvalStatus?: string | null; stallId?: number | null; createdAt?: string | null; assignedTrainerName?: string | null }
+interface BePlanLite { planId: number; planName: string; horseName: string; startDate: string; endDate: string; status: string }
+interface BePlanSessions { planId: number; planName: string; horseName: string; sessions?: { sessionId: number; sessionDate: string; activityType: string; status: string; notes?: string | null; assignedToName?: string | null }[] }
+type SessionTone = 'success' | 'danger' | 'info' | 'neutral' | 'warning';
+const SESSION_LABEL: Record<string, [string, SessionTone]> = {
+  PENDING: ['Chờ Mã phu xác nhận', 'neutral'], CONFIRMED: ['Sắp diễn ra', 'info'], IN_PROGRESS: ['Đang tập', 'info'],
+  PAUSED: ['Tạm dừng — chờ HLV', 'warning'], PAUSED_PENDING_TRAINER: ['Tạm dừng — chờ HLV', 'warning'],
+  WAITING_VET: ['Đã dừng — chờ Bác sĩ', 'danger'], STOPPED: ['Đã dừng', 'danger'], COMPLETED: ['Hoàn thành', 'success'], CANCELLED: ['Đã hủy', 'neutral'],
+};
+const WEEKDAY = ['Chủ nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+const localIso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+const vetCostByMonth = (protocols: ProtocolWatch[], months = 6) => {
+  const now = new Date();
+  return Array.from({ length: months }, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - (months - 1 - i), 1);
+    const key = `${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+    const total = protocols
+      .filter((p) => !['CANCELLED', 'SUPERSEDED', 'DRAFT'].includes(p.state) && String((p as ProtocolWatch & { createdAt?: string }).createdAt ?? '').slice(3, 10) === key)
+      .reduce((s, p) => s + (Number(p.cost) || 0), 0);
+    return { month: `T${d.getMonth() + 1}`, value: Math.round(total / 100000) / 10 };
+  });
+};
+
+const loadDashboardBe = async () => {
+  const now = new Date();
+  const today = localIso(now);
+  const [horsesPage, plansPage] = await Promise.all([
+    beData<{ horses: BeHorseLite[] }>(be.get('/horses', { params: { page: 0, size: 500 } })).catch(() => ({ horses: [] as BeHorseLite[] })),
+    beData<{ content: BePlanLite[] }>(be.get('/training-plans', { params: { page: 0, size: 500 } })).catch(() => ({ content: [] as BePlanLite[] })),
+  ]);
+  const managed = horsesPage.horses.filter((h) => (h.approvalStatus ? h.approvalStatus === 'APPROVED' : h.stallId != null));
+  const newThisMonth = managed.filter((h) => h.createdAt?.startsWith(today.slice(0, 7))).length;
+  const running = plansPage.content.filter((p) => p.startDate.slice(0, 10) <= today && p.endDate.slice(0, 10) >= today);
+  const details = await Promise.all(running.map((p) => beData<BePlanSessions>(be.get(`/training-plans/${p.planId}`)).catch(() => null)));
+  const trainerOf = (horse: string) => managed.find((h) => h.horseName === horse)?.assignedTrainerName ?? '—';
+  const todaySessions = details.flatMap((d) => (d?.sessions ?? [])
+    .filter((x) => x.sessionDate.startsWith(today))
+    .map((x) => {
+      const [status, tone] = SESSION_LABEL[x.status?.toUpperCase()] ?? [x.status, 'neutral' as SessionTone];
+      return { id: x.sessionId, time: x.sessionDate.slice(11, 16), horse: d!.horseName, plan: `${d!.planName} · ${x.activityType}`, trainer: trainerOf(d!.horseName), status, tone, raw: x.status?.toUpperCase(), note: x.notes ?? '' };
+    }))
+    .sort((a, b) => a.time.localeCompare(b.time));
+  return {
+    greeting: { weekday: WEEKDAY[now.getDay()], date: `${today.slice(8, 10)}/${today.slice(5, 7)}/${today.slice(0, 4)}` },
+    autoStop: null,
+    stoppedToday: todaySessions.filter((x) => x.raw === 'WAITING_VET' || x.raw === 'STOPPED').map((x) => ({ session: `#${x.id}`, horse: x.horse, at: x.time, note: x.note.split(' | ').pop() ?? '' })),
+    kpi: { horses: managed.length, horsesTrend: newThisMonth ? `+${newThisMonth} tháng này` : '', lateTasks: 0, lateTasksToday: 0 },
+    sessions: todaySessions.map(({ time, horse, plan, trainer, status, tone, id }) => ({ id, time, horse, plan, trainer, status, tone })),
+    lateTasks: [], moreLateTasks: 0, vetCost: [],
+  };
+};
+
 export const managerApi = {
   async getDashboard() {
     const [dash, regs, protocols, invoices, shipments, logs, overdueTasks] = await Promise.all([
-      get<any>('/dashboard'),
+      USE_BACKEND ? loadDashboardBe() : get<any>('/dashboard'),
       get<Registration[]>('/registrations'),
       get<ProtocolWatch[]>('/protocols'),
       get<Invoice[]>('/invoices'),
@@ -128,6 +181,7 @@ export const managerApi = {
     const AREA_TONE: Record<AuditArea, 'danger' | 'warning' | 'success' | 'info'> = { train: 'danger', med: 'warning', reg: 'success', fin: 'info', acct: 'info' };
     return {
       ...dash,
+      ...(USE_BACKEND ? { vetCost: vetCostByMonth(protocols) } : {}),
       ...(overdueTasks ? { lateTasks: overdueTasks.slice(0, 4), moreLateTasks: Math.max(0, overdueTasks.length - 4) } : {}),
       kpi: {
         ...dash.kpi,
@@ -135,18 +189,22 @@ export const managerApi = {
         pendingRegs: pending.length,
         oldestPendingDays: Math.max(0, ...pending.map((r) => r.waitingDays)),
         medicalWatch: protocols.filter((p) => p.state === 'REQUIRES_VET_REVIEW' || p.state === 'WAITING_STOCK_CHECK').length,
+        shortage: protocols.filter((p) => p.open !== false && (p.state === 'STOCK_SHORTAGE' || p.state === 'REQUIRES_VET_REVIEW' || p.state === 'WAITING_RESTOCK')).length,
         delayedShipments: delayed.length,
         delayedEta: delayed[0]?.eta.slice(0, 5) ?? '—',
       },
-      recentRegistrations: regs.filter((r) => r.id >= 'REG-0016').sort((a, b) => b.id.localeCompare(a.id)).slice(0, 4),
+      recentRegistrations: USE_BACKEND
+        ? [...regs].sort((a, b) => Number((b as Registration & { beId?: number }).beId ?? 0) - Number((a as Registration & { beId?: number }).beId ?? 0)).slice(0, 4)
+        : regs.filter((r) => r.id >= 'REG-0016').sort((a, b) => b.id.localeCompare(a.id)).slice(0, 4),
       medicalWatch: protocols.filter((p) => p.state === 'REQUIRES_VET_REVIEW' || p.state === 'WAITING_STOCK_CHECK'),
       overdueInvoices: invoices.filter((i) => i.status === 'SUSPENDED' || i.status === 'OVERDUE'),
       log: logs.filter((l) => !l.isLogin).slice(0, 3).map((l) => ({ tone: AREA_TONE[l.area], who: l.who, text: l.label.charAt(0).toLowerCase() + l.label.slice(1) + ' · ' + l.object, at: l.at.slice(0, 5) + ' ' + l.at.slice(11, 16) })),
     } as {
       greeting: { weekday: string; date: string };
-      autoStop: { session: string; horse: string; at: string; hr: number; limit: number; decidedBy: string; caseId: string; decidedAt: string };
-      kpi: { horses: number; horsesTrend: string; lateTasks: number; lateTasksToday: number; pendingRegs: number; oldestPendingDays: number; medicalWatch: number; delayedShipments: number; delayedEta: string };
-      sessions: { time: string; horse: string; plan: string; trainer: string; status: string; tone: 'success' | 'danger' | 'info' | 'neutral' }[];
+      autoStop: { session: string; horse: string; at: string; hr: number; limit: number; decidedBy: string; caseId: string; decidedAt: string } | null;
+      stoppedToday?: { session: string; horse: string; at: string; note: string }[];
+      kpi: { horses: number; horsesTrend: string; lateTasks: number; lateTasksToday: number; pendingRegs: number; oldestPendingDays: number; medicalWatch: number; shortage: number; delayedShipments: number; delayedEta: string };
+      sessions: { id?: number; time: string; horse: string; plan: string; trainer: string; status: string; tone: SessionTone }[];
       lateTasks: { title: string; groom: string; due: string; doneAt?: string; late: string }[];
       moreLateTasks: number;
       vetCost: { month: string; value: number }[];
@@ -187,8 +245,9 @@ export const managerApi = {
   },
 
   async getMedicalMonitoring() {
-    const [protocols, shipments, dash] = await Promise.all([get<ProtocolWatch[]>('/protocols'), get<Shipment[]>('/shipments'), get<any>('/dashboard')]);
-    return { protocols, shipments, monthCost: dash.vetCost[dash.vetCost.length - 1].value as number };
+    const [protocols, shipments, dash] = await Promise.all([get<ProtocolWatch[]>('/protocols'), get<Shipment[]>('/shipments'), USE_BACKEND ? Promise.resolve({ vetCost: [] }) : get<any>('/dashboard')]);
+    const costs = USE_BACKEND ? vetCostByMonth(protocols, 1) : dash.vetCost;
+    return { protocols, shipments, monthCost: costs[costs.length - 1].value as number, costMonth: costs[costs.length - 1].month as string };
   },
 
   getInvoices: () => get<Invoice[]>('/invoices'),

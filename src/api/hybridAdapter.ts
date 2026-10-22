@@ -1,7 +1,7 @@
 import type { AxiosAdapter, InternalAxiosRequestConfig } from 'axios';
 import { be, type ApiResponse } from './beClient';
 import { loadInvoices, loadPayments } from './beFinance';
-import { fail, mockAdapter, queryRows, respond } from './mockServer';
+import { fail, queryRows, respond } from './mockServer';
 import { loadAuditLogs, loadInventory, loadProtocols, loadRequisitions, loadShipments, loadStockChecks, loadStockTx, loadUsers } from './beDomain';
 
 
@@ -75,6 +75,12 @@ const horsesRaw = async () => {
 };
 const byName = (rows: Row[], name?: string | null) => rows.find((r) => r.name === name);
 
+const PROTOCOL_STATE_OF: Record<string, string> = {
+  'Bản nháp': 'DRAFT', 'Chờ kho kiểm tồn': 'WAITING_STOCK_CHECK', 'Thiếu vật tư — chờ BS quyết định': 'STOCK_SHORTAGE', 'Kho đủ hàng — chờ BS xác nhận': 'STOCK_AVAILABLE',
+  'Chờ hàng về': 'WAITING_RESTOCK', 'Cần BS đánh giá lại': 'REQUIRES_VET_REVIEW', 'BS đã xác nhận': 'VET_CONFIRMED', 'Chờ kho cấp phát': 'READY_FOR_DISPENSING',
+  'Đang điều trị': 'IN_TREATMENT', 'Tạm dừng · chờ chủ ngựa thanh toán': 'ON_HOLD_PAYMENT', 'Hoàn tất': 'COMPLETED', 'Đã bị thay thế': 'SUPERSEDED', 'Đã hủy': 'CANCELLED',
+};
+
 const LOADERS: Record<string, () => Promise<Row[]>> = {
   async horses() {
     const u = me();
@@ -95,16 +101,19 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
     return stalls.map((s) => ({
       id: s.stallCode, beId: s.stallId, zone: zone(s.barnZone), horseId: s.currentHorseId ? String(s.currentHorseId) : null, horse: s.horseName,
       status: CLEAN[(s.cleanStatus ?? '').toLowerCase()] ?? 'CLEAN',
-      groom: (grooms.find((g) => (g.zones as string[]).includes(zone(s.barnZone)))?.name as string) ?? 'Chưa phân công',
+      groom: (grooms.find((g) => (g.zones as string[]).includes(zone(s.barnZone)))?.name as string) ?? (grooms.length ? 'Chưa phân công' : '—'),
     }));
   },
 
   async grooms() {
     const u = me();
-    const demo = ((await mockGet('/grooms')) as Row[]) ?? [];
-    if (u?.role !== 'Groom') return demo;
+    if (u?.role === 'ClubManager') {
+      return (await LOADERS.users()).filter((x) => x.role === 'Groom' && x.status !== 'LOCKED')
+        .map((x) => ({ id: x.id, name: x.fullname, zones: ((x.zones as string[] | undefined) ?? []).map((z) => zone(z)) }));
+    }
+    if (u?.role !== 'Groom') return [];
     const p = await data<{ specialization?: string | null }>('/account/my-profile').catch(() => ({ specialization: null }));
-    return [{ id: u.id, name: u.name, zones: p.specialization ? [zone(p.specialization)] : [] }, ...demo.filter((g) => g.id !== u.id)];
+    return [{ id: u.id, name: u.name, zones: p.specialization ? [zone(p.specialization)] : [] }];
   },
 
   async trainingPlans() {
@@ -242,8 +251,8 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
     if (real) return real;
     const [rows, horses] = await Promise.all([orEmpty(data<BeProtocol[]>('/protocols')), LOADERS.horses()]);
     return rows.map((p) => {
-      const short = /thiếu/i.test(p.status);
-      const state = short ? 'STOCK_SHORTAGE' : /đủ/i.test(p.status) ? 'STOCK_AVAILABLE' : 'WAITING_STOCK_CHECK';
+      const state = PROTOCOL_STATE_OF[p.status] ?? 'WAITING_STOCK_CHECK';
+      const short = state === 'STOCK_SHORTAGE' || state === 'REQUIRES_VET_REVIEW';
       const id = p.protocolCode.split(' ')[0];
       return {
         id, version: Number(p.protocolCode.match(/v(\d+)/)?.[1] ?? 1), replaces: null, supersededBy: null,
@@ -268,17 +277,17 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
   },
 
   async inventory() {
-    return (await loadInventory()) ?? ((await mockGet('/inventory')) as Row[]);
+    return (await loadInventory()) ?? ([] as Row[]);
   },
   async requisitions() {
-    return (await loadRequisitions()) ?? ((await mockGet('/requisitions')) as Row[]);
+    return (await loadRequisitions()) ?? ([] as Row[]);
   },
   async stockChecks() {
-    return (await loadStockChecks()) ?? ((await mockGet('/stockChecks')) as Row[]);
+    return (await loadStockChecks()) ?? ([] as Row[]);
   },
   async registrations() {
     const u = me();
-    if (u?.role !== 'ClubManager' && u?.role !== 'HorseOwner') return (await mockGet('/registrations')) as Row[];
+    if (u?.role !== 'ClubManager' && u?.role !== 'HorseOwner') return [];
     const [hs, users] = await Promise.all([horsesRaw(), u.role === 'ClubManager' ? LOADERS.users() : Promise.resolve([] as Row[])]);
     const histories = await Promise.all(hs.map((h) => orEmpty(data<BeRegistration[]>(`/horses/${h.horseId}/registrations`))));
     const ownerOf = (h: BeHorse) => (u.role === 'HorseOwner' ? { fullName: u.name, email: '', phone: '—' } : (() => {
@@ -288,19 +297,19 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
     return hs.map((h, index) => toRegistration(h, histories[index], ownerOf(h), hs));
   },
   async invoices() {
-    return ((await loadInvoices(me()?.role)) as Row[] | null) ?? ((await mockGet('/invoices')) as Row[]);
+    return ((await loadInvoices(me()?.role)) as Row[] | null) ?? ([] as Row[]);
   },
   async payments() {
-    return ((await loadPayments(me()?.role)) as Row[] | null) ?? ((await mockGet('/payments')) as Row[]);
+    return ((await loadPayments(me()?.role)) as Row[] | null) ?? ([] as Row[]);
   },
   async users() {
-    return (await loadUsers()) ?? ((await mockGet('/users')) as Row[]);
+    return (await loadUsers()) ?? ([] as Row[]);
   },
   async auditLogs() {
-    return (await loadAuditLogs()) ?? ((await mockGet('/auditLogs')) as Row[]);
+    return (await loadAuditLogs()) ?? ([] as Row[]);
   },
   async stockTx() {
-    return (await loadStockTx()) ?? ((await mockGet('/stockTx')) as Row[]);
+    return (await loadStockTx()) ?? ([] as Row[]);
   },
 };
 interface BeOwnerProgress {
@@ -583,12 +592,11 @@ const rowsOf = async (name: string) => {
   return [...(await load(name)).map((r) => ({ ...r, ...(o.patches.get(String(r.id)) ?? {}) })), ...o.added];
 };
 export const invalidate = (...names: string[]) => names.forEach((n) => { cache.delete(n); overlay.delete(n); });
-const mockGet = async (url: string) => (await mockAdapter({ url, method: 'get', headers: {} } as InternalAxiosRequestConfig)).data;
 
 export const hybridAdapter: AxiosAdapter = async (config) => {
   const url = new URL(config.url ?? '/', 'http://mock.local');
   const [name, id] = url.pathname.split('/').filter(Boolean).map(decodeURIComponent);
-  if (!name || !(name in LOADERS)) return mockAdapter(config);
+  if (!name || !(name in LOADERS)) return (config.method ?? 'get').toLowerCase() === 'get' ? fail(config, 404) : respond(config, 200, {});
 
   const method = (config.method ?? 'get').toLowerCase();
   const params: Record<string, unknown> = { ...Object.fromEntries(url.searchParams), ...(config.params ?? {}) };
@@ -617,6 +625,7 @@ export const hybridAdapter: AxiosAdapter = async (config) => {
     return respond(config, method === 'post' ? 201 : 200, { ...(current ?? {}), ...body, ...(stored === true ? {} : stored) });
   }
 
+  if (method === 'post' && name === 'auditLogs') return respond(config, 201, body);
   if (method === 'post') {
     const row = { ...body, id: body.id ?? `${Date.now()}` };
     ov(name).added.push(row);

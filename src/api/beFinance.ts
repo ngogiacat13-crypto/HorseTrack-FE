@@ -109,8 +109,8 @@ export const financeBe = {
     return {
       period: `${period(r.fromMonth)} – ${period(r.toMonth)}`,
       collected: millions(r.totals.collected), billed: millions(r.totals.billed), billedCount: r.totals.invoicesIssued,
-      rate: Math.round(num(r.totals.collectionRate) * 10) / 10, rateDelta: 0,
-      overdue: millions(r.totals.outstandingPrincipal), overdueCount: r.totals.invoicesOverdue,
+      rate: Math.round(num(r.totals.collectionRate) * 10) / 10, rateDelta: null as number | null,
+      overdue: millions((r.debtAgeing ?? []).filter((b) => b.bucket !== 'NOT_DUE').reduce((s, b) => s + num(b.principal), 0)), overdueCount: r.totals.invoicesOverdue,
       months: months.map((m, index) => ({ m: `T${Number(m.month.slice(5, 7))}`, billed: millions(m.billed), collected: millions(m.collected), q: index >= months.length - 3 })),
       byService: (r.revenueByService ?? []).map((c) => ({ name: c.label || c.category, amount: num(c.billed) })),
       aging: (r.debtAgeing ?? []).map((b) => ({

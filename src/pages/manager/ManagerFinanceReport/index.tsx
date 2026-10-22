@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { managerApi } from '../../../api/managerApi';
 import { Icon } from '../../../components/ui/Icon';
 import { Badge, Callout, Loading, PageHeader, Panel, StatCard, money, useToast } from '../../../components/ui/Ht';
+import { USE_BACKEND } from '../../../api/beClient';
 
 type Report = Awaited<ReturnType<typeof managerApi.getFinanceReport>>;
 const vn = (n: number) => n.toLocaleString('vi-VN', { maximumFractionDigits: 1 });
@@ -21,7 +22,7 @@ export const ManagerFinanceReport: React.FC = () => {
       <PageHeader
         title="Báo cáo tài chính"
         sub="Doanh thu, tình trạng thu tiền và nợ quá hạn. Chỉ tính giao dịch VNPay đã được máy chủ xác minh."
-        actions={<>
+        actions={USE_BACKEND ? undefined : <>
           <select className="ht-select" aria-label="Kỳ báo cáo"><option>Quý 3/2026 (T7–T9)</option><option>Tháng 09/2026</option><option>Năm 2026</option></select>
           <button className="ht-btn ht-btn--secondary" onClick={() => toast(`Đang xuất báo cáo ${r.period} (PDF)…`)}><Icon name="file" />PDF</button>
           <button className="ht-btn ht-btn--primary" onClick={() => toast(`Đang xuất báo cáo ${r.period} (Excel)…`)}><Icon name="download" />Xuất Excel</button>
@@ -32,7 +33,7 @@ export const ManagerFinanceReport: React.FC = () => {
         <StatCard icon="card" tone="brand" value={vn(r.collected)} unit="tr ₫" label="Đã thu" meta={r.period} />
         <StatCard icon="receipt" tone="gold" value={vn(r.billed)} unit="tr ₫" label="Tổng phát hành" meta={`${r.billedCount} hóa đơn`} />
         <StatCard icon="alarm" tone="danger" value={vn(r.overdue)} unit="tr ₫" label="Nợ quá hạn hiện tại" meta={`${r.overdueCount} hóa đơn`} metaTone="danger" alert />
-        <StatCard icon="trend" tone="info" value={vn(r.rate)} unit="%" label="Tỷ lệ thu trên phát hành" meta={`${r.rateDelta} điểm so với Q2`} metaTone={r.rateDelta < 0 ? 'danger' : 'up'} />
+        <StatCard icon="trend" tone="info" value={vn(r.rate)} unit="%" label="Tỷ lệ thu trên phát hành" meta={r.rateDelta === null ? undefined : `${r.rateDelta} điểm so với Q2`} metaTone={(r.rateDelta ?? 0) < 0 ? 'danger' : 'up'} />
       </div>
 
       <div className="ht-cols" style={{ gridTemplateColumns: 'minmax(0,1fr) 420px' }}>
@@ -111,9 +112,9 @@ export const ManagerFinanceReport: React.FC = () => {
             </table>
           </Panel>
 
-          <Callout tone="demo" title="Chưa có công thức phí phạt">
+          {!USE_BACKEND && <Callout tone="demo" title="Chưa có công thức phí phạt">
             BR_12 và BR_14 chưa có số liệu; báo cáo hiện không cộng phí phạt và phí kích hoạt lại.
-          </Callout>
+          </Callout>}
         </div>
       </div>
     </div>
