@@ -1,4 +1,4 @@
-import type { AxiosAdapter, InternalAxiosRequestConfig } from 'axios';
+import type { AxiosAdapter } from 'axios';
 import { be, type ApiResponse } from './beClient';
 import { loadInvoices, loadPayments } from './beFinance';
 import { fail, queryRows, respond } from './mockServer';
@@ -29,6 +29,24 @@ const ddmmyyyy = (iso?: string | null) => {
 const hhmm = (iso?: string | null) => (iso && iso.length > 15 ? iso.slice(11, 16) : '—');
 const stamp = (iso?: string | null) => (iso ? `${ddmmyyyy(iso)} ${hhmm(iso)}` : '—');
 const CARE_SLA_MINUTES = 45;
+interface SessionReading { t: string; hr: number; speed: number }
+const sessionNotes = (row: Row | undefined) => {
+  const readings = (row?.readings as SessionReading[] | undefined) ?? [];
+  if (!readings.length) return 'Hoàn thành phiên';
+  const recovery = (row?.recovery as SessionReading[] | undefined) ?? [];
+  const place = typeof row?.track === 'string' && row.track !== '—' ? row.track : 'Hoàn thành';
+  const hr = Math.max(...readings.map((r) => r.hr));
+  const speed = Math.max(...readings.map((r) => r.speed));
+  const span = readings.length > 1 ? ` ${readings[0].t}–${readings[readings.length - 1].t}` : ` lúc ${readings[0].t}`;
+  const rec = recovery.length ? `, Hồi phục ${recovery[recovery.length - 1].hr} bpm` : '';
+  return `${place} · Ghi nhận: Nhịp tim max ${hr} bpm, Tốc độ max ${speed} km/h, ${readings.length} lần đo${span}${rec}`;
+};
+const readingsFromNotes = (notes: string | null | undefined, time: string): SessionReading[] => {
+  const hr = notes?.match(/Nhịp tim max (\d+) bpm/);
+  if (!hr) return [];
+  const speed = notes?.match(/Tốc độ max ([\d.]+) km\/h/);
+  return [{ t: time, hr: Number(hr[1]), speed: speed ? Number(speed[1]) : 0 }];
+};
 const plusMinutes = (time: string, minutes: number) => {
   const [h, m] = time.split(':').map(Number);
   if (!Number.isFinite(h) || !Number.isFinite(m)) return '—';
@@ -141,7 +159,7 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
         id: String(s.sessionId), horseId: plans[i].horseId, horseName: d!.horseName, planId: String(d!.planId), phaseNo: 1, label: s.activityType,
         date: ddmmyyyy(s.sessionDate), time: hhmm(s.sessionDate), groom: s.assignedToName ?? '—', groomId: s.assignedToId ? String(s.assignedToId) : null,
         track: (s.notes ?? '').split(' · Ghi nhận:')[0] || '—', metrics: (s.notes ?? '').split(' · Ghi nhận:')[1]?.split(',').map((m) => m.trim()).filter(Boolean),
-        status: SESSION[s.status?.toUpperCase()] ?? 'SCHEDULED', confirmed: s.status?.toUpperCase() === 'CONFIRMED', thresholds: { hr: 180, speed: 60 }, readings: [], decision: null,
+        status: SESSION[s.status?.toUpperCase()] ?? 'SCHEDULED', confirmed: s.status?.toUpperCase() === 'CONFIRMED', thresholds: { hr: 180, speed: 60 }, readings: readingsFromNotes(s.notes, hhmm(s.sessionDate)), decision: null,
         evaluation: s.evaluationScore ? { score: s.evaluationScore, comment: s.evaluationComment ?? '', by: s.evaluatedBy ?? 'HLV', at: s.evaluatedAt ?? '' } : null,
       })));
     }
@@ -345,7 +363,7 @@ const ownerProgress = async () => {
     const sessions: Row[] = (p.sessions ?? []).map((x) => ({
       id: String(x.sessionId), horseId: h.id, horseName: h.name, planId: String(p.planId), phaseNo: 1, label: x.activityType,
       date: ddmmyyyy(x.sessionDate), time: hhmm(x.sessionDate), groom: x.assignedToName ?? '—', track: (x.notes ?? '').split(' · Ghi nhận:')[0] || '—',
-      status: SESSION[x.status?.toUpperCase()] ?? 'SCHEDULED', confirmed: x.status?.toUpperCase() === 'CONFIRMED', thresholds: { hr: 180, speed: 60 }, readings: [], decision: null,
+      status: SESSION[x.status?.toUpperCase()] ?? 'SCHEDULED', confirmed: x.status?.toUpperCase() === 'CONFIRMED', thresholds: { hr: 180, speed: 60 }, readings: readingsFromNotes(x.notes, hhmm(x.sessionDate)), decision: null,
       evaluation: x.evaluationScore ? { score: x.evaluationScore, comment: x.evaluationComment ?? '', by: x.evaluatedBy ?? 'HLV', at: x.evaluatedAt ?? '' } : null,
     }));
     return { plan, sessions };
@@ -556,13 +574,13 @@ const WRITES: Record<string, Partial<Record<'post' | 'patch' | 'put', Write>>> =
     },
   },
   trainingSessions: {
-    async patch(id, body) {
+    async patch(id, body, current) {
       if (body.confirmed === true) {
         await be.put(`/training-sessions/${id}/confirm`);
         invalidate('trainingPlans');
         return true;
       }
-      if (body.status === 'COMPLETED') await be.put(`/training-sessions/${id}/execute`, { status: 'COMPLETED', notes: 'Hoàn thành phiên' });
+      if (body.status === 'COMPLETED') await be.put(`/training-sessions/${id}/execute`, { status: 'COMPLETED', notes: sessionNotes(current) });
       if (body.status === 'STOPPED') await be.put(`/training-sessions/${id}/execute`, { status: 'CANCELLED', notes: (body.decision as Row | undefined)?.note ?? 'Dừng phiên' });
       if (body.evaluation) {
         const ev = body.evaluation as { score: number; comment?: string };
