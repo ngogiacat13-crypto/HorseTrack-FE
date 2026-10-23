@@ -651,3 +651,47 @@ Nhật ký hệ thống, Đăng ký ngựa, Hóa đơn quá hạn, Công việc 
 Giáo án hiển thị 1 giai đoạn mặc định (cường độ "Vừa", 1200 m, 3 buổi/tuần, ngưỡng 180 bpm); ngưỡng phiên tập 180 bpm / 60 km/h (backend không có ngưỡng BR_02); tên chủ ngựa "Chủ ngựa #id" ở màn HLV.
 
 Kiểm tra: `npm run check` 17/17, `npm run scenarios:live` 12/12.
+
+---
+
+## 23. FE chỉ dùng dữ liệu thật trên server + yêu cầu gửi nhóm BE (23/10/2026)
+
+### FE đã sửa
+- Đăng nhập / đăng xuất xóa sạch dữ liệu lưu tạm trong tab (`resetBackendData` trong `hybridAdapter.ts`) → mỗi vai trò chỉ thấy dữ liệu thật trên server, giống khi mở trình duyệt khác.
+- Thao tác server chưa có API → báo lỗi “Server chưa có API để … — thao tác chưa được lưu” (`notOnServer` trong `beClient.ts`) thay vì giả vờ thành công: tạo / trả lời / gửi BTC / kết quả đề xuất thi đấu, đổi trạng thái sức khỏe, đánh dấu / xóa chấn thương, điều chỉnh giáo án & cho tiếp tục phiên.
+- HLV · Lịch tập: bỏ nút “Dừng & gửi bác sĩ”. HLV chỉ dừng phiên / điều chỉnh giáo án ở trang phiên tạm dừng (mở từ “Xử lý ngay” khi có cảnh báo vượt ngưỡng).
+- FE hiểu sẵn trạng thái phiên `PAUSED` / `PAUSED_PENDING_TRAINER` từ backend.
+
+### Yêu cầu gửi nhóm BE
+**1. Phiên tập: ghi chỉ số, tự tạm dừng khi vượt ngưỡng (F22-02) — ưu tiên cao nhất**
+Hiện backend không nhận chỉ số và không kiểm tra ngưỡng, nên HLV không bao giờ nhận được cảnh báo; luồng “Mã phu nhập chỉ số → vượt ngưỡng → HLV xử lý” chỉ chạy được ở dữ liệu mẫu.
+- `PUT /training-sessions/{id}/start` (Groom): CONFIRMED → IN_PROGRESS (chặn ngựa đang VetLock, chặn khác ngày).
+- `POST /training-sessions/{id}/readings` (Groom) `{ time, heartRate, speedKmh }`: lưu chỉ số; vượt ngưỡng → `PAUSED_PENDING_TRAINER`, chặn nhập tiếp, gửi thông báo cho HLV phụ trách.
+- `POST /training-sessions/{id}/recovery` (Groom) `{ time, heartRate }`: nhịp tim hồi phục khi đang tạm dừng.
+- `PUT /training-sessions/{id}/resume` (Trainer) `{ intensity, distanceM, maxHeartRate, note }`: chỉ khi `PAUSED_PENDING_TRAINER`, nhịp hồi phục dưới ngưỡng, ngựa không bị khóa → IN_PROGRESS.
+- Ngưỡng theo phiên: thêm `maxHeartRate`, `maxSpeedKmh` vào `POST /training-plans/{id}/sessions`.
+- Trả về trong `GET /training-plans/{id}` và `GET /training-sessions/my-schedule`: `readings[]`, `recovery[]`, ngưỡng, `pausedAt`, `pausedReason`, `notes`.
+- `PUT /training-sessions/{id}/stop`: chỉ cho phép khi phiên đang `PAUSED_PENDING_TRAINER` (HLV chỉ dừng & gửi bác sĩ sau cảnh báo vượt ngưỡng). Hiện đang cho dừng cả PENDING / CONFIRMED / IN_PROGRESS.
+- `PUT /training-sessions/{id}/execute`: nối thêm ghi chú (`notes`) thay vì ghi đè, để không mất thông tin đường chạy HLV đặt lúc giao phiên.
+
+**2. Luồng đề xuất thi đấu (hiện chỉ có phần bác sĩ khám `/prerace-exams`)**
+- `GET /tournaments`; `POST /race-proposals` (Trainer) `{ horseId, tournamentId, note }` → WAITING_OWNER.
+- `GET /race-proposals` (lọc theo quyền: HLV ngựa được giao, chủ ngựa ngựa của mình).
+- `PUT /race-proposals/{id}/owner-response` (Horse Owner) `{ agree, note }` → WAITING_VET_EXAM / OWNER_DECLINED.
+- `PUT /race-proposals/{id}/submitted`, `PUT /race-proposals/{id}/organizer-rejected { reason }`, `PUT /race-proposals/{id}/result { rank, finishTime, note }` (Trainer).
+
+**3. Hồ sơ sức khỏe**
+- `POST /horses/{id}/injuries { part, severity, note, x, y, caseId }`, `DELETE /horses/{id}/injuries/{injuryId}`, trả danh sách chấn thương trong chi tiết ngựa (đã có `InjuryMarkRepository`, chưa có controller).
+- `PUT /horses/{id}/health-status { status, reason }` (Veterinarian).
+
+**4. Chăm sóc & chuồng**
+- HLV giao việc chăm sóc: `POST /care-tasks` đã có nhưng cần `groomId`; thêm API cho HLV lấy Mã phu theo khu của ngựa, ví dụ `GET /horses/{id}/grooms`.
+- Trạng thái dọn chuồng: tự đặt CLEAN khi hoàn thành việc dọn chuồng, hoặc `PUT /stalls/{id}/clean-status`.
+
+**5. Tài khoản**: `PUT /account/my-profile` (sửa thông tin), `POST /account/avatar` (ảnh đại diện).
+
+**6. Dữ liệu trả về**: `GET /horses` thêm `ownerName` (màn HLV đang hiện “Chủ ngựa #id”); cột `action_type` nhật ký hệ thống bị cắt (“CREATE_NUTRITION_PLA”) — tăng độ dài cột.
+
+**7. Cấu hình server** (`deploy.yml` → `docker run -e …`, giá trị đặt trong GitHub Secrets): `MAIL_USERNAME`, `MAIL_PASSWORD` (OTP quên/đổi mật khẩu đang chỉ in ra log), `VNPAY_TMN_CODE`, `VNPAY_HASH_SECRET`, `VNPAY_RETURN_URL`, `VNPAY_FRONTEND_RESULT_URL`, `CORS_ALLOWED_ORIGINS`.
+
+Kiểm tra: `npm run check` 17/17, `scenarios:live` (admin, gọi server `103.245.237.252:8080`) 2/2.

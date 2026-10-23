@@ -59,7 +59,7 @@ const HEALTH: Record<string, string> = { healthy: 'HEALTHY', injured: 'INJURED',
 const health = (h?: string | null) => HEALTH[(h ?? '').toLowerCase()] ?? 'HEALTHY';
 const sex = (g?: string | null) => (['mare', 'filly'].includes((g ?? '').toLowerCase()) ? '♀' : '♂');
 const CLEAN: Record<string, string> = { clean: 'CLEAN', 'needs cleaning': 'NEEDS_CLEANING', needs_cleaning: 'NEEDS_CLEANING', 'under maintenance': 'MAINTENANCE', maintenance: 'MAINTENANCE' };
-const SESSION: Record<string, string> = { PENDING: 'SCHEDULED', CONFIRMED: 'SCHEDULED', COMPLETED: 'COMPLETED', CANCELLED: 'STOPPED', STOPPED: 'STOPPED', WAITING_VET: 'WAITING_VET', IN_PROGRESS: 'IN_PROGRESS' };
+const SESSION: Record<string, string> = { PENDING: 'SCHEDULED', CONFIRMED: 'SCHEDULED', COMPLETED: 'COMPLETED', CANCELLED: 'STOPPED', STOPPED: 'STOPPED', WAITING_VET: 'WAITING_VET', IN_PROGRESS: 'IN_PROGRESS', PAUSED: 'PAUSED_PENDING_TRAINER', PAUSED_PENDING_TRAINER: 'PAUSED_PENDING_TRAINER' };
 const PLAN_STATUS: Record<string, string> = { PENDING: 'PLANNED', ACTIVE: 'ACTIVE', PAUSED: 'PAUSED', COMPLETED: 'COMPLETED', CANCELLED: 'CANCELLED' };
 const TASK_TYPE: Record<string, [string, string]> = {
   feeding: ['FEED', 'Cho ăn'], 'stall cleaning': ['CLEAN', 'Dọn chuồng'], 'grooming & bath': ['GROOM', 'Chải lông & tắm'],
@@ -610,6 +610,7 @@ const rowsOf = async (name: string) => {
   return [...(await load(name)).map((r) => ({ ...r, ...(o.patches.get(String(r.id)) ?? {}) })), ...o.added];
 };
 export const invalidate = (...names: string[]) => names.forEach((n) => { cache.delete(n); overlay.delete(n); });
+export const resetBackendData = () => { cache.clear(); overlay.clear(); };
 
 export const hybridAdapter: AxiosAdapter = async (config) => {
   const url = new URL(config.url ?? '/', 'http://mock.local');

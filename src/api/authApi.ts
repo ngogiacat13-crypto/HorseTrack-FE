@@ -1,6 +1,7 @@
 import { http } from './http';
 import type { AuthUser, Role } from './mockData';
 import { EMAIL_TIMEOUT, USE_BACKEND, be, beData, tokenStore, type ApiResponse, type Tokens } from './beClient';
+import { resetBackendData } from './hybridAdapter';
 
 interface UserRecord {
   id: string;
@@ -75,6 +76,7 @@ const fromProfile = (p: BeProfile, avatarUrl?: string): AuthUser => ({
 
 const beAuth = {
   async login(username: string, password: string): Promise<AuthUser> {
+    resetBackendData();
     const t = await beData<BeLogin>(be.post('/auth/login', { username, password }));
     tokenStore.set({ accessToken: t.accessToken, refreshToken: t.refreshToken });
     try {
@@ -88,6 +90,7 @@ const beAuth = {
   },
 
   async logout(): Promise<void> {
+    resetBackendData();
     const t = tokenStore.get();
     tokenStore.clear();
     if (!t?.refreshToken) return;

@@ -104,3 +104,5 @@ be.interceptors.response.use(
 export const EMAIL_TIMEOUT = 40000;
 
 export const beData = <T>(p: Promise<{ data: ApiResponse<T> }>) => p.then((r) => r.data.data);
+
+export const notOnServer = (action: string) => new Error(`Server chưa có API để ${action} — thao tác chưa được lưu.`);

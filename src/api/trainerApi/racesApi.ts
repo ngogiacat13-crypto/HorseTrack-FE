@@ -3,6 +3,7 @@ import { type Actor, addAudit } from '../managerApi';
 import type { Tournament, RaceProposal } from './types';
 import { raceBlock } from './labels';
 import { get, nextId, myHorses, getMyHorse, ofHorses } from './shared';
+import { USE_BACKEND, notOnServer } from '../beClient';
 
 export const racesApi = {
   async getRaces(actor: Actor) {
@@ -11,6 +12,7 @@ export const racesApi = {
   },
 
   async createProposal(input: { horseId: string; tournamentId: string; note: string }, actor: Actor) {
+    if (USE_BACKEND) throw notOnServer('tạo đề xuất thi đấu');
     const [horse, tournament, existing] = await Promise.all([
       getMyHorse(input.horseId, actor), get<Tournament>(`/tournaments/${input.tournamentId}`), get<RaceProposal[]>('/raceProposals', { horseId: input.horseId }),
     ]);
@@ -32,6 +34,7 @@ export const racesApi = {
   },
 
   async markSubmitted(p: RaceProposal, actor: Actor) {
+    if (USE_BACKEND) throw notOnServer('đánh dấu đã gửi hồ sơ ban tổ chức');
     await getMyHorse(p.horseId, actor);
     if (p.status !== 'READY_TO_SUBMIT') throw new Error('Chỉ gửi hồ sơ khi chủ ngựa đã đồng ý.');
     const history = [{ at: DEMO_NOW.short, who: actor.name, text: 'đánh dấu đã gửi hồ sơ cho ban tổ chức (ngoài hệ thống)' }, ...p.history];
@@ -41,6 +44,7 @@ export const racesApi = {
   },
 
   async markOrganizerRejected(p: RaceProposal, reason: string, actor: Actor) {
+    if (USE_BACKEND) throw notOnServer('ghi nhận ban tổ chức từ chối');
     await getMyHorse(p.horseId, actor);
     if (p.status !== 'SUBMITTED') throw new Error('Chỉ cập nhật khi hồ sơ đã gửi ban tổ chức.');
     if (reason.trim().length < 10) throw new Error('Lý do ít nhất 10 ký tự.');
@@ -51,6 +55,7 @@ export const racesApi = {
   },
 
   async recordResult(p: RaceProposal, result: { rank: number; time: string; note: string }, actor: Actor) {
+    if (USE_BACKEND) throw notOnServer('ghi kết quả thi đấu');
     await getMyHorse(p.horseId, actor);
     if (p.status !== 'SUBMITTED') throw new Error('Chỉ nhập kết quả cho hồ sơ đã gửi ban tổ chức.');
     if (!Number.isInteger(result.rank) || result.rank < 1) throw new Error('Thứ hạng phải là số nguyên ≥ 1.');

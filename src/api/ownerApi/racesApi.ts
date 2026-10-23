@@ -2,6 +2,7 @@ import { DEMO_NOW, http } from '../http';
 import { addAudit, type Actor } from '../managerApi';
 import type { RaceProposal, Tournament } from '../trainerApi';
 import { get, min, now, DENIED } from './shared';
+import { USE_BACKEND, notOnServer } from '../beClient';
 
 export const racesApi = {
   async getMyProposals(actor: Actor) {
@@ -13,6 +14,7 @@ export const racesApi = {
   },
 
   async respondProposal(p: RaceProposal, agree: boolean, note: string, actor: Actor) {
+    if (USE_BACKEND) throw notOnServer('trả lời đề xuất thi đấu');
     if (p.owner !== actor.name) throw new Error(DENIED);
     if (p.status !== 'WAITING_OWNER') throw new Error('Đề xuất không ở bước chờ chủ ngựa xác nhận.');
     const reason = agree ? note.trim() : min(note, 10, 'Lý do từ chối');
