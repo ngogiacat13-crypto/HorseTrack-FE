@@ -30,3 +30,4 @@ export const raceBlock = (h: Horse): string | null =>
 export const PHASE_UNKNOWN = 'Server chưa lưu cường độ / cự ly giai đoạn';
 export const phaseLoad = (ph: PlanPhase) => (ph.estimated ? PHASE_UNKNOWN : `${ph.intensity} · ${ph.distanceM} m · ${ph.sessionsPerWeek} buổi/tuần`);
 export const phaseHr = (ph: PlanPhase) => `≤ ${ph.hrLimit} bpm${ph.estimated ? ' (ngưỡng mặc định server)' : ''}`;
+export const OPEN_PLAN: PlanStatus[] = ['PLANNED', 'ACTIVE', 'PAUSED'];

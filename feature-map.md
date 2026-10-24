@@ -32,7 +32,7 @@ Quy ước `data-testid`: menu trái `nav-<đường dẫn bỏ / đầu, / đ�
 | QL CLB · Nhật ký hệ thống | `src/pages/manager/ManagerAuditLogs/` | `/manager/audit-logs` | `nav-manager-audit-logs` |
 | HLV · Tổng quan đàn ngựa | `src/pages/trainer/TrainerHerdOverview/` | `/trainer` | `nav-trainer` |
 | HLV · Hồ sơ ngựa | `src/pages/trainer/TrainerHorseRecord/` | `/trainer/horses/:id` | `back-btn` |
-| HLV · Giáo án | `src/pages/trainer/TrainerPlans/` | `/trainer/plans` | `nav-trainer-plans` |
+| HLV · Giáo án | `src/pages/trainer/TrainerPlans/` | `/trainer/plans` · nút “Hủy” / “Chạy lại” trên từng dòng | `nav-trainer-plans`, `cancel-plan-<mã>`, `resume-plan-<mã>`, `cancel-plan-dialog`, `cancel-plan-reason` (ô lý do), `resume-plan-dialog` |
 | HLV · Tạo giáo án | `src/pages/trainer/TrainerPlanCreate/` | `/trainer/plans/new` | `back-btn` |
 | HLV · Lịch tập + phân công phiên | `src/pages/trainer/TrainerSchedule/` | `/trainer/schedule` · nút “Phân công phiên tập” | `nav-trainer-schedule`, `assign-session-dialog`, `assign-zone-select`, `assign-horse-select`, `assign-date-input`, `assign-time-input`, `assign-groom-select`, `assign-track-input` |
 | HLV · Chi tiết phiên tập | `src/pages/trainer/TrainerSessionDetail/` | `/trainer/sessions/:id` | `back-btn` |
@@ -85,6 +85,7 @@ Quy ước `data-testid`: menu trái `nav-<đường dẫn bỏ / đầu, / đ�
 | `scenarios/assign-session.spec.ts` | Hộp phân công phiên tập: ngày mặc định hôm nay, không chọn được ngày đã qua |
 | `scenarios/registration-validation.spec.ts` | Đăng ký chủ ngựa: SĐT/email đúng định dạng, họ tên không bắt buộc; hồ sơ ngựa: gợi ý + validate giống, không còn hộ chiếu, chặn tệp đổi đuôi |
 | `scenarios/layout-alignment.spec.ts` | Mọi trang menu + trang tạo (giáo án, đề xuất, phác đồ, hồ sơ ngựa, hồ sơ cá nhân, đổi mật khẩu, đăng ký) của 6 vai trò ở 1280px và 1920px: ô nhập cùng hàng phải thẳng hàng, ô chọn không bị cắt chữ, trang không cuộn ngang |
+| `scenarios/plan-cancel-resume.spec.ts` | HLV hủy giáo án phải ghi lý do, giáo án chuyển sang Lịch sử; giáo án tạm dừng có nút “Chạy lại” |
 
 ## Kịch bản chạy với backend thật (`scenarios-live/`, lệnh `npm run scenarios:live`)
 

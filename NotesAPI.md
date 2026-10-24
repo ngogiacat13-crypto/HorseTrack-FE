@@ -748,3 +748,7 @@ Kiểm tra: `npm run check` 19/19, `scenarios:live` (admin, server thật) 2/2.
 - Gửi BE: `../YeuCau_BE_Review_Assignment2.md` mục H (tiêm phòng giả, giáo án không lưu giai đoạn, API VNPay bệnh án giả lập).
 
 Kiểm tra: `npm run check` 19/19, `scenarios:live` (admin) 2/2.
+
+## 27. Nối API hủy / chạy lại giáo án (24/10/2026)
+
+Server đã chạy BE `6baa01f` (164 API). FE nối `PUT /training-plans/{id}/cancel` `{reason 5–500 ký tự}` và `PUT /training-plans/{id}/resume` (`trainerApi/plansApi.ts · cancelPlan, resumePlan`), nút “Hủy” / “Chạy lại” ở màn Giáo án HLV (`TrainerPlans/PlanActionDialogs.tsx`). Kiểm tra trên server thật bằng lời gọi không đổi dữ liệu: resume giáo án PENDING → 400 “Chỉ cho chạy lại giáo án đang tạm dừng”, cancel lý do ngắn → 400. Kịch bản `scenarios/plan-cancel-resume.spec.ts`.
