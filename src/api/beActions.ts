@@ -50,8 +50,10 @@ export const vetProtocolBe = {
   async sendStockCheck(p: Protocol) {
     return p;
   },
-  async cancelDraft(p: Protocol) {
-    const r = await beData<Parameters<typeof mapProtocol>[0]>(be.put(`/medical-management/protocols/${beId(p)}/cancel`, { content: 'Hủy phác đồ' }));
+  async cancelDraft(p: Protocol, _actor: Actor, reason = '') {
+    const why = reason.trim() || (p.state === 'DRAFT' ? 'Hủy bản nháp' : '');
+    if (why.length < 10 && p.state !== 'DRAFT') throw new Error('Lý do hủy phác đồ ít nhất 10 ký tự.');
+    const r = await beData<Parameters<typeof mapProtocol>[0]>(be.put(`/medical-management/protocols/${beId(p)}/cancel`, { content: why }));
     after('protocols');
     return mapProtocol(r) as unknown as Protocol;
   },

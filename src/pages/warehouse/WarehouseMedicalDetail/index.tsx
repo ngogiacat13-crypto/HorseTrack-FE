@@ -6,7 +6,7 @@ import { Icon } from '../../../components/ui/Icon';
 import { BackButton, Badge, Callout, PageHeader, Panel, Timeline } from '../../../components/ui/Ht';
 import { LoadState } from '../../../components/trainer/TrainerParts';
 import { ProtocolBadge, ProtocolPath } from '../../../components/vet/VetParts';
-import { stockLines } from '../../../api/vetApi';
+import { CHANGE_LABEL, protocolChanges, stockLines } from '../../../api/vetApi';
 import { StockCheckForm } from './StockCheckForm';
 import { DispenseForm } from './DispenseForm';
 
@@ -22,7 +22,8 @@ export const WarehouseMedicalDetail: React.FC = () => {
   const { id = '' } = useParams<{ id: string }>();
   const { data, loading, error, reload } = useFetch(() => warehouseApi.getRequest(id), [id]);
   if (!data) return <LoadState loading={loading} error={error} onRetry={reload} />;
-  const { protocol: p, horse, items, shipments, openShipments } = data;
+  const { protocol: p, horse, items, shipments, openShipments, previous } = data;
+  const changes = previous ? protocolChanges(previous, p) : [];
   const related = shipments.filter((s) => s.forRef === p.id || (p.stock?.lines ?? []).some((l) => l.shipment === s.id));
 
   return (
@@ -39,6 +40,35 @@ export const WarehouseMedicalDetail: React.FC = () => {
         <div>
           {p.state === 'WAITING_STOCK_CHECK' && <StockCheckForm protocol={p} items={items} openShipments={openShipments} onDone={reload} />}
           {p.state === 'READY_FOR_DISPENSING' && <DispenseForm protocol={p} items={items} onDone={reload} />}
+          {p.state === 'SUPERSEDED' && (
+            <Callout tone="danger" icon="warn" title="Bác sĩ đã đổi phác đồ" testId="protocol-superseded">
+              Bản này đã được thay bằng {p.supersededBy ? <Link to={`/warehouse/medical/${p.supersededBy}`} className="ht-mono">{p.supersededBy}</Link> : 'phiên bản mới'} — <b>không cấp phát theo bản này</b>. Hàng đã giữ cho bản này đã được trả lại kho.
+            </Callout>
+          )}
+          {p.state === 'CANCELLED' && (
+            <Callout tone="danger" icon="warn" title="Bác sĩ đã hủy phác đồ" testId="protocol-cancelled">
+              {p.note.match(/Hủy:s*(.+)$/)?.[1] ?? p.note} — không cấp phát. Hàng đã giữ (nếu có) đã được trả lại kho.
+            </Callout>
+          )}
+          {previous && (
+            <Panel title={`Thay đổi so với ${previous.id} (v${previous.version})`} sub="Bác sĩ đổi phác đồ — kho kiểm tồn lại theo bản mới" >
+              {changes.length ? (
+                <table className="ht-table" data-testid="protocol-changes">
+                  <thead><tr><th>Thuốc / vật tư</th><th className="num">Bản cũ</th><th className="num">Bản mới</th><th>Thay đổi</th></tr></thead>
+                  <tbody>
+                    {changes.map((c) => (
+                      <tr key={c.name}>
+                        <td className="strong">{c.name}</td>
+                        <td className="num">{c.before ? `${c.before} ${c.unit}` : '—'}</td>
+                        <td className="num">{c.after ? `${c.after} ${c.unit}` : '—'}</td>
+                        <td><Badge tone={CHANGE_LABEL[c.kind][1] === 'warning' ? 'warning' : CHANGE_LABEL[c.kind][1] === 'danger' ? 'danger' : 'success'}>{CHANGE_LABEL[c.kind][0]}{c.kind === 'QTY' ? ` ${c.after > c.before ? '+' : ''}${c.after - c.before}` : ''}</Badge></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : <div className="ht-empty">Không đổi thuốc / số lượng (chỉ đổi giai đoạn hoặc ngày).</div>}
+            </Panel>
+          )}
           {WAIT_TEXT[p.state] && <Callout tone={p.state === 'IN_TREATMENT' ? 'success' : 'info'} icon="info">{WAIT_TEXT[p.state]}</Callout>}
 
           {p.stock && p.state !== 'WAITING_STOCK_CHECK' && (

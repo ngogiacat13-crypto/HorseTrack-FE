@@ -1,14 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { dateKey, isOpenProtocol, phaseRequiredBy, Protocol, stockShort, VetCase, VetHorse } from '../../../api/vetApi';
+import { dateKey, isOpenProtocol, ITEM_ADDABLE, phaseRequiredBy, Protocol, stockShort, VetCase, VetHorse } from '../../../api/vetApi';
 import { Icon } from '../../../components/ui/Icon';
 import { Callout, money, Panel } from '../../../components/ui/Ht';
 import { HorseBadges } from '../../../components/trainer/TrainerParts';
 import type { ProtocolAction } from './ActionDialog';
 
-interface Props { protocol: Protocol; horse: VetHorse; vetCase: VetCase | null; onAction: (a: ProtocolAction) => void; onNewVersion: () => void }
+interface Props { protocol: Protocol; horse: VetHorse; vetCase: VetCase | null; onAction: (a: ProtocolAction) => void; onNewVersion: () => void; onAddItems: () => void }
 
-export const DecisionPanel: React.FC<Props> = ({ protocol: p, horse, vetCase, onAction, onNewVersion }) => {
+export const DecisionPanel: React.FC<Props> = ({ protocol: p, horse, vetCase, onAction, onNewVersion, onAddItems }) => {
   const short = stockShort(p);
   const stockComplete = !!p.stock && short.length === 0;
   const requiredBy = phaseRequiredBy(p, short.map((l) => l.itemId));
@@ -53,7 +53,6 @@ export const DecisionPanel: React.FC<Props> = ({ protocol: p, horse, vetCase, on
         {p.state === 'STOCK_AVAILABLE' && <>
           <Callout tone="success" icon="check">Kho xác nhận đủ hàng và đã giữ số lượng cần thiết. Xem lại tình trạng ngựa rồi tự xác nhận — không cần Quản lý CLB duyệt.</Callout>
           {btn('ht-btn--primary', 'check', 'Xác nhận phác đồ', () => onAction('confirm'))}
-          <button type="button" className="ht-btn ht-btn--ghost ht-btn--block" onClick={onNewVersion}>Sửa phác đồ (phiên bản mới)</button>
         </>}
 
         {p.state === 'READY_FOR_DISPENSING' && <Callout tone="success" icon="box">Đã xác nhận. Quản lý kho chuẩn bị và cấp phát theo phác đồ này; trạng thái chuyển “Đang điều trị” khi cấp xong.</Callout>}
@@ -62,6 +61,13 @@ export const DecisionPanel: React.FC<Props> = ({ protocol: p, horse, vetCase, on
           {btn('ht-btn--secondary', 'pulse', 'Ghi tiến triển', () => onAction('progress'))}
           {btn('ht-btn--primary', 'check', 'Kết thúc điều trị', () => onAction('complete'))}
         </>}
+
+        {p.state !== 'DRAFT' && ITEM_ADDABLE.includes(p.state) && (
+          <>
+            <button type="button" className="ht-btn ht-btn--secondary ht-btn--block" data-testid="add-items-btn" onClick={onAddItems}><Icon name="box" />Thêm vật tư / thuốc</button>
+            <button type="button" className="ht-btn ht-btn--ghost ht-btn--block" data-testid="cancel-protocol-btn" onClick={() => onAction('cancel')} style={{ color: 'var(--danger-ink)' }}><Icon name="ban" />Hủy phác đồ</button>
+          </>
+        )}
 
         {!isOpenProtocol(p) && p.state !== 'SUPERSEDED' && <Callout tone="info">Phác đồ đã đóng.</Callout>}
       </div>

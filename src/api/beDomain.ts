@@ -106,7 +106,11 @@ export const loadProtocols = async (): Promise<Row[] | null> => {
   const role = me()?.role;
   const base = role === 'WarehouseManager' ? '/inventory/protocols' : role === 'Veterinarian' || role === 'ClubManager' ? '/medical-management/protocols' : null;
   if (!base) return null;
-  const list = await beGet<BeProtocol[]>(base);
+  const closed = role === 'WarehouseManager'
+    ? (await Promise.all(['SUPERSEDED', 'CANCELLED'].map((state) => beGet<BeProtocol[]>(`${base}?state=${state}`).catch(() => [] as BeProtocol[])))).flat()
+    : [];
+  const open = await beGet<BeProtocol[]>(base);
+  const list = [...open, ...closed.filter((c) => !open.some((o) => o.protocolId === c.protocolId))];
   const full = await Promise.all(list.map((p) => beGet<BeProtocol>(`${base}/${p.protocolId}`).catch(() => p)));
   return full.map(mapProtocol);
 };

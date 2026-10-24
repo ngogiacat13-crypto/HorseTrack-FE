@@ -752,3 +752,13 @@ Kiểm tra: `npm run check` 19/19, `scenarios:live` (admin) 2/2.
 ## 27. Nối API hủy / chạy lại giáo án (24/10/2026)
 
 Server đã chạy BE `6baa01f` (164 API). FE nối `PUT /training-plans/{id}/cancel` `{reason 5–500 ký tự}` và `PUT /training-plans/{id}/resume` (`trainerApi/plansApi.ts · cancelPlan, resumePlan`), nút “Hủy” / “Chạy lại” ở màn Giáo án HLV (`TrainerPlans/PlanActionDialogs.tsx`). Kiểm tra trên server thật bằng lời gọi không đổi dữ liệu: resume giáo án PENDING → 400 “Chỉ cho chạy lại giáo án đang tạm dừng”, cancel lý do ngắn → 400. Kịch bản `scenarios/plan-cancel-resume.spec.ts`.
+
+## 28. Thêm vật tư / thuốc vào phác đồ (24/10/2026)
+
+Nút “Sửa phác đồ (phiên bản mới)” thay bằng “Thêm vật tư / thuốc” (`VetProtocolDetail/AddItemsDialog.tsx`), hiện ở mọi trạng thái BE cho tạo phiên bản (`REVISABLE_STATES`: chờ kiểm tồn, thiếu/đủ hàng, chờ hàng, cần đánh giá lại, BS đã xác nhận, tạm dừng chờ thanh toán) — không hiện khi đang điều trị/đã đóng. Luồng: giữ nguyên thuốc cũ + cộng thuốc mới vào giai đoạn chọn (`vetApi/labels.ts · withAddedItems`, thuốc trùng thì cộng số lượng vì BE không nhận thuốc lặp trong 1 giai đoạn) → `POST /medical-management/protocols/{id}/new-version` (bản cũ SUPERSEDED, trả hàng đã giữ, bản mới gửi kho kiểm tồn) → chuyển sang trang phiên bản mới. Ngày cần thuốc đã qua thì dùng hôm nay (BE `@FutureOrPresent`). BE chưa có API thêm thuốc vào chính phác đồ đang chạy (không tạo phiên bản) — nếu cần thêm thuốc khi **đang điều trị** phải nhờ BE làm.
+
+## 29. Bác sĩ hủy phác đồ + kho thấy bản cũ / bản mới (24/10/2026)
+
+- Bác sĩ: nút “Hủy phác đồ” (`cancel-protocol-btn`) ở mọi trạng thái chưa cấp thuốc, kể cả đang chờ kho kiểm tồn; bắt buộc lý do ≥ 10 ký tự → `PUT /medical-management/protocols/{id}/cancel` `{content: lý do}` (trước đây FE luôn gửi “Hủy phác đồ”). BE trả hàng đã giữ, lưu lý do vào note “Hủy: …”.
+- Kho: `loadProtocols` lấy thêm `GET /inventory/protocols?state=SUPERSEDED` và `?state=CANCELLED`; màn Phác đồ cần cấp có tab “Bác sĩ đã đổi / hủy” (ghi “Đã thay bằng PD-x” / “Bác sĩ hủy: lý do”), cột mã ghi `vN · thay PD-y`; trang chi tiết có bảng “Thay đổi so với PD-y” (thêm / bỏ / đổi số lượng — `vetApi/labels.ts · protocolChanges`) và cảnh báo không cấp phát với bản đã thay / đã hủy.
+- Kịch bản `scenarios/protocol-add-items.spec.ts` (4 trường hợp).
