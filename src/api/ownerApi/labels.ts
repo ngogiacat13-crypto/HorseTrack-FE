@@ -3,6 +3,31 @@ import type { InvoiceDue, OwnerInvoice, PaymentStatus } from './types';
 
 type Tone = 'success' | 'info' | 'warning' | 'danger' | 'neutral';
 
+export const HORSE_BREEDS = [
+  'Thoroughbred', 'Arabian', 'Quarter Horse', 'Standardbred', 'Anglo-Arab', 'Akhal-Teke', 'Andalusian', 'Appaloosa',
+  'Friesian', 'Hanoverian', 'Holsteiner', 'Trakehner', 'Warmblood', 'Morgan', 'Mustang', 'Paint Horse',
+  'Percheron', 'Clydesdale', 'Shire', 'Mông Cổ', 'Ngựa bạch Việt Nam', 'Ngựa cỏ Việt Nam', 'Ngựa lai',
+] as const;
+export const HEIGHT_MIN_CM = 120;
+export const HEIGHT_MAX_CM = 205;
+const CM_PER_HAND = 10.16;
+const foldBreed = (v: string) => v.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/gi, 'd').toLowerCase().trim();
+export const knownBreed = (v: string) => HORSE_BREEDS.find((b) => foldBreed(b) === foldBreed(v));
+export const parseHands = (v: string) => {
+  const n = Number.parseFloat(v.replace(',', '.'));
+  return Number.isFinite(n) ? n : NaN;
+};
+export const parseCm = (v: string) => {
+  const s = v.trim().toLowerCase().replace(',', '.').replace(/\s+/g, '');
+  const meters = s.match(/^(\d)m(\d{0,2})$/);
+  if (meters) return Number(meters[1]) * 100 + Number(meters[2].padEnd(2, '0'));
+  const n = Number.parseFloat(s.replace(/cm$|m$/, ''));
+  if (!Number.isFinite(n)) return NaN;
+  return Math.round(n < 3 ? n * 100 : n);
+};
+export const cmToHands = (cm: number) => Math.round((cm / CM_PER_HAND) * 10) / 10;
+export const handsToCm = (hands: number) => Math.round(hands * CM_PER_HAND);
+
 export const POLICY = {
   graceDays: 10,
   penaltyRate: 0.05,

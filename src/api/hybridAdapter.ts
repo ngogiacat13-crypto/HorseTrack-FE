@@ -47,6 +47,16 @@ const readingsFromNotes = (notes: string | null | undefined, time: string): Sess
   const speed = notes?.match(/Tốc độ max ([\d.]+) km\/h/);
   return [{ t: time, hr: Number(hr[1]), speed: speed ? Number(speed[1]) : 0 }];
 };
+interface BeReading { time?: string | null; recordedAt?: string | null; heartRate: number; speedKmh?: number | string | null }
+interface BeMonitor { notes?: string | null; sessionDate: string; maxHeartRate?: number | null; maxSpeedKmh?: number | string | null; startedAt?: string | null; pausedAt?: string | null; pausedReason?: string | null; readings?: BeReading[] | null; recovery?: BeReading[] | null }
+const toReadings = (rows?: BeReading[] | null): SessionReading[] => (rows ?? []).map((r) => ({ t: r.time || hhmm(r.recordedAt), hr: r.heartRate, speed: Number(r.speedKmh ?? 0) }));
+const monitor = (s: BeMonitor) => ({
+  thresholds: { hr: s.maxHeartRate ?? 180, speed: Number(s.maxSpeedKmh ?? 60) },
+  readings: s.readings?.length ? toReadings(s.readings) : readingsFromNotes(s.notes, hhmm(s.sessionDate)),
+  recovery: toReadings(s.recovery),
+  ...(s.startedAt ? { startedAt: hhmm(s.startedAt) } : {}),
+  ...(s.pausedAt ? { pausedAt: hhmm(s.pausedAt), pausedReason: s.pausedReason ?? '' } : {}),
+});
 const plusMinutes = (time: string, minutes: number) => {
   const [h, m] = time.split(':').map(Number);
   if (!Number.isFinite(h) || !Number.isFinite(m)) return '—';
@@ -70,17 +80,36 @@ const TASK_TYPE: Record<string, [string, string]> = {
 
 interface BeHorse { horseId: number; horseName: string; dob: string; gender: string; breed: string; pedigree?: string | null; weightKg: number; healthStatus: string; isLocked: boolean; ownerId: number; stallId: number | null; stallCode?: string | null; approvalStatus?: string | null; createdAt?: string | null;
   horseCode?: string | null; color?: string | null; heightHands?: number | null; passportNo?: string | null; healthCertIssuer?: string | null; healthCertExpiry?: string | null;
-  registrationCode?: string | null; rejectReason?: string | null; allowResubmit?: boolean | null; assignedTrainerId?: number | null; assignedTrainerName?: string | null }
+  registrationCode?: string | null; rejectReason?: string | null; allowResubmit?: boolean | null; assignedTrainerId?: number | null; assignedTrainerName?: string | null; ownerName?: string | null }
 interface BeRegCheck { checkKey: string; passed: boolean; detail?: string | null; checkedByName?: string | null; checkedAt?: string | null }
 interface BeRegistration { registrationCode?: string | null; ownerName?: string | null; submittedAt?: string | null; status: string; ownerNote?: string | null; decisionNote?: string | null; allowResubmit?: boolean | null; decidedByName?: string | null; decidedAt?: string | null; checks?: BeRegCheck[] | null }
+interface BeInjury { injuryId: number; part: string; severity: string; severityLabel?: string | null; note?: string | null; x?: number | null; y?: number | null; caseCode?: string | null; createdByName?: string | null; createdAt?: string | null }
+const INJURY_VIEWERS = ['ClubManager', 'HeadTrainer', 'Veterinarian', 'Groom'];
+const injuriesOf = async (horseId: string) => {
+  if (!INJURY_VIEWERS.includes(me()?.role ?? '') || !/^\d+$/.test(horseId)) return [];
+  return (await orEmpty(data<BeInjury[]>(`/horses/${horseId}/injuries`))).map((i) => ({
+    id: String(i.injuryId), part: i.part, severity: i.severityLabel ?? i.severity, note: i.note ?? '', date: ddmmyyyy(i.createdAt),
+    vet: i.createdByName ?? 'Bác sĩ thú y', x: i.x ?? 50, y: i.y ?? 50, caseId: i.caseCode ?? undefined,
+  }));
+};
 interface BeStall { stallId: number; stallCode: string; barnZone: string; cleanStatus: string; currentHorseId: number | null; horseName: string | null }
 interface BePlan { planId: number; planName: string; horseName: string; startDate: string; endDate: string; status: string; progress: number }
-interface BePlanDetail { planId: number; planName: string; horseId: number | null; horseName: string; startDate: string; endDate: string; status: string; sessions: { sessionId: number; sessionDate: string; activityType: string; status: string; notes: string | null; assignedToId: number | null; assignedToName: string | null; evaluationScore?: number | null; evaluationComment?: string | null; evaluatedBy?: string | null; evaluatedAt?: string | null }[] }
-interface BeSchedule { sessionId: number; sessionDate: string; activityType: string; status: string; planName: string; horseName: string; stallZone: string }
+interface BePlanDetail { planId: number; planName: string; horseId: number | null; horseName: string; startDate: string; endDate: string; status: string; sessions: (BeMonitor & { sessionId: number; sessionDate: string; activityType: string; status: string; notes: string | null; assignedToId: number | null; assignedToName: string | null; evaluationScore?: number | null; evaluationComment?: string | null; evaluatedBy?: string | null; evaluatedAt?: string | null })[] }
+interface BeSchedule extends BeMonitor { sessionId: number; sessionDate: string; activityType: string; status: string; planName: string; horseName: string; stallZone: string; evaluationScore?: number | null; evaluationComment?: string | null; evaluatedBy?: string | null; evaluatedAt?: string | null }
 interface BeTask { taskId: number; taskCode?: string | null; taskType: string; title?: string | null; status: string; taskDate?: string | null; scheduledTime?: string | null; dueDate?: string | null; instructions?: string | null; completedAt?: string | null; horseName: string; stallCode?: string | null; stallZone: string; groomName?: string | null; warningNote?: string | null; dietNote?: string | null; overdue?: boolean | null }
 interface BeCase { caseId: string; id?: number; horseId: number; horseName: string; source: string; issueType: string; severity: string; status: string; description: string; imageUrl?: string | null; reportedByName?: string | null; assignedVetName?: string | null; maxHeartRate: number; vetResult: string | null; createdAt: string; closedAt?: string | null }
 interface BeVacc { recordCode: string; horseName: string; typeName: string; category: string; expectedDate: string; cycleMonths: number; status: string }
-interface BeExam { proposalCode: string; proposalDate: string; horseName: string; ownerName: string; tournamentName: string; raceDate: string; distance: string; location: string; trainerName: string; tabStatus: string; resultStatus: string | null; vetNotes: string | null }
+interface BeTournament { tournamentId: number; code: string; name: string; organizer?: string | null; location?: string | null; raceDate?: string | null; registrationDeadline?: string | null; distanceM?: number | null; entryFee?: number | null; entryConditions?: string | null; finished?: boolean | null; openForProposal?: boolean | null }
+interface BeProposal { proposalId: number; proposalCode?: string | null; status: string; horseId: number; horseName: string; ownerName?: string | null; tournament?: BeTournament | null; proposedByName?: string | null; proposedAt?: string | null; note?: string | null;
+  ownerAgreed?: boolean | null; ownerRespondedAt?: string | null; ownerNote?: string | null; vetName?: string | null; vetPassed?: boolean | null; vetCheckedAt?: string | null; vetNote?: string | null;
+  rank?: number | null; finishTimeSeconds?: number | null; resultNote?: string | null }
+const PROPOSAL_STATUS: Record<string, string> = { WAITING_VET: 'WAITING_VET_EXAM', ACCEPTED: 'SUBMITTED', REJECTED: 'REJECTED_BY_ORGANIZER', WITHDRAWN: 'OWNER_DECLINED' };
+const raceTime = (seconds?: number | null) => {
+  if (seconds == null) return '—';
+  const total = Number(seconds);
+  const m = Math.floor(total / 60);
+  return `${m}:${(total - m * 60).toFixed(2).padStart(5, '0')}`;
+};
 interface BeProtocol { protocolCode: string; horseName: string; diagnosis: string; caseCode: string; requiredDate: string; estimatedCost: string; status: string; nextStep: string }
 interface BeShipment { lotCode: string; itemName: string; quantity: number; unit: string; eta: string; targetProtocol: string; status: string }
 
@@ -105,7 +134,7 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
     const [hs, stalls] = await Promise.all([horsesRaw(), stallsRaw()]);
     return hs.filter((h) => u?.role !== 'HorseOwner' || isApproved(h)).map((h) => ({
       id: String(h.horseId), name: h.horseName, breed: h.breed, sex: sex(h.gender), age: age(h.dob), weightKg: h.weightKg,
-      owner: u?.role === 'HorseOwner' && String(h.ownerId) === u.id ? u.name : `Chủ ngựa #${h.ownerId}`,
+      owner: u?.role === 'HorseOwner' && String(h.ownerId) === u.id ? u.name : h.ownerName ?? `Chủ ngựa #${h.ownerId}`,
       stall: stalls.find((s) => s.stallId === h.stallId)?.stallCode ?? h.stallCode ?? '—',
       trainerId: h.assignedTrainerId ? String(h.assignedTrainerId) : u?.role === 'HeadTrainer' ? u.id : '', trainerName: h.assignedTrainerName ?? null,
       health: health(h.healthStatus), trainingLocked: !!h.isLocked, form: null, pendingCase: null,
@@ -159,7 +188,7 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
         id: String(s.sessionId), horseId: plans[i].horseId, horseName: d!.horseName, planId: String(d!.planId), phaseNo: 1, label: s.activityType,
         date: ddmmyyyy(s.sessionDate), time: hhmm(s.sessionDate), groom: s.assignedToName ?? '—', groomId: s.assignedToId ? String(s.assignedToId) : null,
         track: (s.notes ?? '').split(' · Ghi nhận:')[0] || '—', metrics: (s.notes ?? '').split(' · Ghi nhận:')[1]?.split(',').map((m) => m.trim()).filter(Boolean),
-        status: SESSION[s.status?.toUpperCase()] ?? 'SCHEDULED', confirmed: s.status?.toUpperCase() === 'CONFIRMED', thresholds: { hr: 180, speed: 60 }, readings: readingsFromNotes(s.notes, hhmm(s.sessionDate)), decision: null,
+        status: SESSION[s.status?.toUpperCase()] ?? 'SCHEDULED', confirmed: s.status?.toUpperCase() === 'CONFIRMED', ...monitor(s), decision: null,
         evaluation: s.evaluationScore ? { score: s.evaluationScore, comment: s.evaluationComment ?? '', by: s.evaluatedBy ?? 'HLV', at: s.evaluatedAt ?? '' } : null,
       })));
     }
@@ -170,7 +199,8 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
       id: String(s.sessionId), horseId: (byName(horses, s.horseName)?.id as string) ?? '', horseName: s.horseName,
       planId: (plans.find((p) => p.name === s.planName)?.id as string) ?? '', phaseNo: 1, label: s.activityType,
       date: ddmmyyyy(s.sessionDate), time: hhmm(s.sessionDate), groom: u.role === 'Groom' ? u.name : '—', track: zone(s.stallZone),
-      status: SESSION[s.status?.toUpperCase()] ?? 'SCHEDULED', confirmed: s.status?.toUpperCase() === 'CONFIRMED', thresholds: { hr: 180, speed: 60 }, readings: [], decision: null, evaluation: null,
+      status: SESSION[s.status?.toUpperCase()] ?? 'SCHEDULED', confirmed: s.status?.toUpperCase() === 'CONFIRMED', ...monitor(s), decision: null,
+      evaluation: s.evaluationScore ? { score: s.evaluationScore, comment: s.evaluationComment ?? '', by: s.evaluatedBy ?? 'HLV', at: s.evaluatedAt ?? '' } : null,
     }));
   },
 
@@ -241,27 +271,35 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
   },
 
   async raceProposals() {
-    const [waiting, done, horses] = await Promise.all([
-      orEmpty(data<BeExam[]>('/prerace-exams', { tab: 'CHO_KHAM' })), orEmpty(data<BeExam[]>('/prerace-exams', { tab: 'DA_CO_KET_QUA' })), LOADERS.horses(),
-    ]);
-    return [...waiting, ...done].map((e) => {
-      const passed = e.resultStatus === 'ĐẠT';
-      const status = !e.resultStatus ? 'WAITING_VET_EXAM' : passed ? 'READY_TO_SUBMIT' : 'VET_FAILED';
+    const role = me()?.role;
+    if (role === 'Groom' || role === 'WarehouseManager') return [];
+    const rows = await orEmpty(data<BeProposal[]>('/race-proposals'));
+    return rows.map((p) => {
+      const history: Row[] = [];
+      if (p.resultNote && p.status === 'REJECTED') history.push({ at: '—', who: p.proposedByName ?? 'HLV', text: `ban tổ chức từ chối: ${p.resultNote}`, tone: 'danger' });
+      if (p.rank) history.push({ at: '—', who: p.proposedByName ?? 'HLV', text: `nhập kết quả: Hạng ${p.rank} · ${raceTime(p.finishTimeSeconds)}`, tone: 'success' });
+      if (p.vetCheckedAt) history.push({ at: stamp(p.vetCheckedAt), who: `BS ${p.vetName ?? ''}`.trim(), text: p.vetPassed ? 'kết luận ĐẠT' : `kết luận KHÔNG ĐẠT: ${p.vetNote ?? ''}`, tone: p.vetPassed ? 'success' : 'danger' });
+      if (p.ownerRespondedAt) history.push({ at: stamp(p.ownerRespondedAt), who: p.ownerName ?? 'Chủ ngựa', text: p.ownerAgreed ? `chủ ngựa đồng ý tham gia${p.ownerNote ? `: “${p.ownerNote}”` : ''}` : `chủ ngựa từ chối: “${p.ownerNote ?? ''}”`, tone: p.ownerAgreed ? 'success' : 'danger' });
+      history.push({ at: stamp(p.proposedAt), who: p.proposedByName ?? 'HLV', text: 'tạo đề xuất · chờ chủ ngựa đồng ý' });
       return {
-        id: e.proposalCode, horseId: (byName(horses, e.horseName)?.id as string) ?? `ten:${e.horseName}`, horseName: e.horseName, owner: e.ownerName,
-        tournamentId: tourId(e), status, createdAt: e.proposalDate, createdBy: e.trainerName,
-        history: [{ at: e.proposalDate, who: e.trainerName, text: 'tạo đề xuất · chủ ngựa đã đồng ý' }],
-        vetResult: e.resultStatus ? { pass: passed, by: 'Bác sĩ thú y', at: '—', note: e.vetNotes ?? '' } : null,
-        ownerResponse: { agree: true, at: e.proposalDate }, result: null,
+        id: p.proposalCode || `DX-${p.proposalId}`, beId: p.proposalId, horseId: String(p.horseId), horseName: p.horseName, owner: p.ownerName ?? '—',
+        tournamentId: p.tournament ? String(p.tournament.tournamentId) : '', status: PROPOSAL_STATUS[p.status] ?? p.status, createdAt: ddmmyyyy(p.proposedAt),
+        createdBy: p.proposedByName ?? '—', note: p.note ?? undefined, history,
+        vetResult: p.vetPassed == null ? null : { pass: p.vetPassed, by: p.vetName ?? 'Bác sĩ thú y', at: stamp(p.vetCheckedAt), note: p.vetNote ?? '' },
+        ownerResponse: p.ownerAgreed == null ? null : { agree: p.ownerAgreed, at: stamp(p.ownerRespondedAt), reason: p.ownerNote ?? undefined },
+        result: p.rank ? { rank: p.rank, time: raceTime(p.finishTimeSeconds), note: p.resultNote ?? undefined } : null,
+        organizerReason: p.status === 'REJECTED' ? p.resultNote ?? undefined : undefined,
       };
     });
   },
 
   async tournaments() {
-    const rows = [...(await orEmpty(data<BeExam[]>('/prerace-exams', { tab: 'CHO_KHAM' }))), ...(await orEmpty(data<BeExam[]>('/prerace-exams', { tab: 'DA_CO_KET_QUA' })))];
-    const seen = new Map<string, Row>();
-    rows.forEach((e) => seen.set(tourId(e), { id: tourId(e), name: e.tournamentName, organizer: '—', date: e.raceDate, venue: e.location, distance: e.distance, deadline: '—', conditions: '—', source: 'Backend' }));
-    return [...seen.values()];
+    const rows = await orEmpty(data<BeTournament[]>('/tournaments'));
+    return rows.map((t) => ({
+      id: String(t.tournamentId), code: t.code, name: t.name, organizer: t.organizer ?? '—', date: ddmmyyyy(t.raceDate), venue: t.location ?? '—',
+      distance: t.distanceM ? `${Number(t.distanceM)} m` : '—', deadline: ddmmyyyy(t.registrationDeadline), conditions: t.entryConditions || '—',
+      source: 'Backend', finished: !!t.finished || t.openForProposal === false, entryFee: t.entryFee ?? null,
+    }));
   },
 
   async protocols() {
@@ -337,7 +375,7 @@ interface BeOwnerProgress {
   endDate: string;
   status: string;
   progress?: number | null;
-  sessions?: {
+  sessions?: (BeMonitor & {
     sessionId: number;
     sessionDate: string;
     activityType: string;
@@ -348,7 +386,7 @@ interface BeOwnerProgress {
     evaluationComment?: string | null;
     evaluatedBy?: string | null;
     evaluatedAt?: string | null;
-  }[] | null;
+  })[] | null;
 }
 const ownerProgress = async () => {
   const horses = await LOADERS.horses();
@@ -363,7 +401,7 @@ const ownerProgress = async () => {
     const sessions: Row[] = (p.sessions ?? []).map((x) => ({
       id: String(x.sessionId), horseId: h.id, horseName: h.name, planId: String(p.planId), phaseNo: 1, label: x.activityType,
       date: ddmmyyyy(x.sessionDate), time: hhmm(x.sessionDate), groom: x.assignedToName ?? '—', track: (x.notes ?? '').split(' · Ghi nhận:')[0] || '—',
-      status: SESSION[x.status?.toUpperCase()] ?? 'SCHEDULED', confirmed: x.status?.toUpperCase() === 'CONFIRMED', thresholds: { hr: 180, speed: 60 }, readings: readingsFromNotes(x.notes, hhmm(x.sessionDate)), decision: null,
+      status: SESSION[x.status?.toUpperCase()] ?? 'SCHEDULED', confirmed: x.status?.toUpperCase() === 'CONFIRMED', ...monitor(x), decision: null,
       evaluation: x.evaluationScore ? { score: x.evaluationScore, comment: x.evaluationComment ?? '', by: x.evaluatedBy ?? 'HLV', at: x.evaluatedAt ?? '' } : null,
     }));
     return { plan, sessions };
@@ -405,7 +443,7 @@ const toRegistration = (h: BeHorse, history: BeRegistration[], owner: { fullName
     passed: checklist.filter((c) => c.passed).length, status, decidedNote,
     firstIssue: status === 'Rejected' ? h.rejectReason ?? latest?.decisionNote ?? undefined : firstFailed?.label,
     ownerExtra: { otherHorses: all.filter((x) => x.ownerId === h.ownerId && x.horseId !== h.horseId).map((x) => x.horseName).join(', ') || '—' },
-    horseExtra: { color: h.color || '—', height: h.heightHands ? `${h.heightHands} hands` : '—', weight: h.weightKg, passport: h.passportNo || h.pedigree || '—', healthCert: healthCert || '—' },
+    horseExtra: { color: h.color || '—', height: h.heightHands ? `${Math.round(h.heightHands * 10.16)} cm (${h.heightHands} hands)` : '—', weight: h.weightKg, passport: h.passportNo || h.pedigree || '—', healthCert: healthCert || '—' },
     checklist, attachments: [],
     history: history.length
       ? history.flatMap((r, index) => regHistory(r, owner.fullName, index === history.length - 1))
@@ -433,7 +471,6 @@ const unknownHorse = (id: string): Row => ({
   id, name: id.slice(4), breed: '—', sex: '♂', age: 0, owner: '—', stall: '—', trainerId: '', health: 'HEALTHY', trainingLocked: false,
   form: null, pendingCase: null, lock: null, injuries: [], medicalHistory: [], raceResults: [], medicalDiet: null,
 });
-const tourId = (e: BeExam) => `T-${e.tournamentName}-${e.raceDate}`.replace(/\s+/g, '-');
 
 type Write = (id: string | undefined, body: Row, current: Row | undefined) => Promise<boolean | Row | void> | boolean | Row | void;
 const WRITES: Record<string, Partial<Record<'post' | 'patch' | 'put', Write>>> = {
@@ -466,6 +503,13 @@ const WRITES: Record<string, Partial<Record<'post' | 'patch' | 'put', Write>>> =
       return true;
     },
   },
+  stalls: {
+    async patch(_id, body, current) {
+      if (typeof body.status !== 'string' || !current?.beId) return;
+      await be.put(`/stalls/${current.beId}/clean-status`, { status: body.status });
+      return true;
+    },
+  },
   horses: {
     async patch(id, body) {
       if (!('trainingLocked' in body)) return;
@@ -478,6 +522,7 @@ const WRITES: Record<string, Partial<Record<'post' | 'patch' | 'put', Write>>> =
     async patch(id, body) {
       const r = body.vetResult as { pass: boolean; note: string } | undefined;
       if (r) await be.post(`/prerace-exams/${encodeURIComponent(id ?? '')}/examine`, { isPassed: r.pass, vetNotes: r.note });
+      return !!r;
     },
   },
   vaccinations: {
@@ -581,7 +626,6 @@ const WRITES: Record<string, Partial<Record<'post' | 'patch' | 'put', Write>>> =
         return true;
       }
       if (body.status === 'COMPLETED') await be.put(`/training-sessions/${id}/execute`, { status: 'COMPLETED', notes: sessionNotes(current) });
-      if (body.status === 'STOPPED') await be.put(`/training-sessions/${id}/execute`, { status: 'CANCELLED', notes: (body.decision as Row | undefined)?.note ?? 'Dừng phiên' });
       if (body.evaluation) {
         const ev = body.evaluation as { score: number; comment?: string };
         await be.put(`/training-sessions/${id}/evaluate`, { score: Number(ev.score), comment: ev.comment ?? '' });
@@ -626,6 +670,7 @@ export const hybridAdapter: AxiosAdapter = async (config) => {
   if (method === 'get') {
     if (id === undefined) return respond(config, 200, queryRows(rows, params));
     const row = rows.find((r) => String(r.id) === id);
+    if (row && name === 'horses') return respond(config, 200, { ...row, injuries: await injuriesOf(id) });
     if (row) return respond(config, 200, row);
     if (name === 'horses' && id.startsWith('ten:')) return respond(config, 200, unknownHorse(id));
     if (name === 'horses') {

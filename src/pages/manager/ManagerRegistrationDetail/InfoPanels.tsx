@@ -18,8 +18,6 @@ export const HorseInfo: React.FC<{ reg: Registration }> = ({ reg: d }) => (
       <dl className="ht-kv">
         <dt>Cân nặng</dt><dd>{d.horseExtra.weight} kg</dd>
         <dt>Mã ngựa</dt><dd className="ht-mono">{d.horse.code}</dd>
-        <dt>Hộ chiếu</dt><dd className="ht-mono">{d.horseExtra.passport}</dd>
-        <dt>GCN sức khỏe</dt><dd>{d.horseExtra.healthCert}</dd>
       </dl>
     </div>
   </Panel>
@@ -27,14 +25,11 @@ export const HorseInfo: React.FC<{ reg: Registration }> = ({ reg: d }) => (
 
 export const OwnerInfo: React.FC<{ reg: Registration }> = ({ reg: d }) => (
   <Panel title="Chủ ngựa">
-    <div className="ht-panel__body" style={twoCols}>
+    <div className="ht-panel__body">
       <dl className="ht-kv">
         <dt>Họ và tên</dt><dd>{d.owner.fullName}</dd>
         <dt>Email</dt><dd>{d.owner.email}</dd>
         <dt>Điện thoại</dt><dd className="ht-mono">{d.owner.phone}</dd>
-      </dl>
-      <dl className="ht-kv">
-        <dt>Ngựa đang gửi</dt><dd>{d.ownerExtra.otherHorses}</dd>
       </dl>
     </div>
   </Panel>
@@ -43,6 +38,7 @@ export const OwnerInfo: React.FC<{ reg: Registration }> = ({ reg: d }) => (
 export const Attachments: React.FC<{ reg: Registration }> = ({ reg: d }) => (
   <Panel as="h3" title="Tệp đính kèm" right={<span className="ht-mono" style={{ fontSize: 12, color: 'var(--muted)' }}>{d.attachments.length} tệp</span>}>
     <div className="ht-panel__body" style={{ paddingBottom: 12 }}>
+      {!d.attachments.length && <p className="ht-muted" data-testid="attachments-empty" style={{ margin: 0 }}>Chưa có tệp nào được lưu trên server — chủ ngựa chọn tệp khi gửi hồ sơ nhưng server chưa có API nhận và lưu giấy tờ.</p>}
       {d.attachments.map((a) => (
         <div key={a.name} className="ht-doc">
           <span className="ht-doc__icon" style={a.problem ? { color: 'var(--danger-ink)', borderColor: 'var(--danger-line)', background: 'var(--danger-soft)' } : undefined}><Icon name="file" /></span>

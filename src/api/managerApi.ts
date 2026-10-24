@@ -318,7 +318,7 @@ export const managerApi = {
   getUsers: async () => (await get<UserRecord[]>('/users')).map(toManaged),
 
   async createStaff(input: StaffInput, actor: Actor): Promise<ManagedUser & { emailNote?: string; emailFailed?: boolean }> {
-    const v = { ...input, fullName: input.fullName.trim(), username: input.username.trim(), email: input.email.trim(), phone: input.phone.replace(/\s/g, '') };
+    const v = { ...input, fullName: input.fullName.trim(), username: input.username.trim(), email: input.email.trim(), phone: input.phone.replace(/[\s.-]/g, '') };
     let id: string;
     let emailNote: string | undefined;
     if (USE_BACKEND) {

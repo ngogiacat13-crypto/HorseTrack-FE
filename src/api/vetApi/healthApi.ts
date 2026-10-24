@@ -4,7 +4,13 @@ import type { Horse, Injury, RaceProposal, TrainingPlan, Vaccination } from '../
 import type { VetCase, Protocol, MedicalDiet, FeedRequest, VetHorse } from './types';
 import { INJURY_SEVERITIES } from './labels';
 import { get, nextId, now, min, addHistory } from './shared';
-import { USE_BACKEND, notOnServer } from '../beClient';
+import { USE_BACKEND, be } from '../beClient';
+import { invalidate } from '../hybridAdapter';
+
+const freshHorse = async (id: string) => {
+  invalidate('horses');
+  return get<VetHorse>(`/horses/${id}`);
+};
 
 export const healthApi = {
   async getHorseHealth(id: string) {
@@ -16,9 +22,12 @@ export const healthApi = {
   },
 
   async setHealthStatus(horse: Horse, health: Horse['health'], reason: string, actor: Actor) {
-    if (USE_BACKEND) throw notOnServer('đổi trạng thái sức khỏe ngựa');
     const why = min(reason, 5, 'Lý do cập nhật sức khỏe');
     if (horse.health === health) throw new Error('Trạng thái mới trùng với trạng thái hiện tại.');
+    if (USE_BACKEND) {
+      await be.put(`/horses/${horse.id}/health-status`, { status: health, reason: why });
+      return freshHorse(horse.id);
+    }
     const { data } = await http.patch<VetHorse>(`/horses/${horse.id}`, { health });
     await addHistory({ ...horse, ...data }, `Cập nhật sức khỏe: ${health}`, 'warning');
     await addAudit(actor, { action: 'UPDATE_HEALTH_STATUS', label: 'Cập nhật trạng thái sức khỏe', object: horse.name, area: 'med', from: horse.health, to: health, reason: why });
@@ -26,10 +35,16 @@ export const healthApi = {
   },
 
   async addInjury(horse: Horse, input: { part: string; severity: string; note: string; x: number; y: number; caseId?: string }, actor: Actor) {
-    if (USE_BACKEND) throw notOnServer('đánh dấu chấn thương');
     if (!input.part.trim()) throw new Error('Chọn bộ phận bị ảnh hưởng.');
     if (!(INJURY_SEVERITIES as readonly string[]).includes(input.severity)) throw new Error('Chọn mức độ.');
     const note = min(input.note, 5, 'Mô tả');
+    if (USE_BACKEND) {
+      await be.post(`/horses/${horse.id}/injuries`, {
+        part: input.part.trim(), severity: input.severity, note, caseId: input.caseId || undefined,
+        x: Math.round(Math.min(98, Math.max(2, input.x))), y: Math.round(Math.min(98, Math.max(2, input.y))),
+      });
+      return freshHorse(horse.id);
+    }
     const all = horse.injuries ?? [];
     const injury: Injury & { id: string; caseId?: string } = {
       id: nextId(all.map((i) => (i as { id?: string }).id ?? ''), 'INJ-', 2) + '-' + horse.id.slice(2, 5),
@@ -42,10 +57,13 @@ export const healthApi = {
   },
 
   async removeInjury(horse: Horse, injuryId: string, actor: Actor) {
-    if (USE_BACKEND) throw notOnServer('xóa vết chấn thương');
     const all = horse.injuries as (Injury & { id?: string })[];
     const target = all.find((i) => i.id === injuryId);
     if (!target) throw new Error('Không tìm thấy vết đánh dấu.');
+    if (USE_BACKEND) {
+      await be.delete(`/horses/${horse.id}/injuries/${injuryId}`);
+      return freshHorse(horse.id);
+    }
     const { data } = await http.patch<VetHorse>(`/horses/${horse.id}`, { injuries: all.filter((i) => i.id !== injuryId) });
     await addAudit(actor, { action: 'REMOVE_INJURY', label: 'Gỡ đánh dấu chấn thương', object: `${horse.name} · ${target.part}`, area: 'med', from: target.severity, to: 'đã gỡ' });
     return data;

@@ -695,3 +695,44 @@ Hiện backend không nhận chỉ số và không kiểm tra ngưỡng, nên HL
 **7. Cấu hình server** (`deploy.yml` → `docker run -e …`, giá trị đặt trong GitHub Secrets): `MAIL_USERNAME`, `MAIL_PASSWORD` (OTP quên/đổi mật khẩu đang chỉ in ra log), `VNPAY_TMN_CODE`, `VNPAY_HASH_SECRET`, `VNPAY_RETURN_URL`, `VNPAY_FRONTEND_RESULT_URL`, `CORS_ALLOWED_ORIGINS`.
 
 Kiểm tra: `npm run check` 17/17, `scenarios:live` (admin, gọi server `103.245.237.252:8080`) 2/2.
+
+## 24. Kéo BE `deploy@8c48731` + nối API mới (24/10/2026)
+
+BE `2fb11e9` (đã chạy trên server, schema `DATABASE_fe_requests_schema.sql` đã có trong DB) giải quyết phần lớn danh sách §23. FE đã nối, chạy với dữ liệu thật:
+
+| Chức năng | API | FE |
+| :--- | :--- | :--- |
+| Mã phu bắt đầu phiên | `PUT /training-sessions/{id}/start` | `groomApi/sessionsApi.ts · start` |
+| Mã phu nhập chỉ số (server tự so ngưỡng → `PAUSED_PENDING_TRAINER`) | `POST /training-sessions/{id}/readings` `{time, heartRate, speedKmh}` | `groomApi/sessionsApi.ts · addReading` |
+| Mã phu đo nhịp hồi phục | `POST /training-sessions/{id}/recovery` `{time, heartRate}` | `groomApi/sessionsApi.ts · addRecovery` |
+| HLV điều chỉnh & cho tập tiếp | `PUT /training-sessions/{id}/resume` `{intensity, distanceM, maxHeartRate, note}` | `trainerApi/sessionsApi.ts · adjustAndContinue` |
+| Chỉ số, ngưỡng, giờ tạm dừng của phiên | `readings`, `recovery`, `maxHeartRate`, `maxSpeedKmh`, `pausedAt`, `pausedReason` trong `GET /training-plans/{id}`, `/my-schedule` | `hybridAdapter.ts · monitor()` (bỏ ngưỡng cứng 180/60) |
+| Giải đấu | `GET /tournaments` | `hybridAdapter.ts · LOADERS.tournaments` |
+| Đề xuất thi đấu | `GET/POST /race-proposals`, `PUT /{id}/owner-response`, `/submitted`, `/organizer-rejected`, `/result` | `hybridAdapter.ts · LOADERS.raceProposals`, `trainerApi/racesApi.ts`, `ownerApi/racesApi.ts` |
+| Chấn thương | `GET/POST /horses/{id}/injuries`, `DELETE /horses/{id}/injuries/{injuryId}` | `hybridAdapter.ts · injuriesOf` (GET `/horses/:id`), `vetApi/healthApi.ts` |
+| Trạng thái sức khỏe | `PUT /horses/{id}/health-status` `{status, reason}` | `vetApi/healthApi.ts · setHealthStatus` |
+| Trạng thái dọn chuồng | `PUT /stalls/{id}/clean-status` `{status}` | `hybridAdapter.ts · WRITES.stalls` |
+| Ảnh đại diện | `POST /account/avatar` (multipart `file`, ≤ 1 MB) | `authApi.ts · updateAvatar` |
+| Tên chủ ngựa | `ownerName` trong `GET /horses` | `hybridAdapter.ts · LOADERS.horses` |
+
+Bỏ ở FE: map nút “Dừng” → `execute CANCELLED` (làm giáo án kẹt `PAUSED`); Mã phu báo sự cố không còn giả lập tạm dừng phiên trong tab khi chạy backend.
+
+**Còn gửi BE** (chi tiết `../QA_Audit_HorseTrack.md`):
+1. Hủy 1 phiên vẫn chuyển giáo án `PAUSED`, không có API hủy/tiếp tục giáo án → ngựa không lập được giáo án mới. Cần `PUT /training-plans/{id}/cancel`, `/resume`; hủy phiên không pause giáo án.
+2. `PUT /execute`, `/evaluate`: HLV bất kỳ thao tác được phiên ngựa không phụ trách — thêm `horseAccessGuard.checkAssigned`.
+3. `POST /medical/vet-lock` cho cả Groom/Trainer — chỉ nên Veterinarian.
+4. Không có `@Version` (ghi đè khi thao tác đồng thời); thiếu ràng buộc unique “1 giáo án mở / ngựa”.
+5. `application.properties` còn giá trị mặc định cho mật khẩu DB và `jwt.secret`.
+6. Mã phu báo sự cố khi đang tập: chưa có API tạm dừng phiên đang chạy (`PAUSED_PENDING_TRAINER`) theo sự cố.
+7. Chưa có màn/API FE cho Quản lý CLB tạo giải (`POST /tournaments` đã có ở BE — FE cần làm màn mới).
+8. Lỗi trạng thái trả 400/500 thay vì 409/404; VNPay tạo nhiều giao dịch PENDING cho cùng hóa đơn.
+
+Kiểm tra: `npm run typecheck`, `npm run lint` 0 lỗi, `npm run scenarios` 17/17, `scenarios:live` (admin, server thật, thêm `/tournaments`, `/race-proposals`, `/horses/{id}/injuries`) 2/2.
+
+## 25. Nhật ký review Assignment 2 — phần FE (24/10/2026)
+
+BE `deploy` không có commit mới (`8c48731`). Đã làm ở FE: validate chung `PHONE_RE`/`EMAIL_RE` (`components/ui/Ht/password.ts`) cho đăng ký chủ ngựa và tạo nhân viên (SĐT nhân viên bắt buộc); họ tên chủ ngựa không bắt buộc (trống → gửi tên đăng nhập); hồ sơ ngựa: gợi ý + validate giống (`ownerApi/labels.ts · HORSE_BREEDS`), chiều cao hands 12–20, cân nặng 100–1200 kg, bỏ hộ chiếu/GCN dạng chữ, SĐT lấy từ tài khoản, kiểm tra nội dung tệp (`DocUpload.tsx`); màn duyệt bỏ “Hộ chiếu”, “GCN sức khỏe”, “Ngựa đang gửi”; hồ sơ cá nhân hiện mã chứng chỉ/chuyên môn/kinh nghiệm. Kịch bản mới `scenarios/registration-validation.spec.ts`.
+
+Việc cần BE (OTP xác thực email khi đăng ký, đăng nhập bằng email/SĐT, lưu & xem giấy tờ + kiểm tra AI, xác thực nhân viên + trạng thái mail/đăng nhập, phân công chờ xác nhận, nhật ký email, sửa hồ sơ nhân viên): xem `../YeuCau_BE_Review_Assignment2.md`.
+
+Kiểm tra: `npm run check` 19/19, `scenarios:live` (admin, server thật) 2/2.

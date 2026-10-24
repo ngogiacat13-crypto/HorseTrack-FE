@@ -1,5 +1,5 @@
 import { DEMO_NOW, http } from '../http';
-import { USE_BACKEND, be, notOnServer } from '../beClient';
+import { USE_BACKEND, be } from '../beClient';
 import { invalidate } from '../hybridAdapter';
 import { type Actor, addAudit } from '../managerApi';
 import type { Intensity, TrainingPlan, TrainingSession } from './types';
@@ -48,8 +48,13 @@ export const sessionsApi = {
   },
 
   async adjustAndContinue(s: TrainingSession, adj: { intensity: Intensity; distanceM: number; hrLimit: number; note: string }, actor: Actor) {
-    if (USE_BACKEND) throw notOnServer('điều chỉnh giáo án và cho tiếp tục phiên');
     if (s.status !== 'PAUSED_PENDING_TRAINER') throw new Error('Phiên này không còn chờ quyết định.');
+    if (USE_BACKEND) {
+      if (adj.note.trim().length < 10) throw new Error('Ghi rõ nội dung điều chỉnh ít nhất 10 ký tự.');
+      await be.put(`/training-sessions/${s.id}/resume`, { intensity: adj.intensity, distanceM: adj.distanceM, maxHeartRate: adj.hrLimit, note: adj.note.trim() });
+      invalidate('trainingSessions', 'trainingPlans');
+      return get<TrainingSession>(`/trainingSessions/${s.id}`);
+    }
     await getHorseChecked(s.horseId, actor);
     const last = (s.recovery ?? [])[(s.recovery ?? []).length - 1];
     if (!last || last.hr >= s.thresholds.hr) throw new Error(`Nhịp tim hồi phục chưa về dưới ngưỡng ${s.thresholds.hr} bpm — không thể tiếp tục (BR_02).`);

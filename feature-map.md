@@ -61,7 +61,7 @@ Quy ước `data-testid`: menu trái `nav-<đường dẫn bỏ / đầu, / đ�
 | Chủ ngựa · Chi tiết hóa đơn | `src/pages/owner/OwnerInvoiceDetail/` | `/owner/invoices/:id` | `back-btn` |
 | Chủ ngựa · Lịch sử thanh toán | `src/pages/owner/OwnerPayments/` | `/owner/payments` | `nav-owner-payments` |
 | Chủ ngựa · Đăng ký ngựa mới | `src/pages/owner/OwnerRegistrations/` | `/owner/registrations` | `nav-owner-registrations` |
-| Chủ ngựa · Tạo hồ sơ ngựa | `src/pages/owner/OwnerRegistrationCreate/` | `/owner/registrations/new` | `back-btn` |
+| Chủ ngựa · Tạo hồ sơ ngựa | `src/pages/owner/OwnerRegistrationCreate/` | `/owner/registrations/new` | `back-btn`, `registration-form`, `rg-name-input`, `rg-breed-input` (danh sách `rg-breed-list`, mục `rg-breed-option`), `rg-age-input`, `rg-color-input`, `rg-height-input`, `rg-weight-input`, `rg-owner-phone`, `doc-own-input`, `doc-health-input`, `registration-submit` |
 | Chủ ngựa · Thanh toán VNPay (mô phỏng) | `src/pages/owner/VNPayMock/` | `/payment/vnpay/:id` | — |
 | Kho · Tồn kho | `src/pages/warehouse/WarehouseInventory/` | `/warehouse` | `nav-warehouse` |
 | Kho · Phác đồ cần cấp | `src/pages/warehouse/WarehouseMedical/` | `/warehouse/medical` | `nav-warehouse-medical` |
@@ -83,6 +83,7 @@ Quy ước `data-testid`: menu trái `nav-<đường dẫn bỏ / đầu, / đ�
 | `scenarios/trainer-horses.spec.ts` | QL CLB giao cho HLV ngựa ở nhiều khu (không chọn khu), có bàn giao ngựa của HLV khác |
 | `scenarios/groom-zone.spec.ts` | Mã phu chỉ một khu; khu đã có Mã phu khác bị khóa |
 | `scenarios/assign-session.spec.ts` | Hộp phân công phiên tập: ngày mặc định hôm nay, không chọn được ngày đã qua |
+| `scenarios/registration-validation.spec.ts` | Đăng ký chủ ngựa: SĐT/email đúng định dạng, họ tên không bắt buộc; hồ sơ ngựa: gợi ý + validate giống, không còn hộ chiếu, chặn tệp đổi đuôi |
 
 ## Kịch bản chạy với backend thật (`scenarios-live/`, lệnh `npm run scenarios:live`)
 

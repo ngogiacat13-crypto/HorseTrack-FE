@@ -13,6 +13,12 @@ export const ProfileDetails: React.FC<{ user: AuthUser }> = ({ user }) => {
     ['Mã người dùng', user.userId, true],
     ['Vai trò', ROLE_LABEL[user.role]],
   ];
+  if (user.role !== 'HorseOwner' && user.role !== 'ClubManager') {
+    rows.push(['Mã chứng chỉ / mã nhân viên', user.licenseNumber || 'Chưa cập nhật', true]);
+    rows.push([user.role === 'Groom' ? 'Khu phụ trách' : 'Chuyên môn', user.specialization || 'Chưa cập nhật']);
+    if (user.experienceYears != null) rows.push(['Kinh nghiệm', `${user.experienceYears} năm`]);
+    if (user.clinicAffiliation) rows.push(['Phòng khám', user.clinicAffiliation]);
+  }
   return (
     <section className="ht-card">
       <div className="ht-card__title-row">

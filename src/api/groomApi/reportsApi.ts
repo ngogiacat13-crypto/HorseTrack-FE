@@ -1,4 +1,5 @@
 import { DEMO_NOW, http } from '../http';
+import { USE_BACKEND } from '../beClient';
 import { addAudit, type Actor } from '../managerApi';
 import type { Horse, TrainingSession } from '../trainerApi';
 import type { Severity, VetCase } from '../vetApi';
@@ -28,7 +29,7 @@ export const reportsApi = {
     const { data } = await http.post<VetCase>('/vetCases', c);
     await http.patch(`/horses/${horse.id}`, { pendingCase: data.id });
     let paused: string | null = null;
-    if (input.notifyTrainer) {
+    if (input.notifyTrainer && !USE_BACKEND) {
       const running = (await get<TrainingSession[]>('/trainingSessions', { horseId: horse.id })).find((s) => s.date === DEMO_NOW.date && (s.status === 'IN_PROGRESS' || s.status === 'RESUMED'));
       if (running) {
         await http.patch(`/trainingSessions/${running.id}`, {

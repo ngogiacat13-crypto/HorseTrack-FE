@@ -7,19 +7,21 @@ import { Icon } from '../../../components/ui/Icon';
 import {
   Busy,
   Callout,
+  EMAIL_RE,
+  EMAIL_RULE,
   Field,
   PASSWORD_RE,
   PASSWORD_RULE,
+  PHONE_RE,
+  PHONE_RULE,
   PasswordInput,
   StrengthMeter,
   TextInput,
   USERNAME_RE,
   USERNAME_RULE,
+  normalizePhone,
 } from '../../../components/ui/Ht';
 import { useForm } from '../../../hooks/useForm';
-
-const PHONE_RE = /^(0|\+84)(\d{9,10})$/;
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const Register: React.FC = () => {
   const navigate = useNavigate();
@@ -36,7 +38,6 @@ export const Register: React.FC = () => {
       password: '',
     },
     (v) => ({
-      fullname: v.fullname.trim() ? undefined : 'Vui lòng nhập họ và tên',
       username: !v.username
         ? 'Vui lòng nhập tên đăng nhập'
         : !USERNAME_RE.test(v.username.trim())
@@ -44,13 +45,13 @@ export const Register: React.FC = () => {
           : undefined,
       phone: !v.phone
         ? 'Vui lòng nhập số điện thoại'
-        : !PHONE_RE.test(v.phone.replace(/\s/g, ''))
-          ? 'Số điện thoại không hợp lệ'
+        : !PHONE_RE.test(normalizePhone(v.phone))
+          ? PHONE_RULE
           : undefined,
       email: !v.email
         ? 'Vui lòng nhập email'
-        : !EMAIL_RE.test(v.email)
-          ? 'Email không hợp lệ'
+        : !EMAIL_RE.test(v.email.trim())
+          ? EMAIL_RULE
           : undefined,
       password: !v.password
         ? 'Vui lòng nhập mật khẩu'
@@ -78,10 +79,10 @@ export const Register: React.FC = () => {
     try {
       const v = form.values;
       await authApi.register({
-        fullname: v.fullname.trim(),
+        fullname: v.fullname.trim() || v.username.trim(),
         username: v.username.trim(),
         email: v.email.trim(),
-        phone: v.phone.replace(/\s/g, ''),
+        phone: normalizePhone(v.phone),
         password: v.password,
       });
       setDoneUser(v.username);
@@ -179,7 +180,7 @@ export const Register: React.FC = () => {
           )}
 
           <form onSubmit={onSubmit} noValidate>
-            <Field label="Họ và tên" htmlFor="fullname" required error={form.errors.fullname}>
+            <Field label="Họ và tên" htmlFor="fullname" hint="Không bắt buộc — để trống sẽ dùng tên đăng nhập">
               <TextInput
                 icon="user"
                 autoComplete="name"

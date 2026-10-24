@@ -45,7 +45,7 @@ export type ProposalStatus =
   | 'PROPOSED' | 'WAITING_VET_EXAM' | 'VET_FAILED' | 'WAITING_OWNER' | 'OWNER_DECLINED'
   | 'READY_TO_SUBMIT' | 'SUBMITTED' | 'REJECTED_BY_ORGANIZER' | 'RESULT_RECORDED';
 export interface RaceProposal {
-  id: string; horseId: string; horseName: string; owner: string; tournamentId: string; status: ProposalStatus;
+  id: string; beId?: number; horseId: string; horseName: string; owner: string; tournamentId: string; status: ProposalStatus;
   createdAt: string; createdBy: string; note?: string;
   history: { at: string; who: string; text: string; tone?: 'success' | 'danger' | 'warning' | 'info' }[];
   vetResult: null | { pass: boolean; by: string; at: string; note: string; conditions?: string };
