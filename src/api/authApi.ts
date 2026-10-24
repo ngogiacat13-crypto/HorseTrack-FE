@@ -83,13 +83,6 @@ const fromProfile = (p: BeProfile, avatarUrl?: string): AuthUser => ({
   clinicAffiliation: p.clinicAffiliation ?? undefined,
 });
 
-const dataUrlToFile = (dataUrl: string) => {
-  const [head, body] = dataUrl.split(',');
-  const type = head.match(/^data:([^;]+)/)?.[1] ?? 'image/jpeg';
-  const bytes = Uint8Array.from(atob(body), (c) => c.charCodeAt(0));
-  return new File([bytes], `avatar.${type.split('/')[1]}`, { type });
-};
-
 const beAuth = {
   async login(username: string, password: string): Promise<AuthUser> {
     resetBackendData();
@@ -205,18 +198,5 @@ export const authApi = {
   async requestChangePasswordOtp(): Promise<string> {
     if (USE_BACKEND) return beAuth.requestChangePasswordOtp();
     return '';
-  },
-
-  async updateAvatar(userId: string, avatarUrl: string | null): Promise<AuthUser> {
-    if (avatarUrl && !/^data:image\/(png|jpeg|webp);base64,/.test(avatarUrl)) throw new Error('Ảnh đại diện không hợp lệ.');
-    if (avatarUrl && avatarUrl.length > 400_000) throw new Error('Ảnh quá lớn sau khi nén — hãy chọn ảnh khác.');
-    if (USE_BACKEND) {
-      if (!avatarUrl) throw new Error('Server chưa có API để xóa ảnh đại diện — hãy chọn ảnh mới để thay.');
-      const form = new FormData();
-      form.append('file', dataUrlToFile(avatarUrl));
-      return fromProfile(await beData<BeProfile>(be.post('/account/avatar', form, { headers: { 'Content-Type': 'multipart/form-data' } })));
-    }
-    const { data } = await http.patch<UserRecord>(`/users/${userId}`, { avatarUrl });
-    return toAuthUser(data);
   },
 };

@@ -150,14 +150,6 @@
 .ht-profile-details dt { color: var(--muted); }
 .ht-profile-details dd { margin: 0; font-weight: 500; overflow-wrap: anywhere; }
 .ht-profile-security { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); }
-.ht-avatar-edit { position: relative; border-radius: 50%; }
-.ht-avatar-edit.is-drop { outline: 2px dashed var(--primary); outline-offset: 4px; }
-.ht-avatar-edit .ht-avatar { box-shadow: 0 0 0 4px var(--surface), 0 0 0 5px var(--border); }
-.ht-avatar-edit__btn { position: absolute; right: 2px; bottom: 2px; width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--surface); background: var(--primary); color: var(--on-primary); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
-.ht-avatar-edit__btn:hover { background: var(--primary-hover); }
-.ht-avatar-edit__btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
-.ht-avatar-actions { display: flex; gap: var(--space-2); justify-content: center; flex-wrap: wrap; margin-top: var(--space-4); }
-.ht-avatar-hint { margin: 8px 0 0; font-size: 12px; line-height: 16px; color: var(--muted); }
 .ht-avatar-preview { display: flex; align-items: flex-end; justify-content: center; gap: var(--space-6); padding: var(--space-4) 0; }
 .ht-divider { height: 1px; background: var(--border); margin: var(--space-5) 0; border: 0; }
 .ht-overline { font: 600 11px/16px var(--font-sans); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
