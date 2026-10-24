@@ -40,9 +40,13 @@ export const Topbar: React.FC = () => {
           </button>
           {open && (
             <div className="ht-menu" role="menu">
-              <div className="ht-menu__head" style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+              <div className="ht-menu__head" data-testid="user-menu-head">
                 <Avatar name={user.fullname} src={user.avatarUrl} size={40} />
-                <span><b>{user.fullname}</b><small>{user.email}</small></span>
+                <span className="ht-menu__who">
+                  <b title={user.fullname}>{user.fullname}</b>
+                  <small title={user.email}>{user.email}</small>
+                  <em>{ROLE_LABEL[user.role]}</em>
+                </span>
               </div>
               <Link role="menuitem" className="ht-menu__item" data-testid="menu-my-profile" to="/my-profile" onClick={() => setOpen(false)}>
                 <Icon name="usercircle" />Hồ sơ cá nhân
