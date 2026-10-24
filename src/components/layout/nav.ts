@@ -28,6 +28,7 @@ export const NAV_BY_ROLE: Record<Role, NavGroup[]> = {
     { title: 'Quản trị', items: [
       { path: PATH.manager.users, icon: 'users', label: 'Người dùng & quyền' },
       { path: PATH.manager.auditLogs, icon: 'shield', label: 'Nhật ký hệ thống' },
+      { path: PATH.manager.emailLogs, icon: 'mail', label: 'Nhật ký email' },
     ] },
   ],
   HeadTrainer: [

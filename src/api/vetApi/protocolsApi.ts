@@ -5,7 +5,7 @@ import type { VetCase, InventoryItem, ProtoPhase, Protocol, Shipment, VetHorse }
 import { isOpenProtocol } from './labels';
 import { dateKey, isDate } from './dates';
 import { get, nextId, now, min, addHistory, lastEta, phaseRequiredBy, stockShort, watchFields, saveProtocol, goTo, releaseHeld } from './shared';
-import { ITEM_ADDABLE } from './labels';
+import { ITEM_ADDABLE, withAddedItems, type ItemAddition } from './labels';
 
 export const protocolsApi = {
   async getProtocols() {
@@ -83,6 +83,14 @@ export const protocolsApi = {
       if (isOpenProtocol(old)) await protocolsApi.supersede(old, p.id, actor);
     }
     await addAudit(actor, { action: 'SEND_STOCK_CHECK', label: 'Gửi kiểm tra tồn kho', object: `${p.id} · ${p.horse}`, area: 'med', from: 'DRAFT', to: 'WAITING_STOCK_CHECK' });
+    return data;
+  },
+
+  async addItemsDuringTreatment(p: Protocol, adds: ItemAddition[], reason: string, actor: Actor) {
+    if (p.state !== 'IN_TREATMENT') throw new Error('Chỉ bổ sung thuốc khi phác đồ đang điều trị.');
+    const why = min(reason, 5, 'Lý do bổ sung thuốc');
+    const data = await saveProtocol(p, { phases: withAddedItems(p.phases, adds) }, { who: `BS ${actor.name}`, text: `bổ sung ${adds.length} thuốc: ${why}`, at: now() });
+    await addAudit(actor, { action: 'ADD_PROTOCOL_ITEMS', label: 'Bổ sung thuốc khi điều trị', object: `${p.id} · ${p.horse}`, area: 'med', to: `${adds.length} dòng`, reason: why });
     return data;
   },
 

@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { DEMO_NOW, type ApiError } from '../../../api/http';
-import { USE_BACKEND } from '../../../api/beClient';
 import type { Vaccination } from '../../../api/trainerApi';
 import { addDays, dateKey, daysFromToday, dueWithin7, vetApi } from '../../../api/vetApi';
 import { useActor } from '../../../auth/AuthContext';
@@ -53,12 +52,6 @@ export const VetVaccinations: React.FC = () => {
           <button type="button" className="ht-btn ht-btn--secondary" onClick={() => openPlan('DEWORM')}><Icon name="calendar" />Lịch tẩy giun</button>
           <button type="button" className="ht-btn ht-btn--primary" onClick={() => openPlan('VACCINE')}><Icon name="calendar" />Lịch tiêm phòng</button>
         </>} />
-
-      {USE_BACKEND && (
-        <Callout tone="danger" title="Server chưa có dữ liệu tiêm phòng thật" testId="vaccination-backend-missing" style={{ marginBottom: 16 }}>
-          API <code>/vaccinations</code> trên server đang trả dữ liệu mẫu cố định (ngựa không có trong database) và không lưu khi tạo lịch / ghi nhận đã tiêm. Màn hình chỉ hiện mũi tiêm của ngựa có thật; chức năng ghi sẽ mở khi nhóm BE nối database.
-        </Callout>
-      )}
 
       <Tabs<Tab> value={tab} onChange={setTab} items={[
         { value: 'due7', label: 'Đến hạn trong 7 ngày', count: groups.due7.length },

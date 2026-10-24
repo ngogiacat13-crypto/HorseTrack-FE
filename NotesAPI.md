@@ -776,3 +776,20 @@ BE `4125816` (đã chạy trên server, 167 API).
 - Nguyên nhân 1: BE đặt `VET_CONFIRMED` sau khi bác sĩ xác nhận, FE kho chờ `READY_FOR_DISPENSING` → phác đồ đã xác nhận không ở tab nào, không có form cấp phát. Sửa `beDomain.ts · mapProtocol`: `VET_CONFIRMED` → `READY_FOR_DISPENSING` (Chờ kho cấp phát). Trên server lúc sửa: PD-1020, 1023, 1027, 1028.
 - Nguyên nhân 2: `GET /inventory/protocols` mặc định chỉ trả WAITING_STOCK_CHECK, WAITING_RESTOCK, REQUIRES_VET_REVIEW, VET_CONFIRMED. FE kho lấy thêm `?state=` STOCK_AVAILABLE, STOCK_SHORTAGE, IN_TREATMENT, ON_HOLD_PAYMENT, COMPLETED, SUPERSEDED, CANCELLED. Tab “Đã cấp phát” gồm đang điều trị / tạm dừng chờ thanh toán / hoàn tất; dòng thuốc `status = ISSUED` hiện “Đã cấp”.
 - Gửi BE (không bắt buộc): trả thời điểm và người cấp phát trong `stockAnswer` (`issuedAt`, `issuedByName`) để kho có lịch sử cấp phát đầy đủ; cân nhắc thêm các trạng thái trên vào danh sách mặc định của `/inventory/protocols`.
+
+## 32. Nối các API BE còn thiếu (25/10/2026, BE `dc1e6da`)
+
+| Chức năng | API | FE |
+| :--- | :--- | :--- |
+| Trạng thái xác nhận email nhân viên | `emailConfirmed` trong `GET /users/all` | Màn Người dùng: “Chờ xác nhận email”, lọc theo trạng thái, ẩn nút phân công tới khi xác nhận |
+| Gửi lại mail xác nhận | `POST /users/{id}/resend-confirmation` | `managerApi.resendConfirmation`, nút “Gửi lại mail” |
+| Nhân viên xác nhận tài khoản | `POST /auth/confirm-account {token}` | Trang `/confirm-account?token=` (`pages/auth/ConfirmAccount`); đăng nhập hiện `?confirmed=&message=` khi BE chuyển về (cần đặt `STAFF_LOGIN_URL` hoặc `STAFF_CONFIRM_URL` trỏ về FE trên server) |
+| Nhật ký email | `GET /email-logs` (lọc status, purpose, toEmail, fromDate, toDate, phân trang) | `features/email-logs`, menu QL CLB “Nhật ký email” |
+| Bổ sung thuốc khi đang điều trị | `POST /medical-management/protocols/{id}/items {phaseNo,itemId,quantity,reason}` | `vetProtocolBe.addItemsDuringTreatment`, nút “Bổ sung thuốc” ở phác đồ IN_TREATMENT |
+| Gửi khẩu phần thành việc cho ăn | `POST /nutrition-plans/{planId}/feed-tasks` | Nút “Gửi việc cho ăn” trong panel thực đơn (HLV, Bác sĩ) |
+| HLV giao việc chăm sóc | `GET /horses/{id}/grooms`, `POST /care-tasks` | `features/care-task-assign`, nút ở Hồ sơ ngựa HLV |
+| Tồn kho thấp | `GET /inventory/low-stock` | Màn Tồn kho dùng danh sách server khi chạy backend |
+
+Không nối (có lý do): `/payments/vnpay/return`, `/ipn` (VNPay gọi BE); `/owner/payments/medical-records/{id}/vnpay`, `/veterinary/medical-records`, `/manager/medical-records/{id}/approve` (luồng bệnh án cũ, đã thay bằng phác đồ); `/account/avatar` (đã bỏ theo yêu cầu); `/prerace-exams` GET (đã thay bằng `/race-proposals`); `/vaccinations/schedule`, `/execute` (BE vẫn giả lập — mục H1); các GET chi tiết (`/inventory/items/{id}`, `/inventory/purchase-orders/{id}`, `/race-proposals/{id}`, `/diet-requests/{id}`, `/owner/training/my-horses`) — FE đã có dữ liệu từ API danh sách; `/training-plans/dashboard-stats` (FE tự tính từ danh sách). Chưa có màn hình: `PUT /inventory/items/{id}` (sửa thông tin vật tư), `PUT /inventory/suppliers/{id}`, `GET /billing/owners/{id}/service`, `DELETE /horses/{id}/registration-attachments/{aid}`.
+
+Kiểm tra server (QL CLB): `GET /email-logs` 200 (0 bản ghi — bảng mới, chưa có mail gửi), không có nhân viên chờ xác nhận.

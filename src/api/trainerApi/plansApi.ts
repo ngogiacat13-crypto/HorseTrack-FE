@@ -12,8 +12,11 @@ const beCreatePlan = async (horse: Horse, name: string, input: { type: string; g
   const start = new Date(yyyy, mm - 1, dd);
   const weeks = input.phases.reduce((s, p) => s + (Number(p.weeks) || 0), 0) || 1;
   const end = new Date(start.getTime() + (weeks * 7 - 1) * 864e5);
-  const goal = [`[${input.type} · ${input.phases.length} giai đoạn · ${weeks} tuần]`, input.goal.trim()].filter(Boolean).join(' ').slice(0, 500);
-  const planId = await beData<number>(be.post('/training-plans', { horseId: Number(horse.id), planName: name, startDate: iso(start), endDate: iso(end), goal }));
+  const phases = input.phases.map((ph, i) => ({
+    phaseNo: i + 1, name: ph.name.trim() || `Giai đoạn ${i + 1}`, weeks: Number(ph.weeks) || 1, intensity: ph.intensity,
+    distanceM: Number(ph.distanceM) || undefined, sessionsPerWeek: Number(ph.sessionsPerWeek) || undefined, maxHeartRate: Number(ph.hrLimit) || undefined,
+  }));
+  const planId = await beData<number>(be.post('/training-plans', { horseId: Number(horse.id), planName: name, startDate: iso(start), endDate: iso(end), goal: input.goal.trim().slice(0, 500) || undefined, type: input.type.slice(0, 50), phases }));
   invalidate('trainingPlans', 'trainingSessions');
   return {
     id: String(planId), horseId: horse.id, horseName: horse.name, name, type: input.type, goal: input.goal,

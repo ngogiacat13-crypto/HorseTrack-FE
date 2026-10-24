@@ -20,13 +20,14 @@ export const WarehouseInventory: React.FC = () => {
 
   const items = useMemo(() => data?.items ?? [], [data]);
   const expiring = (i: StockItem) => (i.lots ?? []).some((l) => l.qty > 0 && monthsLeft(l.expiry) <= 2);
+  const isLow = useMemo(() => (i: StockItem) => (data?.lowIds ? data.lowIds.has(i.id) : belowSafety(i)), [data]);
   const list = useMemo(() => items.filter((i) =>
     (!category || i.category === category) &&
-    (!status || (status === 'low' ? belowSafety(i) : status === 'held' ? i.held > 0 : expiring(i))) &&
-    `${i.name} ${i.id} ${i.group} ${i.brand ?? ''}`.toLowerCase().includes(query.trim().toLowerCase())), [items, category, status, query]);
+    (!status || (status === 'low' ? isLow(i) : status === 'held' ? i.held > 0 : expiring(i))) &&
+    `${i.name} ${i.id} ${i.group} ${i.brand ?? ''}`.toLowerCase().includes(query.trim().toLowerCase())), [items, category, status, query, isLow]);
 
   if (!data) return <LoadState loading={loading} error={error} onRetry={reload} />;
-  const low = items.filter(belowSafety);
+  const low = items.filter(isLow);
   const categories = [...new Set(items.map((i) => i.category))];
   const incomingCount = new Set(Object.values(data.incoming).flat().map((x) => x.id)).size;
 

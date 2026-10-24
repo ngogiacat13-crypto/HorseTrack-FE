@@ -9,6 +9,7 @@ import { ProtocolBadge, ProtocolPath } from '../../../components/vet/VetParts';
 import { CHANGE_LABEL, protocolChanges, stockLines } from '../../../api/vetApi';
 import { StockCheckForm } from './StockCheckForm';
 import { DispenseForm } from './DispenseForm';
+import { DispensingHistory } from '../../../features/dispensing-history';
 
 const WAIT_TEXT: Record<string, string> = {
   STOCK_SHORTAGE: 'Đã báo thiếu. Bác sĩ đang quyết định đổi thuốc hoặc chờ hàng — kho không tự đổi thuốc.',
@@ -73,6 +74,7 @@ export const WarehouseMedicalDetail: React.FC = () => {
           )}
           {WAIT_TEXT[p.state] && <Callout tone={['IN_TREATMENT', 'ON_HOLD_PAYMENT', 'COMPLETED'].includes(p.state) ? 'success' : 'info'} icon="info">{WAIT_TEXT[p.state]}</Callout>}
 
+          <DispensingHistory protocolBeId={(p as { beId?: number }).beId} />
           {p.stock && p.state !== 'WAITING_STOCK_CHECK' && (
             <Panel title="Phản hồi kho đã gửi" sub={`${p.stock.at} · ${p.stock.by}`}>
               <table className="ht-table">

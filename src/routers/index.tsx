@@ -9,6 +9,7 @@ import { RoleGuard } from './RoleGuard';
 import { Login } from '../pages/auth/Login';
 import { Register } from '../pages/auth/Register';
 import { ForgotPassword } from '../pages/auth/ForgotPassword';
+import { ConfirmAccount } from '../pages/auth/ConfirmAccount';
 import { ChangePassword } from '../pages/auth/ChangePassword';
 import { MyProfile } from '../pages/auth/MyProfile';
 import { HorseProfile } from '../pages/shared/HorseProfile';
@@ -22,6 +23,7 @@ import { ManagerInvoices } from '../pages/manager/ManagerInvoices';
 import { ManagerFinanceReport } from '../pages/manager/ManagerFinanceReport';
 import { ManagerUsers } from '../pages/manager/ManagerUsers';
 import { ManagerAuditLogs } from '../pages/manager/ManagerAuditLogs';
+import { EmailLogs } from '../features/email-logs';
 
 import { TrainerHerdOverview } from '../pages/trainer/TrainerHerdOverview';
 import { StableMap } from '../pages/trainer/StableMap';
@@ -79,6 +81,7 @@ const ROLE_ROUTES: { role: Role; routes: [path: string, element: React.ReactElem
     [PATH.manager.reports, <ManagerFinanceReport />],
     [PATH.manager.users, <ManagerUsers />],
     [PATH.manager.auditLogs, <ManagerAuditLogs />],
+    [PATH.manager.emailLogs, <EmailLogs />],
   ] },
   { role: 'HeadTrainer', routes: [
     [PATH.trainer.home, <TrainerHerdOverview />],
@@ -147,6 +150,7 @@ export const AppRoutes: React.FC = () => {
       <Route path={PATH.login} element={publicOnly(<Login />)} />
       <Route path={PATH.register} element={publicOnly(<Register />)} />
       <Route path={PATH.forgotPassword} element={publicOnly(<ForgotPassword />)} />
+      <Route path={PATH.confirmAccount} element={<ConfirmAccount />} />
 
       <Route path={PATH.vnpay} element={user ? <RoleGuard role="HorseOwner"><VNPayMock /></RoleGuard> : <Navigate to={PATH.login} replace />} />
 

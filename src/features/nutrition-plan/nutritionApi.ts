@@ -1,4 +1,4 @@
-import { be, beData } from '../../api/beClient';
+import { be, beData, type ApiResponse } from '../../api/beClient';
 import { invalidate } from '../../api/hybridAdapter';
 import { type MealType, type PlanDraft, validateDraft } from './logic';
 
@@ -36,6 +36,12 @@ export const nutritionApi = {
     const plan = await beData<NutritionPlan>(be.put(`/nutrition-plans/${planId}`, toBody(horseId, draft)));
     changed();
     return plan;
+  },
+
+  async sendFeedTasks(planId: number) {
+    const res = await be.post<ApiResponse<number>>(`/nutrition-plans/${planId}/feed-tasks`);
+    invalidate('tasks');
+    return res.data.message || `Đã gửi ${res.data.data} việc cho ăn cho Mã phu.`;
   },
 
   async cancel(planId: number) {

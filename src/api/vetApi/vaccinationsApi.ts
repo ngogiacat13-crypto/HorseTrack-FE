@@ -1,4 +1,6 @@
 import { http } from '../http';
+import { USE_BACKEND, be } from '../beClient';
+import { invalidate } from '../hybridAdapter';
 import { type Actor, addAudit } from '../managerApi';
 import type { Horse, Vaccination } from '../trainerApi';
 import type { VetHorse } from './types';
@@ -18,6 +20,12 @@ export const vaccinationsApi = {
     if (daysFromToday(input.due) < 0) throw new Error('Ngày dự kiến không được ở quá khứ.');
     if (input.kind === 'DEWORM' && (input.cycleMonths < 3 || input.cycleMonths > 6)) throw new Error('Chu kỳ tẩy giun từ 3 đến 6 tháng.');
     if (input.kind === 'VACCINE' && (input.cycleMonths < 1 || input.cycleMonths > 24)) throw new Error('Chu kỳ tiêm nhắc từ 1 đến 24 tháng.');
+    if (USE_BACKEND) {
+      await be.post('/vaccinations/schedule', { horseIds: input.horseIds.map(Number), kind: input.kind, medicineName: type, scheduledDate: input.due, cycleMonths: input.cycleMonths, notes: input.note.trim() || undefined });
+      invalidate('vaccinations');
+      await addAudit(actor, { action: input.kind === 'DEWORM' ? 'SCHEDULE_DEWORM' : 'SCHEDULE_VACCINE', label: input.kind === 'DEWORM' ? 'Tạo lịch tẩy giun' : 'Tạo lịch tiêm phòng', object: `${type} · ${input.horseIds.length} ngựa`, area: 'med', to: input.due });
+      return (await get<Vaccination[]>('/vaccinations')).filter((v) => input.horseIds.includes(v.horseId) && v.type === type && v.status !== 'DONE');
+    }
     const [all, horses] = await Promise.all([get<Vaccination[]>('/vaccinations'), get<Horse[]>('/horses')]);
     const dup = all.find((v) => input.horseIds.includes(v.horseId) && v.type.toLowerCase() === type.toLowerCase() && v.status !== 'DONE');
     if (dup) throw new Error(`${dup.horse} đã có lịch “${dup.type}” ngày ${dup.due}.`);
@@ -41,6 +49,13 @@ export const vaccinationsApi = {
     if (daysFromToday(input.doneAt) > 0) throw new Error('Ngày thực hiện không được sau hôm nay.');
     const by = min(input.by, 3, 'Người thực hiện');
     const ext = v as Vaccination & { cycleMonths?: number; kind?: string };
+    if (USE_BACKEND) {
+      await be.post(`/vaccinations/${encodeURIComponent(v.id)}/execute`, { doneAt: input.doneAt, note: `Người thực hiện: ${by}` });
+      invalidate('vaccinations', 'horses');
+      await addAudit(actor, { action: 'RECORD_VACCINATION', label: ext.kind === 'DEWORM' ? 'Ghi nhận tẩy giun' : 'Ghi nhận đã tiêm', object: `${v.id} · ${v.horse}`, area: 'med', from: v.status, to: 'DONE', reason: by });
+      const all = await get<Vaccination[]>('/vaccinations');
+      return { done: all.find((x) => x.id === v.id) ?? { ...v, status: 'DONE' as const, doneAt: input.doneAt, by }, next: all.find((x) => x.horseId === v.horseId && x.type === v.type && x.status !== 'DONE') ?? null };
+    }
     const { data } = await http.patch<Vaccination>(`/vaccinations/${v.id}`, { status: 'DONE', doneAt: input.doneAt, by });
     let next: Vaccination | null = null;
     if (ext.cycleMonths) {

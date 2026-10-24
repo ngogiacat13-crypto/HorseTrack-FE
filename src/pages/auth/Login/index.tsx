@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../../auth/AuthContext';
 import { ROLE_HOME } from '../../../api/mockData';
 import type { ApiError } from '../../../api/http';
@@ -20,6 +20,9 @@ export const Login: React.FC = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
   const [serverError, setServerError] = useState('');
+  const [params] = useSearchParams();
+  const confirmed = params.get('confirmed');
+  const confirmMessage = params.get('message');
 
   const formik = useFormik({
     initialValues: { username: '', password: '' },
@@ -52,6 +55,11 @@ export const Login: React.FC = () => {
       <h1 className="ht-auth__title">Đăng nhập</h1>
       <p className="ht-auth__sub">Dùng tên đăng nhập và mật khẩu để truy cập hệ thống.</p>
 
+      {confirmed && (
+        <Callout tone={confirmed === 'true' ? 'success' : 'danger'} testId="login-confirm-result" style={{ marginBottom: 16 }}>
+          {confirmMessage || (confirmed === 'true' ? 'Đã xác nhận tài khoản. Đăng nhập bằng email và mật khẩu tạm trong email.' : 'Liên kết xác nhận không hợp lệ hoặc đã hết hạn.')}
+        </Callout>
+      )}
       {serverError && <Callout tone="danger" testId="login-error" style={{ marginBottom: 16 }}>{serverError}</Callout>}
 
       <FormikProvider value={formik}>

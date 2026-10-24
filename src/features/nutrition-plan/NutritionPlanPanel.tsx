@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Badge, Callout, Dialog, Panel } from '../../components/ui/Ht';
+import { Badge, Callout, Dialog, Panel, useToast } from '../../components/ui/Ht';
 import { Icon } from '../../components/ui/Icon';
 import { useAction } from '../../hooks/useAction';
 import { MEALS, dmy, editBlock, isCurrent, isUpcoming, toMealType } from './logic';
@@ -37,6 +37,19 @@ export const NutritionPlanPanel: React.FC<{ horseId: string | number; horseName:
   useEffect(load, [load]);
 
   const refresh = () => { load(); onChanged?.(); };
+  const toast = useToast();
+  const [sending, setSending] = useState(false);
+  const sendFeed = async () => {
+    if (!current) return;
+    setSending(true);
+    try {
+      toast(await nutritionApi.sendFeedTasks(current.planId));
+    } catch (e) {
+      toast((e as Error).message || 'Không gửi được việc cho ăn.');
+    } finally {
+      setSending(false);
+    }
+  };
   const current = plans?.find((p) => isCurrent(p)) ?? null;
   const upcoming = plans?.filter((p) => isUpcoming(p)) ?? [];
   const history = plans?.filter((p) => p !== current && !upcoming.includes(p)).slice(0, 4) ?? [];
@@ -50,6 +63,7 @@ export const NutritionPlanPanel: React.FC<{ horseId: string | number; horseName:
     ? (current ? <Badge tone={current.planType === 'MEDICAL' ? 'danger' : 'neutral'} plain>{current.planType === 'MEDICAL' ? 'Bác sĩ chỉ định' : 'Khẩu phần thường'}</Badge> : null)
     : current
       ? <span style={{ display: 'flex', gap: 6 }}>
+        <button type="button" className="ht-more" data-testid="nutrition-feed-tasks-btn" disabled={sending} onClick={sendFeed}>{sending ? 'Đang gửi…' : 'Gửi việc cho ăn'}</button>
         <button type="button" className="ht-more" data-testid="nutrition-edit-btn" onClick={() => setEditing(current)}>Sửa <Icon name="arrow" /></button>
         <button type="button" className="ht-more" data-testid="nutrition-cancel-btn" style={{ color: 'var(--danger-ink)' }} onClick={() => setCancelling(current)}>Hủy</button>
       </span>

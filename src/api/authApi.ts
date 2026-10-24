@@ -176,6 +176,12 @@ export const authApi = {
     return { otpRequired: false };
   },
 
+  async confirmStaffAccount(token: string): Promise<{ email: string }> {
+    if (!USE_BACKEND) throw new Error('Xác nhận tài khoản nhân viên chỉ chạy với server.');
+    const res = await beData<{ email: string; roleName: string }>(be.post('/auth/confirm-account', { token }));
+    return { email: res.email };
+  },
+
   async sendOtp(email: string): Promise<void> {
     if (USE_BACKEND) return beAuth.forgotPassword(email);
     const user = await findBy('email', email);

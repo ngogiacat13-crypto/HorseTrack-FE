@@ -47,6 +47,19 @@ export const vetProtocolBe = {
     await addAudit(actor, { action: 'CREATE_PROTOCOL', label: 'Lập phác đồ', object: `${p.protocolCode} · ${p.horseName}`, area: 'med', to: p.state, reason: body.diagnosis });
     return mapProtocol(p) as unknown as Protocol;
   },
+  async addItemsDuringTreatment(p: Protocol, adds: { phaseNo: number; itemId: string; qty: number }[], reason: string, actor: Actor) {
+    const why = reason.trim();
+    if (why.length < 5) throw new Error('Lý do bổ sung thuốc ít nhất 5 ký tự.');
+    const ids = await itemIds();
+    let last: Parameters<typeof mapProtocol>[0] | null = null;
+    for (const a of adds) {
+      const itemId = ids.get(a.itemId) ?? Number(a.itemId.replace(/D/g, ''));
+      last = await beData<Parameters<typeof mapProtocol>[0]>(be.post(`/medical-management/protocols/${beId(p)}/items`, { phaseNo: a.phaseNo, itemId, quantity: a.qty, reason: why }));
+    }
+    after('protocols', 'inventory', 'invoices');
+    await addAudit(actor, { action: 'ADD_PROTOCOL_ITEMS', label: 'Bổ sung thuốc khi điều trị', object: `${p.id} · ${p.horse}`, area: 'med', to: `${adds.length} dòng`, reason: why });
+    return (last ? mapProtocol(last) : p) as unknown as Protocol;
+  },
   async sendStockCheck(p: Protocol) {
     return p;
   },

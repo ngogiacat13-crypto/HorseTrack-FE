@@ -15,6 +15,7 @@ Quy ước `data-testid`: menu trái `nav-<đường dẫn bỏ / đầu, / đ�
 | Giới thiệu | `src/pages/public/Landing/` | `/gioi-thieu` | — |
 | Đăng nhập | `src/pages/auth/Login/` | `/login` (mặc định khi chưa đăng nhập) | `login-form`, `username-input`, `password-input`, `login-submit`, `login-error` |
 | Đăng ký chủ ngựa (2 bước OTP email) | `src/pages/auth/Register/` | `/register` | `<tên-trường>-input`, `register-otp-form`, `register-otp-input`, `register-otp-submit`, `register-otp-resend`, `register-otp-back`, `register-otp-error` |
+| Xác nhận tài khoản nhân viên | `src/pages/auth/ConfirmAccount/` | `/confirm-account?token=` (liên kết trong email) · đăng nhập nhận `?confirmed=&message=` | `confirm-account-ok`, `confirm-account-login`, `confirm-account-error`, `login-confirm-result` |
 | Quên mật khẩu (OTP) | `src/pages/auth/ForgotPassword/` | `/forgot-password` | `<tên-trường>-input` |
 | Đổi mật khẩu (OTP) | `src/pages/auth/ChangePassword/` | `/change-password` · menu tài khoản | `nav-change-password`, `menu-change-password`, `oldPassword-input`, `newPassword-input`, `confirmPassword-input`, `otp-input` |
 | Hồ sơ cá nhân | `src/pages/auth/MyProfile/` | `/my-profile` · menu tài khoản | `nav-my-profile`, `menu-my-profile` |
@@ -28,10 +29,10 @@ Quy ước `data-testid`: menu trái `nav-<đường dẫn bỏ / đầu, / đ�
 | QL CLB · Theo dõi y tế | `src/pages/manager/ManagerMedicalMonitoring/` | `/manager/medical-monitoring` | `nav-manager-medical-monitoring`, `medical-monitoring-empty` |
 | QL CLB · Hóa đơn | `src/pages/manager/ManagerInvoices/` | `/manager/invoices` | `nav-manager-invoices`, `generate-invoices-btn`, `generate-invoices-dialog`, `generate-month-input`, `stall-fee-btn`, `stall-fee-dialog`, `cancel-invoice-btn`, `cancel-invoice-dialog` |
 | QL CLB · Báo cáo tài chính | `src/pages/manager/ManagerFinanceReport/` | `/manager/reports` | `nav-manager-reports` |
-| QL CLB · Người dùng & phân quyền | `src/pages/manager/ManagerUsers/` | `/manager/users` · nút "Phân công" | `nav-manager-users`, `assign-<username>`, `trainer-horses-dialog`, `trainer-horse-<horseId>`, `groom-zone-dialog`, `groom-zone-<Khu X>` |
+| QL CLB · Người dùng & phân quyền | `src/pages/manager/ManagerUsers/` | `/manager/users` · nút "Phân công" | `nav-manager-users`, `assign-<username>`, `trainer-horses-dialog`, `trainer-horse-<horseId>`, `groom-zone-dialog`, `groom-zone-<Khu X>`, `pending-confirm-<username>` (chờ xác nhận email), `resend-confirm-<username>` (gửi lại mail) |
 | QL CLB · Nhật ký hệ thống | `src/pages/manager/ManagerAuditLogs/` | `/manager/audit-logs` | `nav-manager-audit-logs` |
 | HLV · Tổng quan đàn ngựa | `src/pages/trainer/TrainerHerdOverview/` | `/trainer` | `nav-trainer` |
-| HLV · Hồ sơ ngựa | `src/pages/trainer/TrainerHorseRecord/` | `/trainer/horses/:id` | `back-btn` |
+| HLV · Hồ sơ ngựa | `src/pages/trainer/TrainerHorseRecord/` | `/trainer/horses/:id` | `back-btn`, `care-task-btn` |
 | HLV · Giáo án | `src/pages/trainer/TrainerPlans/` | `/trainer/plans` · nút “Hủy” / “Chạy lại” trên từng dòng | `nav-trainer-plans`, `cancel-plan-<mã>`, `resume-plan-<mã>`, `cancel-plan-dialog`, `cancel-plan-reason` (ô lý do), `resume-plan-dialog` |
 | HLV · Tạo giáo án | `src/pages/trainer/TrainerPlanCreate/` | `/trainer/plans/new` | `back-btn` |
 | HLV · Lịch tập + phân công phiên | `src/pages/trainer/TrainerSchedule/` | `/trainer/schedule` · nút “Phân công phiên tập” | `nav-trainer-schedule`, `assign-session-dialog`, `assign-zone-select`, `assign-horse-select`, `assign-date-input`, `assign-time-input`, `assign-groom-select`, `assign-track-input` |
@@ -71,7 +72,9 @@ Quy ước `data-testid`: menu trái `nav-<đường dẫn bỏ / đầu, / đ�
 | Kho · Kiểm kê | `src/pages/warehouse/WarehouseStockCheck/` | `/warehouse/check` | `nav-warehouse-check` |
 | Kho · Nhật ký kho | `src/pages/warehouse/WarehouseLog/` | `/warehouse/log` | `nav-warehouse-log` |
 | QL CLB · Phát hành / hủy hóa đơn, phí lưu chuồng (tính năng mới) | `src/features/invoice-billing/` | Nút trên trang `/manager/invoices` (chỉ khi chạy backend) | `generate-invoices-btn`, `stall-fee-btn`, `cancel-invoice-btn` |
-| HLV / Bác sĩ / Mã phu · Thực đơn dinh dưỡng (tính năng mới) | `src/features/nutrition-plan/` | Panel trong `/trainer/horses/:id` (Tổng quan), `/vet/horses/:id` (Khẩu phần / thực đơn), `/groom/stable` (Thực đơn hôm nay) — chỉ khi chạy backend | `nutrition-panel`, `nutrition-create-btn`, `nutrition-edit-btn`, `nutrition-cancel-btn`, `nutrition-plan-dialog`, `nutrition-start-input`, `nutrition-end-input`, `nutrition-meal-select-<i>`, `nutrition-item-select-<i>`, `nutrition-qty-input-<i>`, `nutrition-remove-line-<i>`, `nutrition-add-line`, `nutrition-notes-input`, `nutrition-cancel-dialog`, `nutrition-history-toggle`, `feed-request-btn`, `feed-approve-<mã>`, `feed-reject-<mã>` |
+| HLV / Bác sĩ / Mã phu · Thực đơn dinh dưỡng (tính năng mới) | `src/features/nutrition-plan/` | Panel trong `/trainer/horses/:id` (Tổng quan), `/vet/horses/:id` (Khẩu phần / thực đơn), `/groom/stable` (Thực đơn hôm nay) — chỉ khi chạy backend | `nutrition-panel`, `nutrition-create-btn`, `nutrition-edit-btn`, `nutrition-cancel-btn`, `nutrition-feed-tasks-btn`, `nutrition-plan-dialog`, `nutrition-start-input`, `nutrition-end-input`, `nutrition-meal-select-<i>`, `nutrition-item-select-<i>`, `nutrition-qty-input-<i>`, `nutrition-remove-line-<i>`, `nutrition-add-line`, `nutrition-notes-input`, `nutrition-cancel-dialog`, `nutrition-history-toggle`, `feed-request-btn`, `feed-approve-<mã>`, `feed-reject-<mã>` |
+| QL CLB · Nhật ký email (tính năng mới) | `src/features/email-logs/` | `/manager/email-logs` | `nav-manager-email-logs`, `email-log-search`, `email-log-status`, `email-log-purpose`, `email-log-from`, `email-log-to`, `email-log-table`, `email-log-empty`, `email-log-prev`, `email-log-next` |
+| HLV · Giao việc chăm sóc cho Mã phu (tính năng mới) | `src/features/care-task-assign/` | Nút “Giao việc chăm sóc” ở `/trainer/horses/:id` (chỉ khi chạy backend) | `care-task-btn`, `care-task-dialog`, `care-task-groom`, `care-task-type`, `care-task-date`, `care-task-time`, `care-task-title`, `care-task-instructions` |
 | Không tìm thấy (404) | `src/pages/shared/NotFound/` | Địa chỉ không tồn tại | — |
 
 ## Kịch bản tự kiểm (`scenarios/`)
@@ -86,7 +89,8 @@ Quy ước `data-testid`: menu trái `nav-<đường dẫn bỏ / đầu, / đ�
 | `scenarios/registration-validation.spec.ts` | Đăng ký chủ ngựa: SĐT/email đúng định dạng, họ tên không bắt buộc; đăng ký phải nhập OTP (mã sai báo lỗi, đúng thì thành công); hồ sơ ngựa: gợi ý + validate giống, không còn hộ chiếu, chặn tệp đổi đuôi |
 | `scenarios/layout-alignment.spec.ts` | Mọi trang menu + trang tạo (giáo án, đề xuất, phác đồ, hồ sơ ngựa, hồ sơ cá nhân, đổi mật khẩu, đăng ký) của 6 vai trò ở 1280px và 1920px: ô nhập cùng hàng phải thẳng hàng, ô chọn không bị cắt chữ, trang không cuộn ngang |
 | `scenarios/plan-cancel-resume.spec.ts` | HLV hủy giáo án phải ghi lý do, giáo án chuyển sang Lịch sử; giáo án tạm dừng có nút “Chạy lại” |
-| `scenarios/protocol-add-items.spec.ts` | Bác sĩ thêm thuốc vào phác đồ đủ hàng → tạo phiên bản 2 gửi kho kiểm tồn; số lượng < 1 bị chặn; có nút ở phác đồ thiếu hàng, không có khi đang điều trị; bác sĩ hủy phác đồ chờ kiểm tồn phải ghi lý do ≥ 10 ký tự; kho thấy bản bị thay ở tab “Bác sĩ đã đổi / hủy” và bảng thay đổi giữa 2 phiên bản |
+| `scenarios/protocol-add-items.spec.ts` | Bác sĩ thêm thuốc vào phác đồ đủ hàng → tạo phiên bản 2 gửi kho kiểm tồn; số lượng < 1 bị chặn; có nút ở phác đồ thiếu hàng, không có khi đang điều trị; đang điều trị thì bổ sung thuốc kèm lý do (không tạo phiên bản); bác sĩ hủy phác đồ chờ kiểm tồn phải ghi lý do ≥ 10 ký tự; kho thấy bản bị thay ở tab “Bác sĩ đã đổi / hủy” và bảng thay đổi giữa 2 phiên bản |
+| `scenarios/staff-email.spec.ts` | QL CLB có menu Nhật ký email; link xác nhận thiếu mã báo lỗi; trang đăng nhập hiện kết quả xác nhận tài khoản |
 
 ## Kịch bản chạy với backend thật (`scenarios-live/`, lệnh `npm run scenarios:live`)
 

@@ -195,7 +195,7 @@ export const loadStockTx = async (): Promise<Row[] | null> => {
 
 interface BeUser {
   userId: number; username: string; fullName: string; email: string; phone?: string | null; roleName: string; role?: string | null; status?: string | null;
-  isActive?: boolean; lockReason?: string | null; openTasks?: number | null; horsesOwned?: number | null; lastLogin?: string | null; zones?: string[] | null; specialization?: string | null;
+  isActive?: boolean; emailConfirmed?: boolean | null; lockReason?: string | null; openTasks?: number | null; horsesOwned?: number | null; lastLogin?: string | null; zones?: string[] | null; specialization?: string | null;
 }
 const FE_ROLE: Record<string, string> = {
   'Club Manager': 'ClubManager', 'Head Trainer': 'HeadTrainer', Trainer: 'HeadTrainer', Veterinarian: 'Veterinarian', Groom: 'Groom',
@@ -209,7 +209,7 @@ export const loadUsers = async (): Promise<Row[] | null> => {
     id: String(u.userId), beId: u.userId, username: u.username, fullname: u.fullName, email: u.email, phone: u.phone ?? '',
     role: u.role || FE_ROLE[u.roleName] || u.roleName, status: u.status ?? (u.isActive === false ? 'LOCKED' : 'ACTIVE'),
     zones: u.zones ?? (u.specialization ? [u.specialization] : []),
-    lockReason: u.lockReason ?? undefined, openTasks: u.openTasks ?? 0, horsesOwned: u.horsesOwned ?? 0, lastLogin: u.lastLogin && /^\d{4}-\d{2}-\d{2}/.test(u.lastLogin) ? dmhm(u.lastLogin) : u.lastLogin || '—',
+    emailConfirmed: u.emailConfirmed !== false, lockReason: u.lockReason ?? undefined, openTasks: u.openTasks ?? 0, horsesOwned: u.horsesOwned ?? 0, lastLogin: u.lastLogin && /^\d{4}-\d{2}-\d{2}/.test(u.lastLogin) ? dmhm(u.lastLogin) : u.lastLogin || '—',
   }));
 };
 

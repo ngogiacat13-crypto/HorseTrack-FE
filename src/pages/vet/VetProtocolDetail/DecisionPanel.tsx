@@ -59,6 +59,7 @@ export const DecisionPanel: React.FC<Props> = ({ protocol: p, horse, vetCase, on
 
         {p.state === 'IN_TREATMENT' && <>
           {btn('ht-btn--secondary', 'pulse', 'Ghi tiến triển', () => onAction('progress'))}
+          <button type="button" className="ht-btn ht-btn--secondary ht-btn--block" data-testid="add-items-btn" onClick={onAddItems}><Icon name="box" />Bổ sung thuốc</button>
           {btn('ht-btn--primary', 'check', 'Kết thúc điều trị', () => onAction('complete'))}
         </>}
 

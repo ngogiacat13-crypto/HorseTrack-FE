@@ -5,7 +5,7 @@ import { useActor } from '../../../auth/AuthContext';
 import { useAction } from '../../../hooks/useAction';
 import { useFetch } from '../../../hooks/useFetch';
 import { Icon } from '../../../components/ui/Icon';
-import { Callout, Dialog, money } from '../../../components/ui/Ht';
+import { Callout, Dialog, ReasonField, money } from '../../../components/ui/Ht';
 
 const requiredByFrom = (current: string) =>
   /^\d{2}\/\d{2}\/\d{4}$/.test(current) && dateKey(current) >= dateKey(DEMO_NOW.date) ? current : DEMO_NOW.date;
@@ -18,6 +18,8 @@ export const AddItemsDialog: React.FC<{ protocol: Protocol; onClose: () => void;
   const [itemId, setItemId] = useState('');
   const [qty, setQty] = useState('1');
   const [adds, setAdds] = useState<ItemAddition[]>([]);
+  const [reason, setReason] = useState('');
+  const treating = p.state === 'IN_TREATMENT';
   const items = useMemo(() => catalog ?? [], [catalog]);
   const phaseName = (no: number) => p.phases.find((ph) => ph.no === no)?.name ?? `Giai đoạn ${no}`;
   const addedCost = adds.reduce((s, a) => s + a.qty * a.unitPrice, 0);
@@ -38,6 +40,10 @@ export const AddItemsDialog: React.FC<{ protocol: Protocol; onClose: () => void;
 
   const submit = async () => {
     if (!adds.length) return setError('Thêm ít nhất 1 thuốc / vật tư vào danh sách.');
+    if (treating) {
+      if (await run(() => vetApi.addItemsDuringTreatment(p, adds, reason, actor), `Đã bổ sung ${adds.length} thuốc / vật tư — kho giữ hàng, chủ ngựa nhận hóa đơn thuốc bổ sung.`)) onDone(p.id);
+      return;
+    }
     const out: { id?: string } = {};
     const ok = await run(async () => {
       const created = await vetApi.createProtocol({
@@ -51,12 +57,19 @@ export const AddItemsDialog: React.FC<{ protocol: Protocol; onClose: () => void;
 
   return (
     <Dialog open onClose={onClose} icon="box" tone="brand" width={760} busy={busy} busyLabel="Đang gửi…" testId="add-items-dialog"
-      title={`Thêm vật tư / thuốc · ${p.id}`} sub={`${p.horse} · phiên bản ${p.version} → ${p.version + 1}`}
-      confirmLabel="Thêm và gửi kho kiểm tồn" onConfirm={submit} disabled={!adds.length}>
+      title={`${treating ? 'Bổ sung thuốc khi điều trị' : 'Thêm vật tư / thuốc'} · ${p.id}`} sub={treating ? `${p.horse} · đang điều trị` : `${p.horse} · phiên bản ${p.version} → ${p.version + 1}`}
+      confirmLabel={treating ? 'Bổ sung thuốc' : 'Thêm và gửi kho kiểm tồn'} onConfirm={submit} disabled={!adds.length || (treating && reason.trim().length < 5)}>
       {error && <Callout tone="danger" style={{ marginBottom: 14 }}>{error}</Callout>}
       <Callout tone="info" style={{ marginBottom: 14 }}>
-        Thuốc đang có được giữ nguyên, phần thêm được cộng vào giai đoạn đã chọn. Hệ thống tạo <b>phiên bản {p.version + 1}</b>, trả lại hàng kho đã giữ cho bản cũ và gửi kho kiểm tồn lại toàn bộ.
+        {treating
+          ? <>Thuốc được thêm thẳng vào phác đồ đang điều trị (không tạo phiên bản mới). Kho giữ hàng ngay, chủ ngựa nhận <b>hóa đơn thuốc bổ sung</b>, kho cấp sau khi thanh toán. Chỉ thêm vào giai đoạn chưa kết thúc.</>
+          : <>Thuốc đang có được giữ nguyên, phần thêm được cộng vào giai đoạn đã chọn. Hệ thống tạo <b>phiên bản {p.version + 1}</b>, trả lại hàng kho đã giữ cho bản cũ và gửi kho kiểm tồn lại toàn bộ.</>}
       </Callout>
+      {treating && (
+        <div style={{ marginBottom: 14 }}>
+          <ReasonField id="add-item-reason" label="Lý do bổ sung" value={reason} onChange={setReason} min={5} minHeight={60} placeholder="VD: Vết thương chậm lành, cần thêm thuốc kháng viêm" />
+        </div>
+      )}
 
       <div style={{ display: 'grid', gridTemplateColumns: p.phases.length > 1 ? 'minmax(0, 1fr) minmax(0, 1.6fr)' : 'minmax(0, 1fr)', gap: 10, alignItems: 'end' }}>
         {p.phases.length > 1 && (

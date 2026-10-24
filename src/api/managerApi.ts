@@ -51,6 +51,7 @@ export interface ManagedUser {
   openTasks?: number; horsesOwned?: number; serviceSuspended?: boolean; avatarUrl?: string | null;
   zones?: string[];
   beId?: number;
+  emailConfirmed?: boolean;
 }
 export interface GroomAssignment { id: string; name: string; zones: string[]; role?: UserRole }
 export type StaffRole = 'HeadTrainer' | 'Veterinarian' | 'Groom' | 'WarehouseManager';
@@ -167,6 +168,14 @@ const loadDashboardBe = async () => {
 };
 
 export const managerApi = {
+  async resendConfirmation(user: ManagedUser, actor: Actor) {
+    if (!USE_BACKEND) throw new Error('Chỉ gửi lại mail xác nhận khi chạy với server.');
+    if (user.emailConfirmed !== false) throw new Error(`${user.fullName} đã xác nhận tài khoản.`);
+    const res = await be.post<ApiResponse<null>>(`/users/${user.beId ?? user.id}/resend-confirmation`, undefined, { timeout: EMAIL_TIMEOUT });
+    invalidate('users');
+    await addAudit(actor, { action: 'RESEND_STAFF_CONFIRMATION', label: 'Gửi lại mail xác nhận tài khoản', object: `${user.username} · ${user.email}`, area: 'acct' });
+    return res.data.message;
+  },
   async openAttachment(attachmentId: number) {
     if (!USE_BACKEND) throw new Error('Tệp chỉ xem được khi chạy với server.');
     const tab = window.open('', '_blank');
