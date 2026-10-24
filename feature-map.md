@@ -14,7 +14,7 @@ Quy ước `data-testid`: menu trái `nav-<đường dẫn bỏ / đầu, / đ�
 | Trang chủ / chuyển hướng | `src/routers/index.tsx` | `/` → `/login` hoặc trang chủ theo vai trò | — |
 | Giới thiệu | `src/pages/public/Landing/` | `/gioi-thieu` | — |
 | Đăng nhập | `src/pages/auth/Login/` | `/login` (mặc định khi chưa đăng nhập) | `login-form`, `username-input`, `password-input`, `login-submit`, `login-error` |
-| Đăng ký chủ ngựa | `src/pages/auth/Register/` | `/register` | `<tên-trường>-input` |
+| Đăng ký chủ ngựa (2 bước OTP email) | `src/pages/auth/Register/` | `/register` | `<tên-trường>-input`, `register-otp-form`, `register-otp-input`, `register-otp-submit`, `register-otp-resend`, `register-otp-back`, `register-otp-error` |
 | Quên mật khẩu (OTP) | `src/pages/auth/ForgotPassword/` | `/forgot-password` | `<tên-trường>-input` |
 | Đổi mật khẩu (OTP) | `src/pages/auth/ChangePassword/` | `/change-password` · menu tài khoản | `nav-change-password`, `menu-change-password`, `oldPassword-input`, `newPassword-input`, `confirmPassword-input`, `otp-input` |
 | Hồ sơ cá nhân | `src/pages/auth/MyProfile/` | `/my-profile` · menu tài khoản | `nav-my-profile`, `menu-my-profile` |
@@ -24,7 +24,7 @@ Quy ước `data-testid`: menu trái `nav-<đường dẫn bỏ / đầu, / đ�
 | Thông báo nhanh / callout | `src/components/ui/Ht/Toast.tsx, Callout.tsx` | Sau thao tác | `toast`, `callout-<tone>` |
 | QL CLB · Bảng điều khiển | `src/pages/manager/ManagerDashboard/` | `/manager` | `nav-manager`, `page-title` |
 | QL CLB · Hàng chờ đăng ký ngựa | `src/pages/manager/ManagerRegistrationQueue/` | `/manager/registrations` | `nav-manager-registrations` |
-| QL CLB · Duyệt hồ sơ ngựa (cấp chuồng) | `src/pages/manager/ManagerRegistrationDetail/` | `/manager/registrations/:id` | `approve-registration-dialog`, `approve-stall-select`, `approve-note-input`, `reject-registration-dialog` |
+| QL CLB · Duyệt hồ sơ ngựa (cấp chuồng) | `src/pages/manager/ManagerRegistrationDetail/` | `/manager/registrations/:id` | `view-attachment-<id>` (mở giấy tờ), `attachments-empty`, `approve-registration-dialog`, `approve-stall-select`, `approve-note-input`, `reject-registration-dialog` |
 | QL CLB · Theo dõi y tế | `src/pages/manager/ManagerMedicalMonitoring/` | `/manager/medical-monitoring` | `nav-manager-medical-monitoring`, `medical-monitoring-empty` |
 | QL CLB · Hóa đơn | `src/pages/manager/ManagerInvoices/` | `/manager/invoices` | `nav-manager-invoices`, `generate-invoices-btn`, `generate-invoices-dialog`, `generate-month-input`, `stall-fee-btn`, `stall-fee-dialog`, `cancel-invoice-btn`, `cancel-invoice-dialog` |
 | QL CLB · Báo cáo tài chính | `src/pages/manager/ManagerFinanceReport/` | `/manager/reports` | `nav-manager-reports` |
@@ -83,7 +83,7 @@ Quy ước `data-testid`: menu trái `nav-<đường dẫn bỏ / đầu, / đ�
 | `scenarios/trainer-horses.spec.ts` | QL CLB giao cho HLV ngựa ở nhiều khu (không chọn khu), có bàn giao ngựa của HLV khác |
 | `scenarios/groom-zone.spec.ts` | Mã phu chỉ một khu; khu đã có Mã phu khác bị khóa |
 | `scenarios/assign-session.spec.ts` | Hộp phân công phiên tập: ngày mặc định hôm nay, không chọn được ngày đã qua |
-| `scenarios/registration-validation.spec.ts` | Đăng ký chủ ngựa: SĐT/email đúng định dạng, họ tên không bắt buộc; hồ sơ ngựa: gợi ý + validate giống, không còn hộ chiếu, chặn tệp đổi đuôi |
+| `scenarios/registration-validation.spec.ts` | Đăng ký chủ ngựa: SĐT/email đúng định dạng, họ tên không bắt buộc; đăng ký phải nhập OTP (mã sai báo lỗi, đúng thì thành công); hồ sơ ngựa: gợi ý + validate giống, không còn hộ chiếu, chặn tệp đổi đuôi |
 | `scenarios/layout-alignment.spec.ts` | Mọi trang menu + trang tạo (giáo án, đề xuất, phác đồ, hồ sơ ngựa, hồ sơ cá nhân, đổi mật khẩu, đăng ký) của 6 vai trò ở 1280px và 1920px: ô nhập cùng hàng phải thẳng hàng, ô chọn không bị cắt chữ, trang không cuộn ngang |
 | `scenarios/plan-cancel-resume.spec.ts` | HLV hủy giáo án phải ghi lý do, giáo án chuyển sang Lịch sử; giáo án tạm dừng có nút “Chạy lại” |
 | `scenarios/protocol-add-items.spec.ts` | Bác sĩ thêm thuốc vào phác đồ đủ hàng → tạo phiên bản 2 gửi kho kiểm tồn; số lượng < 1 bị chặn; có nút ở phác đồ thiếu hàng, không có khi đang điều trị; bác sĩ hủy phác đồ chờ kiểm tồn phải ghi lý do ≥ 10 ký tự; kho thấy bản bị thay ở tab “Bác sĩ đã đổi / hủy” và bảng thay đổi giữa 2 phiên bản |

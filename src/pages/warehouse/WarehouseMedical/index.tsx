@@ -12,7 +12,7 @@ const GROUP: Record<Tab, Protocol['state'][]> = {
   check: ['WAITING_STOCK_CHECK'],
   dispense: ['READY_FOR_DISPENSING'],
   waiting: ['STOCK_SHORTAGE', 'STOCK_AVAILABLE', 'WAITING_RESTOCK', 'REQUIRES_VET_REVIEW'],
-  done: ['IN_TREATMENT'],
+  done: ['IN_TREATMENT', 'ON_HOLD_PAYMENT', 'COMPLETED'],
   changed: ['SUPERSEDED', 'CANCELLED'],
 };
 const NEXT: Partial<Record<Protocol['state'], string>> = {
@@ -22,7 +22,9 @@ const NEXT: Partial<Record<Protocol['state'], string>> = {
   STOCK_AVAILABLE: 'Đã giữ hàng — chờ bác sĩ xác nhận',
   WAITING_RESTOCK: 'Chờ hàng về — theo dõi đơn nhập',
   REQUIRES_VET_REVIEW: 'Chờ bác sĩ đánh giá lại',
-  IN_TREATMENT: 'Đã cấp phát',
+  IN_TREATMENT: 'Đã cấp phát · đang điều trị',
+  ON_HOLD_PAYMENT: 'Đã cấp phát · tạm dừng chờ chủ ngựa thanh toán',
+  COMPLETED: 'Đã cấp phát · điều trị hoàn tất',
 };
 const cancelReason = (p: Protocol) => p.note.match(/Hủy:s*(.+)$/)?.[1] ?? p.note;
 const nextStep = (p: Protocol) => p.state === 'SUPERSEDED' ? `Đã thay bằng ${p.supersededBy ?? 'phiên bản mới'} — không cấp theo bản này` : p.state === 'CANCELLED' ? `Bác sĩ hủy: ${cancelReason(p)}` : NEXT[p.state];

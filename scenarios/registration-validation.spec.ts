@@ -7,10 +7,28 @@ test('owner sign-up checks Vietnamese phone and email format, full name is optio
   await page.locator('#phone').fill('0123456789');
   await page.locator('#email').fill('chungua@gmail');
   await page.locator('#password').fill('Matkhau123');
-  await page.getByRole('button', { name: 'Tạo tài khoản' }).click();
+  await page.getByRole('button', { name: 'Đăng ký', exact: true }).click();
   await expect(page.getByText('Số điện thoại di động Việt Nam gồm 10 chữ số').first()).toBeVisible();
   await expect(page.getByText('Email không hợp lệ (vd ten@gmail.com)').first()).toBeVisible();
   await expect(page.getByText('Vui lòng nhập họ và tên')).toHaveCount(0);
+});
+
+test('owner sign-up asks for the email OTP before creating the account', async ({ page }) => {
+  await page.goto('/register');
+  await page.locator('#username').fill('chungua_otp');
+  await page.locator('#phone').fill('0987654321');
+  await page.locator('#email').fill('chungua.otp@gmail.com');
+  await page.locator('#password').fill('Matkhau123');
+  await page.getByRole('button', { name: 'Đăng ký', exact: true }).click();
+  await expect(page.getByTestId('register-otp-form')).toBeVisible();
+  await expect(page.getByText('c***@gmail.com')).toBeVisible();
+  await expect(page.getByTestId('register-otp-resend')).toHaveCount(0);
+  await page.getByTestId('register-otp-input').fill('111111');
+  await page.getByTestId('register-otp-submit').click();
+  await expect(page.getByTestId('register-otp-error')).toBeVisible();
+  await page.getByTestId('register-otp-input').fill('123456');
+  await page.getByTestId('register-otp-submit').click();
+  await expect(page.getByText('Đăng ký thành công!')).toBeVisible();
 });
 
 test('horse registration suggests breeds, has no passport field and rejects a renamed file', async ({ page }) => {

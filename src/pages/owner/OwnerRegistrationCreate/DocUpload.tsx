@@ -25,7 +25,7 @@ export const DocUpload: React.FC<{ id: string; label: string; hint: string; requ
     if (f.size < MIN_KB * 1024) return onError(`${label}: tệp quá nhỏ (dưới ${MIN_KB} KB) — có thể bị lỗi hoặc không đọc được, hãy chụp/quét lại và gửi lại.`);
     if (!(await contentMatches(f))) return onError(`${label}: nội dung tệp không phải PDF/JPG/PNG thật (có thể đổi đuôi hoặc tệp hỏng) — hãy gửi lại giấy tờ hợp lệ.`);
     onError('');
-    onChange({ name: f.name, size: f.size, type: f.type });
+    onChange({ name: f.name, size: f.size, type: f.type, file: f });
   };
   return (
     <label className="ht-upload" htmlFor={id} data-ok={!!value} data-testid={`${id}-upload`}>

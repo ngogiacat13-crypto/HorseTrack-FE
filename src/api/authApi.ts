@@ -83,6 +83,9 @@ const fromProfile = (p: BeProfile, avatarUrl?: string): AuthUser => ({
   clinicAffiliation: p.clinicAffiliation ?? undefined,
 });
 
+export interface RegisterPayload { username: string; password: string; fullname: string; email: string; phone: string }
+export type RegisterResult = { otpRequired: true; email: string; ttlSeconds: number } | { otpRequired: false };
+
 const beAuth = {
   async login(username: string, password: string): Promise<AuthUser> {
     resetBackendData();
@@ -106,14 +109,16 @@ const beAuth = {
     await be.post('/auth/logout', { refreshToken: t.refreshToken }, { headers: { Authorization: `Bearer ${t.accessToken}` } }).catch(() => {});
   },
 
-  async register(p: { username: string; password: string; fullname: string; email: string; phone: string }): Promise<void> {
-    await be.post('/auth/register-owner', {
+  async register(p: RegisterPayload, otp?: string): Promise<RegisterResult> {
+    const res = await beData<{ otpRequired?: boolean; email?: string; ttlSeconds?: number }>(be.post('/auth/register-owner', {
       username: p.username,
       password: p.password,
       fullName: p.fullname,
       email: p.email,
       phone: p.phone,
-    });
+      otp: otp?.trim() || undefined,
+    }, { timeout: EMAIL_TIMEOUT }));
+    return res?.otpRequired ? { otpRequired: true, email: res.email ?? p.email, ttlSeconds: res.ttlSeconds ?? 300 } : { otpRequired: false };
   },
 
   async changePassword(oldPassword: string, newPassword: string, otp?: string): Promise<void> {
@@ -147,11 +152,8 @@ export const authApi = {
     if (USE_BACKEND) await beAuth.logout();
   },
 
-  async register(payload: { username: string; password: string; fullname: string; email: string; phone: string }): Promise<AuthUser | null> {
-    if (USE_BACKEND) {
-      await beAuth.register(payload);
-      return null;
-    }
+  async register(payload: RegisterPayload, otp?: string): Promise<RegisterResult> {
+    if (USE_BACKEND) return beAuth.register(payload, otp);
     const [dupEmail, dupPhone, dupUsername] = await Promise.all([
       findBy('email', payload.email),
       findBy('phone', payload.phone),
@@ -162,14 +164,16 @@ export const authApi = {
     if (dupPhone) duplicateFields.phone = 'Số điện thoại này đã được đăng ký.';
     if (dupUsername) duplicateFields.username = 'Tên đăng nhập đã tồn tại.';
     if (Object.keys(duplicateFields).length > 0) throw { fields: duplicateFields };
-    const { data } = await http.post<UserRecord>('/users', {
+    if (!otp) return { otpRequired: true, email: payload.email.replace(/^(.).*(@.*)$/, '$1***$2'), ttlSeconds: 300 };
+    if (otp.trim() !== '123456') throw new Error('Mã OTP không đúng. Vui lòng thử lại với 123456.');
+    await http.post<UserRecord>('/users', {
       ...payload,
       role: 'HorseOwner',
       status: 'ACTIVE',
       lastLogin: '—',
       horsesOwned: 0,
     });
-    return toAuthUser(data);
+    return { otpRequired: false };
   },
 
   async sendOtp(email: string): Promise<void> {

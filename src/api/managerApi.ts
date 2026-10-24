@@ -8,6 +8,7 @@ export interface ChecklistItem { key: string; label: string; detail: string; pas
 export interface HistoryItem { tone?: 'danger' | 'warning' | 'success' | 'info'; who: string; text: string; at: string }
 export interface Registration {
   id: string;
+  beId?: number;
   horse: { name: string; breed: string; sex: string; age: number; code: string };
   owner: { fullName: string; email: string; phone: string };
   submittedAt: string;
@@ -19,7 +20,7 @@ export interface Registration {
   ownerExtra: { otherHorses: string };
   horseExtra: { color: string; height: string; weight: number; passport: string; healthCert: string };
   checklist: ChecklistItem[];
-  attachments: { name: string; meta: string; problem?: boolean }[];
+  attachments: { name: string; meta: string; problem?: boolean; beId?: number; mime?: string }[];
   history: HistoryItem[];
 }
 
@@ -166,6 +167,21 @@ const loadDashboardBe = async () => {
 };
 
 export const managerApi = {
+  async openAttachment(attachmentId: number) {
+    if (!USE_BACKEND) throw new Error('Tệp chỉ xem được khi chạy với server.');
+    const tab = window.open('', '_blank');
+    try {
+      const res = await be.get<Blob>(`/horses/registration-attachments/${attachmentId}/file`, { responseType: 'blob' });
+      const url = URL.createObjectURL(res.data);
+      if (tab) tab.location.href = url;
+      else window.location.assign(url);
+      window.setTimeout(() => URL.revokeObjectURL(url), 60000);
+    } catch (e) {
+      tab?.close();
+      throw e;
+    }
+  },
+
   async getDashboard() {
     const [dash, regs, protocols, invoices, shipments, logs, overdueTasks] = await Promise.all([
       USE_BACKEND ? loadDashboardBe() : get<any>('/dashboard'),

@@ -21,7 +21,7 @@ export interface ProtoItem { itemId: string; name: string; unit: string; unitPri
 export interface ProtoPhase { no: number; name: string; startDate: string; days: number; goal: string; items: ProtoItem[] }
 export interface StockLine {
   itemId: string; phaseNo?: number; name: string; unit: string; need: number; available: number; held: number; short: number;
-  eta: string | null; lot: string | null; expiry: string | null; shipment?: string;
+  eta: string | null; lot: string | null; expiry: string | null; shipment?: string; issued?: boolean;
 }
 export interface Protocol {
   id: string; version: number; replaces: string | null; supersededBy: string | null;

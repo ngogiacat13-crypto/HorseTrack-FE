@@ -8,7 +8,7 @@ import type { ShipmentOrder, StockItem } from './types';
 
 const CHANGED_STATES: Protocol['state'][] = ['SUPERSEDED', 'CANCELLED'];
 const sentToWarehouse = (p: Protocol) => p.path.length <= 1 || p.path.includes('WAITING_STOCK_CHECK');
-export const WAREHOUSE_STATES: Protocol['state'][] = ['WAITING_STOCK_CHECK', 'STOCK_SHORTAGE', 'STOCK_AVAILABLE', 'WAITING_RESTOCK', 'REQUIRES_VET_REVIEW', 'READY_FOR_DISPENSING', 'IN_TREATMENT'];
+export const WAREHOUSE_STATES: Protocol['state'][] = ['WAITING_STOCK_CHECK', 'STOCK_SHORTAGE', 'STOCK_AVAILABLE', 'WAITING_RESTOCK', 'REQUIRES_VET_REVIEW', 'READY_FOR_DISPENSING', 'IN_TREATMENT', 'ON_HOLD_PAYMENT', 'COMPLETED'];
 
 export const needs = (p: Protocol, phaseNos?: number[]) => {
   const selected = phaseNos ? new Set(phaseNos) : null;

@@ -22,12 +22,15 @@ import {
   normalizePhone,
 } from '../../../components/ui/Ht';
 import { useForm } from '../../../hooks/useForm';
+import { USE_BACKEND } from '../../../api/beClient';
+import { OtpStep } from './OtpStep';
 
 export const Register: React.FC = () => {
   const navigate = useNavigate();
   const [doneUser, setDoneUser] = useState<string | null>(null);
   const [count, setCount] = useState(3);
   const [submitAttempted, setSubmitAttempted] = useState(false);
+  const [otpFor, setOtpFor] = useState<{ email: string; ttlSeconds: number } | null>(null);
 
   const form = useForm(
     {
@@ -71,21 +74,20 @@ export const Register: React.FC = () => {
     return () => window.clearTimeout(t);
   }, [doneUser, count, navigate]);
 
+  const payload = () => {
+    const v = form.values;
+    return { fullname: v.fullname.trim() || v.username.trim(), username: v.username.trim(), email: v.email.trim(), phone: normalizePhone(v.phone), password: v.password };
+  };
+
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitAttempted(true);
     if (!form.check()) return;
     form.setSubmitting(true);
     try {
-      const v = form.values;
-      await authApi.register({
-        fullname: v.fullname.trim() || v.username.trim(),
-        username: v.username.trim(),
-        email: v.email.trim(),
-        phone: normalizePhone(v.phone),
-        password: v.password,
-      });
-      setDoneUser(v.username);
+      const res = await authApi.register(payload());
+      if (res.otpRequired) setOtpFor({ email: res.email, ttlSeconds: res.ttlSeconds });
+      else setDoneUser(form.values.username);
     } catch (err) {
       const e = err as ApiError;
       if (e?.fields) form.setServerErrors(e.fields);
@@ -154,6 +156,10 @@ export const Register: React.FC = () => {
             duyệt.
           </Callout>
         </>
+      ) : otpFor ? (
+        <OtpStep email={otpFor.email} ttlSeconds={otpFor.ttlSeconds} demoHint={!USE_BACKEND}
+          onVerify={(otp) => authApi.register(payload(), otp)} onResend={() => authApi.register(payload())}
+          onBack={() => setOtpFor(null)} onDone={() => setDoneUser(form.values.username)} />
       ) : (
         <>
           <h1 className="ht-auth__title">Tạo tài khoản Chủ ngựa</h1>
@@ -238,7 +244,7 @@ export const Register: React.FC = () => {
                 aria-busy={form.submitting || undefined}
               >
                 <Busy busy={form.submitting} label="Đang xử lý…">
-                  <span>Tạo tài khoản</span>
+                  <span>Đăng ký</span>
                   <Icon name="arrow" />
                 </Busy>
               </button>

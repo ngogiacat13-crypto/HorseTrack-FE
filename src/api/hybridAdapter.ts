@@ -85,10 +85,12 @@ const TASK_TYPE: Record<string, [string, string]> = {
 };
 
 interface BeHorse { horseId: number; horseName: string; dob: string; gender: string; breed: string; pedigree?: string | null; weightKg: number; healthStatus: string; isLocked: boolean; ownerId: number; stallId: number | null; stallCode?: string | null; approvalStatus?: string | null; createdAt?: string | null;
-  horseCode?: string | null; color?: string | null; heightHands?: number | null; passportNo?: string | null; healthCertIssuer?: string | null; healthCertExpiry?: string | null;
+  horseCode?: string | null; color?: string | null; heightCm?: number | null; ownerPhone?: string | null; heightHands?: number | null; passportNo?: string | null; healthCertIssuer?: string | null; healthCertExpiry?: string | null;
   registrationCode?: string | null; rejectReason?: string | null; allowResubmit?: boolean | null; assignedTrainerId?: number | null; assignedTrainerName?: string | null; ownerName?: string | null }
 interface BeRegCheck { checkKey: string; passed: boolean; detail?: string | null; checkedByName?: string | null; checkedAt?: string | null }
-interface BeRegistration { registrationCode?: string | null; ownerName?: string | null; submittedAt?: string | null; status: string; ownerNote?: string | null; decisionNote?: string | null; allowResubmit?: boolean | null; decidedByName?: string | null; decidedAt?: string | null; checks?: BeRegCheck[] | null }
+interface BeAttachment { attachmentId: number; docType?: string | null; fileName: string; mimeType?: string | null; fileSizeKb?: number | null; uploadedAt?: string | null }
+const DOC_LABEL: Record<string, string> = { OWNERSHIP: 'Giấy tờ sở hữu', OTHER: 'Giấy chứng nhận sức khỏe / khác' };
+interface BeRegistration { attachments?: BeAttachment[] | null; registrationCode?: string | null; ownerName?: string | null; submittedAt?: string | null; status: string; ownerNote?: string | null; decisionNote?: string | null; allowResubmit?: boolean | null; decidedByName?: string | null; decidedAt?: string | null; checks?: BeRegCheck[] | null }
 interface BeInjury { injuryId: number; part: string; severity: string; severityLabel?: string | null; note?: string | null; x?: number | null; y?: number | null; caseCode?: string | null; createdByName?: string | null; createdAt?: string | null }
 const INJURY_VIEWERS = ['ClubManager', 'HeadTrainer', 'Veterinarian', 'Groom'];
 const injuriesOf = async (horseId: string) => {
@@ -445,13 +447,17 @@ const toRegistration = (h: BeHorse, history: BeRegistration[], owner: { fullName
   return {
     id: `REG-${code}`, beId: h.horseId, registrationCode: latest?.registrationCode ?? h.registrationCode ?? null,
     horse: { name: h.horseName, breed: h.breed, sex: sex(h.gender), age: age(h.dob), code: h.horseCode ?? `HT-${code}` },
-    owner, submittedAt: stamp(submitted),
+    owner: { ...owner, phone: h.ownerPhone || owner.phone }, submittedAt: stamp(submitted),
     waitingDays: status === 'Pending' ? Math.max(0, Math.floor((Date.now() - heldSince) / 86400000)) : 0,
     passed: checklist.filter((c) => c.passed).length, status, decidedNote,
     firstIssue: status === 'Rejected' ? h.rejectReason ?? latest?.decisionNote ?? undefined : firstFailed?.label,
     ownerExtra: { otherHorses: all.filter((x) => x.ownerId === h.ownerId && x.horseId !== h.horseId).map((x) => x.horseName).join(', ') || '—' },
-    horseExtra: { color: h.color || '—', height: h.heightHands ? `${Math.round(h.heightHands * 10.16)} cm (${h.heightHands} hands)` : '—', weight: h.weightKg, passport: h.passportNo || h.pedigree || '—', healthCert: healthCert || '—' },
-    checklist, attachments: [],
+    horseExtra: { color: h.color || '—', height: h.heightCm ? `${Number(h.heightCm)} cm` : h.heightHands ? `${Math.round(h.heightHands * 10.16)} cm` : '—', weight: h.weightKg, passport: h.passportNo || '—', healthCert: healthCert || '—' },
+    checklist,
+    attachments: (latest?.attachments ?? []).map((a) => ({
+      name: `${DOC_LABEL[(a.docType ?? '').toUpperCase()] ?? 'Giấy tờ'} · ${a.fileName}`, beId: a.attachmentId, mime: a.mimeType ?? undefined,
+      meta: `${(a.fileName.split('.').pop() ?? '').toUpperCase()} · ${a.fileSizeKb ?? 0} KB · ${stamp(a.uploadedAt)}`,
+    })),
     history: history.length
       ? history.flatMap((r, index) => regHistory(r, owner.fullName, index === history.length - 1))
       : [{ who: owner.fullName, text: 'gửi hồ sơ', at: stamp(h.createdAt) }],
@@ -460,7 +466,9 @@ const toRegistration = (h: BeHorse, history: BeRegistration[], owner: { fullName
 const regChecks = (checklist: unknown) => ((checklist as { key: string; passed: boolean; detail?: string }[] | undefined) ?? [])
   .map((c) => ({ checkKey: c.key.toUpperCase(), passed: !!c.passed, detail: c.detail?.slice(0, 500) }));
 const regExtra = (x: { color?: string; height?: string; passport?: string; healthCert?: string }) => {
-  const heightHands = Number.parseFloat(String(x.height ?? '').replace(',', '.'));
+  const heightText = String(x.height ?? '').replace(',', '.');
+  const heightCm = /cm/i.test(heightText) ? Number.parseFloat(heightText) : NaN;
+  const heightHands = /cm/i.test(heightText) ? NaN : Number.parseFloat(heightText);
   const expiry = String(x.healthCert ?? '').match(/(\d{1,2})\/(\d{1,2})\/(\d{4})|(\d{1,2})\/(\d{4})/);
   const healthCertExpiry = expiry
     ? expiry[3] ? `${expiry[3]}-${expiry[2].padStart(2, '0')}-${expiry[1].padStart(2, '0')}` : new Date(Date.UTC(Number(expiry[5]), Number(expiry[4]), 0)).toISOString().slice(0, 10)
@@ -468,10 +476,9 @@ const regExtra = (x: { color?: string; height?: string; passport?: string; healt
   const clean = (v?: string) => (v && v.trim() && v.trim() !== '—' ? v.trim() : undefined);
   return {
     color: clean(x.color)?.slice(0, 50),
+    heightCm: Number.isFinite(heightCm) && heightCm >= 50 && heightCm <= 250 ? Math.round(heightCm) : undefined,
     heightHands: Number.isFinite(heightHands) && heightHands >= 1 && heightHands <= 25 ? Math.round(heightHands * 10) / 10 : undefined,
-    passportNo: clean(x.passport)?.slice(0, 50),
-    healthCertIssuer: clean(x.healthCert)?.slice(0, 150),
-    healthCertExpiry,
+    ...(healthCertExpiry ? { healthCertExpiry } : {}),
   };
 };
 const unknownHorse = (id: string): Row => ({
@@ -486,11 +493,11 @@ const WRITES: Record<string, Partial<Record<'post' | 'patch' | 'put', Write>>> =
       const h = body.horse as { name: string; breed: string; sex: string; age: number };
       const x = body.horseExtra as { color: string; height: string; weight: number; passport: string; healthCert: string };
       if (!(Number(x.weight) >= 0.1)) throw new Error('Nhập cân nặng của ngựa (kg).');
-      await be.post('/horses/register', {
+      const created = (await be.post<ApiResponse<{ horseId: number }>>('/horses/register', {
         horseName: h.name, dob: `${new Date().getFullYear() - h.age}-01-01`, gender: h.sex === '♀' ? 'Mare' : 'Stallion', breed: h.breed,
         weightKg: Number(x.weight), ownerId: Number(me()?.id), ...regExtra(x),
-      });
-      return true;
+      })).data.data;
+      return { beId: created.horseId };
     },
     async patch(_id, body, current) {
       if (body.status === 'Approved') {

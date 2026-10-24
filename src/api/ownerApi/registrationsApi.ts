@@ -2,13 +2,28 @@ import { DEMO_NOW, http } from '../http';
 import { addAudit, type Actor, type ChecklistItem, type Registration } from '../managerApi';
 import { DENIED, get, min, myHorses, nextId, now } from './shared';
 import type { NewRegistration, UploadedDoc } from './types';
-import { HEIGHT_MAX_CM, HEIGHT_MIN_CM, cmToHands, knownBreed, parseCm } from './labels';
+import { HEIGHT_MAX_CM, HEIGHT_MIN_CM, knownBreed, parseCm } from './labels';
+import { USE_BACKEND, be } from '../beClient';
+import { invalidate } from '../hybridAdapter';
 import { PHONE_RE } from '../../components/ui/Ht/password';
 
 const CHECKS: [ChecklistItem['key'], string][] = [
   ['identity', 'Danh tính chủ ngựa'], ['health', 'Giấy chứng nhận sức khỏe còn hiệu lực'], ['ownership', 'Giấy tờ sở hữu hợp lệ'],
 ];
 const docMeta = (d: UploadedDoc) => `${(d.name.split('.').pop() ?? '').toUpperCase()} · ${(d.size / 1048576).toFixed(1).replace('.', ',')} MB · ${DEMO_NOW.date.slice(0, 5)}`;
+
+const uploadDocs = async (horseId: number | undefined, files: NewRegistration['files']) => {
+  if (!horseId) throw new Error('Đã gửi hồ sơ nhưng không lấy được mã ngựa để đính kèm giấy tờ — mở lại hồ sơ và tải giấy tờ lên.');
+  const docs: [string, UploadedDoc | null][] = [['OWNERSHIP', files.ownership], ['OTHER', files.health]];
+  for (const [docType, doc] of docs) {
+    if (!doc?.file) continue;
+    const form = new FormData();
+    form.append('file', doc.file);
+    form.append('docType', docType);
+    await be.post(`/horses/${horseId}/registration-attachments`, form, { headers: { 'Content-Type': 'multipart/form-data' } });
+  }
+  invalidate('registrations');
+};
 
 const validate = (r: NewRegistration) => {
   min(r.name, 2, 'Tên ngựa');
@@ -48,7 +63,7 @@ export const registrationsApi = {
       owner: { fullName: actor.name, email: actor.email ?? '', phone: input.phone },
       submittedAt: `${DEMO_NOW.date} ${DEMO_NOW.time}`, waitingDays: 0, passed: 0, status: 'Pending', firstIssue: undefined,
       ownerExtra: { otherHorses: horses.map((h) => h.name).join(', ') || '—' },
-      horseExtra: { color: input.color.trim(), height: `${cmToHands(parseCm(input.height))} hands`, weight: input.weight || 0, passport: '—', healthCert: '—' },
+      horseExtra: { color: input.color.trim(), height: `${parseCm(input.height)} cm`, weight: input.weight || 0, passport: '—', healthCert: '—' },
       checklist: CHECKS.map(([key, label]) => ({ key, label, detail: 'Chờ Quản lý CLB kiểm tra.', passed: false })),
       attachments: docs.filter(([, d]) => d).map(([name, d]) => ({ name, meta: docMeta(d as UploadedDoc) })),
       history: [
@@ -58,6 +73,7 @@ export const registrationsApi = {
       ],
     };
     const { data } = resubmit ? await http.put<Registration>(`/registrations/${id}`, reg) : await http.post<Registration>('/registrations', reg);
+    if (USE_BACKEND) await uploadDocs(resubmit?.beId ?? data.beId, input.files);
     await addAudit(actor, { action: resubmit ? 'RESUBMIT_REGISTRATION' : 'SUBMIT_REGISTRATION', label: resubmit ? 'Nộp lại hồ sơ ngựa' : 'Gửi hồ sơ đăng ký ngựa', object: `${id} · ${reg.horse.name}`, area: 'reg', from: resubmit ? 'REJECTED' : undefined, to: 'PENDING_REVIEW' });
     return data;
   },

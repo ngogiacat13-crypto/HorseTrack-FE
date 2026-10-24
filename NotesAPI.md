@@ -762,3 +762,17 @@ Nút “Sửa phác đồ (phiên bản mới)” thay bằng “Thêm vật tư
 - Bác sĩ: nút “Hủy phác đồ” (`cancel-protocol-btn`) ở mọi trạng thái chưa cấp thuốc, kể cả đang chờ kho kiểm tồn; bắt buộc lý do ≥ 10 ký tự → `PUT /medical-management/protocols/{id}/cancel` `{content: lý do}` (trước đây FE luôn gửi “Hủy phác đồ”). BE trả hàng đã giữ, lưu lý do vào note “Hủy: …”.
 - Kho: `loadProtocols` lấy thêm `GET /inventory/protocols?state=SUPERSEDED` và `?state=CANCELLED`; màn Phác đồ cần cấp có tab “Bác sĩ đã đổi / hủy” (ghi “Đã thay bằng PD-x” / “Bác sĩ hủy: lý do”), cột mã ghi `vN · thay PD-y`; trang chi tiết có bảng “Thay đổi so với PD-y” (thêm / bỏ / đổi số lượng — `vetApi/labels.ts · protocolChanges`) và cảnh báo không cấp phát với bản đã thay / đã hủy.
 - Kịch bản `scenarios/protocol-add-items.spec.ts` (4 trường hợp).
+
+## 30. Đăng ký OTP email, đăng nhập email/SĐT, giấy tờ hồ sơ ngựa (24/10/2026)
+
+BE `4125816` (đã chạy trên server, 167 API).
+- Đăng ký chủ ngựa 2 bước: `POST /auth/register-owner` không `otp` → BE kiểm tra trùng + tên miền email (không nhận thư thì 400 ngay), gửi OTP, trả `{otpRequired, email (che), ttlSeconds}`; gửi lại cùng thông tin kèm `otp` → 201 tạo tài khoản. FE: `authApi.register(payload, otp?)`, bước nhập OTP `pages/auth/Register/OtpStep.tsx` (gửi lại sau 60s, quay lại sửa thông tin). Dữ liệu mẫu: OTP demo 123456.
+- Đăng nhập: ô “Tên đăng nhập / Email / Số điện thoại” (BE `findByLoginId`). Đã thử đăng nhập admin bằng email trên server → 200.
+- Hồ sơ ngựa: gửi `heightCm`; sau `POST /horses/register` (trả `horseId`) hoặc `PUT /resubmit`, FE tải từng tệp `POST /horses/{id}/registration-attachments` multipart `file`, `docType` = `OWNERSHIP` (giấy sở hữu) / `OTHER` (GCN sức khỏe). QL CLB thấy tệp từ `attachments` của lịch sử hồ sơ, nút “Xem” tải `GET /horses/registration-attachments/{id}/file` (blob, kèm token) và mở tab mới. `ownerPhone`, `heightCm` từ `GET /horses` thay cho `heightHands`/`passportNo`/`healthCert*` BE đã bỏ.
+- Kiểm tra server không tạo dữ liệu: bước 1 với tên miền giả → 400 “không nhận thư”, trùng username → 400.
+
+## 31. Kho không thấy phác đồ chờ cấp phát / đã cấp phát (24/10/2026)
+
+- Nguyên nhân 1: BE đặt `VET_CONFIRMED` sau khi bác sĩ xác nhận, FE kho chờ `READY_FOR_DISPENSING` → phác đồ đã xác nhận không ở tab nào, không có form cấp phát. Sửa `beDomain.ts · mapProtocol`: `VET_CONFIRMED` → `READY_FOR_DISPENSING` (Chờ kho cấp phát). Trên server lúc sửa: PD-1020, 1023, 1027, 1028.
+- Nguyên nhân 2: `GET /inventory/protocols` mặc định chỉ trả WAITING_STOCK_CHECK, WAITING_RESTOCK, REQUIRES_VET_REVIEW, VET_CONFIRMED. FE kho lấy thêm `?state=` STOCK_AVAILABLE, STOCK_SHORTAGE, IN_TREATMENT, ON_HOLD_PAYMENT, COMPLETED, SUPERSEDED, CANCELLED. Tab “Đã cấp phát” gồm đang điều trị / tạm dừng chờ thanh toán / hoàn tất; dòng thuốc `status = ISSUED` hiện “Đã cấp”.
+- Gửi BE (không bắt buộc): trả thời điểm và người cấp phát trong `stockAnswer` (`issuedAt`, `issuedByName`) để kho có lịch sử cấp phát đầy đủ; cân nhắc thêm các trạng thái trên vào danh sách mặc định của `/inventory/protocols`.

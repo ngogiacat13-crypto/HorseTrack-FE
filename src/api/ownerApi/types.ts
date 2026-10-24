@@ -29,4 +29,4 @@ export interface NewRegistration {
   phone: string;
   files: { ownership: UploadedDoc | null; health: UploadedDoc | null };
 }
-export interface UploadedDoc { name: string; size: number; type: string }
+export interface UploadedDoc { name: string; size: number; type: string; file?: File }

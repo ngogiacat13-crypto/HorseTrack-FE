@@ -12,7 +12,7 @@ import { FocusFirstError, FormikField } from '../../../components/form/FormikFie
 import { PATH } from '../../../routers/routerPath';
 
 const schema = Yup.object({
-  username: Yup.string().trim().required('Vui lòng nhập tên đăng nhập'),
+  username: Yup.string().trim().required('Vui lòng nhập tên đăng nhập, email hoặc số điện thoại'),
   password: Yup.string().required('Vui lòng nhập mật khẩu'),
 });
 
@@ -57,7 +57,7 @@ export const Login: React.FC = () => {
       <FormikProvider value={formik}>
       <form onSubmit={formik.handleSubmit} noValidate data-testid="login-form">
         <FocusFirstError />
-        <FormikField name="username" label="Tên đăng nhập" icon="user" autoComplete="username" placeholder="vd: nguyenminh" />
+        <FormikField name="username" label="Tên đăng nhập / Email / Số điện thoại" icon="user" autoComplete="username" placeholder="vd: nguyenminh, ten@gmail.com hoặc 0912345678" />
 
         <div>
           <FormikField name="password" label="Mật khẩu" password autoComplete="current-password" placeholder="Nhập mật khẩu" />

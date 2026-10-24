@@ -16,6 +16,8 @@ const WAIT_TEXT: Record<string, string> = {
   WAITING_RESTOCK: 'Bác sĩ chọn chờ hàng. Khi nhận lô hàng ở trang Đơn nhập, hệ thống tự giữ hàng và báo bác sĩ rà soát lại.',
   REQUIRES_VET_REVIEW: 'Chờ bác sĩ đánh giá lại (hàng trễ hoặc hàng vừa về). Chưa được cấp phát.',
   IN_TREATMENT: 'Đã cấp phát — đang điều trị.',
+  ON_HOLD_PAYMENT: 'Đã cấp phát — điều trị tạm dừng chờ chủ ngựa thanh toán.',
+  COMPLETED: 'Đã cấp phát — điều trị hoàn tất.',
 };
 
 export const WarehouseMedicalDetail: React.FC = () => {
@@ -69,7 +71,7 @@ export const WarehouseMedicalDetail: React.FC = () => {
               ) : <div className="ht-empty">Không đổi thuốc / số lượng (chỉ đổi giai đoạn hoặc ngày).</div>}
             </Panel>
           )}
-          {WAIT_TEXT[p.state] && <Callout tone={p.state === 'IN_TREATMENT' ? 'success' : 'info'} icon="info">{WAIT_TEXT[p.state]}</Callout>}
+          {WAIT_TEXT[p.state] && <Callout tone={['IN_TREATMENT', 'ON_HOLD_PAYMENT', 'COMPLETED'].includes(p.state) ? 'success' : 'info'} icon="info">{WAIT_TEXT[p.state]}</Callout>}
 
           {p.stock && p.state !== 'WAITING_STOCK_CHECK' && (
             <Panel title="Phản hồi kho đã gửi" sub={`${p.stock.at} · ${p.stock.by}`}>
@@ -80,7 +82,7 @@ export const WarehouseMedicalDetail: React.FC = () => {
                     <tr key={l.itemId}>
                       <td className="strong">{l.name}</td><td className="num">{l.need} {l.unit}</td><td className="num">{l.held}</td>
                       <td className="mono" style={{ fontSize: 12 }}>{l.lot ? `${l.lot} · ${l.expiry}` : '—'}</td>
-                      <td>{l.short > 0 ? <Badge tone="danger">Thiếu {l.short} · {l.eta ? `ETA ${l.eta.slice(0, 5)}${l.shipment ? ` (${l.shipment})` : ''}` : 'ETA chưa xác định'}</Badge> : <Badge tone="success">Đủ</Badge>}</td>
+                      <td>{l.issued ? <Badge tone="success">Đã cấp {l.need} {l.unit}</Badge> : l.short > 0 ? <Badge tone="danger">Thiếu {l.short} · {l.eta ? `ETA ${l.eta.slice(0, 5)}${l.shipment ? ` (${l.shipment})` : ''}` : 'ETA chưa xác định'}</Badge> : <Badge tone="success">Đủ</Badge>}</td>
                     </tr>
                   ))}
                 </tbody>

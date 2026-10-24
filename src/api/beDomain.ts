@@ -69,13 +69,14 @@ interface BeProtocol {
   isDelayed?: boolean; trainingLocked?: boolean; waitEta?: string | null; waitNote?: string | null; note?: string | null; outcome?: string | null;
   createdAt?: string; totalCost?: number;
   phases?: { phaseNo: number; phaseName: string; startDate: string; durationDays: number; goal?: string | null; items: { itemId: number; itemCode: string; itemName: string; unit: string; quantity: number; unitPrice: number; dosage?: string | null }[] }[] | null;
-  stockAnswer?: { itemId: number; itemName: string; unit: string; qtyNeeded: number; qtyAvailable: number; qtyHeld: number; qtyShort: number; eta?: string | null; purchaseOrderId?: number | null; checkedByName?: string; checkedAt?: string }[] | null;
+  stockAnswer?: { itemId: number; itemName: string; unit: string; qtyNeeded: number; qtyAvailable: number; qtyHeld: number; qtyShort: number; eta?: string | null; purchaseOrderId?: number | null; status?: string | null; checkedByName?: string; checkedAt?: string }[] | null;
   progressNotes?: { writtenByName: string; writtenAt: string; content: string }[] | null;
 }
 const CLOSED = ['COMPLETED', 'SUPERSEDED', 'CANCELLED'];
 
 export const mapProtocol = (p: BeProtocol): Row => {
-  const state = (PROTOCOL_LABEL[p.state as ProtocolState] ? p.state : 'WAITING_STOCK_CHECK') as ProtocolState;
+  const beState = p.state === 'VET_CONFIRMED' ? 'READY_FOR_DISPENSING' : p.state;
+  const state = (PROTOCOL_LABEL[beState as ProtocolState] ? beState : 'WAITING_STOCK_CHECK') as ProtocolState;
   const phases = (p.phases ?? []).map((ph) => ({
     no: ph.phaseNo, name: ph.phaseName, startDate: dmy(ph.startDate), days: ph.durationDays, goal: ph.goal ?? '',
     items: ph.items.map((it) => ({ itemId: it.itemCode, beItemId: it.itemId, name: it.itemName, unit: it.unit, unitPrice: Number(it.unitPrice) || 0, qty: Number(it.quantity) || 0, dosage: it.dosage ?? undefined })),
@@ -91,7 +92,7 @@ export const mapProtocol = (p: BeProtocol): Row => {
       at: dmhm(answer[0].checkedAt), by: answer[0].checkedByName ?? 'Kho',
       lines: answer.map((a) => ({
         itemId: codeOf.get(a.itemId) ?? String(a.itemId), name: a.itemName, unit: a.unit, need: a.qtyNeeded, available: a.qtyAvailable, held: a.qtyHeld,
-        short: a.qtyShort, eta: a.eta ? dmy(a.eta) : null, lot: null, expiry: null, shipment: a.purchaseOrderId ? `SHIP-${String(a.purchaseOrderId).padStart(4, '0')}` : undefined,
+        short: a.qtyShort, eta: a.eta ? dmy(a.eta) : null, lot: null, expiry: null, shipment: a.purchaseOrderId ? `SHIP-${String(a.purchaseOrderId).padStart(4, '0')}` : undefined, issued: a.status === 'ISSUED',
       })),
     } : null,
     wait: p.waitEta ? { eta: dmy(p.waitEta), requiredBy: dmy(p.requiredBy), at: '—', note: p.waitNote ?? '' } : null,
@@ -102,12 +103,13 @@ export const mapProtocol = (p: BeProtocol): Row => {
   };
 };
 
+const WAREHOUSE_EXTRA_STATES = ['STOCK_AVAILABLE', 'STOCK_SHORTAGE', 'IN_TREATMENT', 'ON_HOLD_PAYMENT', 'COMPLETED', 'SUPERSEDED', 'CANCELLED'];
 export const loadProtocols = async (): Promise<Row[] | null> => {
   const role = me()?.role;
   const base = role === 'WarehouseManager' ? '/inventory/protocols' : role === 'Veterinarian' || role === 'ClubManager' ? '/medical-management/protocols' : null;
   if (!base) return null;
   const closed = role === 'WarehouseManager'
-    ? (await Promise.all(['SUPERSEDED', 'CANCELLED'].map((state) => beGet<BeProtocol[]>(`${base}?state=${state}`).catch(() => [] as BeProtocol[])))).flat()
+    ? (await Promise.all(WAREHOUSE_EXTRA_STATES.map((state) => beGet<BeProtocol[]>(`${base}?state=${state}`).catch(() => [] as BeProtocol[])))).flat()
     : [];
   const open = await beGet<BeProtocol[]>(base);
   const list = [...open, ...closed.filter((c) => !open.some((o) => o.protocolId === c.protocolId))];
