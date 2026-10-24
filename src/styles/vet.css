@@ -51,7 +51,7 @@
 .ht-proto-phase__head { display: flex; align-items: center; gap: var(--space-3); padding: 16px 20px; }
 .ht-proto-phase__head h3 { margin: 0; font: 600 16px/22px var(--font-sans); flex: 1; }
 .ht-proto-phase__body { padding: 0 20px 18px; display: grid; gap: var(--space-3); }
-.ht-proto-phase__grid { display: grid; grid-template-columns: 2fr 1.2fr .8fr 2fr; gap: var(--space-3); }
+.ht-proto-phase__grid { display: grid; grid-template-columns: 2fr 1.2fr .8fr 2fr; gap: var(--space-3); align-items: end; }
 .ht-proto-phase__grid .ht-field { margin: 0; }
 .ht-proto-items { width: 100%; border-collapse: collapse; font-size: 14px; }
 .ht-proto-items th { text-align: left; font: 600 11px/16px var(--font-sans); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: 8px 6px; border-bottom: 1px solid var(--border); }

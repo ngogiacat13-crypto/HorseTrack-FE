@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { PLAN_LABEL, PlanStatus, trainerApi } from '../../../api/trainerApi';
+import { PLAN_LABEL, PlanStatus, phaseHr, phaseLoad, trainerApi } from '../../../api/trainerApi';
 import { useActor } from '../../../auth/AuthContext';
 import { useFetch } from '../../../hooks/useFetch';
 import { Icon } from '../../../components/ui/Icon';
@@ -58,7 +58,7 @@ export const TrainerPlans: React.FC = () => {
                       <td><Link className="strong" to={`/trainer/horses/${p.horseId}`}>{p.horseName}</Link><span className="sub">từ <span className="ht-mono">{p.startDate}</span></span></td>
                       <td><span className="strong">{p.name}</span><span className="sub">{p.type} · {p.goal}</span></td>
                       <td style={{ minWidth: 140 }}><PhaseBar phases={p.phases} current={p.currentPhase} /><span className="sub">GĐ {p.currentPhase}/{p.phases.length} · tuần {p.week}</span></td>
-                      <td>{ph ? <>{ph.name}<span className="sub">{ph.intensity} · {ph.distanceM} m · ≤ {ph.hrLimit} bpm</span></> : '—'}</td>
+                      <td>{ph ? <>{ph.name}<span className="sub">{phaseLoad(ph)} · {phaseHr(ph)}</span></> : '—'}</td>
                       <td><Badge tone={PLAN_LABEL[p.status][1]}>{PLAN_LABEL[p.status][0]}</Badge>{p.pausedReason && <span className="sub" style={{ maxWidth: 220 }}>{p.pausedReason}</span>}</td>
                     </tr>
                   );

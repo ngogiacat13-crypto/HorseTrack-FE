@@ -3,7 +3,7 @@ import { ProtoPhase, protoCost, VetCase, VetHorse } from '../../../api/vetApi';
 import { Icon } from '../../../components/ui/Icon';
 import { Callout, money, Panel } from '../../../components/ui/Ht';
 
-const selectStyle: React.CSSProperties = { height: 40, width: '100%' };
+const selectStyle: React.CSSProperties = { height: 44, width: '100%', fontSize: 14 };
 
 interface HorseCaseProps {
   horses: VetHorse[]; cases: VetCase[]; locked: boolean;
@@ -13,7 +13,7 @@ interface HorseCaseProps {
 
 export const HorseCaseFields: React.FC<HorseCaseProps> = ({ horses, cases, locked, horseId, caseId, diagnosis, requiredBy, onHorse, onCase, onDiagnosis, onRequiredBy }) => (
   <Panel title="Ngựa & chẩn đoán">
-    <div className="ht-panel__body ht-proto-phase__grid" style={{ gridTemplateColumns: '1fr 1fr 2fr 1fr' }}>
+    <div className="ht-panel__body ht-proto-phase__grid" style={{ gridTemplateColumns: 'minmax(170px, 1.2fr) minmax(200px, 1.4fr) minmax(0, 2fr) minmax(140px, 1fr)' }}>
       <div className="ht-field">
         <label className="ht-label" htmlFor="pc-horse">Ngựa<span className="ht-req">*</span></label>
         <select id="pc-horse" className="ht-select" style={selectStyle} value={horseId} disabled={locked} onChange={(e) => onHorse(e.target.value)}>
@@ -24,7 +24,7 @@ export const HorseCaseFields: React.FC<HorseCaseProps> = ({ horses, cases, locke
       <div className="ht-field">
         <label className="ht-label" htmlFor="pc-case">Ca khám<span className="ht-req">*</span></label>
         <select id="pc-case" className="ht-select" style={selectStyle} value={caseId} disabled={!horseId} onChange={(e) => onCase(e.target.value)}>
-          <option value="">{horseId ? '— Chọn ca —' : '— Chọn ngựa trước —'}</option>
+          <option value="">{horseId ? '— Chọn ca —' : 'Chọn ngựa trước'}</option>
           {cases.map((c) => <option key={c.id} value={c.id} disabled={!c.exam}>#{c.id} · {c.type}{!c.exam ? ' — chưa khám' : ''}</option>)}
         </select>
       </div>

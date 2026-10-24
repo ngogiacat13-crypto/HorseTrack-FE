@@ -1,5 +1,5 @@
 import type { AxiosAdapter } from 'axios';
-import { be, type ApiResponse } from './beClient';
+import { be, notOnServer, type ApiResponse } from './beClient';
 import { loadInvoices, loadPayments } from './beFinance';
 import { fail, queryRows, respond } from './mockServer';
 import { loadAuditLogs, loadInventory, loadProtocols, loadRequisitions, loadShipments, loadStockChecks, loadStockTx, loadUsers } from './beDomain';
@@ -70,7 +70,13 @@ const health = (h?: string | null) => HEALTH[(h ?? '').toLowerCase()] ?? 'HEALTH
 const sex = (g?: string | null) => (['mare', 'filly'].includes((g ?? '').toLowerCase()) ? '♀' : '♂');
 const CLEAN: Record<string, string> = { clean: 'CLEAN', 'needs cleaning': 'NEEDS_CLEANING', needs_cleaning: 'NEEDS_CLEANING', 'under maintenance': 'MAINTENANCE', maintenance: 'MAINTENANCE' };
 const SESSION: Record<string, string> = { PENDING: 'SCHEDULED', CONFIRMED: 'SCHEDULED', COMPLETED: 'COMPLETED', CANCELLED: 'STOPPED', STOPPED: 'STOPPED', WAITING_VET: 'WAITING_VET', IN_PROGRESS: 'IN_PROGRESS', PAUSED: 'PAUSED_PENDING_TRAINER', PAUSED_PENDING_TRAINER: 'PAUSED_PENDING_TRAINER' };
-const PLAN_STATUS: Record<string, string> = { PENDING: 'PLANNED', ACTIVE: 'ACTIVE', PAUSED: 'PAUSED', COMPLETED: 'COMPLETED', CANCELLED: 'CANCELLED' };
+const SERVER_DEFAULT_MAX_HR = 180;
+const unknownPhase = (weeks: number) => ({ no: 1, name: 'Toàn giáo án', weeks, intensity: 'Vừa', distanceM: 0, sessionsPerWeek: 0, hrLimit: SERVER_DEFAULT_MAX_HR, estimated: true });
+const planMeta = (goal: string) => {
+  const tag = goal.match(/^\[([^·\]]+)·[^\]]*\]\s*/);
+  return { type: tag ? tag[1].trim() : '—', goal: tag ? goal.slice(tag[0].length) : goal };
+};
+const PLAN_STATUS: Record<string, string> ={ PENDING: 'PLANNED', ACTIVE: 'ACTIVE', PAUSED: 'PAUSED', COMPLETED: 'COMPLETED', CANCELLED: 'CANCELLED' };
 const TASK_TYPE: Record<string, [string, string]> = {
   feeding: ['FEED', 'Cho ăn'], 'stall cleaning': ['CLEAN', 'Dọn chuồng'], 'grooming & bath': ['GROOM', 'Chải lông & tắm'],
   'ice bath therapy': ['COOL', 'Ngâm lạnh'], 'exercise walk': ['GROOM', 'Dắt đi bộ'], 'hoof care': ['GROOM', 'Chăm sóc móng'],
@@ -166,12 +172,13 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
   async trainingPlans() {
     if (me()?.role === 'HorseOwner') return (await ownerProgress()).map(({ plan }) => plan);
     const [page, horses] = await Promise.all([data<{ content: BePlan[] }>('/training-plans', { page: 0, size: 500 }).catch(() => ({ content: [] })), LOADERS.horses()]);
-    return page.content.map((p) => {
+    const goals = await Promise.all(page.content.map((p) => data<{ goal?: string | null }>(`/training-plans/${p.planId}`).then((d) => d.goal ?? '').catch(() => '')));
+    return page.content.map((p, i) => {
       const weeks = Math.max(1, Math.round((new Date(p.endDate).getTime() - new Date(p.startDate).getTime()) / (7 * 864e5)));
       return {
         id: String(p.planId), horseId: (byName(horses, p.horseName)?.id as string) ?? '', horseName: p.horseName, name: p.planName,
-        type: 'Thể lực', goal: '', startDate: ddmmyyyy(p.startDate), createdBy: '—',
-        phases: [{ no: 1, name: 'Toàn giáo án', weeks, intensity: 'Vừa', distanceM: 1200, sessionsPerWeek: 3, hrLimit: 180 }],
+        ...planMeta(goals[i]), startDate: ddmmyyyy(p.startDate), createdBy: '—',
+        phases: [unknownPhase(weeks)],
         currentPhase: 1, week: Math.max(1, Math.round((p.progress ?? 0) * weeks / 100)), status: PLAN_STATUS[(p.status ?? '').toUpperCase()] ?? 'PAUSED',
       };
     });
@@ -264,8 +271,8 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
   async vaccinations() {
     const [rows, horses] = await Promise.all([orEmpty(data<BeVacc[]>('/vaccinations')), LOADERS.horses()]);
     const ST: Record<string, string> = { 'sắp đến hạn': 'DUE_SOON', 'đã tiêm': 'DONE', 'hoàn thành': 'DONE', 'đã hoãn': 'POSTPONED' };
-    return rows.map((v) => ({
-      id: v.recordCode, horseId: (byName(horses, v.horseName)?.id as string) ?? `ten:${v.horseName}`, horse: v.horseName, type: v.typeName,
+    return rows.filter((v) => byName(horses, v.horseName)).map((v) => ({
+      id: v.recordCode, horseId: byName(horses, v.horseName)?.id as string, horse: v.horseName, type: v.typeName,
       due: v.expectedDate, status: ST[(v.status ?? '').toLowerCase()] ?? 'SCHEDULED', kind: /giun/i.test(v.category) ? 'DEWORM' : 'VACCINE', cycleMonths: v.cycleMonths,
     }));
   },
@@ -394,8 +401,8 @@ const ownerProgress = async () => {
   return rows.filter((r): r is { h: Row; p: BeOwnerProgress } => !!r.p?.planId).map(({ h, p }) => {
     const weeks = Math.max(1, Math.round((new Date(p.endDate).getTime() - new Date(p.startDate).getTime()) / (7 * 864e5)));
     const plan: Row = {
-      id: String(p.planId), horseId: h.id, horseName: h.name, name: p.planName, type: 'Thể lực', goal: '', startDate: ddmmyyyy(p.startDate), createdBy: '—',
-      phases: [{ no: 1, name: 'Toàn giáo án', weeks, intensity: 'Vừa', distanceM: 1200, sessionsPerWeek: 3, hrLimit: 180 }],
+      id: String(p.planId), horseId: h.id, horseName: h.name, name: p.planName, type: '—', goal: '', startDate: ddmmyyyy(p.startDate), createdBy: '—',
+      phases: [unknownPhase(weeks)],
       currentPhase: 1, week: Math.max(1, Math.round(((p.progress ?? 0) * weeks) / 100)), status: PLAN_STATUS[(p.status ?? '').toUpperCase()] ?? 'PAUSED',
     };
     const sessions: Row[] = (p.sessions ?? []).map((x) => ({
@@ -516,6 +523,8 @@ const WRITES: Record<string, Partial<Record<'post' | 'patch' | 'put', Write>>> =
       if (id?.startsWith('ten:')) throw new Error('Ngựa này chưa có trong danh sách ngựa của backend.');
       if (body.trainingLocked) await be.post('/medical/vet-lock', { horseId: Number(id), reason: (body.lock as Row | undefined)?.reason ?? 'Khóa huấn luyện' });
       else await be.post(`/medical/release-lock/${id}`);
+      invalidate('trainingPlans', 'trainingSessions');
+      return true;
     },
   },
   raceProposals: {
@@ -526,16 +535,18 @@ const WRITES: Record<string, Partial<Record<'post' | 'patch' | 'put', Write>>> =
     },
   },
   vaccinations: {
-    async patch(id, body) {
-      if (body.status === 'DONE') await be.post(`/vaccinations/${encodeURIComponent(id ?? '')}/execute`);
+    patch() {
+      throw notOnServer('ghi nhận đã tiêm (API /vaccinations trên server đang trả dữ liệu mẫu, không lưu vào database)');
     },
-    async post(_id, body) {
-      await be.post('/vaccinations/schedule', { horseIds: [Number(body.horseId) || 0], medicineName: body.type, scheduledDate: body.due, notes: body.note ?? '' });
+    post() {
+      throw notOnServer('tạo lịch tiêm / tẩy giun (API /vaccinations trên server đang trả dữ liệu mẫu, không lưu vào database)');
     },
   },
   tasks: {
     async patch(id, body) {
-      if (body.status === 'DONE') await be.put(`/care-tasks/${id}/complete`);
+      if (body.status !== 'DONE') return false;
+      await be.put(`/care-tasks/${id}/complete`);
+      return true;
     },
   },
   vetCases: {
@@ -625,7 +636,11 @@ const WRITES: Record<string, Partial<Record<'post' | 'patch' | 'put', Write>>> =
         invalidate('trainingPlans');
         return true;
       }
-      if (body.status === 'COMPLETED') await be.put(`/training-sessions/${id}/execute`, { status: 'COMPLETED', notes: sessionNotes(current) });
+      if (body.status === 'COMPLETED') {
+        await be.put(`/training-sessions/${id}/execute`, { status: 'COMPLETED', notes: sessionNotes(current) });
+        invalidate('trainingPlans', 'trainingSessions');
+        return true;
+      }
       if (body.evaluation) {
         const ev = body.evaluation as { score: number; comment?: string };
         await be.put(`/training-sessions/${id}/evaluate`, { score: Number(ev.score), comment: ev.comment ?? '' });
@@ -659,7 +674,11 @@ export const resetBackendData = () => { cache.clear(); overlay.clear(); };
 export const hybridAdapter: AxiosAdapter = async (config) => {
   const url = new URL(config.url ?? '/', 'http://mock.local');
   const [name, id] = url.pathname.split('/').filter(Boolean).map(decodeURIComponent);
-  if (!name || !(name in LOADERS)) return (config.method ?? 'get').toLowerCase() === 'get' ? fail(config, 404) : respond(config, 200, {});
+  if (!name || !(name in LOADERS)) {
+    if ((config.method ?? 'get').toLowerCase() === 'get') return fail(config, 404);
+    if (name !== 'auditLogs') console.warn(`[backend] Không lưu: ${(config.method ?? '').toUpperCase()} /${name ?? ''} chưa có API trên server`);
+    return respond(config, 200, {});
+  }
 
   const method = (config.method ?? 'get').toLowerCase();
   const params: Record<string, unknown> = { ...Object.fromEntries(url.searchParams), ...(config.params ?? {}) };
@@ -690,16 +709,8 @@ export const hybridAdapter: AxiosAdapter = async (config) => {
   }
 
   if (method === 'post' && name === 'auditLogs') return respond(config, 201, body);
-  if (method === 'post') {
-    const row = { ...body, id: body.id ?? `${Date.now()}` };
-    ov(name).added.push(row);
-    return respond(config, 201, row);
-  }
-  if (method === 'patch' || method === 'put') {
-    const o = ov(name);
-    o.patches.set(String(id), { ...(o.patches.get(String(id)) ?? {}), ...body });
-    return respond(config, 200, { ...(current ?? { id }), ...body });
-  }
-  if (method === 'delete' && current) return respond(config, 200, {});
-  return fail(config, 404);
+  console.warn(`[backend] Không lưu: ${method.toUpperCase()} /${name}${id ? `/${id}` : ''} chưa có API trên server — giữ nguyên dữ liệu thật`, Object.keys(body));
+  if (method === 'post') return respond(config, 201, { ...body, id: body.id ?? '' });
+  if (method === 'delete') return respond(config, 200, {});
+  return respond(config, 200, current ?? { id });
 };

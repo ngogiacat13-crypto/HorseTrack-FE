@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Horse, PLAN_LABEL, PROPOSAL_LABEL, RaceProposal, Tournament, TrainingPlan, TrainingSession, Vaccination } from '../../../api/trainerApi';
+import { Horse, PLAN_LABEL, PROPOSAL_LABEL, phaseHr, phaseLoad, RaceProposal, Tournament, TrainingPlan, TrainingSession, Vaccination } from '../../../api/trainerApi';
 import { Icon } from '../../../components/ui/Icon';
 import { Badge, Callout, Panel, Timeline } from '../../../components/ui/Ht';
 import { HorseBadges, PhaseBar } from '../../../components/trainer/TrainerParts';
@@ -28,8 +28,8 @@ export const OverviewTab: React.FC<{ horse: Horse; plan?: TrainingPlan; recent: 
                 <PhaseBar phases={plan.phases} current={plan.currentPhase} />
                 <dl className="ht-kv">
                   <dt>Giai đoạn</dt><dd>{phase.name}</dd>
-                  <dt>Cường độ</dt><dd>{phase.intensity} · {phase.distanceM} m · {phase.sessionsPerWeek} buổi/tuần</dd>
-                  <dt>Ngưỡng nhịp tim</dt><dd className="ht-mono">{phase.hrLimit} bpm</dd>
+                  <dt>Cường độ</dt><dd>{phaseLoad(phase)}</dd>
+                  <dt>Ngưỡng nhịp tim</dt><dd className="ht-mono">{phaseHr(phase)}</dd>
                 </dl>
                 {plan.pausedReason && <Callout tone="demo" icon="warn">{plan.pausedReason}</Callout>}
               </div>

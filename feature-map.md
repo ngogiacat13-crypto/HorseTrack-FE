@@ -84,6 +84,7 @@ Quy ước `data-testid`: menu trái `nav-<đường dẫn bỏ / đầu, / đ�
 | `scenarios/groom-zone.spec.ts` | Mã phu chỉ một khu; khu đã có Mã phu khác bị khóa |
 | `scenarios/assign-session.spec.ts` | Hộp phân công phiên tập: ngày mặc định hôm nay, không chọn được ngày đã qua |
 | `scenarios/registration-validation.spec.ts` | Đăng ký chủ ngựa: SĐT/email đúng định dạng, họ tên không bắt buộc; hồ sơ ngựa: gợi ý + validate giống, không còn hộ chiếu, chặn tệp đổi đuôi |
+| `scenarios/layout-alignment.spec.ts` | Mọi trang menu + trang tạo (giáo án, đề xuất, phác đồ, hồ sơ ngựa, hồ sơ cá nhân, đổi mật khẩu, đăng ký) của 6 vai trò ở 1280px và 1920px: ô nhập cùng hàng phải thẳng hàng, ô chọn không bị cắt chữ, trang không cuộn ngang |
 
 ## Kịch bản chạy với backend thật (`scenarios-live/`, lệnh `npm run scenarios:live`)
 

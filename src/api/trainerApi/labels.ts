@@ -1,4 +1,4 @@
-import type { HealthStatus, Horse, PlanStatus, SessionStatus, ProposalStatus, Stall } from './types';
+import type { HealthStatus, Horse, PlanStatus, SessionStatus, ProposalStatus, Stall, PlanPhase } from './types';
 
 export const HEALTH_LABEL: Record<HealthStatus, [string, 'success' | 'warning' | 'danger' | 'purple']> = {
   HEALTHY: ['Khỏe mạnh', 'success'], WATCH: ['Theo dõi', 'warning'], INJURED: ['Chấn thương', 'danger'], QUARANTINE: ['Cách ly', 'purple'],
@@ -26,3 +26,7 @@ export const trainingBlock = (h: Pick<Horse, 'trainingLocked' | 'lock' | 'health
 
 export const raceBlock = (h: Horse): string | null =>
   trainingBlock(h) ?? (h.health === 'INJURED' || h.health === 'QUARANTINE' ? `${HEALTH_LABEL[h.health][0]} — không đủ điều kiện thi đấu.` : null);
+
+export const PHASE_UNKNOWN = 'Server chưa lưu cường độ / cự ly giai đoạn';
+export const phaseLoad = (ph: PlanPhase) => (ph.estimated ? PHASE_UNKNOWN : `${ph.intensity} · ${ph.distanceM} m · ${ph.sessionsPerWeek} buổi/tuần`);
+export const phaseHr = (ph: PlanPhase) => `≤ ${ph.hrLimit} bpm${ph.estimated ? ' (ngưỡng mặc định server)' : ''}`;

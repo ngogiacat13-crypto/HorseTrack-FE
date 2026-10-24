@@ -1,4 +1,5 @@
 import { DEMO_NOW, http } from '../http';
+import { USE_BACKEND } from '../beClient';
 import { addAudit, type Actor } from '../managerApi';
 import type { Stall, TrainingSession } from '../trainerApi';
 import type { FeedRequest, VetHorse } from '../vetApi';
@@ -40,7 +41,7 @@ export const tasksApi = {
         });
       }
     }
-    if (late > 0) {
+    if (late > 0 && !USE_BACKEND) {
       const dash = await get<{ lateTasks: { title: string; groom: string; due: string; late: string; doneAt?: string }[] }>('/dashboard');
       await http.patch('/dashboard', { lateTasks: [{ title: `${t.title} — ${t.horse ?? t.stall}`, groom: t.groom, due: t.time, late: lateText(late), doneAt }, ...dash.lateTasks] });
     }

@@ -736,3 +736,15 @@ BE `deploy` không có commit mới (`8c48731`). Đã làm ở FE: validate chun
 Việc cần BE (OTP xác thực email khi đăng ký, đăng nhập bằng email/SĐT, lưu & xem giấy tờ + kiểm tra AI, xác thực nhân viên + trạng thái mail/đăng nhập, phân công chờ xác nhận, nhật ký email, sửa hồ sơ nhân viên): xem `../YeuCau_BE_Review_Assignment2.md`.
 
 Kiểm tra: `npm run check` 19/19, `scenarios:live` (admin, server thật) 2/2.
+
+## 26. Rà soát “còn chạy dữ liệu giả” khi dùng server (24/10/2026)
+
+- FE không còn chỗ nào đọc `db.json` khi `npm run dev:be` (`http.ts` dùng `hybridAdapter`; chỉ import hằng `ROLE_HOME`).
+- **Dữ liệu giả từ server**: `GET /vaccinations` của BE viết cứng “Bolt/Arrow” → FE chỉ giữ mũi tiêm của ngựa có thật, chặn tạo lịch/ghi nhận (`notOnServer`), màn Tiêm phòng có cảnh báo `vaccination-backend-missing`.
+- **Giá trị FE tự điền**: giáo án hết hiện “Thể lực · Vừa · 1200 m”; loại + mục tiêu đọc từ `goal` thật (`planMeta`), giai đoạn đánh dấu `estimated` → hiện “Server chưa lưu cường độ / cự ly giai đoạn” và “≤ 180 bpm (ngưỡng mặc định server)”.
+- **Lưu tạm trong tab (overlay)**: bỏ hẳn — ghi không có API trên server không còn giả lập thành công, chỉ `console.warn`, màn hình luôn hiện dữ liệu server. Các WRITES gọi API thật đều trả `true` (horses lock, tasks, trainingSessions COMPLETED).
+- Sửa lỗi: Mã phu hoàn thành việc trễ SLA báo lỗi 404 `/dashboard` sau khi đã lưu.
+- Màn Người dùng bỏ thông báo sai “dữ liệu mẫu (db.json)”.
+- Gửi BE: `../YeuCau_BE_Review_Assignment2.md` mục H (tiêm phòng giả, giáo án không lưu giai đoạn, API VNPay bệnh án giả lập).
+
+Kiểm tra: `npm run check` 19/19, `scenarios:live` (admin) 2/2.

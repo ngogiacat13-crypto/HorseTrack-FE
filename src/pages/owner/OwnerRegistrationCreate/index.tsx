@@ -71,7 +71,7 @@ const RegistrationForm: React.FC<{ resubmit?: Registration }> = ({ resubmit }) =
                   <BreedPicker value={f.breed} onChange={(v) => set('breed', v)} />
                 </div>
               </div>
-              <div className="ht-grid-2" style={{ gap: 14 }}>
+              <div className="ht-grid-2" style={{ gap: 14, alignItems: 'end' }}>
                 <div className="ht-field" style={{ margin: 0 }}><span className="ht-label">Giới tính</span>
                   <Segmented<'♂' | '♀'> label="Giới tính" value={f.sex} onChange={(v) => set('sex', v)} items={[{ value: '♂', label: 'Đực' }, { value: '♀', label: 'Cái' }]} /></div>
                 <div className="ht-field" style={{ margin: 0 }}><label className="ht-label" htmlFor="rg-age">Tuổi<span className="ht-req">*</span></label>

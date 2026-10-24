@@ -56,12 +56,12 @@ export const DecisionForm: React.FC<{ session: TrainingSession; horse: Horse; ph
               <select id="adj-i" className="ht-select" style={{ height: 44 }} value={adj.intensity} onChange={(e) => setAdj({ ...adj, intensity: e.target.value as Intensity })}>
                 {INTENSITIES.map((x) => <option key={x}>{x}</option>)}
               </select>
-              <span className="ht-hint">Đang: {phase.intensity}</span>
+              <span className="ht-hint">Đang: {phase.estimated ? 'chưa có trên server' : phase.intensity}</span>
             </div>
             <div className="ht-field" style={{ margin: 0 }}>
               <label className="ht-label" htmlFor="adj-d">Quãng đường (m)</label>
               <input id="adj-d" type="number" step={100} min={200} className="ht-input" value={adj.distanceM} onChange={(e) => setAdj({ ...adj, distanceM: Number(e.target.value) })} />
-              <span className="ht-hint">Đang: {phase.distanceM} m</span>
+              <span className="ht-hint">Đang: {phase.estimated ? 'chưa có trên server' : `${phase.distanceM} m`}</span>
             </div>
             <div className="ht-field" style={{ margin: 0 }}>
               <label className="ht-label" htmlFor="adj-h">Ngưỡng bpm</label>

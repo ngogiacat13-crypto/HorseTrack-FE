@@ -11,7 +11,7 @@ export interface Horse {
 }
 
 export type Intensity = 'Nhẹ' | 'Vừa' | 'Cao';
-export interface PlanPhase { no: number; name: string; weeks: number; intensity: Intensity; distanceM: number; sessionsPerWeek: number; hrLimit: number }
+export interface PlanPhase { no: number; name: string; weeks: number; intensity: Intensity; distanceM: number; sessionsPerWeek: number; hrLimit: number; estimated?: boolean }
 export type PlanStatus = 'PLANNED' | 'ACTIVE' | 'PAUSED' | 'COMPLETED' | 'REPLACED' | 'CANCELLED';
 export interface TrainingPlan {
   id: string; horseId: string; horseName: string;
