@@ -6,6 +6,8 @@ import { available, nearestLot, OPEN_SHIPMENT } from './labels';
 import { get, moveStock, now, posInt } from './shared';
 import type { ShipmentOrder, StockItem } from './types';
 
+const CHANGED_STATES: Protocol['state'][] = ['SUPERSEDED', 'CANCELLED'];
+const sentToWarehouse = (p: Protocol) => p.path.length <= 1 || p.path.includes('WAITING_STOCK_CHECK');
 export const WAREHOUSE_STATES: Protocol['state'][] = ['WAITING_STOCK_CHECK', 'STOCK_SHORTAGE', 'STOCK_AVAILABLE', 'WAITING_RESTOCK', 'REQUIRES_VET_REVIEW', 'READY_FOR_DISPENSING', 'IN_TREATMENT'];
 
 export const needs = (p: Protocol, phaseNos?: number[]) => {
@@ -31,13 +33,16 @@ export const previewStock = (p: Protocol, items: StockItem[], phaseNos?: number[
 export const medicalApi = {
   async getRequests() {
     const [protocols, items, shipments] = await Promise.all([get<Protocol[]>('/protocols'), get<StockItem[]>('/inventory'), get<ShipmentOrder[]>('/shipments')]);
-    return { protocols: protocols.filter((p) => WAREHOUSE_STATES.includes(p.state)), items, shipments };
+    return { protocols: protocols.filter((p) => WAREHOUSE_STATES.includes(p.state) || (CHANGED_STATES.includes(p.state) && sentToWarehouse(p))), items, shipments };
   },
 
   async getRequest(id: string) {
     const p = await get<Protocol>(`/protocols/${id}`);
-    const [horse, items, shipments] = await Promise.all([get<Horse>(`/horses/${p.horseId}`), get<StockItem[]>('/inventory'), get<ShipmentOrder[]>('/shipments')]);
-    return { protocol: p, horse, items, shipments, openShipments: shipments.filter((s) => OPEN_SHIPMENT.includes(s.status)) };
+    const [horse, items, shipments, previous] = await Promise.all([
+      get<Horse>(`/horses/${p.horseId}`), get<StockItem[]>('/inventory'), get<ShipmentOrder[]>('/shipments'),
+      p.replaces ? get<Protocol>(`/protocols/${p.replaces}`).catch(() => null) : Promise.resolve(null),
+    ]);
+    return { protocol: p, horse, items, shipments, previous, openShipments: shipments.filter((s) => OPEN_SHIPMENT.includes(s.status)) };
   },
 
   async respondStock(p: Protocol, etaFor: Record<string, string | null>, actor: Actor, phaseNos?: number[]) {

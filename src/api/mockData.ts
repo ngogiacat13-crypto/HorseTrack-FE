@@ -37,6 +37,10 @@ export interface AuthUser {
   role: Role;
   avatar?: string;
   avatarUrl?: string;
+  licenseNumber?: string;
+  specialization?: string;
+  experienceYears?: number;
+  clinicAffiliation?: string;
 }
 
 

@@ -1,11 +1,12 @@
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { PLAN_LABEL, PlanStatus, trainerApi } from '../../../api/trainerApi';
+import { OPEN_PLAN, PLAN_LABEL, PlanStatus, phaseHr, phaseLoad, trainerApi, type TrainingPlan } from '../../../api/trainerApi';
 import { useActor } from '../../../auth/AuthContext';
 import { useFetch } from '../../../hooks/useFetch';
 import { Icon } from '../../../components/ui/Icon';
 import { Badge, PageHeader, Panel, StatCard, Tabs } from '../../../components/ui/Ht';
 import { LoadState, PhaseBar } from '../../../components/trainer/TrainerParts';
+import { CancelPlanDialog, ResumePlanDialog } from './PlanActionDialogs';
 
 type Filter = 'planned' | 'running' | 'paused' | 'history';
 const MATCH: Record<Filter, PlanStatus[]> = { planned: ['PLANNED'], running: ['ACTIVE'], paused: ['PAUSED'], history: ['COMPLETED', 'REPLACED', 'CANCELLED'] };
@@ -14,6 +15,7 @@ export const TrainerPlans: React.FC = () => {
   const actor = useActor();
   const { data, loading, error, reload } = useFetch(() => trainerApi.getPlans(actor), [actor]);
   const [filter, setFilter] = useState<Filter>('running');
+  const [dialog, setDialog] = useState<{ kind: 'cancel' | 'resume'; plan: TrainingPlan } | null>(null);
   const plans = useMemo(() => data?.plans ?? [], [data]);
   const list = useMemo(() => plans.filter((p) => MATCH[filter].includes(p.status)), [plans, filter]);
 
@@ -48,7 +50,7 @@ export const TrainerPlans: React.FC = () => {
         <div>
           <Panel>
             <table className="ht-table">
-              <thead><tr><th>Mã</th><th>Ngựa</th><th>Tên giáo án</th><th>Tiến độ</th><th>Giai đoạn hiện tại</th><th>Trạng thái</th></tr></thead>
+              <thead><tr><th>Mã</th><th>Ngựa</th><th>Tên giáo án</th><th>Tiến độ</th><th>Giai đoạn hiện tại</th><th>Trạng thái</th><th aria-label="Thao tác" /></tr></thead>
               <tbody>
                 {list.map((p) => {
                   const ph = p.phases.find((x) => x.no === p.currentPhase);
@@ -58,8 +60,20 @@ export const TrainerPlans: React.FC = () => {
                       <td><Link className="strong" to={`/trainer/horses/${p.horseId}`}>{p.horseName}</Link><span className="sub">từ <span className="ht-mono">{p.startDate}</span></span></td>
                       <td><span className="strong">{p.name}</span><span className="sub">{p.type} · {p.goal}</span></td>
                       <td style={{ minWidth: 140 }}><PhaseBar phases={p.phases} current={p.currentPhase} /><span className="sub">GĐ {p.currentPhase}/{p.phases.length} · tuần {p.week}</span></td>
-                      <td>{ph ? <>{ph.name}<span className="sub">{ph.intensity} · {ph.distanceM} m · ≤ {ph.hrLimit} bpm</span></> : '—'}</td>
+                      <td>{ph ? <>{ph.name}<span className="sub">{phaseLoad(ph)} · {phaseHr(ph)}</span></> : '—'}</td>
                       <td><Badge tone={PLAN_LABEL[p.status][1]}>{PLAN_LABEL[p.status][0]}</Badge>{p.pausedReason && <span className="sub" style={{ maxWidth: 220 }}>{p.pausedReason}</span>}</td>
+                      <td style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
+                        {p.status === 'PAUSED' && (
+                          <button type="button" className="ht-btn ht-btn--secondary ht-btn--sm" data-testid={`resume-plan-${p.id}`} onClick={() => setDialog({ kind: 'resume', plan: p })}>
+                            <Icon name="refresh" size={14} />Chạy lại
+                          </button>
+                        )}
+                        {OPEN_PLAN.includes(p.status) && (
+                          <button type="button" className="ht-btn ht-btn--ghost ht-btn--sm" data-testid={`cancel-plan-${p.id}`} onClick={() => setDialog({ kind: 'cancel', plan: p })} style={{ color: 'var(--danger-ink)' }}>
+                            <Icon name="ban" size={14} />Hủy
+                          </button>
+                        )}
+                      </td>
                     </tr>
                   );
                 })}
@@ -87,6 +101,9 @@ export const TrainerPlans: React.FC = () => {
           </Panel>
         </div>
       </div>
+
+      {dialog?.kind === 'cancel' && <CancelPlanDialog plan={dialog.plan} onClose={() => setDialog(null)} onDone={() => { setDialog(null); reload(); }} />}
+      {dialog?.kind === 'resume' && <ResumePlanDialog plan={dialog.plan} onClose={() => setDialog(null)} onDone={() => { setDialog(null); reload(); }} />}
     </div>
   );
 };

@@ -4,11 +4,9 @@ import { USE_BACKEND } from '../../../api/beClient';
 import { useActor } from '../../../auth/AuthContext';
 import { useAction } from '../../../hooks/useAction';
 import { useForm } from '../../../hooks/useForm';
-import { Callout, Dialog, Field, PASSWORD_RE, PASSWORD_RULE, PasswordInput, TextInput, USERNAME_RE, USERNAME_RULE, useToast } from '../../../components/ui/Ht';
+import { Callout, Dialog, EMAIL_RE, EMAIL_RULE, Field, PASSWORD_RE, PASSWORD_RULE, PHONE_RE, PHONE_RULE, PasswordInput, TextInput, USERNAME_RE, USERNAME_RULE, normalizePhone, useToast } from '../../../components/ui/Ht';
 import { ROLE_LABEL } from '../../../components/layout/nav';
 
-const PHONE_RE = /^(0|\+84)(\d{9,10})$/;
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const STAFF_ROLES: StaffRole[] = ['HeadTrainer', 'Veterinarian', 'Groom', 'WarehouseManager'];
 const ZONES = ['Khu A', 'Khu B', 'Khu C'];
 
@@ -21,8 +19,8 @@ export const CreateStaffDialog: React.FC<{ onClose: () => void; onDone: (u: Mana
     (v) => ({
       fullName: v.fullName.trim() ? undefined : 'Vui lòng nhập họ và tên',
       username: !v.username.trim() ? 'Vui lòng nhập tên đăng nhập' : !USERNAME_RE.test(v.username.trim()) ? USERNAME_RULE : undefined,
-      email: !v.email.trim() ? 'Vui lòng nhập email' : !EMAIL_RE.test(v.email.trim()) ? 'Email không hợp lệ' : undefined,
-      phone: v.phone && !PHONE_RE.test(v.phone.replace(/\s/g, '')) ? 'Số điện thoại không hợp lệ' : undefined,
+      email: !v.email.trim() ? 'Vui lòng nhập email' : !EMAIL_RE.test(v.email.trim()) ? EMAIL_RULE : undefined,
+      phone: !v.phone.trim() ? 'Vui lòng nhập số điện thoại' : !PHONE_RE.test(normalizePhone(v.phone)) ? PHONE_RULE : undefined,
       password: !v.password ? 'Vui lòng nhập mật khẩu tạm' : !PASSWORD_RE.test(v.password) ? PASSWORD_RULE : undefined,
       specialization: v.role === 'Groom' && !v.specialization ? 'Chọn khu chuồng phụ trách' : undefined,
     }),
@@ -75,7 +73,7 @@ export const CreateStaffDialog: React.FC<{ onClose: () => void; onDone: (u: Mana
         <Field label="Email" htmlFor="email" required error={form.errors.email}>
           <TextInput icon="mail" type="email" placeholder="ten@horsetrack.vn" {...form.field('email')} />
         </Field>
-        <Field label="Số điện thoại" htmlFor="phone" error={form.errors.phone}>
+        <Field label="Số điện thoại" htmlFor="phone" required error={form.errors.phone}>
           <TextInput icon="phone" type="tel" placeholder="090 123 4567" {...form.field('phone')} />
         </Field>
       </div>

@@ -622,3 +622,143 @@ Code lúc kiểm tra: BE nhánh `test` `28105c6` · FE nhánh `dev` `6413d01`. �
 - Luồng API thực đơn mới (QA Alpha / QA Gamma): **25/25** — khẩu phần mới thay khẩu phần cũ (`ENDED`), tự tạo việc cho ăn 3 bữa cho Mã phu, BS duyệt đề xuất → ghi lưu ý vào thực đơn và việc cho ăn, Mã phu cho ăn → trừ kho (Cám 120→117, Cỏ 500→498), HLV hủy → việc cho ăn chưa làm chuyển `SKIPPED`, khóa ngựa → khẩu phần thường kết thúc, chỉ BS lập khẩu phần `MEDICAL`, HLV không sửa được, mở khóa → khẩu phần y tế kết thúc.
 - ❌→✅ FE (`hybridAdapter.ts`, việc của Mã phu): việc đã hủy `SKIPPED` hiện như "Chờ" (14 việc, trùng lặp) và loại việc mã mới `FEED/CLEAN/...` bị xếp nhầm "Chải lông". Đã ẩn việc `SKIPPED`, nhận loại việc theo mã, hiện lưu ý khẩu phần (`dietNote`).
 - `npm run check` 17/17, `npm run scenarios:live` 12/12 (6 vai trò, không 4xx/5xx, không lỗi JS).
+
+---
+
+## 22. Tách dữ liệu thật / dữ liệu mẫu (22/10/2026)
+
+Quy tắc: `npm run dev` → chỉ dùng `db.json`; `npm run dev:be` → chỉ dùng backend, **không bao giờ lấy `db.json`**, chỗ nào chưa có số liệu thật thì ẩn.
+
+### Trước khi sửa — dữ liệu giả lọt vào chế độ backend
+| Nguồn | Hiện ở đâu |
+|---|---|
+| `db.json` → `dashboard` | Bảng điều khiển: ngày "03/10/2026", banner phiên S-0023 Galaxy, 12 ngựa "+2 tháng này", bảng "Phiên tập hôm nay" (Bolt, Flash, Galaxy…), "Chi phí thú y theo tháng" 42,7 tr; Theo dõi y tế "9,8 tr chi phí tháng này" |
+| `db.json` (9 chỗ dự phòng trong `hybridAdapter.ts`) | Khi backend không trả dữ liệu cho vai trò đó: Mã phu mẫu, tồn kho, yêu cầu vật tư, kiểm kê, hồ sơ đăng ký, hóa đơn, thanh toán, người dùng, nhật ký, nhật ký kho |
+| Backend viết cứng `GET /protocols`, `/protocols/shipments` | "1 lô hàng kho bị trễ · ETA 10/10" (SHIP-0024), phác đồ PD-0013 Comet / PD-0012 Bolt cho HLV, chủ ngựa |
+| Chữ viết cứng trong giao diện | "1 thiếu thuốc", "Bông gạc thiếu 12 cuộn · Cần 08/10 · ETA 10/10", "· 1 giai đoạn", "tháng 09", "hạn 10/10", "đồng hồ demo 03/10/2026", "Quý 3/2026", "0 điểm so với Q2", ô "Nợ quá hạn" = tổng nợ chưa trả |
+
+### Đã sửa
+- **FE `hybridAdapter.ts`**: bỏ toàn bộ dự phòng `db.json`; tài nguyên không có backend → 404 (GET) / bỏ qua (ghi); không cộng nhật ký do FE tự tạo vào Nhật ký hệ thống; danh sách Mã phu lấy từ người dùng thật (QL CLB) hoặc chính mình (Mã phu).
+- **FE Bảng điều khiển (`managerApi.ts` + `ManagerDashboard/`)**: ngày/thứ/lời chào theo giờ thật; số ngựa = ngựa đã duyệt; "Phiên tập hôm nay" từ chi tiết giáo án; banner phiên bị dừng hôm nay (nếu có); chi phí thú y 6 tháng = tổng tiền phác đồ theo tháng lập; số thiếu thuốc, lô hàng trễ tính từ dữ liệu; ẩn ô chọn kỳ và nút "Xuất báo cáo" (chưa có chức năng).
+- **FE Theo dõi y tế / Hóa đơn / Báo cáo tài chính**: chi phí tháng theo phác đồ; "Đã thu" = tất cả kỳ; "hạn sớm nhất" từ hóa đơn chưa trả; "Nợ quá hạn" = các nhóm tuổi nợ đã quá hạn; ẩn nút xuất PDF/Excel giả, ô chọn kỳ, so sánh quý, chú thích "đồng hồ demo".
+- **FE khác**: ẩn khung "DEMO" ở Danh mục thuốc, Ngưỡng an toàn phiên tập, nút "Mô phỏng IPN" của chủ ngựa khi chạy backend.
+- **BE `ProtocolController.java`**: `GET /protocols` trả phác đồ thật (chủ ngựa chỉ thấy ngựa của mình, HLV chỉ thấy ngựa được giao); `GET /protocols/shipments` trả đơn nhập đang mở phục vụ phác đồ (quá ETA = "Trễ").
+
+### Giữ nguyên (đã là dữ liệu thật)
+Nhật ký hệ thống, Đăng ký ngựa, Hóa đơn quá hạn, Công việc trễ SLA, danh sách phác đồ, người dùng.
+
+### Còn là giá trị FE tự điền (không phải `db.json`, backend chưa có)
+Giáo án hiển thị 1 giai đoạn mặc định (cường độ "Vừa", 1200 m, 3 buổi/tuần, ngưỡng 180 bpm); ngưỡng phiên tập 180 bpm / 60 km/h (backend không có ngưỡng BR_02); tên chủ ngựa "Chủ ngựa #id" ở màn HLV.
+
+Kiểm tra: `npm run check` 17/17, `npm run scenarios:live` 12/12.
+
+---
+
+## 23. FE chỉ dùng dữ liệu thật trên server + yêu cầu gửi nhóm BE (23/10/2026)
+
+### FE đã sửa
+- Đăng nhập / đăng xuất xóa sạch dữ liệu lưu tạm trong tab (`resetBackendData` trong `hybridAdapter.ts`) → mỗi vai trò chỉ thấy dữ liệu thật trên server, giống khi mở trình duyệt khác.
+- Thao tác server chưa có API → báo lỗi “Server chưa có API để … — thao tác chưa được lưu” (`notOnServer` trong `beClient.ts`) thay vì giả vờ thành công: tạo / trả lời / gửi BTC / kết quả đề xuất thi đấu, đổi trạng thái sức khỏe, đánh dấu / xóa chấn thương, điều chỉnh giáo án & cho tiếp tục phiên.
+- HLV · Lịch tập: bỏ nút “Dừng & gửi bác sĩ”. HLV chỉ dừng phiên / điều chỉnh giáo án ở trang phiên tạm dừng (mở từ “Xử lý ngay” khi có cảnh báo vượt ngưỡng).
+- FE hiểu sẵn trạng thái phiên `PAUSED` / `PAUSED_PENDING_TRAINER` từ backend.
+
+### Yêu cầu gửi nhóm BE
+**1. Phiên tập: ghi chỉ số, tự tạm dừng khi vượt ngưỡng (F22-02) — ưu tiên cao nhất**
+Hiện backend không nhận chỉ số và không kiểm tra ngưỡng, nên HLV không bao giờ nhận được cảnh báo; luồng “Mã phu nhập chỉ số → vượt ngưỡng → HLV xử lý” chỉ chạy được ở dữ liệu mẫu.
+- `PUT /training-sessions/{id}/start` (Groom): CONFIRMED → IN_PROGRESS (chặn ngựa đang VetLock, chặn khác ngày).
+- `POST /training-sessions/{id}/readings` (Groom) `{ time, heartRate, speedKmh }`: lưu chỉ số; vượt ngưỡng → `PAUSED_PENDING_TRAINER`, chặn nhập tiếp, gửi thông báo cho HLV phụ trách.
+- `POST /training-sessions/{id}/recovery` (Groom) `{ time, heartRate }`: nhịp tim hồi phục khi đang tạm dừng.
+- `PUT /training-sessions/{id}/resume` (Trainer) `{ intensity, distanceM, maxHeartRate, note }`: chỉ khi `PAUSED_PENDING_TRAINER`, nhịp hồi phục dưới ngưỡng, ngựa không bị khóa → IN_PROGRESS.
+- Ngưỡng theo phiên: thêm `maxHeartRate`, `maxSpeedKmh` vào `POST /training-plans/{id}/sessions`.
+- Trả về trong `GET /training-plans/{id}` và `GET /training-sessions/my-schedule`: `readings[]`, `recovery[]`, ngưỡng, `pausedAt`, `pausedReason`, `notes`.
+- `PUT /training-sessions/{id}/stop`: chỉ cho phép khi phiên đang `PAUSED_PENDING_TRAINER` (HLV chỉ dừng & gửi bác sĩ sau cảnh báo vượt ngưỡng). Hiện đang cho dừng cả PENDING / CONFIRMED / IN_PROGRESS.
+- `PUT /training-sessions/{id}/execute`: nối thêm ghi chú (`notes`) thay vì ghi đè, để không mất thông tin đường chạy HLV đặt lúc giao phiên.
+
+**2. Luồng đề xuất thi đấu (hiện chỉ có phần bác sĩ khám `/prerace-exams`)**
+- `GET /tournaments`; `POST /race-proposals` (Trainer) `{ horseId, tournamentId, note }` → WAITING_OWNER.
+- `GET /race-proposals` (lọc theo quyền: HLV ngựa được giao, chủ ngựa ngựa của mình).
+- `PUT /race-proposals/{id}/owner-response` (Horse Owner) `{ agree, note }` → WAITING_VET_EXAM / OWNER_DECLINED.
+- `PUT /race-proposals/{id}/submitted`, `PUT /race-proposals/{id}/organizer-rejected { reason }`, `PUT /race-proposals/{id}/result { rank, finishTime, note }` (Trainer).
+
+**3. Hồ sơ sức khỏe**
+- `POST /horses/{id}/injuries { part, severity, note, x, y, caseId }`, `DELETE /horses/{id}/injuries/{injuryId}`, trả danh sách chấn thương trong chi tiết ngựa (đã có `InjuryMarkRepository`, chưa có controller).
+- `PUT /horses/{id}/health-status { status, reason }` (Veterinarian).
+
+**4. Chăm sóc & chuồng**
+- HLV giao việc chăm sóc: `POST /care-tasks` đã có nhưng cần `groomId`; thêm API cho HLV lấy Mã phu theo khu của ngựa, ví dụ `GET /horses/{id}/grooms`.
+- Trạng thái dọn chuồng: tự đặt CLEAN khi hoàn thành việc dọn chuồng, hoặc `PUT /stalls/{id}/clean-status`.
+
+**5. Tài khoản**: `PUT /account/my-profile` (sửa thông tin), `POST /account/avatar` (ảnh đại diện).
+
+**6. Dữ liệu trả về**: `GET /horses` thêm `ownerName` (màn HLV đang hiện “Chủ ngựa #id”); cột `action_type` nhật ký hệ thống bị cắt (“CREATE_NUTRITION_PLA”) — tăng độ dài cột.
+
+**7. Cấu hình server** (`deploy.yml` → `docker run -e …`, giá trị đặt trong GitHub Secrets): `MAIL_USERNAME`, `MAIL_PASSWORD` (OTP quên/đổi mật khẩu đang chỉ in ra log), `VNPAY_TMN_CODE`, `VNPAY_HASH_SECRET`, `VNPAY_RETURN_URL`, `VNPAY_FRONTEND_RESULT_URL`, `CORS_ALLOWED_ORIGINS`.
+
+Kiểm tra: `npm run check` 17/17, `scenarios:live` (admin, gọi server `103.245.237.252:8080`) 2/2.
+
+## 24. Kéo BE `deploy@8c48731` + nối API mới (24/10/2026)
+
+BE `2fb11e9` (đã chạy trên server, schema `DATABASE_fe_requests_schema.sql` đã có trong DB) giải quyết phần lớn danh sách §23. FE đã nối, chạy với dữ liệu thật:
+
+| Chức năng | API | FE |
+| :--- | :--- | :--- |
+| Mã phu bắt đầu phiên | `PUT /training-sessions/{id}/start` | `groomApi/sessionsApi.ts · start` |
+| Mã phu nhập chỉ số (server tự so ngưỡng → `PAUSED_PENDING_TRAINER`) | `POST /training-sessions/{id}/readings` `{time, heartRate, speedKmh}` | `groomApi/sessionsApi.ts · addReading` |
+| Mã phu đo nhịp hồi phục | `POST /training-sessions/{id}/recovery` `{time, heartRate}` | `groomApi/sessionsApi.ts · addRecovery` |
+| HLV điều chỉnh & cho tập tiếp | `PUT /training-sessions/{id}/resume` `{intensity, distanceM, maxHeartRate, note}` | `trainerApi/sessionsApi.ts · adjustAndContinue` |
+| Chỉ số, ngưỡng, giờ tạm dừng của phiên | `readings`, `recovery`, `maxHeartRate`, `maxSpeedKmh`, `pausedAt`, `pausedReason` trong `GET /training-plans/{id}`, `/my-schedule` | `hybridAdapter.ts · monitor()` (bỏ ngưỡng cứng 180/60) |
+| Giải đấu | `GET /tournaments` | `hybridAdapter.ts · LOADERS.tournaments` |
+| Đề xuất thi đấu | `GET/POST /race-proposals`, `PUT /{id}/owner-response`, `/submitted`, `/organizer-rejected`, `/result` | `hybridAdapter.ts · LOADERS.raceProposals`, `trainerApi/racesApi.ts`, `ownerApi/racesApi.ts` |
+| Chấn thương | `GET/POST /horses/{id}/injuries`, `DELETE /horses/{id}/injuries/{injuryId}` | `hybridAdapter.ts · injuriesOf` (GET `/horses/:id`), `vetApi/healthApi.ts` |
+| Trạng thái sức khỏe | `PUT /horses/{id}/health-status` `{status, reason}` | `vetApi/healthApi.ts · setHealthStatus` |
+| Trạng thái dọn chuồng | `PUT /stalls/{id}/clean-status` `{status}` | `hybridAdapter.ts · WRITES.stalls` |
+| Ảnh đại diện | `POST /account/avatar` (multipart `file`, ≤ 1 MB) | `authApi.ts · updateAvatar` |
+| Tên chủ ngựa | `ownerName` trong `GET /horses` | `hybridAdapter.ts · LOADERS.horses` |
+
+Bỏ ở FE: map nút “Dừng” → `execute CANCELLED` (làm giáo án kẹt `PAUSED`); Mã phu báo sự cố không còn giả lập tạm dừng phiên trong tab khi chạy backend.
+
+**Còn gửi BE** (chi tiết `../QA_Audit_HorseTrack.md`):
+1. Hủy 1 phiên vẫn chuyển giáo án `PAUSED`, không có API hủy/tiếp tục giáo án → ngựa không lập được giáo án mới. Cần `PUT /training-plans/{id}/cancel`, `/resume`; hủy phiên không pause giáo án.
+2. `PUT /execute`, `/evaluate`: HLV bất kỳ thao tác được phiên ngựa không phụ trách — thêm `horseAccessGuard.checkAssigned`.
+3. `POST /medical/vet-lock` cho cả Groom/Trainer — chỉ nên Veterinarian.
+4. Không có `@Version` (ghi đè khi thao tác đồng thời); thiếu ràng buộc unique “1 giáo án mở / ngựa”.
+5. `application.properties` còn giá trị mặc định cho mật khẩu DB và `jwt.secret`.
+6. Mã phu báo sự cố khi đang tập: chưa có API tạm dừng phiên đang chạy (`PAUSED_PENDING_TRAINER`) theo sự cố.
+7. Chưa có màn/API FE cho Quản lý CLB tạo giải (`POST /tournaments` đã có ở BE — FE cần làm màn mới).
+8. Lỗi trạng thái trả 400/500 thay vì 409/404; VNPay tạo nhiều giao dịch PENDING cho cùng hóa đơn.
+
+Kiểm tra: `npm run typecheck`, `npm run lint` 0 lỗi, `npm run scenarios` 17/17, `scenarios:live` (admin, server thật, thêm `/tournaments`, `/race-proposals`, `/horses/{id}/injuries`) 2/2.
+
+## 25. Nhật ký review Assignment 2 — phần FE (24/10/2026)
+
+BE `deploy` không có commit mới (`8c48731`). Đã làm ở FE: validate chung `PHONE_RE`/`EMAIL_RE` (`components/ui/Ht/password.ts`) cho đăng ký chủ ngựa và tạo nhân viên (SĐT nhân viên bắt buộc); họ tên chủ ngựa không bắt buộc (trống → gửi tên đăng nhập); hồ sơ ngựa: gợi ý + validate giống (`ownerApi/labels.ts · HORSE_BREEDS`), chiều cao hands 12–20, cân nặng 100–1200 kg, bỏ hộ chiếu/GCN dạng chữ, SĐT lấy từ tài khoản, kiểm tra nội dung tệp (`DocUpload.tsx`); màn duyệt bỏ “Hộ chiếu”, “GCN sức khỏe”, “Ngựa đang gửi”; hồ sơ cá nhân hiện mã chứng chỉ/chuyên môn/kinh nghiệm. Kịch bản mới `scenarios/registration-validation.spec.ts`.
+
+Việc cần BE (OTP xác thực email khi đăng ký, đăng nhập bằng email/SĐT, lưu & xem giấy tờ + kiểm tra AI, xác thực nhân viên + trạng thái mail/đăng nhập, phân công chờ xác nhận, nhật ký email, sửa hồ sơ nhân viên): xem `../YeuCau_BE_Review_Assignment2.md`.
+
+Kiểm tra: `npm run check` 19/19, `scenarios:live` (admin, server thật) 2/2.
+
+## 26. Rà soát “còn chạy dữ liệu giả” khi dùng server (24/10/2026)
+
+- FE không còn chỗ nào đọc `db.json` khi `npm run dev:be` (`http.ts` dùng `hybridAdapter`; chỉ import hằng `ROLE_HOME`).
+- **Dữ liệu giả từ server**: `GET /vaccinations` của BE viết cứng “Bolt/Arrow” → FE chỉ giữ mũi tiêm của ngựa có thật, chặn tạo lịch/ghi nhận (`notOnServer`), màn Tiêm phòng có cảnh báo `vaccination-backend-missing`.
+- **Giá trị FE tự điền**: giáo án hết hiện “Thể lực · Vừa · 1200 m”; loại + mục tiêu đọc từ `goal` thật (`planMeta`), giai đoạn đánh dấu `estimated` → hiện “Server chưa lưu cường độ / cự ly giai đoạn” và “≤ 180 bpm (ngưỡng mặc định server)”.
+- **Lưu tạm trong tab (overlay)**: bỏ hẳn — ghi không có API trên server không còn giả lập thành công, chỉ `console.warn`, màn hình luôn hiện dữ liệu server. Các WRITES gọi API thật đều trả `true` (horses lock, tasks, trainingSessions COMPLETED).
+- Sửa lỗi: Mã phu hoàn thành việc trễ SLA báo lỗi 404 `/dashboard` sau khi đã lưu.
+- Màn Người dùng bỏ thông báo sai “dữ liệu mẫu (db.json)”.
+- Gửi BE: `../YeuCau_BE_Review_Assignment2.md` mục H (tiêm phòng giả, giáo án không lưu giai đoạn, API VNPay bệnh án giả lập).
+
+Kiểm tra: `npm run check` 19/19, `scenarios:live` (admin) 2/2.
+
+## 27. Nối API hủy / chạy lại giáo án (24/10/2026)
+
+Server đã chạy BE `6baa01f` (164 API). FE nối `PUT /training-plans/{id}/cancel` `{reason 5–500 ký tự}` và `PUT /training-plans/{id}/resume` (`trainerApi/plansApi.ts · cancelPlan, resumePlan`), nút “Hủy” / “Chạy lại” ở màn Giáo án HLV (`TrainerPlans/PlanActionDialogs.tsx`). Kiểm tra trên server thật bằng lời gọi không đổi dữ liệu: resume giáo án PENDING → 400 “Chỉ cho chạy lại giáo án đang tạm dừng”, cancel lý do ngắn → 400. Kịch bản `scenarios/plan-cancel-resume.spec.ts`.
+
+## 28. Thêm vật tư / thuốc vào phác đồ (24/10/2026)
+
+Nút “Sửa phác đồ (phiên bản mới)” thay bằng “Thêm vật tư / thuốc” (`VetProtocolDetail/AddItemsDialog.tsx`), hiện ở mọi trạng thái BE cho tạo phiên bản (`REVISABLE_STATES`: chờ kiểm tồn, thiếu/đủ hàng, chờ hàng, cần đánh giá lại, BS đã xác nhận, tạm dừng chờ thanh toán) — không hiện khi đang điều trị/đã đóng. Luồng: giữ nguyên thuốc cũ + cộng thuốc mới vào giai đoạn chọn (`vetApi/labels.ts · withAddedItems`, thuốc trùng thì cộng số lượng vì BE không nhận thuốc lặp trong 1 giai đoạn) → `POST /medical-management/protocols/{id}/new-version` (bản cũ SUPERSEDED, trả hàng đã giữ, bản mới gửi kho kiểm tồn) → chuyển sang trang phiên bản mới. Ngày cần thuốc đã qua thì dùng hôm nay (BE `@FutureOrPresent`). BE chưa có API thêm thuốc vào chính phác đồ đang chạy (không tạo phiên bản) — nếu cần thêm thuốc khi **đang điều trị** phải nhờ BE làm.
+
+## 29. Bác sĩ hủy phác đồ + kho thấy bản cũ / bản mới (24/10/2026)
+
+- Bác sĩ: nút “Hủy phác đồ” (`cancel-protocol-btn`) ở mọi trạng thái chưa cấp thuốc, kể cả đang chờ kho kiểm tồn; bắt buộc lý do ≥ 10 ký tự → `PUT /medical-management/protocols/{id}/cancel` `{content: lý do}` (trước đây FE luôn gửi “Hủy phác đồ”). BE trả hàng đã giữ, lưu lý do vào note “Hủy: …”.
+- Kho: `loadProtocols` lấy thêm `GET /inventory/protocols?state=SUPERSEDED` và `?state=CANCELLED`; màn Phác đồ cần cấp có tab “Bác sĩ đã đổi / hủy” (ghi “Đã thay bằng PD-x” / “Bác sĩ hủy: lý do”), cột mã ghi `vN · thay PD-y`; trang chi tiết có bảng “Thay đổi so với PD-y” (thêm / bỏ / đổi số lượng — `vetApi/labels.ts · protocolChanges`) và cảnh báo không cấp phát với bản đã thay / đã hủy.
+- Kịch bản `scenarios/protocol-add-items.spec.ts` (4 trường hợp).

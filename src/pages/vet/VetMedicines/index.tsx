@@ -5,6 +5,7 @@ import { Icon } from '../../../components/ui/Icon';
 import { Badge, Callout, money, PageHeader, Panel } from '../../../components/ui/Ht';
 import { LoadState } from '../../../components/trainer/TrainerParts';
 import { useDebounce } from '../../../hooks/useDebounce';
+import { USE_BACKEND } from '../../../api/beClient';
 
 const avail = (i: InventoryItem) => Math.max(0, i.onHand - i.held);
 const days = (h: number) => (h % 24 === 0 ? `${h / 24} ngày` : `${h} giờ`);
@@ -75,10 +76,10 @@ export const VetMedicines: React.FC = () => {
         {shown.length === 0 && <Panel><div className="ht-empty">Không có mặt hàng phù hợp.</div></Panel>}
       </div>
 
-      <Callout tone="demo" icon="info" title="Dữ liệu tham khảo cho demo" style={{ marginTop: 24 }}>
+      {!USE_BACKEND && <Callout tone="demo" icon="info" title="Dữ liệu tham khảo cho demo" style={{ marginTop: 24 }}>
         Liều là liều tham khảo trong tài liệu thú y — liều thực tế do bác sĩ quyết định theo từng ca. “Phát hiện khi thi đấu” lấy theo danh sách FEI Detection Times 2022;
         mỗi giải/cơ quan quản lý có quy định riêng. Giá là giá ước tính để trình diễn.
-      </Callout>
+      </Callout>}
     </div>
   );
 };

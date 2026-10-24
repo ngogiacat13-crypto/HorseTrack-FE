@@ -5,6 +5,7 @@ import type { VetCase, InventoryItem, ProtoPhase, Protocol, Shipment, VetHorse }
 import { isOpenProtocol } from './labels';
 import { dateKey, isDate } from './dates';
 import { get, nextId, now, min, addHistory, lastEta, phaseRequiredBy, stockShort, watchFields, saveProtocol, goTo, releaseHeld } from './shared';
+import { ITEM_ADDABLE } from './labels';
 
 export const protocolsApi = {
   async getProtocols() {
@@ -19,6 +20,10 @@ export const protocolsApi = {
       get<Protocol[]>('/protocols', { caseId: p.caseId }), get<Shipment[]>('/shipments'),
     ]);
     return { protocol: p, horse, vetCase, versions: versions.sort((a, b) => b.version - a.version), shipments: shipments.filter((s) => s.forRef === p.id) };
+  },
+
+  async getPrescribableItems() {
+    return (await get<InventoryItem[]>('/inventory')).filter((i) => i.category !== 'Thức ăn');
   },
 
   async getProtocolForm(opts: { horseId?: string; caseId?: string; replaceId?: string }) {
@@ -81,10 +86,17 @@ export const protocolsApi = {
     return data;
   },
 
-  async cancelDraft(p: Protocol, actor: Actor) {
-    if (p.state !== 'DRAFT') throw new Error('Chỉ hủy được bản nháp.');
-    const data = await saveProtocol(p, { ...goTo(p, 'CANCELLED'), note: 'Bản nháp đã hủy.' }, { who: `BS ${actor.name}`, text: 'hủy bản nháp', at: now() });
-    await addAudit(actor, { action: 'CANCEL_PROTOCOL_DRAFT', label: 'Hủy phác đồ nháp', object: `${p.id} · ${p.horse}`, area: 'med', from: 'DRAFT', to: 'CANCELLED' });
+  async cancelDraft(p: Protocol, actor: Actor, reason = '') {
+    if (p.state === 'DRAFT') {
+      const data = await saveProtocol(p, { ...goTo(p, 'CANCELLED'), note: 'Bản nháp đã hủy.' }, { who: `BS ${actor.name}`, text: 'hủy bản nháp', at: now() });
+      await addAudit(actor, { action: 'CANCEL_PROTOCOL_DRAFT', label: 'Hủy phác đồ nháp', object: `${p.id} · ${p.horse}`, area: 'med', from: 'DRAFT', to: 'CANCELLED' });
+      return data;
+    }
+    if (!ITEM_ADDABLE.includes(p.state)) throw new Error('Chỉ hủy được phác đồ chưa cấp thuốc.');
+    const why = min(reason, 10, 'Lý do hủy phác đồ');
+    await releaseHeld(p);
+    const data = await saveProtocol(p, { ...goTo(p, 'CANCELLED'), note: `Hủy: ${why}` }, { who: `BS ${actor.name}`, text: `hủy phác đồ: ${why}`, at: now() });
+    await addAudit(actor, { action: 'CANCEL_PROTOCOL', label: 'Hủy phác đồ', object: `${p.id} · ${p.horse}`, area: 'med', from: p.state, to: 'CANCELLED', reason: why });
     return data;
   },
 

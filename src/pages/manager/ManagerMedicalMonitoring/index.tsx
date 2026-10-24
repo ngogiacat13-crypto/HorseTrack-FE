@@ -2,11 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { managerApi, ProtocolWatch, Shipment } from '../../../api/managerApi';
 import { Icon } from '../../../components/ui/Icon';
 import { Badge, Callout, Loading, PageHeader, Panel, Segmented, StatCard, Timeline, money, useToast } from '../../../components/ui/Ht';
+import { USE_BACKEND } from '../../../api/beClient';
 
 export const ManagerMedicalMonitoring: React.FC = () => {
   const toast = useToast();
-  const [data, setData] = useState<{ protocols: ProtocolWatch[]; shipments: Shipment[]; monthCost: number } | null>(null);
-  const [sel, setSel] = useState('PD-0011');
+  const [data, setData] = useState<{ protocols: ProtocolWatch[]; shipments: Shipment[]; monthCost: number; costMonth: string } | null>(null);
+  const [sel, setSel] = useState(USE_BACKEND ? '' : 'PD-0011');
   const [filter, setFilter] = useState<'open' | 'all'>('open');
 
   useEffect(() => { managerApi.getMedicalMonitoring().then(setData); }, []);
@@ -23,7 +24,7 @@ export const ManagerMedicalMonitoring: React.FC = () => {
       <PageHeader
         title="Theo dõi y tế"
         sub="Tình trạng phác đồ, vật tư và lô thuốc trễ. Quyết định chuyên môn thuộc Bác sĩ thú y."
-        actions={<button className="ht-btn ht-btn--secondary" onClick={() => toast('Đang xuất chi phí y tế tháng 10 (Excel)…')}><Icon name="download" />Xuất chi phí y tế</button>}
+        actions={USE_BACKEND ? undefined : <button className="ht-btn ht-btn--secondary" onClick={() => toast('Đang xuất chi phí y tế tháng 10 (Excel)…')}><Icon name="download" />Xuất chi phí y tế</button>}
       />
 
       <div className="ht-banner ht-banner--info">
@@ -35,7 +36,7 @@ export const ManagerMedicalMonitoring: React.FC = () => {
         <StatCard icon="heart" tone="brand" value={openCount} label="Phác đồ đang mở" />
         <StatCard icon="alarm" tone="danger" value={reviewCount} label="Cần bác sĩ đánh giá lại" meta="DELAYED_MEDICINE" metaTone="danger" alert={reviewCount > 0} />
         <StatCard icon="box" tone="info" value={stockCount} label="Chờ kho kiểm tồn" />
-        <StatCard icon="receipt" tone="gold" value={data.monthCost.toLocaleString('vi-VN')} unit="tr ₫" label="Chi phí thú y tháng này" meta="T10 tạm tính" />
+        <StatCard icon="receipt" tone="gold" value={data.monthCost.toLocaleString('vi-VN')} unit="tr ₫" label="Chi phí thú y tháng này" meta={USE_BACKEND ? `${data.costMonth} · theo phác đồ đã lập` : 'T10 tạm tính'} />
       </div>
 
       <div className="ht-cols" style={{ gridTemplateColumns: 'minmax(0,1fr) 380px' }}>

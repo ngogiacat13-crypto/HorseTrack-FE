@@ -9,6 +9,7 @@ import { Icon } from '../../../components/ui/Icon';
 import { BackButton, Badge, Callout, money, PageHeader, Panel } from '../../../components/ui/Ht';
 import { LoadState } from '../../../components/trainer/TrainerParts';
 import { PayPanel } from './PayPanel';
+import { USE_BACKEND } from '../../../api/beClient';
 
 const KIND: Record<string, string> = { TRAIN: 'Huấn luyện', STABLE: 'Lưu chuồng', MED: 'Y tế · thuốc', PENALTY: 'Phí phạt', REACTIVATION: 'Kích hoạt lại' };
 
@@ -74,7 +75,7 @@ export const OwnerInvoiceDetail: React.FC = () => {
               </div>
             </div>
           </Panel>
-          <Panel title="Các mốc thanh toán" sub="Theo đồng hồ demo · Asia/Ho_Chi_Minh">
+          <Panel title="Các mốc thanh toán" sub={USE_BACKEND ? 'Theo giờ hệ thống · Asia/Ho_Chi_Minh' : 'Theo đồng hồ demo · Asia/Ho_Chi_Minh'}>
             <div className="ht-panel__body">
               <div className="ht-milestones">
                 {milestones.map((m) => (

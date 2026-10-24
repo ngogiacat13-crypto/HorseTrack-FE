@@ -8,6 +8,7 @@ import { LoadState } from '../../../components/trainer/TrainerParts';
 import { ProtocolBadge, ProtocolPath } from '../../../components/vet/VetParts';
 import { ActionDialog, ProtocolAction } from './ActionDialog';
 import { DecisionPanel } from './DecisionPanel';
+import { AddItemsDialog } from './AddItemsDialog';
 import { LogPanel, PhaseList, ProgressPanel, ProtocolBanners, StockPanel, VersionsPanel } from './ProtocolSections';
 
 export const VetProtocolDetail: React.FC = () => {
@@ -15,6 +16,7 @@ export const VetProtocolDetail: React.FC = () => {
   const navigate = useNavigate();
   const { data, loading, error, reload } = useFetch(() => vetApi.getProtocol(id), [id]);
   const [action, setAction] = useState<ProtocolAction | null>(null);
+  const [adding, setAdding] = useState(false);
 
   if (!data) return <LoadState loading={loading} error={error} onRetry={reload} />;
   const { protocol: p, horse, vetCase, versions, shipments } = data;
@@ -40,12 +42,13 @@ export const VetProtocolDetail: React.FC = () => {
           <ProgressPanel protocol={p} onAdd={() => setAction('progress')} />
         </div>
         <div>
-          <DecisionPanel protocol={p} horse={horse} vetCase={vetCase} onAction={setAction} onNewVersion={newVersion} />
+          <DecisionPanel protocol={p} horse={horse} vetCase={vetCase} onAction={setAction} onNewVersion={newVersion} onAddItems={() => setAdding(true)} />
           <VersionsPanel current={p.id} versions={versions} />
           <LogPanel protocol={p} />
         </div>
       </div>
 
+      {adding && <AddItemsDialog protocol={p} onClose={() => setAdding(false)} onDone={(newId) => { setAdding(false); navigate(`/vet/protocols/${newId}`); }} />}
       {action && <ActionDialog protocol={p} action={action} onClose={() => setAction(null)} onDone={() => { setAction(null); reload(); }} />}
     </div>
   );

@@ -33,15 +33,12 @@ export const WeekStrip: React.FC<{ sessions: TrainingSession[]; day: string; onD
   </div>
 );
 
-const STOPPABLE = ['SCHEDULED', 'IN_PROGRESS', 'RESUMED'];
-
-export const DaySessions: React.FC<{ day: string; sessions: TrainingSession[]; onEvaluate: (s: TrainingSession) => void; onStop: (s: TrainingSession) => void }> = ({ day, sessions, onEvaluate, onStop }) => {
+export const DaySessions: React.FC<{ day: string; sessions: TrainingSession[]; onEvaluate: (s: TrainingSession) => void }> = ({ day, sessions, onEvaluate }) => {
   const navigate = useNavigate();
   const action = (s: TrainingSession) => {
     if (s.status === 'PAUSED_PENDING_TRAINER') return <Link className="ht-btn ht-btn--danger ht-btn--sm" to={`/trainer/sessions/${s.id}`}>Xử lý</Link>;
     if (s.status === 'COMPLETED' && !s.evaluation) return <button type="button" className="ht-btn ht-btn--primary ht-btn--sm" onClick={() => onEvaluate(s)}>Đánh giá</button>;
     if (s.evaluation) return <span className="ht-score-chip" title={s.evaluation.comment}>{s.evaluation.score}/10</span>;
-    if (STOPPABLE.includes(s.status)) return <button type="button" className="ht-btn ht-btn--danger ht-btn--sm" onClick={() => onStop(s)}><Icon name="alarm" />Dừng &amp; gửi bác sĩ</button>;
     if (s.status === 'STOPPED' || s.status === 'WAITING_VET') return <Link className="ht-more" to={`/trainer/sessions/${s.id}`}>Xem <Icon name="arrow" /></Link>;
     return <span style={{ color: 'var(--muted)', fontSize: 13 }}>—</span>;
   };

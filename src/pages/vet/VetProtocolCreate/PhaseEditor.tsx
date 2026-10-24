@@ -42,7 +42,7 @@ export const PhaseEditor: React.FC<Props> = ({ phase: ph, index, open, inventory
               <input id={id('name')} className="ht-input" value={ph.name} onChange={(e) => onChange({ name: e.target.value })} placeholder="VD: Chống viêm cấp" /></div>
             <div className="ht-field"><label className="ht-label" htmlFor={id('start')}>Ngày bắt đầu</label>
               <input id={id('start')} className="ht-input ht-mono" value={ph.startDate} onChange={(e) => onChange({ startDate: e.target.value })} placeholder="dd/mm/yyyy" /></div>
-            <div className="ht-field"><label className="ht-label" htmlFor={id('days')}>Thời lượng (ngày)</label>
+            <div className="ht-field"><label className="ht-label" htmlFor={id('days')}>Số ngày</label>
               <input id={id('days')} className="ht-input" type="number" min={1} value={ph.days} onChange={(e) => onChange({ days: Number(e.target.value) })} /></div>
             <div className="ht-field"><label className="ht-label" htmlFor={id('goal')}>Mục tiêu</label>
               <input id={id('goal')} className="ht-input" value={ph.goal} onChange={(e) => onChange({ goal: e.target.value })} placeholder="VD: Giảm sưng" /></div>

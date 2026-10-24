@@ -4,12 +4,12 @@ import { liveAccounts, recordFinding, type LiveRole } from './live-support';
 const SCHEDULE_RANGE = 'startDate=2020-01-01&endDate=2030-12-31';
 
 const READS: Record<LiveRole, string[]> = {
-  ClubManager: ['/account/my-profile', '/horses?page=0&size=50', '/horses?status=PENDING&page=0&size=50', '/horses?status=REJECTED&page=0&size=50', '/stalls', '/users/all', '/audit-logs/paged?page=0&size=20', '/protocols', '/protocols/shipments', '/care-tasks/overdue', '/billing/invoices?page=0&size=50', '/reports/finance'],
-  Veterinarian: ['/account/my-profile', '/horses?page=0&size=50', '/stalls', '/medical/cases', '/protocols', '/medical-management/protocols', '/medical-management/medications', '/vaccinations', '/prerace-exams?tab=CHO_KHAM', '/prerace-exams?tab=DA_CO_KET_QUA'],
-  HeadTrainer: ['/account/my-profile', '/horses?page=0&size=50', '/stalls', '/training-plans?page=0&size=50', `/training-sessions/my-schedule?${SCHEDULE_RANGE}`, '/horses/available-for-training', '/prerace-exams?tab=CHO_KHAM'],
+  ClubManager: ['/account/my-profile', '/horses?page=0&size=50', '/horses?status=PENDING&page=0&size=50', '/horses?status=REJECTED&page=0&size=50', '/stalls', '/users/all', '/audit-logs/paged?page=0&size=20', '/protocols', '/protocols/shipments', '/care-tasks/overdue', '/billing/invoices?page=0&size=50', '/reports/finance', '/tournaments', '/race-proposals'],
+  Veterinarian: ['/account/my-profile', '/horses?page=0&size=50', '/stalls', '/medical/cases', '/protocols', '/medical-management/protocols', '/medical-management/medications', '/vaccinations', '/prerace-exams?tab=CHO_KHAM', '/prerace-exams?tab=DA_CO_KET_QUA', '/tournaments', '/race-proposals'],
+  HeadTrainer: ['/account/my-profile', '/horses?page=0&size=50', '/stalls', '/training-plans?page=0&size=50', `/training-sessions/my-schedule?${SCHEDULE_RANGE}`, '/horses/available-for-training', '/prerace-exams?tab=CHO_KHAM', '/tournaments', '/race-proposals'],
   Groom: ['/account/my-profile', '/stalls', '/care-tasks/my-tasks', `/training-sessions/my-schedule?${SCHEDULE_RANGE}`, '/supply-requests/my'],
   WarehouseManager: ['/account/my-profile', '/inventory/items', '/inventory/protocols', '/inventory/supply-requests', '/inventory/purchase-orders', '/inventory/suppliers', '/inventory/stock-counts', '/inventory/transactions'],
-  HorseOwner: ['/account/my-profile'],
+  HorseOwner: ['/account/my-profile', '/tournaments', '/race-proposals'],
 };
 
 type Rows = Record<string, unknown>[];
@@ -28,7 +28,7 @@ const firstValue = async (api: APIRequestContext, token: string, path: string, k
 };
 
 const DETAIL_READS: Partial<Record<LiveRole, { list: string; keys: string[]; detail: (id: string) => string[] }[]>> = {
-  ClubManager: [{ list: '/horses?page=0&size=50', keys: ['horseId'], detail: (id) => [`/horses/${id}`, `/horses/${id}/registrations`] }],
+  ClubManager: [{ list: '/horses?page=0&size=50', keys: ['horseId'], detail: (id) => [`/horses/${id}`, `/horses/${id}/registrations`, `/horses/${id}/injuries`] }],
   HeadTrainer: [{ list: '/training-plans?page=0&size=50', keys: ['planId'], detail: (id) => [`/training-plans/${id}`, `/training-plans/assignable-staff?planId=${id}`] }],
   Veterinarian: [{ list: '/medical-management/protocols', keys: ['protocolId', 'id'], detail: (id) => [`/medical-management/protocols/${id}`] }],
   WarehouseManager: [

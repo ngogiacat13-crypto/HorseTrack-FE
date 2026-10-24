@@ -15,7 +15,11 @@ const specFor = (p: Protocol, a: ProtocolAction): Spec => {
   switch (a) {
     case 'send': return { title: `Gửi ${p.id} cho kho kiểm tồn`, label: 'Gửi kiểm tồn', ok: `${p.id} đã gửi kho kiểm tồn.`,
       sub: p.replaces ? `Khi gửi, ${p.replaces} chuyển SUPERSEDED và không được cấp phát.` : 'Kho đối chiếu tồn, lô/hạn dùng và phản hồi đủ hoặc thiếu kèm ETA.' };
-    case 'cancel': return { title: `Hủy bản nháp ${p.id}`, label: 'Hủy bản nháp', danger: true, ok: `Đã hủy bản nháp ${p.id}.` };
+    case 'cancel': return p.state === 'DRAFT'
+      ? { title: `Hủy bản nháp ${p.id}`, label: 'Hủy bản nháp', danger: true, ok: `Đã hủy bản nháp ${p.id}.` }
+      : { title: `Hủy phác đồ ${p.id}`, label: 'Hủy phác đồ', danger: true, ok: `Đã hủy ${p.id} — kho đã được báo và trả lại hàng đã giữ.`,
+        sub: 'Kho thấy phác đồ ở mục “Bác sĩ đã đổi / hủy” kèm lý do, hàng đã giữ được trả lại. Sau khi hủy, lập phác đồ mới cho ca khám này nếu cần.',
+        field: ['Lý do hủy', 'VD: Khám lại thấy cần đổi hướng điều trị, sẽ lập phác đồ mới.', 10] };
     case 'wait': return { title: 'Chờ hàng về', label: 'Chọn chờ hàng', ok: `${p.id}: chờ hàng về.`,
       sub: `Hàng thiếu dự kiến về ${short.map((l) => l.eta).filter(Boolean).join(', ') || '—'}; mốc cần thuốc ${requiredBy}.`,
       field: [late ? 'Đánh giá chờ vẫn an toàn về chuyên môn' : 'Ghi chú', 'VD: Ngựa ổn định, chườm lạnh thay thế đến khi hàng về.', late ? 15 : 10] };
@@ -37,7 +41,7 @@ export const ActionDialog: React.FC<{ protocol: Protocol; action: ProtocolAction
   const spec = specFor(p, action);
   const call: Record<ProtocolAction, () => Promise<unknown>> = {
     send: () => vetApi.sendStockCheck(p, actor),
-    cancel: () => vetApi.cancelDraft(p, actor),
+    cancel: () => vetApi.cancelDraft(p, actor, text),
     wait: () => vetApi.waitRestock(p, text, actor),
     confirm: () => vetApi.confirmProtocol(p, text, actor),
     progress: () => vetApi.addProgress(p, text, actor),

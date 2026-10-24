@@ -1,10 +1,15 @@
 import { DEMO_NOW, http } from '../http';
-import { USE_BACKEND } from '../beClient';
+import { USE_BACKEND, be } from '../beClient';
+import { invalidate } from '../hybridAdapter';
 import { addAudit, type Actor } from '../managerApi';
 import type { Horse, TrainingPlan, TrainingSession } from '../trainerApi';
 import { get, me, toMin } from './shared';
 
 const isTime = (t: string) => /^([01]\d|2[0-3]):[0-5]\d$/.test(t);
+const reload = async (id: string) => {
+  invalidate('trainingSessions', 'trainingPlans');
+  return get<TrainingSession>(`/trainingSessions/${id}`);
+};
 
 export const sessionsApi = {
   async getMySessions(actor: Actor) {
@@ -33,6 +38,10 @@ export const sessionsApi = {
     if (s.status !== 'SCHEDULED') throw new Error('Phiên không ở trạng thái chờ bắt đầu.');
     if (USE_BACKEND && !s.confirmed) throw new Error('Xác nhận nhận phiên tập trước khi bắt đầu.');
     if (s.date !== DEMO_NOW.date) throw new Error(`Phiên được lịch ngày ${s.date} — chỉ bắt đầu đúng ngày.`);
+    if (USE_BACKEND) {
+      await be.put(`/training-sessions/${s.id}/start`);
+      return reload(s.id);
+    }
     const horse = await get<Horse>(`/horses/${s.horseId}`);
     if (horse.trainingLocked) throw new Error(`${horse.name} đang bị khóa huấn luyện bởi BS ${horse.lock?.by} — không được bắt đầu (BR_01).`);
     const { data } = await http.patch<TrainingSession>(`/trainingSessions/${s.id}`, { status: 'IN_PROGRESS', startedAt: DEMO_NOW.time });
@@ -47,6 +56,11 @@ export const sessionsApi = {
     if (!(input.speed >= 0 && input.speed <= 80)) throw new Error('Tốc độ phải trong khoảng 0–80 km/h.');
     const last = s.readings[s.readings.length - 1];
     if (last && toMin(input.t) < toMin(last.t)) throw new Error(`Thời điểm đo phải sau lần đo trước (${last.t}).`);
+    if (USE_BACKEND) {
+      await be.post(`/training-sessions/${s.id}/readings`, { time: input.t, heartRate: input.hr, speedKmh: input.speed });
+      const session = await reload(s.id);
+      return { session, paused: session.status === 'PAUSED_PENDING_TRAINER' };
+    }
     const readings = [...s.readings, { t: input.t, hr: input.hr, speed: input.speed }];
     const overHr = input.hr > s.thresholds.hr;
     const overSpeed = input.speed > s.thresholds.speed;
@@ -68,6 +82,10 @@ export const sessionsApi = {
     if (s.status !== 'PAUSED_PENDING_TRAINER') throw new Error('Chỉ đo hồi phục khi phiên đang tạm dừng.');
     if (!isTime(input.t)) throw new Error('Thời điểm đo theo dạng HH:mm.');
     if (!Number.isInteger(input.hr) || input.hr < 20 || input.hr > 260) throw new Error('Nhịp tim phải là số nguyên 20–260 bpm.');
+    if (USE_BACKEND) {
+      await be.post(`/training-sessions/${s.id}/recovery`, { time: input.t, heartRate: input.hr });
+      return reload(s.id);
+    }
     const recovery = [...(s.recovery ?? []), { t: input.t, hr: input.hr, speed: 0 }];
     const { data } = await http.patch<TrainingSession>(`/trainingSessions/${s.id}`, { recovery });
     await addAudit(actor, { action: 'RECOVERY_READING', label: 'Đo nhịp tim hồi phục', object: `${s.id} · ${s.horseName}`, area: 'train', to: `${input.hr} bpm lúc ${input.t}` });

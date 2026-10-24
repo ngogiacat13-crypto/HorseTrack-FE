@@ -7,12 +7,13 @@ import { PageHeader, Panel, Tabs } from '../../../components/ui/Ht';
 import { LoadState } from '../../../components/trainer/TrainerParts';
 import { ProtocolBadge } from '../../../components/vet/VetParts';
 
-type Tab = 'check' | 'dispense' | 'waiting' | 'done';
+type Tab = 'check' | 'dispense' | 'waiting' | 'done' | 'changed';
 const GROUP: Record<Tab, Protocol['state'][]> = {
   check: ['WAITING_STOCK_CHECK'],
   dispense: ['READY_FOR_DISPENSING'],
   waiting: ['STOCK_SHORTAGE', 'STOCK_AVAILABLE', 'WAITING_RESTOCK', 'REQUIRES_VET_REVIEW'],
   done: ['IN_TREATMENT'],
+  changed: ['SUPERSEDED', 'CANCELLED'],
 };
 const NEXT: Partial<Record<Protocol['state'], string>> = {
   WAITING_STOCK_CHECK: 'Kiểm tồn & phản hồi bác sĩ',
@@ -23,6 +24,8 @@ const NEXT: Partial<Record<Protocol['state'], string>> = {
   REQUIRES_VET_REVIEW: 'Chờ bác sĩ đánh giá lại',
   IN_TREATMENT: 'Đã cấp phát',
 };
+const cancelReason = (p: Protocol) => p.note.match(/Hủy:s*(.+)$/)?.[1] ?? p.note;
+const nextStep = (p: Protocol) => p.state === 'SUPERSEDED' ? `Đã thay bằng ${p.supersededBy ?? 'phiên bản mới'} — không cấp theo bản này` : p.state === 'CANCELLED' ? `Bác sĩ hủy: ${cancelReason(p)}` : NEXT[p.state];
 
 export const WarehouseMedical: React.FC = () => {
   const navigate = useNavigate();
@@ -41,6 +44,7 @@ export const WarehouseMedical: React.FC = () => {
         { value: 'dispense', label: 'Chờ cấp phát', count: count('dispense') },
         { value: 'waiting', label: 'Chờ bác sĩ / chờ hàng', count: count('waiting') },
         { value: 'done', label: 'Đã cấp phát', count: count('done') },
+        { value: 'changed', label: 'Bác sĩ đã đổi / hủy', count: count('changed') },
       ]} />
       <Panel>
         <div style={{ overflowX: 'auto' }}>
@@ -49,12 +53,12 @@ export const WarehouseMedical: React.FC = () => {
             <tbody>
               {list.map((p) => (
                 <tr key={p.id} style={{ cursor: 'pointer' }} tabIndex={0} onClick={() => navigate(`/warehouse/medical/${p.id}`)} onKeyDown={(e) => { if (e.key === 'Enter') navigate(`/warehouse/medical/${p.id}`); }}>
-                  <td className="id">{p.id}<span className="sub">BS {p.vet}</span></td>
+                  <td className="id">{p.id}{p.version > 1 && <span className="sub" data-testid={`replaces-${p.id}`}>v{p.version}{p.replaces ? ` · thay ${p.replaces}` : ''}</span>}<span className="sub">BS {p.vet}</span></td>
                   <td><span className="strong">{p.horse}</span><span className="sub">{p.diagnosis}</span></td>
                   <td style={{ fontSize: 13 }}>{needs(p).map((n) => `${n.name} × ${n.need} ${n.unit}`).join(', ')}</td>
                   <td className="mono">{p.requiredBy}</td>
                   <td><ProtocolBadge state={p.state} delayed={p.delayed} /></td>
-                  <td style={{ fontSize: 13, fontWeight: tab === 'check' || tab === 'dispense' ? 600 : 400 }}>{NEXT[p.state]}</td>
+                  <td style={{ fontSize: 13, fontWeight: tab === 'check' || tab === 'dispense' ? 600 : 400 }}>{nextStep(p)}</td>
                 </tr>
               ))}
             </tbody>

@@ -47,32 +47,14 @@ export const sessionsApi = {
     return data;
   },
 
-  async stopSessionForVet(s: TrainingSession, input: { reason: string; heartRate?: number; speedKmh?: number; severity: 'MEDIUM' | 'HIGH' | 'CRITICAL' }, actor: Actor) {
-    if (['STOPPED', 'WAITING_VET', 'COMPLETED'].includes(s.status)) throw new Error('Buổi tập này đã kết thúc.');
-    if (input.reason.trim().length < 10) throw new Error('Mô tả dấu hiệu cho bác sĩ ít nhất 10 ký tự.');
-    if (USE_BACKEND) {
-      await be.put(`/training-sessions/${s.id}/stop`, { reason: input.reason.trim(), requestVet: true, severity: input.severity, heartRate: input.heartRate, speedKmh: input.speedKmh });
-      invalidate('trainingSessions', 'trainingPlans', 'vetCases');
-      return { ...s, status: 'WAITING_VET' as const };
-    }
-    await getMyHorse(s.horseId, actor);
-    const cases = await get<{ id: string }[]>('/vetCases');
-    const caseId = nextId(cases.map((c) => c.id), 'C-');
-    const readings = [input.heartRate ? `Nhịp tim ${input.heartRate} bpm` : '', input.speedKmh ? `tốc độ ${input.speedKmh} km/h` : ''].filter(Boolean).join(', ');
-    await http.post('/vetCases', {
-      id: caseId, horseId: s.horseId, horse: s.horseName, source: 'SESSION_STOP', sessionId: s.id, type: 'Vượt ngưỡng trong buổi tập',
-      severity: input.severity === 'CRITICAL' ? 'HIGH' : input.severity, status: 'NEW', sender: actor.name, at: DEMO_NOW.short,
-      note: `${readings ? readings + '. ' : ''}${input.reason.trim()}`,
-    });
-    const { data } = await http.patch<TrainingSession>(`/trainingSessions/${s.id}`, {
-      status: 'WAITING_VET', decision: { type: 'STOP_VET', by: actor.name, at: DEMO_NOW.time, caseId, note: input.reason.trim() },
-    });
-    await addAudit(actor, { action: 'STOP_SESSION_REQUEST_VET', label: 'Dừng phiên, gửi ca khám', object: `${s.id} · ${s.horseName}`, area: 'train', from: s.status, to: `WAITING_VET · tạo ${caseId}`, reason: input.reason.trim() });
-    return data;
-  },
-
   async adjustAndContinue(s: TrainingSession, adj: { intensity: Intensity; distanceM: number; hrLimit: number; note: string }, actor: Actor) {
     if (s.status !== 'PAUSED_PENDING_TRAINER') throw new Error('Phiên này không còn chờ quyết định.');
+    if (USE_BACKEND) {
+      if (adj.note.trim().length < 10) throw new Error('Ghi rõ nội dung điều chỉnh ít nhất 10 ký tự.');
+      await be.put(`/training-sessions/${s.id}/resume`, { intensity: adj.intensity, distanceM: adj.distanceM, maxHeartRate: adj.hrLimit, note: adj.note.trim() });
+      invalidate('trainingSessions', 'trainingPlans');
+      return get<TrainingSession>(`/trainingSessions/${s.id}`);
+    }
     await getHorseChecked(s.horseId, actor);
     const last = (s.recovery ?? [])[(s.recovery ?? []).length - 1];
     if (!last || last.hr >= s.thresholds.hr) throw new Error(`Nhịp tim hồi phục chưa về dưới ngưỡng ${s.thresholds.hr} bpm — không thể tiếp tục (BR_02).`);

@@ -1,7 +1,7 @@
 export { money } from './format';
 export { Field } from './Field';
 export { TextInput, PasswordInput } from './Inputs';
-export { PASSWORD_RE, PASSWORD_RULE, USERNAME_RE, USERNAME_RULE, scorePassword } from './password';
+export { EMAIL_RE, EMAIL_RULE, PASSWORD_RE, PASSWORD_RULE, PHONE_RE, PHONE_RULE, USERNAME_RE, USERNAME_RULE, normalizePhone, scorePassword } from './password';
 export { StrengthMeter } from './StrengthMeter';
 export { Busy } from './Busy';
 export { Callout } from './Callout';

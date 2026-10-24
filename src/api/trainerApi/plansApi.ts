@@ -3,6 +3,7 @@ import { type Actor, addAudit } from '../managerApi';
 import { be, beData, USE_BACKEND } from '../beClient';
 import { invalidate } from '../hybridAdapter';
 import type { Horse, PlanPhase, TrainingPlan } from './types';
+import { OPEN_PLAN } from './labels';
 import { get, nextId, myHorses, ofHorses, getHorseChecked, withLiveStatus, CURRENT_PLAN } from './shared';
 
 const beCreatePlan = async (horse: Horse, name: string, input: { type: string; goal: string; startDate: string; phases: PlanPhase[] }): Promise<TrainingPlan> => {
@@ -45,4 +46,33 @@ export const plansApi = {
     return data;
   },
 
+  async cancelPlan(plan: TrainingPlan, reason: string, actor: Actor) {
+    if (!OPEN_PLAN.includes(plan.status)) throw new Error('Chỉ hủy được giáo án chưa bắt đầu, đang chạy hoặc tạm dừng.');
+    const why = reason.trim();
+    if (why.length < 5 || why.length > 500) throw new Error('Lý do hủy từ 5 đến 500 ký tự.');
+    await getHorseChecked(plan.horseId, actor);
+    if (USE_BACKEND) {
+      await be.put(`/training-plans/${plan.id}/cancel`, { reason: why });
+      invalidate('trainingPlans', 'trainingSessions');
+      return;
+    }
+    const sessions = await get<{ id: string; planId: string; status: string }[]>('/trainingSessions');
+    await Promise.all(sessions.filter((s) => s.planId === plan.id && s.status === 'SCHEDULED').map((s) => http.patch(`/trainingSessions/${s.id}`, { status: 'STOPPED' })));
+    await http.patch(`/trainingPlans/${plan.id}`, { status: 'CANCELLED', pausedReason: why });
+    await addAudit(actor, { action: 'CANCEL_TRAINING_PLAN', label: 'Hủy giáo án', object: `${plan.id} · ${plan.horseName}`, area: 'train', from: plan.status, to: 'CANCELLED', reason: why });
+  },
+
+  async resumePlan(plan: TrainingPlan, actor: Actor) {
+    if (plan.status !== 'PAUSED') throw new Error('Chỉ cho chạy lại giáo án đang tạm dừng.');
+    const horse = await getHorseChecked(plan.horseId, actor);
+    if (horse.trainingLocked) throw new Error(`${horse.name} đang bị khóa huấn luyện — giáo án chạy lại khi bác sĩ mở khóa.`);
+    if (USE_BACKEND) {
+      await be.put(`/training-plans/${plan.id}/resume`);
+      invalidate('trainingPlans', 'trainingSessions');
+      return;
+    }
+    await http.patch(`/trainingPlans/${plan.id}`, { status: 'ACTIVE', pausedReason: undefined });
+    await addAudit(actor, { action: 'RESUME_TRAINING_PLAN', label: 'Cho giáo án chạy lại', object: `${plan.id} · ${plan.horseName}`, area: 'train', from: 'PAUSED', to: 'ACTIVE' });
+  },
 };
+

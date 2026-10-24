@@ -1,6 +1,7 @@
 import { http } from './http';
 import type { AuthUser, Role } from './mockData';
 import { EMAIL_TIMEOUT, USE_BACKEND, be, beData, tokenStore, type ApiResponse, type Tokens } from './beClient';
+import { resetBackendData } from './hybridAdapter';
 
 interface UserRecord {
   id: string;
@@ -48,6 +49,11 @@ interface BeProfile {
   phone?: string | null;
   roleName: string;
   isActive?: boolean;
+  avatarUrl?: string | null;
+  licenseNumber?: string | null;
+  specialization?: string | null;
+  experienceYears?: number | null;
+  clinicAffiliation?: string | null;
 }
 
 const BE_ROLE: Record<string, Role> = {
@@ -70,11 +76,16 @@ const fromProfile = (p: BeProfile, avatarUrl?: string): AuthUser => ({
   phone: p.phone ?? '',
   role: BE_ROLE[p.roleName] ?? (p.roleName as Role),
   avatar: p.fullName.charAt(0).toUpperCase(),
-  avatarUrl,
+  avatarUrl: avatarUrl ?? p.avatarUrl ?? undefined,
+  licenseNumber: p.licenseNumber ?? undefined,
+  specialization: p.specialization ?? undefined,
+  experienceYears: p.experienceYears ?? undefined,
+  clinicAffiliation: p.clinicAffiliation ?? undefined,
 });
 
 const beAuth = {
   async login(username: string, password: string): Promise<AuthUser> {
+    resetBackendData();
     const t = await beData<BeLogin>(be.post('/auth/login', { username, password }));
     tokenStore.set({ accessToken: t.accessToken, refreshToken: t.refreshToken });
     try {
@@ -88,6 +99,7 @@ const beAuth = {
   },
 
   async logout(): Promise<void> {
+    resetBackendData();
     const t = tokenStore.get();
     tokenStore.clear();
     if (!t?.refreshToken) return;
@@ -186,13 +198,5 @@ export const authApi = {
   async requestChangePasswordOtp(): Promise<string> {
     if (USE_BACKEND) return beAuth.requestChangePasswordOtp();
     return '';
-  },
-
-  async updateAvatar(userId: string, avatarUrl: string | null): Promise<AuthUser> {
-    if (avatarUrl && !/^data:image\/(png|jpeg|webp);base64,/.test(avatarUrl)) throw new Error('Ảnh đại diện không hợp lệ.');
-    if (avatarUrl && avatarUrl.length > 400_000) throw new Error('Ảnh quá lớn sau khi nén — hãy chọn ảnh khác.');
-    if (USE_BACKEND) return fromProfile(await beData<BeProfile>(be.get('/account/my-profile')), avatarUrl ?? undefined);
-    const { data } = await http.patch<UserRecord>(`/users/${userId}`, { avatarUrl });
-    return toAuthUser(data);
   },
 };

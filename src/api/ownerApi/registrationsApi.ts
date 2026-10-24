@@ -2,6 +2,8 @@ import { DEMO_NOW, http } from '../http';
 import { addAudit, type Actor, type ChecklistItem, type Registration } from '../managerApi';
 import { DENIED, get, min, myHorses, nextId, now } from './shared';
 import type { NewRegistration, UploadedDoc } from './types';
+import { HEIGHT_MAX_CM, HEIGHT_MIN_CM, cmToHands, knownBreed, parseCm } from './labels';
+import { PHONE_RE } from '../../components/ui/Ht/password';
 
 const CHECKS: [ChecklistItem['key'], string][] = [
   ['identity', 'Danh tính chủ ngựa'], ['health', 'Giấy chứng nhận sức khỏe còn hiệu lực'], ['ownership', 'Giấy tờ sở hữu hợp lệ'],
@@ -10,13 +12,16 @@ const docMeta = (d: UploadedDoc) => `${(d.name.split('.').pop() ?? '').toUpperCa
 
 const validate = (r: NewRegistration) => {
   min(r.name, 2, 'Tên ngựa');
-  min(r.breed, 2, 'Giống');
+  if (!knownBreed(r.breed)) throw new Error('Giống ngựa: chọn một giống trong danh sách gợi ý.');
   if (!Number.isInteger(r.age) || r.age < 2 || r.age > 25) throw new Error('Tuổi phải là số nguyên 2–25.');
   min(r.color, 2, 'Màu lông');
-  min(r.passport, 4, 'Số hộ chiếu ngựa');
-  if (!/^0\d{9}$/.test(r.phone)) throw new Error('Số điện thoại gồm 10 chữ số, bắt đầu bằng 0.');
+  const cm = parseCm(r.height);
+  if (!(cm >= HEIGHT_MIN_CM && cm <= HEIGHT_MAX_CM)) throw new Error(`Chiều cao đến vai tính bằng cm, từ ${HEIGHT_MIN_CM} đến ${HEIGHT_MAX_CM} (vd 165 hoặc 1m65).`);
+  if (!(r.weight >= 100 && r.weight <= 1200)) throw new Error('Cân nặng từ 100 đến 1200 kg.');
+  if (!PHONE_RE.test(r.phone)) throw new Error('Tài khoản của bạn chưa có số điện thoại hợp lệ — cập nhật tại Hồ sơ cá nhân rồi gửi lại.');
   if (!r.files.ownership) throw new Error('Tải lên giấy tờ sở hữu.');
   if (!r.files.health) throw new Error('Tải lên giấy chứng nhận sức khỏe.');
+  if (r.files.ownership.name === r.files.health.name && r.files.ownership.size === r.files.health.size) throw new Error('Giấy tờ sở hữu và giấy chứng nhận sức khỏe đang là cùng một tệp — hãy chọn đúng từng loại giấy tờ.');
 };
 
 export const registrationsApi = {
@@ -39,11 +44,11 @@ export const registrationsApi = {
     const docs: [string, UploadedDoc | null][] = [['Giấy tờ sở hữu', input.files.ownership], ['Giấy chứng nhận sức khỏe', input.files.health]];
     const reg: Registration = {
       id,
-      horse: { name: input.name.trim(), breed: input.breed.trim(), sex: input.sex, age: input.age, code: `HT-${id.slice(-4)}` },
+      horse: { name: input.name.trim(), breed: knownBreed(input.breed) ?? input.breed.trim(), sex: input.sex, age: input.age, code: `HT-${id.slice(-4)}` },
       owner: { fullName: actor.name, email: actor.email ?? '', phone: input.phone },
       submittedAt: `${DEMO_NOW.date} ${DEMO_NOW.time}`, waitingDays: 0, passed: 0, status: 'Pending', firstIssue: undefined,
       ownerExtra: { otherHorses: horses.map((h) => h.name).join(', ') || '—' },
-      horseExtra: { color: input.color.trim(), height: input.height.trim() || '—', weight: input.weight || 0, passport: input.passport.trim(), healthCert: input.healthCert.trim() || '—' },
+      horseExtra: { color: input.color.trim(), height: `${cmToHands(parseCm(input.height))} hands`, weight: input.weight || 0, passport: '—', healthCert: '—' },
       checklist: CHECKS.map(([key, label]) => ({ key, label, detail: 'Chờ Quản lý CLB kiểm tra.', passed: false })),
       attachments: docs.filter(([, d]) => d).map(([name, d]) => ({ name, meta: docMeta(d as UploadedDoc) })),
       history: [

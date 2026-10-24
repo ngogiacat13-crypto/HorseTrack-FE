@@ -34,11 +34,11 @@ export const ManagerUsers: React.FC = () => {
       {USE_BACKEND && (
         users.some((u) => u.beId !== undefined) ? (
           <Callout tone="success" style={{ margin: '12px 0 16px' }}>
-            Đang hiển thị <strong>dữ liệu thật từ database (nhánh test)</strong> — {users.length} tài khoản trong hệ thống.
+            Đang hiển thị <strong>dữ liệu thật từ database</strong> — {users.length} tài khoản trong hệ thống.
           </Callout>
         ) : (
-          <Callout tone="demo" style={{ margin: '12px 0 16px' }}>
-            Đang hiển thị <strong>dữ liệu mẫu (db.json)</strong> — Backend hiện tại chưa có API người dùng hoặc bạn chưa đăng nhập bằng tài khoản Quản lý CLB.
+          <Callout tone="danger" style={{ margin: '12px 0 16px' }}>
+            Không tải được danh sách người dùng từ server — kiểm tra kết nối hoặc đăng nhập lại bằng tài khoản Quản lý CLB.
           </Callout>
         )
       )}
