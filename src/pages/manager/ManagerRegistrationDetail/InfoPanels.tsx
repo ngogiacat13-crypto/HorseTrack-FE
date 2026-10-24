@@ -36,6 +36,15 @@ export const OwnerInfo: React.FC<{ reg: Registration }> = ({ reg: d }) => (
   </Panel>
 );
 
+const shortFileName = (name: string, max = 32) => {
+  if (name.length <= max) return name;
+  const dot = name.lastIndexOf('.');
+  const ext = dot > 0 ? name.slice(dot) : '';
+  const base = dot > 0 ? name.slice(0, dot) : name;
+  const keep = max - ext.length - 1;
+  return `${base.slice(0, Math.ceil(keep * 0.6))}…${base.slice(-Math.floor(keep * 0.4))}${ext}`;
+};
+
 export const Attachments: React.FC<{ reg: Registration }> = ({ reg: d }) => {
   const [error, setError] = useState('');
   const [opening, setOpening] = useState<number | null>(null);
@@ -58,7 +67,11 @@ export const Attachments: React.FC<{ reg: Registration }> = ({ reg: d }) => {
         {d.attachments.map((a) => (
           <div key={a.beId ?? a.name} className="ht-doc">
             <span className="ht-doc__icon" style={a.problem ? { color: 'var(--danger-ink)', borderColor: 'var(--danger-line)', background: 'var(--danger-soft)' } : undefined}><Icon name="file" /></span>
-            <div><div className="ht-doc__name">{a.name}</div><div className="ht-doc__meta">{a.meta}</div></div>
+            <div className="ht-doc__body">
+              <div className="ht-doc__name">{a.name}</div>
+              {a.file && <div className="ht-doc__file" title={a.file} data-testid="attachment-file-name">{shortFileName(a.file)}</div>}
+              <div className="ht-doc__meta">{a.meta}</div>
+            </div>
             {a.beId !== undefined && (
               <button type="button" className="ht-btn ht-btn--ghost ht-btn--sm" data-testid={`view-attachment-${a.beId}`} disabled={opening === a.beId} onClick={() => open(a.beId!)}>
                 <Icon name="eye" size={14} />{opening === a.beId ? 'Đang mở…' : 'Xem'}

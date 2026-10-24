@@ -38,7 +38,7 @@
 .ht-upload[data-ok="true"] { border-style: solid; border-color: var(--primary-light); background: var(--primary-soft); }
 .ht-upload input[type="file"] { display: none; }
 .ht-upload > div { flex: 1; min-width: 0; }
-.ht-upload small { display: block; color: var(--muted); }
+.ht-upload small { display: block; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 @media (max-width: 760px) {
   .ht-status-cards, .ht-milestones { grid-template-columns: 1fr; }

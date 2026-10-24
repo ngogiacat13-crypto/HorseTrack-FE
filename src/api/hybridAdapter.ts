@@ -455,7 +455,7 @@ const toRegistration = (h: BeHorse, history: BeRegistration[], owner: { fullName
     horseExtra: { color: h.color || '—', height: h.heightCm ? `${Number(h.heightCm)} cm` : h.heightHands ? `${Math.round(h.heightHands * 10.16)} cm` : '—', weight: h.weightKg, passport: h.passportNo || '—', healthCert: healthCert || '—' },
     checklist,
     attachments: (latest?.attachments ?? []).map((a) => ({
-      name: `${DOC_LABEL[(a.docType ?? '').toUpperCase()] ?? 'Giấy tờ'} · ${a.fileName}`, beId: a.attachmentId, mime: a.mimeType ?? undefined,
+      name: DOC_LABEL[(a.docType ?? '').toUpperCase()] ?? 'Giấy tờ', file: a.fileName, beId: a.attachmentId, mime: a.mimeType ?? undefined,
       meta: `${(a.fileName.split('.').pop() ?? '').toUpperCase()} · ${a.fileSizeKb ?? 0} KB · ${stamp(a.uploadedAt)}`,
     })),
     history: history.length
