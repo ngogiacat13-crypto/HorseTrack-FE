@@ -25,7 +25,7 @@ export const DecisionForm: React.FC<{ session: TrainingSession; horse: Horse; ph
   const submit = async () => {
     if (note.trim().length < 10) { setError(choice === 'stop' ? 'Mô tả dấu hiệu cho bác sĩ ít nhất 10 ký tự.' : 'Ghi rõ nội dung điều chỉnh ít nhất 10 ký tự.'); return; }
     const ok = choice === 'stop'
-      ? await run(async () => { const r = await trainerApi.stopAndRequestVet(s, note, actor); toast(`Đã dừng ${s.id} và gửi ca khám ${r.decision?.caseId} cho Bác sĩ thú y.`); })
+      ? await run(async () => { const r = await trainerApi.stopAndRequestVet(s, note, actor); toast(`Đã dừng ${s.id} và gửi bác sĩ${r.decision?.caseId ? ` — ca ${r.decision.caseId}` : ''}.`); })
       : await run(() => trainerApi.adjustAndContinue(s, { ...adj, note }, actor), `Đã điều chỉnh giáo án và cho ${s.horseName} tiếp tục phiên ${s.id}.`);
     if (ok) setNote('');
   };

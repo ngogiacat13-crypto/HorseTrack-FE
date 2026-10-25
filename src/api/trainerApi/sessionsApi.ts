@@ -1,5 +1,5 @@
 import { DEMO_NOW, http } from '../http';
-import { USE_BACKEND, be } from '../beClient';
+import { USE_BACKEND, be, type ApiResponse } from '../beClient';
 import { invalidate } from '../hybridAdapter';
 import { type Actor, addAudit } from '../managerApi';
 import type { Intensity, TrainingPlan, TrainingSession } from './types';
@@ -23,9 +23,11 @@ export const sessionsApi = {
     if (USE_BACKEND) {
       if (note.trim().length < 10) throw new Error('Mô tả dấu hiệu cho bác sĩ ít nhất 10 ký tự.');
       const peak = s.readings[s.readings.length - 1];
-      await be.put(`/training-sessions/${s.id}/stop`, { reason: note.trim(), requestVet: true, severity: 'HIGH', heartRate: peak?.hr });
+      const res = await be.put<ApiResponse<{ status: string; caseCode?: string | null }>>(`/training-sessions/${s.id}/stop`, { reason: note.trim(), requestVet: true, severity: 'HIGH', heartRate: peak?.hr });
+      const caseId = res.data.data?.caseCode ?? '';
       invalidate('trainingSessions', 'trainingPlans', 'vetCases');
-      return { ...s, status: 'WAITING_VET' as const };
+      const fresh = await get<TrainingSession>(`/trainingSessions/${s.id}`);
+      return { ...fresh, status: 'WAITING_VET' as const, decision: fresh.decision ?? { type: 'STOP_VET' as const, by: actor.name, at: '', note: note.trim(), caseId } };
     }
     await getMyHorse(s.horseId, actor);
     if (s.status !== 'PAUSED_PENDING_TRAINER') throw new Error('Phiên này không còn chờ quyết định.');

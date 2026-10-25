@@ -10,7 +10,6 @@ interface Props { protocol: Protocol; horse: VetHorse; vetCase: VetCase | null; 
 
 export const DecisionPanel: React.FC<Props> = ({ protocol: p, horse, vetCase, onAction, onNewVersion, onAddItems }) => {
   const short = stockShort(p);
-  const stockComplete = !!p.stock && short.length === 0;
   const requiredBy = phaseRequiredBy(p, short.map((l) => l.itemId));
   const etaLate = p.wait && dateKey(p.wait.eta) > dateKey(requiredBy);
   const btn = (cls: string, icon: React.ComponentProps<typeof Icon>['name'], label: string, onClick: () => void) => (
@@ -39,15 +38,14 @@ export const DecisionPanel: React.FC<Props> = ({ protocol: p, horse, vetCase, on
             {short.map((l) => <div key={l.itemId}>{l.name}: thiếu {l.short} {l.unit}{l.eta ? ` · về ${l.eta}` : ' · chưa có ETA'}</div>)}
           </Callout>
           {btn('ht-btn--primary', 'refresh', 'Đổi thuốc — tạo phiên bản mới', onNewVersion)}
-          {p.state === 'REQUIRES_VET_REVIEW' && btn('ht-btn--secondary', 'clock', 'Tiếp tục chờ hàng', () => onAction('wait'))}
-          {stockComplete && btn('ht-btn--secondary', 'check', 'Hàng đã đủ — xác nhận', () => onAction('confirm'))}
+          <button type="button" className="ht-btn ht-btn--secondary ht-btn--block" data-testid="protocol-wait-btn" onClick={() => onAction('wait')}>
+            <Icon name="clock" />{p.state === 'STOCK_SHORTAGE' ? 'Chờ nhập hàng' : 'Tiếp tục chờ hàng'}
+          </button>
         </>}
 
         {p.state === 'WAITING_RESTOCK' && <>
-          <Callout tone={etaLate ? 'danger' : 'info'} icon="truck">Chờ hàng về <b>{p.wait?.eta}</b>{etaLate && ` — sau mốc cần thuốc ${p.requiredBy}`}. Khi kho nhập hàng, bạn rà soát lại rồi xác nhận.</Callout>
-          {stockComplete
-            ? btn('ht-btn--primary', 'check', 'Hàng đã về — rà soát & xác nhận', () => onAction('confirm'))
-            : btn('ht-btn--secondary', 'refresh', 'Đổi thuốc — tạo phiên bản mới', onNewVersion)}
+          <Callout tone={etaLate ? 'danger' : 'info'} icon="truck">Chờ hàng về <b>{p.wait?.eta}</b>{etaLate && ` — sau mốc cần thuốc ${p.requiredBy}`}. Khi kho nhập đủ, phác đồ chuyển sang đủ hàng và nút xác nhận mới hiện.</Callout>
+          {btn('ht-btn--secondary', 'refresh', 'Đổi thuốc — tạo phiên bản mới', onNewVersion)}
         </>}
 
         {p.state === 'STOCK_AVAILABLE' && <>

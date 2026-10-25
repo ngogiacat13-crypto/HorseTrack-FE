@@ -124,7 +124,8 @@ export const warehouseBe = {
       const it = items.data.find((i) => i.id === code);
       const avail = it ? Math.max(0, it.onHand - it.held) : 0;
       if (avail >= qty) return [];
-      const ship = etaFor[code] ? ships.data.find((s) => s.id === etaFor[code]) : undefined;
+      const etaId = etaFor[code] ?? Object.entries(etaFor).find(([key]) => key.endsWith(`:${code}`))?.[1] ?? null;
+      const ship = etaId ? ships.data.find((s) => s.id === etaId) : undefined;
       return [{ itemId: beId(it ?? { id: code }), eta: iso(ship?.eta), purchaseOrderId: ship ? beId(ship) : undefined }];
     });
     const r = await beData<Parameters<typeof mapProtocol>[0]>(be.put(`/inventory/protocols/${beId(p)}/stock-check`, { shortages, note: shortages.length ? 'Kho báo thiếu' : 'Kho đủ hàng, đã giữ' }));
@@ -145,9 +146,11 @@ export const warehouseBe = {
     if (!sup) throw new Error(suppliers.some((s) => s.isActive) ? `Không có nhà cung cấp "${input.supplier.trim()}" — chọn trong danh sách hoặc thêm ở mục Nhà cung cấp.` : 'Chưa có nhà cung cấp — thêm ở mục Nhà cung cấp trước.');
     if (!sup.isActive) throw new Error(`${sup.supplierName} đã ngừng hợp tác.`);
     const ref = input.forRef ?? '';
+    const protocols = ref.startsWith('PD-') ? (await http.get<{ id: string; beId?: number }[]>('/protocols')).data : [];
+    const protocolId = protocols.find((p) => p.id === ref)?.beId ?? (ref.startsWith('PD-') ? numOrUndef(ref) : undefined);
     const r = await beData<Parameters<typeof mapPo>[0]>(be.post('/inventory/purchase-orders', {
       supplierId: sup.supplierId, purpose: ref.startsWith('PD-') ? 'PROTOCOL' : ref.startsWith('RQ-') ? 'REQUISITION' : 'RESTOCK',
-      protocolId: ref.startsWith('PD-') ? numOrUndef(ref) : undefined, requisitionId: ref.startsWith('RQ-') ? numOrUndef(ref) : undefined,
+      protocolId, requisitionId: ref.startsWith('RQ-') ? numOrUndef(ref) : undefined,
       expectedDeliveryDate: iso(input.eta), requiredBy: iso(input.requiredBy), note: ref || undefined,
       lines: input.lines.map((l) => ({ itemId: ids.get(l.itemId) ?? numOrUndef(l.itemId), quantity: l.qty })),
     }));

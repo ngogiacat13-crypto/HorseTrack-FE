@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { Protocol } from '../../../api/vetApi';
+import { USE_BACKEND } from '../../../api/beClient';
 import { previewStock, ShipmentOrder, StockItem, warehouseApi } from '../../../api/warehouseApi';
 import { useActor } from '../../../auth/AuthContext';
 import { useAction } from '../../../hooks/useAction';
@@ -12,14 +13,16 @@ export const StockCheckForm: React.FC<{ protocol: Protocol; items: StockItem[]; 
   const { busy, error, run } = useAction(onDone);
   const remaining = p.phases.filter((ph) => !(p.approvedPhases ?? []).includes(ph.no));
   const [phaseNos, setPhaseNos] = useState<number[]>(remaining.map((ph) => ph.no));
-  const lines = previewStock(p, items, phaseNos);
+  const checkedPhases = USE_BACKEND ? p.phases.map((ph) => ph.no) : phaseNos;
+  const lines = previewStock(p, items, checkedPhases);
   const short = lines.filter((l) => l.short > 0);
   const [eta, setEta] = useState<Record<string, string>>({});
-  const submit = () => run(() => warehouseApi.respondStock(p, Object.fromEntries(short.map((l) => [`${l.phaseNo}:${l.itemId}`, eta[`${l.phaseNo}:${l.itemId}`] || null])), actor, phaseNos),
-    short.length ? `${p.id}: đã phản hồi ${phaseNos.length} giai đoạn.` : `${p.id}: đã duyệt ${phaseNos.length} giai đoạn.`);
+  const submit = () => run(() => warehouseApi.respondStock(p, Object.fromEntries(short.map((l) => [`${l.phaseNo}:${l.itemId}`, eta[`${l.phaseNo}:${l.itemId}`] || null])), actor, checkedPhases),
+    short.length ? `${p.id}: đã phản hồi kho.` : `${p.id}: đã giữ đủ hàng.`);
 
   return (
-    <Panel title="Kiểm tồn & phản hồi" sub={`Đối chiếu thuốc cho ${phaseNos.length} giai đoạn đang chọn · tồn khả dụng.`}>
+    <Panel title="Kiểm tồn & phản hồi" sub={USE_BACKEND ? 'Đối chiếu toàn bộ thuốc của phác đồ với tồn khả dụng trên server.' : `Đối chiếu thuốc cho ${checkedPhases.length} giai đoạn đang chọn · tồn khả dụng.`}>
+      {!USE_BACKEND && (
       <div className="ht-panel__body" style={{ display: 'grid', gap: 8, paddingBottom: 0 }}>
         <div className="ht-label">Chọn giai đoạn cần duyệt</div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8 }}>
@@ -27,6 +30,7 @@ export const StockCheckForm: React.FC<{ protocol: Protocol; items: StockItem[]; 
         </div>
         <Callout tone="info">Chỉ giai đoạn được chọn mới được kiểm tồn và giữ thuốc. Giai đoạn còn lại sẽ xử lý khi thuốc nhập về.</Callout>
       </div>
+      )}
       <table className="ht-table">
         <thead><tr><th>Vật tư</th><th className="num">Cần</th><th className="num">Khả dụng</th><th className="num">Sẽ giữ</th><th>Lô xuất trước (FEFO)</th><th>Thiếu · ETA</th></tr></thead>
         <tbody>
@@ -63,8 +67,8 @@ export const StockCheckForm: React.FC<{ protocol: Protocol; items: StockItem[]; 
         )}
         {error && <Callout tone="danger">{error}</Callout>}
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <button type="button" className="ht-btn ht-btn--primary" onClick={submit} disabled={busy || !phaseNos.length}>
-            <Busy busy={busy} label="Đang gửi…"><Icon name="send" />{short.length ? `Giữ phần có sẵn & báo thiếu (${phaseNos.length} giai đoạn)` : `Duyệt đủ thuốc cho ${phaseNos.length} giai đoạn`}</Busy>
+          <button type="button" className="ht-btn ht-btn--primary" onClick={submit} disabled={busy || !checkedPhases.length}>
+            <Busy busy={busy} label="Đang gửi…"><Icon name="send" />{short.length ? 'Giữ phần có sẵn và báo thiếu' : 'Đủ hàng — giữ và gửi bác sĩ xác nhận'}</Busy>
           </button>
         </div>
       </div>

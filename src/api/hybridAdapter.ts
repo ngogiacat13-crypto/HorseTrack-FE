@@ -48,8 +48,26 @@ const readingsFromNotes = (notes: string | null | undefined, time: string): Sess
   return [{ t: time, hr: Number(hr[1]), speed: speed ? Number(speed[1]) : 0 }];
 };
 interface BeReading { time?: string | null; recordedAt?: string | null; heartRate: number; speedKmh?: number | string | null }
-interface BeMonitor { notes?: string | null; sessionDate: string; maxHeartRate?: number | null; maxSpeedKmh?: number | string | null; startedAt?: string | null; pausedAt?: string | null; pausedReason?: string | null; readings?: BeReading[] | null; recovery?: BeReading[] | null }
+interface BeMonitor { notes?: string | null; sessionDate: string; maxHeartRate?: number | null; maxSpeedKmh?: number | string | null; startedAt?: string | null; pausedAt?: string | null; pausedReason?: string | null; readings?: BeReading[] | null; recovery?: BeReading[] | null; vetCaseCode?: string | null; status?: string }
 const toReadings = (rows?: BeReading[] | null): SessionReading[] => (rows ?? []).map((r) => ({ t: r.time || hhmm(r.recordedAt), hr: r.heartRate, speed: Number(r.speedKmh ?? 0) }));
+const INTENSITY_VI: Record<string, string> = { LOW: 'Nhẹ', MEDIUM: 'Vừa', HIGH: 'Cao', 'Nhẹ': 'Nhẹ', 'Vừa': 'Vừa', 'Cao': 'Cao' };
+const decisionFrom = (s: BeMonitor) => {
+  const status = (s.status ?? '').toUpperCase();
+  const caseId = s.vetCaseCode || s.notes?.match(/Ca khám\s+(C-\d+|#\d+)/)?.[1];
+  if (caseId && (status === 'WAITING_VET' || status === 'STOPPED' || status === 'CANCELLED')) {
+    return { type: 'STOP_VET', by: 'HLV', at: s.pausedAt ? hhmm(s.pausedAt) : '', note: s.pausedReason || '', caseId };
+  }
+  const part = (s.notes ?? '').split(' | ').reverse().find((p) => p.includes('cho tập tiếp'));
+  if (part) {
+    const intensity = part.match(/cường độ ([^,)]+)/)?.[1]?.trim();
+    const distanceM = Number(part.match(/cự ly (\d+) m/)?.[1] ?? 0);
+    const hrLimit = Number(part.match(/-> (\d+) bpm/)?.[1] ?? s.maxHeartRate ?? 0);
+    const by = part.match(/^HLV (.+?) cho tập tiếp/)?.[1] ?? 'HLV';
+    const note = part.includes(': ') ? part.slice(part.indexOf(': ') + 2) : '';
+    return { type: 'ADJUST_CONTINUE', by, at: '', note, adjustment: { intensity: INTENSITY_VI[intensity ?? ''] ?? 'Vừa', distanceM, hrLimit } };
+  }
+  return null;
+};
 const monitor = (s: BeMonitor) => ({
   thresholds: { hr: s.maxHeartRate ?? 180, speed: Number(s.maxSpeedKmh ?? 60) },
   readings: s.readings?.length ? toReadings(s.readings) : readingsFromNotes(s.notes, hhmm(s.sessionDate)),
@@ -204,7 +222,7 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
         id: String(s.sessionId), horseId: plans[i].horseId, horseName: d!.horseName, planId: String(d!.planId), phaseNo: s.phaseNo ?? 1, label: s.activityType,
         date: ddmmyyyy(s.sessionDate), time: hhmm(s.sessionDate), groom: s.assignedToName ?? '—', groomId: s.assignedToId ? String(s.assignedToId) : null,
         track: (s.notes ?? '').split(' · Ghi nhận:')[0] || '—', metrics: (s.notes ?? '').split(' · Ghi nhận:')[1]?.split(',').map((m) => m.trim()).filter(Boolean),
-        status: SESSION[s.status?.toUpperCase()] ?? 'SCHEDULED', confirmed: s.status?.toUpperCase() === 'CONFIRMED', ...monitor(s), decision: null,
+        status: SESSION[s.status?.toUpperCase()] ?? 'SCHEDULED', confirmed: s.status?.toUpperCase() === 'CONFIRMED', ...monitor(s), decision: decisionFrom(s),
         evaluation: s.evaluationScore ? { score: s.evaluationScore, comment: s.evaluationComment ?? '', by: s.evaluatedBy ?? 'HLV', at: s.evaluatedAt ?? '' } : null,
       })));
     }
@@ -215,7 +233,7 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
       id: String(s.sessionId), horseId: (byName(horses, s.horseName)?.id as string) ?? '', horseName: s.horseName,
       planId: (plans.find((p) => p.name === s.planName)?.id as string) ?? '', phaseNo: 1, label: s.activityType,
       date: ddmmyyyy(s.sessionDate), time: hhmm(s.sessionDate), groom: u.role === 'Groom' ? u.name : '—', track: zone(s.stallZone),
-      status: SESSION[s.status?.toUpperCase()] ?? 'SCHEDULED', confirmed: s.status?.toUpperCase() === 'CONFIRMED', ...monitor(s), decision: null,
+      status: SESSION[s.status?.toUpperCase()] ?? 'SCHEDULED', confirmed: s.status?.toUpperCase() === 'CONFIRMED', ...monitor(s), decision: decisionFrom(s),
       evaluation: s.evaluationScore ? { score: s.evaluationScore, comment: s.evaluationComment ?? '', by: s.evaluatedBy ?? 'HLV', at: s.evaluatedAt ?? '' } : null,
     }));
   },
@@ -418,7 +436,7 @@ const ownerProgress = async () => {
     const sessions: Row[] = (p.sessions ?? []).map((x) => ({
       id: String(x.sessionId), horseId: h.id, horseName: h.name, planId: String(p.planId), phaseNo: 1, label: x.activityType,
       date: ddmmyyyy(x.sessionDate), time: hhmm(x.sessionDate), groom: x.assignedToName ?? '—', track: (x.notes ?? '').split(' · Ghi nhận:')[0] || '—',
-      status: SESSION[x.status?.toUpperCase()] ?? 'SCHEDULED', confirmed: x.status?.toUpperCase() === 'CONFIRMED', ...monitor(x), decision: null,
+      status: SESSION[x.status?.toUpperCase()] ?? 'SCHEDULED', confirmed: x.status?.toUpperCase() === 'CONFIRMED', ...monitor(x), decision: decisionFrom(x),
       evaluation: x.evaluationScore ? { score: x.evaluationScore, comment: x.evaluationComment ?? '', by: x.evaluatedBy ?? 'HLV', at: x.evaluatedAt ?? '' } : null,
     }));
     return { plan, sessions };
