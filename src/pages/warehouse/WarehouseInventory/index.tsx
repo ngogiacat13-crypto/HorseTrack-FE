@@ -7,6 +7,8 @@ import { PageHeader, StatCard } from '../../../components/ui/Ht';
 import { LoadState } from '../../../components/trainer/TrainerParts';
 import { InventoryTable } from './InventoryTable';
 import { SafetyDialog, StockMoveDialog } from './StockDialogs';
+import { ItemFormDialog, NewItemButton } from '../../../features/inventory-items/ItemFormDialog';
+import { USE_BACKEND } from '../../../api/beClient';
 import { useDebounce } from '../../../hooks/useDebounce';
 
 export const WarehouseInventory: React.FC = () => {
@@ -17,6 +19,7 @@ export const WarehouseInventory: React.FC = () => {
   const query = useDebounce(q);
   const [moveFor, setMoveFor] = useState<StockItem | null>(null);
   const [safetyFor, setSafetyFor] = useState<StockItem | null>(null);
+  const [editFor, setEditFor] = useState<StockItem | null>(null);
 
   const items = useMemo(() => data?.items ?? [], [data]);
   const expiring = (i: StockItem) => (i.lots ?? []).some((l) => l.qty > 0 && monthsLeft(l.expiry) <= 2);
@@ -34,6 +37,7 @@ export const WarehouseInventory: React.FC = () => {
   return (
     <div className="ht ht-page">
       <PageHeader title="Danh sách tồn kho" sub="Tồn thực tế, lượng đã giữ cho phác đồ, số khả dụng và các lô hàng dự kiến về."
+        actions={<NewItemButton onDone={reload} />}
       />
 
       <div className="ht-stats">
@@ -64,9 +68,10 @@ export const WarehouseInventory: React.FC = () => {
         <div className="ht-search-input" style={{ flex: 1, minWidth: 220 }}><Icon name="search" /><input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Tìm tên, mã vật tư, nhóm…" aria-label="Tìm vật tư" /></div>
       </div>
 
-      <InventoryTable items={list} incoming={data.incoming} onMove={setMoveFor} onSafety={setSafetyFor} />
+      <InventoryTable items={list} incoming={data.incoming} onMove={setMoveFor} onSafety={setSafetyFor} onEdit={USE_BACKEND ? setEditFor : undefined} />
 
       {moveFor && <StockMoveDialog item={moveFor} onClose={() => setMoveFor(null)} onDone={() => { setMoveFor(null); reload(); }} />}
+      {editFor && <ItemFormDialog beId={(editFor as StockItem & { beId?: number }).beId ?? null} title={`Sửa vật tư · ${editFor.name}`} onClose={() => setEditFor(null)} onDone={() => { setEditFor(null); reload(); }} />}
       {safetyFor && <SafetyDialog item={safetyFor} onClose={() => setSafetyFor(null)} onDone={() => { setSafetyFor(null); reload(); }} />}
     </div>
   );

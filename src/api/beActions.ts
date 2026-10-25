@@ -141,8 +141,9 @@ export const warehouseBe = {
   async createShipment(input: { supplier: string; eta: string; lines: { itemId: string; qty: number }[]; forRef: string; requiredBy?: string }) {
     if (!input.lines.length) throw new Error('Thêm ít nhất 1 mặt hàng.');
     const [suppliers, ids] = await Promise.all([beData<{ supplierId: number; supplierName: string; isActive: boolean }[]>(be.get('/inventory/suppliers')), itemIds()]);
-    const sup = suppliers.find((s) => s.supplierName.toLowerCase() === input.supplier.trim().toLowerCase()) ?? suppliers.find((s) => s.isActive);
-    if (!sup) throw new Error('Chưa có nhà cung cấp trong hệ thống.');
+    const sup = suppliers.find((s) => s.supplierName.toLowerCase() === input.supplier.trim().toLowerCase()) ;
+    if (!sup) throw new Error(suppliers.some((s) => s.isActive) ? `Không có nhà cung cấp "${input.supplier.trim()}" — chọn trong danh sách hoặc thêm ở mục Nhà cung cấp.` : 'Chưa có nhà cung cấp — thêm ở mục Nhà cung cấp trước.');
+    if (!sup.isActive) throw new Error(`${sup.supplierName} đã ngừng hợp tác.`);
     const ref = input.forRef ?? '';
     const r = await beData<Parameters<typeof mapPo>[0]>(be.post('/inventory/purchase-orders', {
       supplierId: sup.supplierId, purpose: ref.startsWith('PD-') ? 'PROTOCOL' : ref.startsWith('RQ-') ? 'REQUISITION' : 'RESTOCK',

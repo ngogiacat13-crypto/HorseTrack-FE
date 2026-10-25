@@ -9,6 +9,7 @@ import { UserAction, UserTable } from './UserTable';
 import { RbacMatrix } from './RbacMatrix';
 import { AssignmentDialog, LockUserDialog } from './UserDialogs';
 import { CreateStaffDialog } from './CreateStaffDialog';
+import { OwnerServiceDialog } from '../../../features/owner-service/OwnerServiceDialog';
 
 export const ManagerUsers: React.FC = () => {
   const { user: me } = useAuth();
@@ -53,10 +54,11 @@ export const ManagerUsers: React.FC = () => {
         )
       )}
 
-      {tab === 'users' ? <UserTable users={users} meId={me?.userId} onAction={(kind, user) => (kind === 'resend' ? void resend(user) : setDlg({ kind, user }))} /> : <RbacMatrix />}
+      {tab === 'users' ? <UserTable users={users} meId={me?.userId} showService={USE_BACKEND} onAction={(kind, user) => (kind === 'resend' ? void resend(user) : setDlg({ kind, user }))} /> : <RbacMatrix />}
 
       {creating && <CreateStaffDialog onClose={() => setCreating(false)} onDone={(u) => { setUsers((xs) => [u, ...xs!]); setCreating(false); setTab('users'); }} />}
       {dlg?.kind === 'assign' && <AssignmentDialog user={dlg.user} data={assignmentData} onClose={() => setDlg(null)} onDone={() => { setDlg(null); managerApi.getGroomAssignments().then(setAssignmentData); }} />}
+      {dlg?.kind === 'service' && dlg.user.beId && <OwnerServiceDialog ownerId={dlg.user.beId} ownerName={dlg.user.fullName} onClose={() => setDlg(null)} />}
       {dlg && (dlg.kind === 'lock' || dlg.kind === 'unlock') && <LockUserDialog user={dlg.user} lock={dlg.kind === 'lock'} onClose={() => setDlg(null)} onDone={applied} />}
     </div>
   );

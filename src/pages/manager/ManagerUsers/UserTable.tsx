@@ -6,10 +6,10 @@ import { ROLE_LABEL } from '../../../components/layout/nav';
 import { useDebounce } from '../../../hooks/useDebounce';
 
 type Role = ManagedUser['role'];
-export type UserAction = 'lock' | 'unlock' | 'assign' | 'resend';
+export type UserAction = 'lock' | 'unlock' | 'assign' | 'resend' | 'service';
 const ROLES = Object.keys(ROLE_LABEL) as Role[];
 
-export const UserTable: React.FC<{ users: ManagedUser[]; meId?: string; onAction: (kind: UserAction, u: ManagedUser) => void }> = ({ users, meId, onAction }) => {
+export const UserTable: React.FC<{ users: ManagedUser[]; meId?: string; onAction: (kind: UserAction, u: ManagedUser) => void; showService?: boolean }> = ({ users, meId, onAction, showService }) => {
   const [q, setQ] = useState('');
   const query = useDebounce(q);
   const [roleF, setRoleF] = useState('');
@@ -56,6 +56,7 @@ export const UserTable: React.FC<{ users: ManagedUser[]; meId?: string; onAction
                       : <button type="button" className="ht-btn ht-btn--secondary ht-btn--sm" onClick={() => onAction('unlock', u)}><Icon name="unlock" />Mở khóa</button>}
                     {u.emailConfirmed === false && u.status === 'ACTIVE' && <button type="button" className="ht-btn ht-btn--ghost ht-btn--sm" data-testid={`resend-confirm-${u.username}`} onClick={() => onAction('resend', u)}><Icon name="mail" />Gửi lại mail</button>}
                     {(u.role === 'Groom' || u.role === 'HeadTrainer') && u.status === 'ACTIVE' && u.emailConfirmed !== false && <button type="button" className="ht-btn ht-btn--ghost ht-btn--sm" data-testid={`assign-${u.username}`} onClick={() => onAction('assign', u)}><Icon name="stable" />{u.role === 'HeadTrainer' ? 'Phân công ngựa' : 'Phân khu'}</button>}
+                    {showService && u.role === 'HorseOwner' && u.beId && <button type="button" className="ht-btn ht-btn--ghost ht-btn--sm" data-testid={`owner-service-${u.username}`} onClick={() => onAction('service', u)}><Icon name="card" />Dịch vụ</button>}
                   </>}
                 </div>
               </td>

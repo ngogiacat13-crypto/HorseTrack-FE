@@ -793,3 +793,15 @@ BE `4125816` (đã chạy trên server, 167 API).
 Không nối (có lý do): `/payments/vnpay/return`, `/ipn` (VNPay gọi BE); `/owner/payments/medical-records/{id}/vnpay`, `/veterinary/medical-records`, `/manager/medical-records/{id}/approve` (luồng bệnh án cũ, đã thay bằng phác đồ); `/account/avatar` (đã bỏ theo yêu cầu); `/prerace-exams` GET (đã thay bằng `/race-proposals`); `/vaccinations/schedule`, `/execute` (BE vẫn giả lập — mục H1); các GET chi tiết (`/inventory/items/{id}`, `/inventory/purchase-orders/{id}`, `/race-proposals/{id}`, `/diet-requests/{id}`, `/owner/training/my-horses`) — FE đã có dữ liệu từ API danh sách; `/training-plans/dashboard-stats` (FE tự tính từ danh sách). Chưa có màn hình: `PUT /inventory/items/{id}` (sửa thông tin vật tư), `PUT /inventory/suppliers/{id}`, `GET /billing/owners/{id}/service`, `DELETE /horses/{id}/registration-attachments/{aid}`.
 
 Kiểm tra server (QL CLB): `GET /email-logs` 200 (0 bản ghi — bảng mới, chưa có mail gửi), không có nhân viên chờ xác nhận.
+
+## 33. BE `cb075b8` + 4 nhóm API cuối (25/10/2026)
+
+- Tiêm phòng thật: `GET /vaccinations`, `POST /vaccinations/schedule`, `POST /vaccinations/{code}/execute` (`src/api/vetApi/vaccinationsApi.ts`, loader `vaccinations`). Bỏ cảnh báo dữ liệu giả.
+- Giai đoạn giáo án: `POST /training-plans` gửi `type` + `phases[]`; loader đọc `phases` và `phaseNo` của phiên.
+- Lịch sử cấp phát: `GET /inventory/protocols/{id}/dispensing` → panel `src/features/dispensing-history/` ở chi tiết phác đồ (bác sĩ, kho).
+- Sửa / thêm vật tư: `GET|PUT /inventory/items/{id}`, `POST /inventory/items` → `src/features/inventory-items/` (nút “Thêm vật tư”, “Sửa” ở `/warehouse`).
+- Nhà cung cấp: `GET|POST /inventory/suppliers`, `PUT /inventory/suppliers/{id}` → `src/features/suppliers/`. Ô nhà cung cấp khi tạo đơn nhập lấy danh sách thật; không còn tự chọn NCC đầu tiên khi gõ sai tên.
+- Trạng thái dịch vụ chủ ngựa: `GET /billing/owners/{id}/service` (+ suspend/reactivate) → `src/features/owner-service/`, nút “Dịch vụ” ở `/manager/users`. Đã kiểm tra live: 200.
+- Gỡ giấy tờ hồ sơ: `DELETE /horses/{horseId}/registration-attachments/{attachmentId}` (chỉ chủ ngựa, hồ sơ PENDING_REVIEW) → `src/features/registration-attachments/` ở `/owner/registrations`.
+- Không nối (cố ý): `POST /account/avatar` (đã bỏ đổi ảnh), `/payments/vnpay/ipn|return` (server gọi), `/veterinary/medical-records`, `/manager/medical-records/{id}/approve`, `/owner/payments/medical-records/{id}/vnpay` (luồng y tế cũ, đã thay bằng phác đồ), `/horses/available-for-training`, `/training-plans/dashboard-stats`, `/owner/training/my-horses` (FE đã có dữ liệu tương đương từ API khác).
+- Chưa kiểm tra live được phần Kho / Chủ ngựa: chỉ tài khoản admin đăng nhập được, admin gọi `/inventory/*` nhận 403 đúng phân quyền.

@@ -8,6 +8,7 @@ import { Icon } from '../../../components/ui/Icon';
 import { Callout, PageHeader, Panel, Tabs, useToast } from '../../../components/ui/Ht';
 import { LoadState } from '../../../components/trainer/TrainerParts';
 import { ShipmentAction, ShipmentDetail, ShipmentTable } from './ShipmentPanels';
+import { SuppliersButton } from '../../../features/suppliers/Suppliers';
 import { CreateShipmentDialog, ReasonDialog, ReceiveDialog } from './ShipmentDialogs';
 
 type Tab = 'open' | 'received' | 'cancelled';
@@ -39,7 +40,7 @@ export const WarehouseShipments: React.FC = () => {
   return (
     <div className="ht ht-page">
       <PageHeader title="Đơn nhập hàng" sub="Theo dõi Đã đặt → Đang giao → Bị trễ → Đã nhận / Đã hủy. Chỉ hàng đã nhận thực tế mới được cộng vào tồn."
-        actions={<button type="button" className="ht-btn ht-btn--primary" onClick={() => setCreateOpen(true)}><Icon name="truck" />Tạo đơn nhập</button>} />
+        actions={<><SuppliersButton /><button type="button" className="ht-btn ht-btn--primary" onClick={() => setCreateOpen(true)}><Icon name="truck" />Tạo đơn nhập</button></>} />
 
       {data.needs.length > 0 && (
         <div className="ht-banner ht-banner--warning" role="status">
