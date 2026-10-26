@@ -3,7 +3,7 @@ import { expect, type Page } from '@playwright/test';
 
 export type Role = 'ClubManager' | 'HeadTrainer' | 'Veterinarian' | 'Groom' | 'HorseOwner' | 'WarehouseManager';
 
-interface SeedUser { username: string; password: string; role: Role; status?: string }
+interface SeedUser { username: string; password: string; fullname: string; role: Role; status?: string }
 
 const seedUsers = (JSON.parse(readFileSync(new URL('../db.json', import.meta.url), 'utf8')) as { users: SeedUser[] }).users;
 

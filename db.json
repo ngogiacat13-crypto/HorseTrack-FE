@@ -1199,8 +1199,8 @@
         { "phaseNo": 2, "status": "WAITING_PAYMENT" }
       ],
       "phaseBilling": [
-        { "phaseNo": 1, "invoiceId": "INV-0051", "amount": 2200000, "status": "PAID" },
-        { "phaseNo": 2, "invoiceId": "INV-0052", "amount": 800000, "status": "UNPAID", "notice": "Chủ ngựa cần thanh toán trước khi bắt đầu giai đoạn 2." }
+        { "phaseNo": 1, "invoiceId": "INV-0053", "amount": 2200000, "status": "PAID" },
+        { "phaseNo": 2, "invoiceId": "INV-0054", "amount": 800000, "status": "UNPAID", "notice": "Chủ ngựa cần thanh toán trước khi bắt đầu giai đoạn 2." }
       ],
       "log": [
         {
@@ -2013,7 +2013,7 @@
       ]
     },
     {
-      "id": "INV-0051",
+      "id": "INV-0053",
       "horse": "Wind",
       "owner": "Vũ Thị Mai",
       "period": "09/2026",
@@ -2021,14 +2021,14 @@
       "amount": 2200000,
       "overdueDays": 0,
       "status": "PAID",
-      "paidRef": "TXN-00051",
+      "paidRef": "TXN-00053",
       "horseId": "h-wind",
       "issuedAt": "26/09/2026",
       "service": "Phác đồ PD-0009 · giai đoạn 1",
       "lines": [{ "label": "Phác đồ PD-0009 · Kháng sinh · GĐ1", "kind": "MED", "period": "09/2026", "amount": 2200000, "protocolId": "PD-0009", "phaseNo": 1 }]
     },
     {
-      "id": "INV-0052",
+      "id": "INV-0054",
       "horse": "Wind",
       "owner": "Vũ Thị Mai",
       "period": "10/2026",
