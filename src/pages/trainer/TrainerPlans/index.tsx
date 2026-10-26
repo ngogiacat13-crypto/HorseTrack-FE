@@ -22,14 +22,15 @@ export const TrainerPlans: React.FC = () => {
   if (!data) return <LoadState loading={loading} error={error} onRetry={reload} />;
 
   const withPlan = new Set(plans.filter((p) => p.status === 'PLANNED' || p.status === 'ACTIVE' || p.status === 'PAUSED').map((p) => p.horseId));
-  const noPlan = data.horses.filter((h) => !withPlan.has(h.id));
+  const pool = data.availableIds ? data.horses.filter((h) => data.availableIds!.includes(h.id)) : data.horses;
+  const noPlan = pool.filter((h) => !withPlan.has(h.id));
   const count = (f: Filter) => plans.filter((p) => MATCH[f].includes(p.status)).length;
 
   return (
     <div className="ht ht-page">
       <PageHeader
         title="Giáo án huấn luyện"
-        sub="Kế hoạch nhiều giai đoạn cho từng ngựa: cường độ, quãng đường, số buổi và ngưỡng nhịp tim."
+        sub="Mỗi giáo án là một giai đoạn: cường độ, quãng đường, số buổi và ngưỡng nhịp tim."
         actions={<Link className="ht-btn ht-btn--primary" to="/trainer/plans/new"><Icon name="calendar" />Tạo giáo án</Link>}
       />
 

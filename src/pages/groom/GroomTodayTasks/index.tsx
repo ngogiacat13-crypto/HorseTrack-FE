@@ -17,6 +17,7 @@ const weekday = (ddmmyyyy: string) => {
   return WEEKDAYS[new Date(y, m - 1, d).getDay()];
 };
 import { CompleteTaskDialog } from './CompleteTaskDialog';
+import { PendingAssignments } from '../../../features/assignment-confirm/PendingAssignments';
 
 type Tab = 'ALL' | TaskType;
 const TYPE_LABEL: Record<TaskType, string> = { FEED: 'Cho ăn', CLEAN: 'Dọn chuồng', GROOM: 'Chải lông', COOL: 'Chườm lạnh', OTHER: 'Khác' };
@@ -41,6 +42,7 @@ export const GroomTodayTasks: React.FC = () => {
         actions={<span style={{ display: 'inline-flex', gap: 8 }}>
           <Badge tone="neutral">{tasks.length} việc</Badge><Badge tone="success">{done} xong</Badge>{late > 0 && <Badge tone="danger">{late} quá hạn</Badge>}
         </span>} />
+      <PendingAssignments />
 
       {alerts.map((s) => (
         <div key={s.id} className="ht-banner" role="alert">

@@ -61,17 +61,22 @@ export const DecisionPanel: React.FC<Props> = ({ protocol: p, horse, vetCase, on
           {btn('ht-btn--primary', 'check', 'Xác nhận phác đồ', () => onAction('confirm'))}
         </>}
 
-        {p.state === 'READY_FOR_DISPENSING' && <Callout tone="success" icon="box">Đã xác nhận. Quản lý kho chuẩn bị và cấp phát theo phác đồ này; trạng thái chuyển “Đang điều trị” khi cấp xong.</Callout>}
+        {p.state === 'READY_FOR_DISPENSING' && <Callout tone="success" icon="box">Đã xác nhận. Kho cấp phát xong thì phác đồ chuyển “Chờ thanh toán”. Chủ ngựa trả giai đoạn 1 xong mới sang “Đang điều trị”.</Callout>}
+        {p.state === 'ON_HOLD_PAYMENT' && <Callout tone="demo" icon="warn">Đã cấp thuốc và bác sĩ đã xác nhận. Phác đồ đang chờ chủ ngựa thanh toán giai đoạn 1 — chưa bắt đầu điều trị.</Callout>}
 
         {p.state === 'IN_TREATMENT' && <>
           {btn('ht-btn--secondary', 'pulse', 'Ghi tiến triển', () => onAction('progress'))}
           <button type="button" className="ht-btn ht-btn--secondary ht-btn--block" data-testid="add-items-btn" onClick={onAddItems}><Icon name="box" />Bổ sung thuốc</button>
-          {nextPhase && (
+          {nextPhase && (p.dispensedPhases != null && !p.dispensedPhases.includes(nextPhase.no) ? (
+            <Callout tone="demo" testId="protocol-phase-blocked">Chưa cấp thuốc giai đoạn {nextPhase.no}. Kho phải cấp thuốc giai đoạn này trước khi hoàn thành.</Callout>
+          ) : nextPhase.invoiceStatus && !p.emergency && ['UNPAID', 'OVERDUE', 'PARTIALLY_PAID'].includes(nextPhase.invoiceStatus) ? (
+            <Callout tone="demo" testId="protocol-phase-blocked">Chủ ngựa chưa thanh toán chi phí giai đoạn {nextPhase.no}. Chưa thể kết thúc giai đoạn.</Callout>
+          ) : (
             <button type="button" className="ht-btn ht-btn--secondary ht-btn--block" data-testid="protocol-phase-done" disabled={busy}
               onClick={() => { void run(() => vetApi.addProgress(p, `Hoàn thành giai đoạn ${nextPhase.no}: ${nextPhase.name}`, actor), `Đã hoàn thành giai đoạn ${nextPhase.no}.`).then((ok) => { if (ok) onReload(); }); }}>
               <Icon name="check" />Hoàn thành giai đoạn {nextPhase.no}
             </button>
-          )}
+          ))}
           {nextPhase
             ? <Callout tone="info">Phải hoàn thành từng giai đoạn trước khi kết thúc. Còn giai đoạn {nextPhase.no} · {nextPhase.name}.</Callout>
             : btn('ht-btn--primary', 'check', 'Kết thúc điều trị', () => onAction('complete'))}

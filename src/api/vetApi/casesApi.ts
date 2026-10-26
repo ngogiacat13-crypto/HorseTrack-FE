@@ -32,7 +32,8 @@ export const casesApi = {
     if (c.status === 'CLOSED') throw new Error('Ca đã đóng.');
     if (!c.exam) throw new Error('Ghi nhận khám trước khi đóng ca.');
     const protocols = await get<Protocol[]>('/protocols', { caseId: c.id });
-    const open = protocols.find(isOpenProtocol);
+    const caseKey = String((c as VetCase & { beId?: number }).beId ?? '');
+    const open = protocols.find((p) => isOpenProtocol(p) && (p.caseId === c.id || (!!caseKey && p.caseId === caseKey)));
     if (open) throw new Error(`Phác đồ ${open.id} còn đang mở (${PROTOCOL_LABEL[open.state][0]}) — hoàn tất hoặc hủy trước khi đóng ca.`);
     const { data } = await http.patch<VetCase>(`/vetCases/${c.id}`, { status: 'CLOSED', outcome: min(outcome, 10, 'Kết luận') });
     await addAudit(actor, { action: 'CLOSE_CASE', label: 'Đóng ca khám', object: `${c.id} · ${c.horse}`, area: 'med', from: c.status, to: 'CLOSED', reason: outcome.trim() });

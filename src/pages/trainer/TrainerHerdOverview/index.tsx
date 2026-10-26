@@ -7,6 +7,7 @@ import { Icon } from '../../../components/ui/Icon';
 import { Badge, PageHeader, Panel, Tabs, Timeline } from '../../../components/ui/Ht';
 import { HorseBadges, LoadState } from '../../../components/trainer/TrainerParts';
 import { useDebounce } from '../../../hooks/useDebounce';
+import { PendingAssignments } from '../../../features/assignment-confirm/PendingAssignments';
 
 type HealthTab = 'ALL' | HealthStatus;
 
@@ -46,8 +47,11 @@ export const TrainerHerdOverview: React.FC = () => {
     <div className="ht ht-page">
       <PageHeader
         title="Tổng quan đàn ngựa"
-        sub={`${horses.length} ngựa · ${locked.length} đang bị khóa tập · ${running} có giáo án đang chạy`}
+        sub={data.stats
+          ? `${horses.length} ngựa · ${data.stats.injuredHorses} chấn thương · ${data.stats.totalActivePlans} giáo án đang chạy · ${data.stats.todaysSessions} phiên hôm nay`
+          : `${horses.length} ngựa · ${locked.length} đang bị khóa tập · ${running} có giáo án đang chạy`}
       />
+      <PendingAssignments />
 
       {pending.map((s) => (
         <div key={s.id} className="ht-banner" role="alert">

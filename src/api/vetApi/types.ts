@@ -18,7 +18,7 @@ export interface InventoryItem {
   rx?: boolean; controlled?: boolean;
 }
 export interface ProtoItem { itemId: string; name: string; unit: string; unitPrice: number; qty: number }
-export interface ProtoPhase { no: number; name: string; startDate: string; days: number; goal: string; items: ProtoItem[] }
+export interface ProtoPhase { no: number; name: string; startDate: string; days: number; goal: string; items: ProtoItem[]; invoiceStatus?: string | null }
 export interface StockLine {
   itemId: string; phaseNo?: number; name: string; unit: string; need: number; available: number; held: number; short: number;
   eta: string | null; lot: string | null; expiry: string | null; shipment?: string; issued?: boolean;
@@ -32,7 +32,7 @@ export interface Protocol {
   wait: null | { eta: string; requiredBy: string; at: string; note: string };
   delayed: boolean;
   progress: { at: string; by: string; text: string }[];
-  outcome: string | null;
+  outcome: string | null; emergency?: boolean;
   label: string; tone: 'danger' | 'info' | 'success' | 'neutral'; cost: number; trainingLocked?: boolean; open: boolean;
   alertState?: ProtocolState; materials: { item: string; status: string; tone: 'success' | 'danger' | 'neutral' }[]; note: string;
   log: { tone?: 'danger' | 'warning' | 'success'; who: string; text: string; at: string }[];
