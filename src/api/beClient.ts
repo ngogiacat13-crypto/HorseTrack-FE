@@ -62,7 +62,8 @@ async function refreshAccessToken(): Promise<string> {
 
 function toError(error: AxiosError<ApiResponse<unknown>>): Error {
   if (!error.response) {
-    return new Error('Không kết nối được máy chủ backend. Hãy chạy ứng dụng Spring Boot (cổng 8080) rồi thử lại.');
+    const target = import.meta.env.VITE_BACKEND_TARGET || 'http://localhost:8080';
+    return new Error(`Không kết nối được máy chủ backend (${target}). Kiểm tra máy chủ đang chạy và mạng, rồi bấm Thử lại.`);
   }
   const body = error.response.data;
   if (body && typeof body === 'object') {

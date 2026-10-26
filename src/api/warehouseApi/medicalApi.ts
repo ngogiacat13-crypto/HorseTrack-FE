@@ -8,7 +8,7 @@ import type { ShipmentOrder, StockItem } from './types';
 
 const CHANGED_STATES: Protocol['state'][] = ['SUPERSEDED', 'CANCELLED'];
 const sentToWarehouse = (p: Protocol) => p.path.length <= 1 || p.path.includes('WAITING_STOCK_CHECK');
-export const WAREHOUSE_STATES: Protocol['state'][] = ['WAITING_STOCK_CHECK', 'STOCK_SHORTAGE', 'STOCK_AVAILABLE', 'WAITING_RESTOCK', 'REQUIRES_VET_REVIEW', 'READY_FOR_DISPENSING', 'IN_TREATMENT'];
+export const WAREHOUSE_STATES: Protocol['state'][] = ['WAITING_STOCK_CHECK', 'STOCK_SHORTAGE', 'STOCK_AVAILABLE', 'WAITING_RESTOCK', 'REQUIRES_VET_REVIEW', 'READY_FOR_DISPENSING', 'IN_TREATMENT', 'ON_HOLD_PAYMENT', 'COMPLETED'];
 
 export const needs = (p: Protocol, phaseNos?: number[]) => {
   const selected = phaseNos ? new Set(phaseNos) : null;
@@ -72,6 +72,11 @@ export const medicalApi = {
     { tone: short.length ? 'warning' : 'success', who: actor.name, text, at: now() });
     await addAudit(actor, { action: 'STOCK_CHECK_RESPONSE', label: 'Phản hồi kiểm tồn', object: `${p.id} · ${p.horse}`, area: 'med', from: 'WAITING_STOCK_CHECK', to: state, reason: text });
     return data;
+  },
+
+  async reviewSupplements(p: Protocol, _actor: Actor) {
+    if (p.state !== 'IN_TREATMENT') throw new Error('Chỉ duyệt thuốc bổ sung khi phác đồ đang điều trị.');
+    return p;
   },
 
   async dispense(p: Protocol, input: { phaseNos?: number[]; lines: { itemId: string; phaseNo?: number; qty: number; lot: string }[]; receiver: string }, actor: Actor) {

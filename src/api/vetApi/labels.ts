@@ -46,7 +46,7 @@ export const BODY_PARTS: { part: string; x: number; y: number }[] = [
   { part: 'Móng sau phải', x: 80, y: 93 },
 ];
 
-export const ITEM_ADDABLE: ProtocolState[] = ['DRAFT', 'WAITING_STOCK_CHECK', 'STOCK_SHORTAGE', 'STOCK_AVAILABLE', 'WAITING_RESTOCK', 'REQUIRES_VET_REVIEW', 'VET_CONFIRMED', 'ON_HOLD_PAYMENT'];
+export const ITEM_ADDABLE: ProtocolState[] = ['DRAFT', 'WAITING_STOCK_CHECK', 'STOCK_SHORTAGE', 'STOCK_AVAILABLE', 'WAITING_RESTOCK', 'REQUIRES_VET_REVIEW', 'VET_CONFIRMED', 'READY_FOR_DISPENSING', 'ON_HOLD_PAYMENT'];
 export interface ItemAddition { phaseNo: number; itemId: string; name: string; unit: string; unitPrice: number; qty: number }
 export const withAddedItems = (phases: ProtoPhase[], additions: ItemAddition[]): ProtoPhase[] => phases.map((ph) => {
   const items = ph.items.map((it) => ({ ...it }));

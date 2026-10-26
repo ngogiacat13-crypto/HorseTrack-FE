@@ -7,6 +7,8 @@ import { PageHeader, StatCard } from '../../../components/ui/Ht';
 import { LoadState } from '../../../components/trainer/TrainerParts';
 import { InventoryTable } from './InventoryTable';
 import { SafetyDialog, StockMoveDialog } from './StockDialogs';
+import { ItemFormDialog, NewItemButton } from '../../../features/inventory-items/ItemFormDialog';
+import { USE_BACKEND } from '../../../api/beClient';
 import { useDebounce } from '../../../hooks/useDebounce';
 
 export const WarehouseInventory: React.FC = () => {
@@ -17,22 +19,25 @@ export const WarehouseInventory: React.FC = () => {
   const query = useDebounce(q);
   const [moveFor, setMoveFor] = useState<StockItem | null>(null);
   const [safetyFor, setSafetyFor] = useState<StockItem | null>(null);
+  const [editFor, setEditFor] = useState<StockItem | null>(null);
 
   const items = useMemo(() => data?.items ?? [], [data]);
   const expiring = (i: StockItem) => (i.lots ?? []).some((l) => l.qty > 0 && monthsLeft(l.expiry) <= 2);
+  const isLow = useMemo(() => (i: StockItem) => (data?.lowIds ? data.lowIds.has(i.id) : belowSafety(i)), [data]);
   const list = useMemo(() => items.filter((i) =>
     (!category || i.category === category) &&
-    (!status || (status === 'low' ? belowSafety(i) : status === 'held' ? i.held > 0 : expiring(i))) &&
-    `${i.name} ${i.id} ${i.group} ${i.brand ?? ''}`.toLowerCase().includes(query.trim().toLowerCase())), [items, category, status, query]);
+    (!status || (status === 'low' ? isLow(i) : status === 'held' ? i.held > 0 : expiring(i))) &&
+    `${i.name} ${i.id} ${i.group} ${i.brand ?? ''}`.toLowerCase().includes(query.trim().toLowerCase())), [items, category, status, query, isLow]);
 
   if (!data) return <LoadState loading={loading} error={error} onRetry={reload} />;
-  const low = items.filter(belowSafety);
+  const low = items.filter(isLow);
   const categories = [...new Set(items.map((i) => i.category))];
   const incomingCount = new Set(Object.values(data.incoming).flat().map((x) => x.id)).size;
 
   return (
     <div className="ht ht-page">
       <PageHeader title="Danh sách tồn kho" sub="Tồn thực tế, lượng đã giữ cho phác đồ, số khả dụng và các lô hàng dự kiến về."
+        actions={<NewItemButton onDone={reload} />}
       />
 
       <div className="ht-stats">
@@ -63,9 +68,10 @@ export const WarehouseInventory: React.FC = () => {
         <div className="ht-search-input" style={{ flex: 1, minWidth: 220 }}><Icon name="search" /><input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Tìm tên, mã vật tư, nhóm…" aria-label="Tìm vật tư" /></div>
       </div>
 
-      <InventoryTable items={list} incoming={data.incoming} onMove={setMoveFor} onSafety={setSafetyFor} />
+      <InventoryTable items={list} incoming={data.incoming} onMove={setMoveFor} onSafety={setSafetyFor} onEdit={USE_BACKEND ? setEditFor : undefined} />
 
       {moveFor && <StockMoveDialog item={moveFor} onClose={() => setMoveFor(null)} onDone={() => { setMoveFor(null); reload(); }} />}
+      {editFor && <ItemFormDialog beId={(editFor as StockItem & { beId?: number }).beId ?? null} title={`Sửa vật tư · ${editFor.name}`} onClose={() => setEditFor(null)} onDone={() => { setEditFor(null); reload(); }} />}
       {safetyFor && <SafetyDialog item={safetyFor} onClose={() => setSafetyFor(null)} onDone={() => { setSafetyFor(null); reload(); }} />}
     </div>
   );

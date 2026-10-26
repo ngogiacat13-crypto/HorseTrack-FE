@@ -3,7 +3,6 @@ import { type Actor, addAudit } from '../managerApi';
 import { be, beData, USE_BACKEND } from '../beClient';
 import { invalidate } from '../hybridAdapter';
 import type { Horse, PlanPhase, TrainingPlan } from './types';
-import { OPEN_PLAN } from './labels';
 import { get, nextId, myHorses, ofHorses, getHorseChecked, withLiveStatus, CURRENT_PLAN } from './shared';
 
 const beCreatePlan = async (horse: Horse, name: string, input: { type: string; goal: string; startDate: string; phases: PlanPhase[] }): Promise<TrainingPlan> => {
@@ -12,8 +11,11 @@ const beCreatePlan = async (horse: Horse, name: string, input: { type: string; g
   const start = new Date(yyyy, mm - 1, dd);
   const weeks = input.phases.reduce((s, p) => s + (Number(p.weeks) || 0), 0) || 1;
   const end = new Date(start.getTime() + (weeks * 7 - 1) * 864e5);
-  const goal = [`[${input.type} · ${input.phases.length} giai đoạn · ${weeks} tuần]`, input.goal.trim()].filter(Boolean).join(' ').slice(0, 500);
-  const planId = await beData<number>(be.post('/training-plans', { horseId: Number(horse.id), planName: name, startDate: iso(start), endDate: iso(end), goal }));
+  const phases = input.phases.map((ph, i) => ({
+    phaseNo: i + 1, name: ph.name.trim() || `Giai đoạn ${i + 1}`, weeks: Number(ph.weeks) || 1, intensity: ph.intensity,
+    distanceM: Number(ph.distanceM) || undefined, sessionsPerWeek: Number(ph.sessionsPerWeek) || undefined, maxHeartRate: Number(ph.hrLimit) || undefined,
+  }));
+  const planId = await beData<number>(be.post('/training-plans', { horseId: Number(horse.id), planName: name, startDate: iso(start), endDate: iso(end), goal: input.goal.trim().slice(0, 500) || undefined, type: input.type.slice(0, 50), phases }));
   invalidate('trainingPlans', 'trainingSessions');
   return {
     id: String(planId), horseId: horse.id, horseName: horse.name, name, type: input.type, goal: input.goal,
@@ -47,7 +49,7 @@ export const plansApi = {
   },
 
   async cancelPlan(plan: TrainingPlan, reason: string, actor: Actor) {
-    if (!OPEN_PLAN.includes(plan.status)) throw new Error('Chỉ hủy được giáo án chưa bắt đầu, đang chạy hoặc tạm dừng.');
+    if (plan.status !== 'PLANNED') throw new Error('Giáo án đã bắt đầu, HLV không được hủy.');
     const why = reason.trim();
     if (why.length < 5 || why.length > 500) throw new Error('Lý do hủy từ 5 đến 500 ký tự.');
     await getHorseChecked(plan.horseId, actor);

@@ -45,14 +45,21 @@ export const GroomSessionRun: React.FC = () => {
           </div>
         </div>
       )}
+      {s.status === 'WAITING_VET' && (
+        <Callout tone="danger" title="HLV trưởng đã dừng phiên và gửi bác sĩ" style={{ marginBottom: 16 }} testId="session-waiting-vet">
+          {d?.note ? <>{d.note} </> : null}
+          {d?.caseId ? <>Ca khám <span className="ht-mono">{d.caseId}</span>. </> : null}
+          Đưa ngựa về chuồng. Không nhập thêm chỉ số cho đến khi bác sĩ xử lý ca.
+        </Callout>
+      )}
       {s.status === 'STOPPED' && (
         <Callout tone="danger" title="HLV trưởng đã dừng phiên" style={{ marginBottom: 16 }}>
           {d?.note ?? 'Phiên đã dừng.'}{d?.caseId && <> Đã chuyển Bác sĩ thú y — ca <span className="ht-mono">{d.caseId}</span>.</>} Đưa ngựa về chuồng, không nhập thêm chỉ số.
         </Callout>
       )}
-      {s.status === 'RESUMED' && d?.adjustment && (
-        <Callout tone="info" title={`HLV ${d.by} cho tiếp tục lúc ${d.at}`} style={{ marginBottom: 16 }}>
-          Điều chỉnh: cự ly {d.adjustment.distanceM} m · ngưỡng nhịp tim mới {d.adjustment.hrLimit} bpm. {d.note}
+      {(s.status === 'RESUMED' || s.status === 'IN_PROGRESS') && d?.type === 'ADJUST_CONTINUE' && d.adjustment && (
+        <Callout tone="info" title={`HLV ${d.by} cho tiếp tục`} style={{ marginBottom: 16 }} testId="session-adjusted">
+          Điều chỉnh: {d.adjustment.intensity} · cự ly {d.adjustment.distanceM} m · ngưỡng nhịp tim mới {d.adjustment.hrLimit} bpm. {d.note}
         </Callout>
       )}
       {s.status === 'COMPLETED' && <Callout tone="success" title="Phiên đã hoàn thành" style={{ marginBottom: 16 }}>{s.readings.length} lần đo. HLV trưởng sẽ đánh giá phiên.</Callout>}

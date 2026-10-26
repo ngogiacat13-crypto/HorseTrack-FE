@@ -3,6 +3,7 @@ import { available, OPEN_SHIPMENT, tracksLots } from './labels';
 import { get, min, moveStock, posInt } from './shared';
 import type { ShipmentOrder, StockItem, StockTx } from './types';
 import { http } from '../http';
+import { USE_BACKEND, be, beData } from '../beClient';
 
 export type MoveKind = 'RECEIVE' | 'ISSUE' | 'ADJUST';
 
@@ -13,7 +14,10 @@ export const inventoryApi = {
     shipments.filter((s) => OPEN_SHIPMENT.includes(s.status)).forEach((s) => s.lines.forEach((l) => {
       (incoming[l.itemId] ??= []).push({ qty: l.qty, eta: s.eta, id: s.id, delayed: s.status === 'DELAYED' });
     }));
-    return { items, incoming };
+    const lowIds = USE_BACKEND
+      ? await beData<{ itemCode: string }[]>(be.get('/inventory/low-stock')).then((rows) => new Set(rows.map((r) => r.itemCode))).catch(() => null)
+      : null;
+    return { items, incoming, lowIds };
   },
 
   async moveStock(item: StockItem, input: { kind: MoveKind; qty: number; lot: string; expiry: string; note: string }, actor: Actor) {

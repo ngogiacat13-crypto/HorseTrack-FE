@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../../auth/AuthContext';
 import { ROLE_HOME } from '../../../api/mockData';
 import type { ApiError } from '../../../api/http';
@@ -12,7 +12,7 @@ import { FocusFirstError, FormikField } from '../../../components/form/FormikFie
 import { PATH } from '../../../routers/routerPath';
 
 const schema = Yup.object({
-  username: Yup.string().trim().required('Vui lòng nhập tên đăng nhập'),
+  username: Yup.string().trim().required('Vui lòng nhập tên đăng nhập, email hoặc số điện thoại'),
   password: Yup.string().required('Vui lòng nhập mật khẩu'),
 });
 
@@ -20,6 +20,9 @@ export const Login: React.FC = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
   const [serverError, setServerError] = useState('');
+  const [params] = useSearchParams();
+  const confirmed = params.get('confirmed');
+  const confirmMessage = params.get('message');
 
   const formik = useFormik({
     initialValues: { username: '', password: '' },
@@ -52,12 +55,17 @@ export const Login: React.FC = () => {
       <h1 className="ht-auth__title">Đăng nhập</h1>
       <p className="ht-auth__sub">Dùng tên đăng nhập và mật khẩu để truy cập hệ thống.</p>
 
+      {confirmed && (
+        <Callout tone={confirmed === 'true' ? 'success' : 'danger'} testId="login-confirm-result" style={{ marginBottom: 16 }}>
+          {confirmMessage || (confirmed === 'true' ? 'Đã xác nhận tài khoản. Đăng nhập bằng email và mật khẩu tạm trong email.' : 'Liên kết xác nhận không hợp lệ hoặc đã hết hạn.')}
+        </Callout>
+      )}
       {serverError && <Callout tone="danger" testId="login-error" style={{ marginBottom: 16 }}>{serverError}</Callout>}
 
       <FormikProvider value={formik}>
       <form onSubmit={formik.handleSubmit} noValidate data-testid="login-form">
         <FocusFirstError />
-        <FormikField name="username" label="Tên đăng nhập" icon="user" autoComplete="username" placeholder="vd: nguyenminh" />
+        <FormikField name="username" label="Tên đăng nhập / Email / Số điện thoại" icon="user" autoComplete="username" placeholder="vd: nguyenminh, ten@gmail.com hoặc 0912345678" />
 
         <div>
           <FormikField name="password" label="Mật khẩu" password autoComplete="current-password" placeholder="Nhập mật khẩu" />

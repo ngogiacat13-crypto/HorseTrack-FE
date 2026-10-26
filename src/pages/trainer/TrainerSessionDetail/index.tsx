@@ -30,14 +30,17 @@ export const TrainerSessionDetail: React.FC = () => {
         sub={<><b>{s.horseName}</b> · <span className="ht-mono">{s.date} {s.time}</span> · Mã phu: <b>{s.groom}</b> · {s.label} · {s.track}</>}
       />
 
-      {(pending || s.status === 'STOPPED') && peak && (
-        <div className="ht-banner" role="alert">
+      {(pending || s.status === 'STOPPED' || s.status === 'WAITING_VET') && peak && (
+        <div className="ht-banner" role="alert" data-testid={s.status === 'WAITING_VET' ? 'session-waiting-vet' : undefined}>
           <Icon name="alarm" />
           <div>
-            <b>{pending ? 'PHIÊN TẬP TẠM DỪNG — vượt ngưỡng an toàn (BR_02)' : 'PHIÊN TẬP ĐÃ DỪNG'}</b>
+            <b>{pending ? 'PHIÊN TẬP TẠM DỪNG — vượt ngưỡng an toàn (BR_02)' : s.status === 'WAITING_VET' ? 'ĐÃ GỬI BÁC SĨ — chờ kết luận' : 'PHIÊN TẬP ĐÃ DỪNG'}</b>
             <p>
-              Nhịp tim đạt <b className="ht-mono">{peak.hr} bpm</b> / ngưỡng {s.thresholds.hr} · dừng lúc <b className="ht-mono">{s.pausedAt}</b> bởi Hệ thống.{' '}
-              {pending ? 'Mã phu không thể tự tiếp tục — chờ quyết định của bạn.' : `Quyết định: ${s.decision?.by} lúc ${s.decision?.at}.`}
+              Nhịp tim đạt <b className="ht-mono">{peak.hr} bpm</b> / ngưỡng {s.thresholds.hr}
+              {s.pausedAt ? <> · dừng lúc <b className="ht-mono">{s.pausedAt}</b></> : null} bởi Hệ thống.{' '}
+              {pending ? 'Mã phu không thể tự tiếp tục — chờ quyết định của bạn.' : s.status === 'WAITING_VET'
+                ? <>Đã gửi ca {s.decision?.caseId ? <span className="ht-mono">{s.decision.caseId}</span> : 'khám'} cho bác sĩ. Giáo án tạm dừng đến khi bác sĩ đóng ca hoặc khóa ngựa.</>
+                : `Quyết định: ${s.decision?.by} lúc ${s.decision?.at}.`}
             </p>
           </div>
         </div>

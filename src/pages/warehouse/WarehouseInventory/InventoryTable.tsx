@@ -4,7 +4,7 @@ import { Badge, Panel } from '../../../components/ui/Ht';
 
 export type Incoming = Record<string, { qty: number; eta: string; id: string; delayed: boolean }[]>;
 
-export const InventoryTable: React.FC<{ items: StockItem[]; incoming: Incoming; onMove: (i: StockItem) => void; onSafety: (i: StockItem) => void }> = ({ items, incoming, onMove, onSafety }) => (
+export const InventoryTable: React.FC<{ items: StockItem[]; incoming: Incoming; onMove: (i: StockItem) => void; onSafety: (i: StockItem) => void; onEdit?: (i: StockItem) => void }> = ({ items, incoming, onMove, onSafety, onEdit }) => (
   <Panel title="Tồn kho hiện tại" right={<span style={{ fontSize: 12, color: 'var(--muted)' }}>{items.length} mặt hàng · chỉ hàng đã nhận mới được sử dụng</span>}>
     <div style={{ overflowX: 'auto' }}>
       <table className="ht-table">
@@ -28,6 +28,7 @@ export const InventoryTable: React.FC<{ items: StockItem[]; incoming: Incoming; 
                 <td className="num" style={{ whiteSpace: 'nowrap' }}>
                   <button type="button" className="ht-btn ht-btn--ghost ht-btn--sm" onClick={() => onMove(i)}>Cập nhật tồn</button>
                   <button type="button" className="ht-btn ht-btn--ghost ht-btn--sm" onClick={() => onSafety(i)}>Ngưỡng</button>
+                  {onEdit && <button type="button" className="ht-btn ht-btn--ghost ht-btn--sm" data-testid={`edit-item-${i.id}`} onClick={() => onEdit(i)}>Sửa</button>}
                 </td>
               </tr>
             );

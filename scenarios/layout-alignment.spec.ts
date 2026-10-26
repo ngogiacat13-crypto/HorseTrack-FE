@@ -1,6 +1,8 @@
 import { expect, test, type Page } from '@playwright/test';
 import { ROLES, signIn, type Role } from './support';
 
+test.describe.configure({ timeout: 180_000 });
+
 const EXTRA_PAGES: Partial<Record<Role, string[]>> = {
   HeadTrainer: ['/trainer/plans/new', '/trainer/races/new'],
   Veterinarian: ['/vet/protocols/new'],

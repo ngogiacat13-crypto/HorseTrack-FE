@@ -1,6 +1,9 @@
 import React from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { warehouseApi } from '../../../api/warehouseApi';
+import type { Protocol } from '../../../api/vetApi';
+import { useActor } from '../../../auth/AuthContext';
+import { useAction } from '../../../hooks/useAction';
 import { useFetch } from '../../../hooks/useFetch';
 import { Icon } from '../../../components/ui/Icon';
 import { BackButton, Badge, Callout, PageHeader, Panel, Timeline } from '../../../components/ui/Ht';
@@ -9,6 +12,7 @@ import { ProtocolBadge, ProtocolPath } from '../../../components/vet/VetParts';
 import { CHANGE_LABEL, protocolChanges, stockLines } from '../../../api/vetApi';
 import { StockCheckForm } from './StockCheckForm';
 import { DispenseForm } from './DispenseForm';
+import { DispensingHistory } from '../../../features/dispensing-history';
 
 const WAIT_TEXT: Record<string, string> = {
   STOCK_SHORTAGE: 'Đã báo thiếu. Bác sĩ đang quyết định đổi thuốc hoặc chờ hàng — kho không tự đổi thuốc.',
@@ -16,6 +20,24 @@ const WAIT_TEXT: Record<string, string> = {
   WAITING_RESTOCK: 'Bác sĩ chọn chờ hàng. Khi nhận lô hàng ở trang Đơn nhập, hệ thống tự giữ hàng và báo bác sĩ rà soát lại.',
   REQUIRES_VET_REVIEW: 'Chờ bác sĩ đánh giá lại (hàng trễ hoặc hàng vừa về). Chưa được cấp phát.',
   IN_TREATMENT: 'Đã cấp phát — đang điều trị.',
+  ON_HOLD_PAYMENT: 'Đã cấp phát — điều trị tạm dừng chờ chủ ngựa thanh toán.',
+  COMPLETED: 'Đã cấp phát — điều trị hoàn tất.',
+};
+
+const SupplementReview: React.FC<{ protocol: Protocol; onDone: () => void }> = ({ protocol, onDone }) => {
+  const actor = useActor();
+  const { busy, error, run } = useAction(onDone);
+  return (
+    <Panel title="Thuốc bổ sung chờ duyệt" sub="Bác sĩ gửi yêu cầu khi đang điều trị. Kho quyết định giữ hàng hoặc ghi thiếu.">
+      <div className="ht-panel__body" style={{ display: 'grid', gap: 10 }}>
+        {error && <Callout tone="danger">{error}</Callout>}
+        <button type="button" className="ht-btn ht-btn--primary" data-testid="warehouse-review-supplement" disabled={busy}
+          onClick={() => { void run(() => warehouseApi.reviewSupplements(protocol, actor), 'Đã duyệt thuốc bổ sung. Nếu thiếu, hãy lập đơn nhập.'); }}>
+          Duyệt thuốc bổ sung
+        </button>
+      </div>
+    </Panel>
+  );
 };
 
 export const WarehouseMedicalDetail: React.FC = () => {
@@ -69,8 +91,10 @@ export const WarehouseMedicalDetail: React.FC = () => {
               ) : <div className="ht-empty">Không đổi thuốc / số lượng (chỉ đổi giai đoạn hoặc ngày).</div>}
             </Panel>
           )}
-          {WAIT_TEXT[p.state] && <Callout tone={p.state === 'IN_TREATMENT' ? 'success' : 'info'} icon="info">{WAIT_TEXT[p.state]}</Callout>}
+          {WAIT_TEXT[p.state] && <Callout tone={['IN_TREATMENT', 'ON_HOLD_PAYMENT', 'COMPLETED'].includes(p.state) ? 'success' : 'info'} icon="info">{WAIT_TEXT[p.state]}</Callout>}
+          {p.state === 'IN_TREATMENT' && <SupplementReview protocol={p} onDone={reload} />}
 
+          <DispensingHistory protocolBeId={(p as { beId?: number }).beId} />
           {p.stock && p.state !== 'WAITING_STOCK_CHECK' && (
             <Panel title="Phản hồi kho đã gửi" sub={`${p.stock.at} · ${p.stock.by}`}>
               <table className="ht-table">
@@ -80,7 +104,7 @@ export const WarehouseMedicalDetail: React.FC = () => {
                     <tr key={l.itemId}>
                       <td className="strong">{l.name}</td><td className="num">{l.need} {l.unit}</td><td className="num">{l.held}</td>
                       <td className="mono" style={{ fontSize: 12 }}>{l.lot ? `${l.lot} · ${l.expiry}` : '—'}</td>
-                      <td>{l.short > 0 ? <Badge tone="danger">Thiếu {l.short} · {l.eta ? `ETA ${l.eta.slice(0, 5)}${l.shipment ? ` (${l.shipment})` : ''}` : 'ETA chưa xác định'}</Badge> : <Badge tone="success">Đủ</Badge>}</td>
+                      <td>{l.issued ? <Badge tone="success">Đã cấp {l.need} {l.unit}</Badge> : l.short > 0 ? <Badge tone="danger">Thiếu {l.short} · {l.eta ? `ETA ${l.eta.slice(0, 5)}${l.shipment ? ` (${l.shipment})` : ''}` : 'ETA chưa xác định'}</Badge> : <Badge tone="success">Đủ</Badge>}</td>
                     </tr>
                   ))}
                 </tbody>

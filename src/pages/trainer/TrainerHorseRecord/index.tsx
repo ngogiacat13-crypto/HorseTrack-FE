@@ -7,6 +7,7 @@ import { Icon } from '../../../components/ui/Icon';
 import { BackButton, PageHeader, Tabs } from '../../../components/ui/Ht';
 import { HorseBadges, LoadState } from '../../../components/trainer/TrainerParts';
 import { HealthTab, OverviewTab, RacesTab, TrainingTab } from './RecordTabs';
+import { AssignCareTask } from '../../../features/care-task-assign';
 
 const sortKey = (s: { date: string; time: string }) => s.date.split('/').reverse().join('') + s.time;
 
@@ -33,6 +34,7 @@ export const TrainerHorseRecord: React.FC = () => {
         badge={<HorseBadges horse={horse} />}
         sub={<>{horse.breed} · {horse.sex} {horse.age} tuổi · Chuồng <b>{horse.stall}</b> · Chủ: <b>{horse.owner}</b></>}
         actions={<>
+          <AssignCareTask horseId={horse.id} horseName={horse.name} disabledReason={horse.stall && horse.stall !== '—' ? undefined : 'Ngựa chưa được cấp chuồng'} />
           {raceNo
             ? <button type="button" className="ht-btn ht-btn--secondary" disabled title={raceNo}><Icon name="send" />Đề xuất thi đấu</button>
             : <Link className="ht-btn ht-btn--secondary" to={`/trainer/races/new?horse=${horse.id}`}><Icon name="send" />Đề xuất thi đấu</Link>}

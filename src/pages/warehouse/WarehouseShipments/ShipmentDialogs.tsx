@@ -4,9 +4,14 @@ import { addDays } from '../../../api/vetApi';
 import { ShipmentOrder, StockItem, tracksLots, warehouseApi } from '../../../api/warehouseApi';
 import { useActor } from '../../../auth/AuthContext';
 import { useAction } from '../../../hooks/useAction';
+import { useFetch } from '../../../hooks/useFetch';
+import { USE_BACKEND } from '../../../api/beClient';
+import { suppliersApi } from '../../../features/suppliers/suppliersApi';
 import { Icon } from '../../../components/ui/Icon';
 import { Callout, Dialog, ReasonField } from '../../../components/ui/Ht';
 import { MedicinePicker } from '../../../components/vet/MedicinePicker';
+
+const DEMO_SUPPLIERS = ['Công ty Dược thú y Sài Gòn', 'Công ty Vật tư Thú y Phương Nam', 'Cửa hàng Yên cương Phú Thọ', 'Đại lý Thức ăn Chăn nuôi Bình Dương'];
 
 export interface Need { ref: string; label: string; itemId: string; qty: number; requiredBy: string }
 
@@ -19,6 +24,8 @@ export const CreateShipmentDialog: React.FC<{ items: StockItem[]; needs: Need[];
   const [eta, setEta] = useState(addDays(DEMO_NOW.date, 5));
   const [lines, setLines] = useState<{ itemId: string; qty: string }[]>(first.map((n) => ({ itemId: n.itemId, qty: String(n.qty) })));
   const [adding, setAdding] = useState('');
+  const { data: liveSuppliers } = useFetch(() => (USE_BACKEND ? suppliersApi.list(true) : Promise.resolve(null)), []);
+  const supplierNames = liveSuppliers ? liveSuppliers.map((s) => s.name) : DEMO_SUPPLIERS;
   const inv = Object.fromEntries(items.map((i) => [i.id, i]));
   const refs = [...new Map(needs.map((n) => [n.ref, n])).values()];
 
@@ -51,7 +58,7 @@ export const CreateShipmentDialog: React.FC<{ items: StockItem[]; needs: Need[];
         <div className="ht-grid-2">
           <div className="ht-field" style={{ margin: 0 }}><label className="ht-label" htmlFor="sh-sup">Nhà cung cấp<span className="ht-req">*</span></label>
             <input id="sh-sup" className="ht-input" list="sh-sups" value={supplier} onChange={(e) => setSupplier(e.target.value)} />
-            <datalist id="sh-sups"><option value="Công ty Dược thú y Sài Gòn" /><option value="Công ty Vật tư Thú y Phương Nam" /><option value="Cửa hàng Yên cương Phú Thọ" /><option value="Đại lý Thức ăn Chăn nuôi Bình Dương" /></datalist>
+            <datalist id="sh-sups">{supplierNames.map((n) => <option key={n} value={n} />)}</datalist>
           </div>
           <div className="ht-field" style={{ margin: 0 }}><label className="ht-label" htmlFor="sh-eta">Ngày dự kiến về<span className="ht-req">*</span></label>
             <input id="sh-eta" className="ht-input ht-mono" value={eta} onChange={(e) => setEta(e.target.value)} placeholder="dd/mm/yyyy" /></div>

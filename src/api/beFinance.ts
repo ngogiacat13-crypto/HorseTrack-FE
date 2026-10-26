@@ -42,7 +42,7 @@ const TRANSACTION_STATUS: Record<string, PaymentStatus> = { PENDING_VERIFICATION
 
 const invoiceStatus = (i: BeInvoice): InvoiceStatus => {
   const service = (i.ownerServiceStatus ?? '').toUpperCase();
-  if (i.status === 'PAID') return service === 'REACTIVATION_PENDING' ? 'REACTIVATION_PENDING' : 'PAID';
+  if (i.status === 'PAID' || i.status === 'REFUNDED') return service === 'REACTIVATION_PENDING' ? 'REACTIVATION_PENDING' : 'PAID';
   if (service === 'SUSPENDED') return 'SUSPENDED';
   return i.status === 'OVERDUE' || num(i.daysOverdue) > 0 ? 'OVERDUE' : 'UNPAID';
 };
@@ -65,7 +65,7 @@ export const mapInvoice = (i: BeInvoice): BeOwnerInvoice => {
     horse: i.horseName ?? '—', horseId: i.horseId != null ? String(i.horseId) : null, owner: i.ownerName ?? `Chủ ngựa #${i.ownerId}`,
     period: period(i.billingMonth), dueDate: dmy(i.dueDate), issuedAt: dmy(i.issuedAt), amount: num(i.principal ?? i.subtotal),
     overdueDays: num(i.daysOverdue), status: invoiceStatus(i), paidRef: verified.length ? `${verified[0].transactionRef ?? verified[0].transactionId} · ${dmy(verified[0].verifiedAt)}` : undefined,
-    service: [...new Set((i.lines ?? []).map((l) => l.categoryLabel || l.category))].join(' · ') || '—', lines,
+    service: `${i.status === 'REFUNDED' ? 'Đã hoàn tiền · ' : ''}${[...new Set((i.lines ?? []).map((l) => l.categoryLabel || l.category))].join(' · ') || '—'}`, lines,
     lateFee: num(i.lateFee), reactivationFee: num(i.reactivationFee), amountDue: num(i.amountDue), amountPaid: num(i.amountPaid),
     suspensionEligible: !!i.suspensionEligible,
   };

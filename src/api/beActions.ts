@@ -47,6 +47,19 @@ export const vetProtocolBe = {
     await addAudit(actor, { action: 'CREATE_PROTOCOL', label: 'Lập phác đồ', object: `${p.protocolCode} · ${p.horseName}`, area: 'med', to: p.state, reason: body.diagnosis });
     return mapProtocol(p) as unknown as Protocol;
   },
+  async addItemsDuringTreatment(p: Protocol, adds: { phaseNo: number; itemId: string; qty: number }[], reason: string, actor: Actor) {
+    const why = reason.trim();
+    if (why.length < 5) throw new Error('Lý do bổ sung thuốc ít nhất 5 ký tự.');
+    const ids = await itemIds();
+    let last: Parameters<typeof mapProtocol>[0] | null = null;
+    for (const a of adds) {
+      const itemId = ids.get(a.itemId) ?? Number(a.itemId.replace(/D/g, ''));
+      last = await beData<Parameters<typeof mapProtocol>[0]>(be.post(`/medical-management/protocols/${beId(p)}/items`, { phaseNo: a.phaseNo, itemId, quantity: a.qty, reason: why }));
+    }
+    after('protocols', 'inventory', 'invoices');
+    await addAudit(actor, { action: 'ADD_PROTOCOL_ITEMS', label: 'Bổ sung thuốc khi điều trị', object: `${p.id} · ${p.horse}`, area: 'med', to: `${adds.length} dòng`, reason: why });
+    return (last ? mapProtocol(last) : p) as unknown as Protocol;
+  },
   async sendStockCheck(p: Protocol) {
     return p;
   },
@@ -76,6 +89,9 @@ export const vetProtocolBe = {
   },
   async completeProtocol(p: Protocol, outcome: string) {
     if (outcome.trim().length < 10) throw new Error('Kết quả điều trị ít nhất 10 ký tự.');
+    const done = new Set(p.progress.map((n) => Number(n.text.match(/Hoàn thành giai đoạn (\d+)/)?.[1])).filter((n) => n > 0));
+    const missing = p.phases.find((ph) => !done.has(ph.no));
+    if (missing) throw new Error(`Phải hoàn thành giai đoạn ${missing.no} (${missing.name}) trước khi kết thúc phác đồ.`);
     const r = await beData<Parameters<typeof mapProtocol>[0]>(be.put(`/medical-management/protocols/${beId(p)}/complete`, { content: outcome.trim() }));
     after('protocols');
     return mapProtocol(r) as unknown as Protocol;
@@ -111,11 +127,18 @@ export const warehouseBe = {
       const it = items.data.find((i) => i.id === code);
       const avail = it ? Math.max(0, it.onHand - it.held) : 0;
       if (avail >= qty) return [];
-      const ship = etaFor[code] ? ships.data.find((s) => s.id === etaFor[code]) : undefined;
+      const etaId = etaFor[code] ?? Object.entries(etaFor).find(([key]) => key.endsWith(`:${code}`))?.[1] ?? null;
+      const ship = etaId ? ships.data.find((s) => s.id === etaId) : undefined;
       return [{ itemId: beId(it ?? { id: code }), eta: iso(ship?.eta), purchaseOrderId: ship ? beId(ship) : undefined }];
     });
     const r = await beData<Parameters<typeof mapProtocol>[0]>(be.put(`/inventory/protocols/${beId(p)}/stock-check`, { shortages, note: shortages.length ? 'Kho báo thiếu' : 'Kho đủ hàng, đã giữ' }));
     after('protocols', 'inventory', 'stockTx');
+    return mapProtocol(r) as unknown as Protocol;
+  },
+  async reviewSupplements(p: Protocol) {
+    if (p.state !== 'IN_TREATMENT') throw new Error('Chỉ duyệt thuốc bổ sung khi phác đồ đang điều trị.');
+    const r = await beData<Parameters<typeof mapProtocol>[0]>(be.put(`/inventory/protocols/${beId(p)}/supplements/review`));
+    after('protocols', 'inventory', 'invoices');
     return mapProtocol(r) as unknown as Protocol;
   },
   async dispense(p: Protocol) {
@@ -128,12 +151,15 @@ export const warehouseBe = {
   async createShipment(input: { supplier: string; eta: string; lines: { itemId: string; qty: number }[]; forRef: string; requiredBy?: string }) {
     if (!input.lines.length) throw new Error('Thêm ít nhất 1 mặt hàng.');
     const [suppliers, ids] = await Promise.all([beData<{ supplierId: number; supplierName: string; isActive: boolean }[]>(be.get('/inventory/suppliers')), itemIds()]);
-    const sup = suppliers.find((s) => s.supplierName.toLowerCase() === input.supplier.trim().toLowerCase()) ?? suppliers.find((s) => s.isActive);
-    if (!sup) throw new Error('Chưa có nhà cung cấp trong hệ thống.');
+    const sup = suppliers.find((s) => s.supplierName.toLowerCase() === input.supplier.trim().toLowerCase()) ;
+    if (!sup) throw new Error(suppliers.some((s) => s.isActive) ? `Không có nhà cung cấp "${input.supplier.trim()}" — chọn trong danh sách hoặc thêm ở mục Nhà cung cấp.` : 'Chưa có nhà cung cấp — thêm ở mục Nhà cung cấp trước.');
+    if (!sup.isActive) throw new Error(`${sup.supplierName} đã ngừng hợp tác.`);
     const ref = input.forRef ?? '';
+    const protocols = ref.startsWith('PD-') ? (await http.get<{ id: string; beId?: number }[]>('/protocols')).data : [];
+    const protocolId = protocols.find((p) => p.id === ref)?.beId ?? (ref.startsWith('PD-') ? numOrUndef(ref) : undefined);
     const r = await beData<Parameters<typeof mapPo>[0]>(be.post('/inventory/purchase-orders', {
       supplierId: sup.supplierId, purpose: ref.startsWith('PD-') ? 'PROTOCOL' : ref.startsWith('RQ-') ? 'REQUISITION' : 'RESTOCK',
-      protocolId: ref.startsWith('PD-') ? numOrUndef(ref) : undefined, requisitionId: ref.startsWith('RQ-') ? numOrUndef(ref) : undefined,
+      protocolId, requisitionId: ref.startsWith('RQ-') ? numOrUndef(ref) : undefined,
       expectedDeliveryDate: iso(input.eta), requiredBy: iso(input.requiredBy), note: ref || undefined,
       lines: input.lines.map((l) => ({ itemId: ids.get(l.itemId) ?? numOrUndef(l.itemId), quantity: l.qty })),
     }));

@@ -8,6 +8,7 @@ import { PATH } from '../../../routers/routerPath';
 import { Icon } from '../../../components/ui/Icon';
 import { Badge, Callout, PageHeader, Panel, Timeline } from '../../../components/ui/Ht';
 import { LoadState } from '../../../components/trainer/TrainerParts';
+import { OwnerAttachments } from '../../../features/registration-attachments/OwnerAttachments';
 
 const STATUS: Record<Registration['status'], [string, 'warning' | 'success' | 'danger']> = { Pending: ['Chờ duyệt (PENDING_REVIEW)', 'warning'], Approved: ['Đã duyệt', 'success'], Rejected: ['Bị từ chối', 'danger'] };
 const canResubmit = (r: Registration) => r.status === 'Rejected' && r.decidedNote === 'Cho phép nộp lại';
@@ -39,6 +40,7 @@ export const OwnerRegistrations: React.FC = () => {
                   {r.status === 'Rejected' && decision && <Callout tone="danger" title="Lý do từ chối">{decision.text.replace(/^từ chối( · cho phép nộp lại)?: /, '')}</Callout>}
                   {canResubmit(r) && <Link className="ht-btn ht-btn--secondary ht-btn--sm" style={{ justifySelf: 'start' }} to={`${PATH.owner.registrationCreate}?from=${r.id}`}><Icon name="refresh" size={14} />Bổ sung & nộp lại</Link>}
                   {r.status === 'Approved' && <Callout tone="success">Ngựa đã được đưa vào danh sách quản lý của CLB.</Callout>}
+                  <OwnerAttachments reg={r} onChanged={reload} />
                 </div>
                 <div>
                   <b style={{ fontSize: 13 }}>Diễn biến</b>

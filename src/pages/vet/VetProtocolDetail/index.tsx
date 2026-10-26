@@ -9,6 +9,7 @@ import { ProtocolBadge, ProtocolPath } from '../../../components/vet/VetParts';
 import { ActionDialog, ProtocolAction } from './ActionDialog';
 import { DecisionPanel } from './DecisionPanel';
 import { AddItemsDialog } from './AddItemsDialog';
+import { DispensingHistory } from '../../../features/dispensing-history';
 import { LogPanel, PhaseList, ProgressPanel, ProtocolBanners, StockPanel, VersionsPanel } from './ProtocolSections';
 
 export const VetProtocolDetail: React.FC = () => {
@@ -39,16 +40,17 @@ export const VetProtocolDetail: React.FC = () => {
         <div>
           <PhaseList protocol={p} />
           <StockPanel protocol={p} shipments={shipments} />
+          <DispensingHistory protocolBeId={(p as { beId?: number }).beId} />
           <ProgressPanel protocol={p} onAdd={() => setAction('progress')} />
         </div>
         <div>
-          <DecisionPanel protocol={p} horse={horse} vetCase={vetCase} onAction={setAction} onNewVersion={newVersion} onAddItems={() => setAdding(true)} />
+          <DecisionPanel protocol={p} horse={horse} vetCase={vetCase} onAction={setAction} onNewVersion={newVersion} onAddItems={() => setAdding(true)} onReload={reload} />
           <VersionsPanel current={p.id} versions={versions} />
           <LogPanel protocol={p} />
         </div>
       </div>
 
-      {adding && <AddItemsDialog protocol={p} onClose={() => setAdding(false)} onDone={(newId) => { setAdding(false); navigate(`/vet/protocols/${newId}`); }} />}
+      {adding && <AddItemsDialog protocol={p} onClose={() => setAdding(false)} onDone={(newId) => { setAdding(false); if (newId === p.id) reload(); else navigate(`/vet/protocols/${newId}`); }} />}
       {action && <ActionDialog protocol={p} action={action} onClose={() => setAction(null)} onDone={() => { setAction(null); reload(); }} />}
     </div>
   );

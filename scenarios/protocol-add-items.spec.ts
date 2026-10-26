@@ -27,13 +27,22 @@ test('vet adds medicine to a stock-available protocol, creating the next version
   await expect(page.getByText('phiên bản 2')).toBeVisible();
 });
 
-test('add medicine is offered for a shortage protocol but not during treatment', async ({ page }) => {
+test('during treatment the vet adds medicine with a reason instead of creating a new version', async ({ page }) => {
   await signIn(page, 'Veterinarian');
   await page.goto('/vet/protocols/PD-0013');
   await expect(page.getByTestId('add-items-btn')).toBeVisible();
   await page.goto('/vet/protocols/PD-0009');
-  await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
-  await expect(page.getByTestId('add-items-btn')).toHaveCount(0);
+  await expect(page.getByTestId('cancel-protocol-btn')).toHaveCount(0);
+  await page.getByTestId('add-items-btn').click();
+  await expect(page.getByTestId('add-items-dialog')).toContainText('Bổ sung thuốc khi điều trị');
+  const select = page.getByTestId('add-item-select');
+  await select.selectOption((await select.locator('option').nth(1).getAttribute('value'))!);
+  await page.getByTestId('add-item-line').click();
+  await expect(page.getByTestId('dialog-confirm')).toBeDisabled();
+  await page.locator('#add-item-reason').fill('Vết thương chậm lành');
+  await page.getByTestId('dialog-confirm').click();
+  await expect(page.getByTestId('add-items-dialog')).toBeHidden();
+  await expect(page).toHaveURL(/PD-0009$/);
 });
 
 test('vet cancels a protocol waiting for stock check, giving a reason', async ({ page }) => {

@@ -6,17 +6,17 @@ import { ROLE_LABEL } from '../../../components/layout/nav';
 import { useDebounce } from '../../../hooks/useDebounce';
 
 type Role = ManagedUser['role'];
-export type UserAction = 'lock' | 'unlock' | 'assign';
+export type UserAction = 'lock' | 'unlock' | 'assign' | 'resend' | 'service';
 const ROLES = Object.keys(ROLE_LABEL) as Role[];
 
-export const UserTable: React.FC<{ users: ManagedUser[]; meId?: string; onAction: (kind: UserAction, u: ManagedUser) => void }> = ({ users, meId, onAction }) => {
+export const UserTable: React.FC<{ users: ManagedUser[]; meId?: string; onAction: (kind: UserAction, u: ManagedUser) => void; showService?: boolean }> = ({ users, meId, onAction, showService }) => {
   const [q, setQ] = useState('');
   const query = useDebounce(q);
   const [roleF, setRoleF] = useState('');
   const [stF, setStF] = useState('');
   const list = useMemo(() => users.filter((u) =>
     (u.fullName + u.username + u.email).toLowerCase().includes(query.trim().toLowerCase()) &&
-    (!roleF || u.role === roleF) && (!stF || u.status === stF)), [users, query, roleF, stF]);
+    (!roleF || u.role === roleF) && (!stF || (stF === 'PENDING' ? u.emailConfirmed === false : u.status === stF))), [users, query, roleF, stF]);
 
   return (
     <Panel headStyle={{ paddingBottom: 16, justifyContent: 'flex-start', flexWrap: 'wrap' }} right={<>
@@ -25,7 +25,7 @@ export const UserTable: React.FC<{ users: ManagedUser[]; meId?: string; onAction
         <option value="">Tất cả vai trò</option>{ROLES.map((r) => <option key={r} value={r}>{ROLE_LABEL[r]}</option>)}
       </select>
       <select className="ht-select" value={stF} onChange={(e) => setStF(e.target.value)} aria-label="Lọc trạng thái">
-        <option value="">Mọi trạng thái</option><option value="ACTIVE">Hoạt động</option><option value="LOCKED">Bị khóa</option>
+        <option value="">Mọi trạng thái</option><option value="ACTIVE">Hoạt động</option><option value="PENDING">Chờ xác nhận email</option><option value="LOCKED">Bị khóa</option>
       </select>
     </>}>
       <table className="ht-table">
@@ -43,7 +43,9 @@ export const UserTable: React.FC<{ users: ManagedUser[]; meId?: string; onAction
               <td><Badge tone="brand" plain>{ROLE_LABEL[u.role]}</Badge></td>
               <td className="mono">{u.lastLogin}</td>
               <td>
-                {u.status === 'ACTIVE' ? <Badge tone="success">Hoạt động</Badge> : <><Badge tone="neutral">Bị khóa</Badge><span className="sub">{u.lockReason}</span></>}
+                {u.status === 'ACTIVE' && u.emailConfirmed === false
+                  ? <><span data-testid={`pending-confirm-${u.username}`}><Badge tone="warning">Chờ xác nhận email</Badge></span><span className="sub">Chưa nhận việc được</span></>
+                  : u.status === 'ACTIVE' ? <Badge tone="success">Hoạt động</Badge> : <><Badge tone="neutral">Bị khóa</Badge><span className="sub">{u.lockReason}</span></>}
                 {u.serviceSuspended && <span className="sub" style={{ color: 'var(--danger-ink)', fontWeight: 600 }}>Dịch vụ đình chỉ (BR_13)</span>}
               </td>
               <td>
@@ -52,7 +54,9 @@ export const UserTable: React.FC<{ users: ManagedUser[]; meId?: string; onAction
                     {u.status === 'ACTIVE'
                       ? <button type="button" className="ht-btn ht-btn--secondary ht-btn--sm" onClick={() => onAction('lock', u)}><Icon name="lock" />Khóa</button>
                       : <button type="button" className="ht-btn ht-btn--secondary ht-btn--sm" onClick={() => onAction('unlock', u)}><Icon name="unlock" />Mở khóa</button>}
-                    {(u.role === 'Groom' || u.role === 'HeadTrainer') && u.status === 'ACTIVE' && <button type="button" className="ht-btn ht-btn--ghost ht-btn--sm" data-testid={`assign-${u.username}`} onClick={() => onAction('assign', u)}><Icon name="stable" />{u.role === 'HeadTrainer' ? 'Phân công ngựa' : 'Phân khu'}</button>}
+                    {u.emailConfirmed === false && u.status === 'ACTIVE' && <button type="button" className="ht-btn ht-btn--ghost ht-btn--sm" data-testid={`resend-confirm-${u.username}`} onClick={() => onAction('resend', u)}><Icon name="mail" />Gửi lại mail</button>}
+                    {(u.role === 'Groom' || u.role === 'HeadTrainer') && u.status === 'ACTIVE' && u.emailConfirmed !== false && <button type="button" className="ht-btn ht-btn--ghost ht-btn--sm" data-testid={`assign-${u.username}`} onClick={() => onAction('assign', u)}><Icon name="stable" />{u.role === 'HeadTrainer' ? 'Phân công ngựa' : 'Phân khu'}</button>}
+                    {showService && u.role === 'HorseOwner' && u.beId && <button type="button" className="ht-btn ht-btn--ghost ht-btn--sm" data-testid={`owner-service-${u.username}`} onClick={() => onAction('service', u)}><Icon name="card" />Dịch vụ</button>}
                   </>}
                 </div>
               </td>

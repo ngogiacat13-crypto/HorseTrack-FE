@@ -4,6 +4,7 @@ export const PATH = {
   login: '/login',
   register: '/register',
   forgotPassword: '/forgot-password',
+  confirmAccount: '/confirm-account',
   myProfile: '/my-profile',
   changePassword: '/change-password',
   horseProfile: '/horses/:id',
@@ -18,6 +19,7 @@ export const PATH = {
     reports: '/manager/reports',
     users: '/manager/users',
     auditLogs: '/manager/audit-logs',
+    emailLogs: '/manager/email-logs',
   },
   trainer: {
     home: '/trainer',

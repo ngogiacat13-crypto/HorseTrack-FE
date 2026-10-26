@@ -8,6 +8,7 @@ export interface ChecklistItem { key: string; label: string; detail: string; pas
 export interface HistoryItem { tone?: 'danger' | 'warning' | 'success' | 'info'; who: string; text: string; at: string }
 export interface Registration {
   id: string;
+  beId?: number;
   horse: { name: string; breed: string; sex: string; age: number; code: string };
   owner: { fullName: string; email: string; phone: string };
   submittedAt: string;
@@ -19,7 +20,7 @@ export interface Registration {
   ownerExtra: { otherHorses: string };
   horseExtra: { color: string; height: string; weight: number; passport: string; healthCert: string };
   checklist: ChecklistItem[];
-  attachments: { name: string; meta: string; problem?: boolean }[];
+  attachments: { name: string; meta: string; problem?: boolean; beId?: number; mime?: string; file?: string }[];
   history: HistoryItem[];
 }
 
@@ -50,6 +51,7 @@ export interface ManagedUser {
   openTasks?: number; horsesOwned?: number; serviceSuspended?: boolean; avatarUrl?: string | null;
   zones?: string[];
   beId?: number;
+  emailConfirmed?: boolean;
 }
 export interface GroomAssignment { id: string; name: string; zones: string[]; role?: UserRole }
 export type StaffRole = 'HeadTrainer' | 'Veterinarian' | 'Groom' | 'WarehouseManager';
@@ -166,6 +168,29 @@ const loadDashboardBe = async () => {
 };
 
 export const managerApi = {
+  async resendConfirmation(user: ManagedUser, actor: Actor) {
+    if (!USE_BACKEND) throw new Error('Chỉ gửi lại mail xác nhận khi chạy với server.');
+    if (user.emailConfirmed !== false) throw new Error(`${user.fullName} đã xác nhận tài khoản.`);
+    const res = await be.post<ApiResponse<null>>(`/users/${user.beId ?? user.id}/resend-confirmation`, undefined, { timeout: EMAIL_TIMEOUT });
+    invalidate('users');
+    await addAudit(actor, { action: 'RESEND_STAFF_CONFIRMATION', label: 'Gửi lại mail xác nhận tài khoản', object: `${user.username} · ${user.email}`, area: 'acct' });
+    return res.data.message;
+  },
+  async openAttachment(attachmentId: number) {
+    if (!USE_BACKEND) throw new Error('Tệp chỉ xem được khi chạy với server.');
+    const tab = window.open('', '_blank');
+    try {
+      const res = await be.get<Blob>(`/horses/registration-attachments/${attachmentId}/file`, { responseType: 'blob' });
+      const url = URL.createObjectURL(res.data);
+      if (tab) tab.location.href = url;
+      else window.location.assign(url);
+      window.setTimeout(() => URL.revokeObjectURL(url), 60000);
+    } catch (e) {
+      tab?.close();
+      throw e;
+    }
+  },
+
   async getDashboard() {
     const [dash, regs, protocols, invoices, shipments, logs, overdueTasks] = await Promise.all([
       USE_BACKEND ? loadDashboardBe() : get<any>('/dashboard'),
