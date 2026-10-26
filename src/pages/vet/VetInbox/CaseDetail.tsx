@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { HEALTH_LABEL, TrainingSession } from '../../../api/trainerApi';
-import { CASE_LABEL, isOpenProtocol, Protocol, PROTOCOL_LABEL, SEVERITY_LABEL, SOURCE_LABEL, VetCase, VetHorse } from '../../../api/vetApi';
+import { CASE_LABEL, Protocol, PROTOCOL_LABEL, SEVERITY_LABEL, SOURCE_LABEL, VetCase, VetHorse } from '../../../api/vetApi';
 import { Icon } from '../../../components/ui/Icon';
 import { Badge, Callout, Panel, useToast } from '../../../components/ui/Ht';
 import { SeverityTag } from '../../../components/vet/VetParts';
@@ -56,7 +56,7 @@ export const CaseDetail: React.FC<Props> = ({ vetCase: c, horse, session, protoc
               : <button type="button" className="ht-btn ht-btn--secondary" onClick={onClose}><Icon name="check" />Đóng ca</button>}
             <button type="button" className="ht-btn ht-btn--danger" disabled={horse.trainingLocked} onClick={onLock}
               title={horse.trainingLocked ? 'Ngựa đã bị khóa huấn luyện' : undefined}><Icon name="lock" />{horse.trainingLocked ? 'Đã khóa' : 'Khóa huấn luyện'}</button>
-            {protocol && isOpenProtocol(protocol)
+            {protocol && protocol.state !== 'CANCELLED'
               ? <Link className="ht-btn ht-btn--primary ht-btn--block" to={`/vet/protocols/${protocol.id}`}><Icon name="file" />Mở phác đồ {protocol.id}</Link>
               : <Link className="ht-btn ht-btn--primary ht-btn--block" to={`/vet/protocols/new?horse=${horse.id}&case=${c.id}`} aria-disabled={!c.exam}
                   onClick={(e) => { if (!c.exam) { e.preventDefault(); toast('Ghi nhận khám trước khi lập phác đồ.'); } }}><Icon name="file" />Tạo phác đồ điều trị</Link>}
