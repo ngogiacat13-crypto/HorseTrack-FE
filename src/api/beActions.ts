@@ -89,6 +89,9 @@ export const vetProtocolBe = {
   },
   async completeProtocol(p: Protocol, outcome: string) {
     if (outcome.trim().length < 10) throw new Error('Kết quả điều trị ít nhất 10 ký tự.');
+    const done = new Set(p.progress.map((n) => Number(n.text.match(/Hoàn thành giai đoạn (\d+)/)?.[1])).filter((n) => n > 0));
+    const missing = p.phases.find((ph) => !done.has(ph.no));
+    if (missing) throw new Error(`Phải hoàn thành giai đoạn ${missing.no} (${missing.name}) trước khi kết thúc phác đồ.`);
     const r = await beData<Parameters<typeof mapProtocol>[0]>(be.put(`/medical-management/protocols/${beId(p)}/complete`, { content: outcome.trim() }));
     after('protocols');
     return mapProtocol(r) as unknown as Protocol;
@@ -130,6 +133,12 @@ export const warehouseBe = {
     });
     const r = await beData<Parameters<typeof mapProtocol>[0]>(be.put(`/inventory/protocols/${beId(p)}/stock-check`, { shortages, note: shortages.length ? 'Kho báo thiếu' : 'Kho đủ hàng, đã giữ' }));
     after('protocols', 'inventory', 'stockTx');
+    return mapProtocol(r) as unknown as Protocol;
+  },
+  async reviewSupplements(p: Protocol) {
+    if (p.state !== 'IN_TREATMENT') throw new Error('Chỉ duyệt thuốc bổ sung khi phác đồ đang điều trị.');
+    const r = await beData<Parameters<typeof mapProtocol>[0]>(be.put(`/inventory/protocols/${beId(p)}/supplements/review`));
+    after('protocols', 'inventory', 'invoices');
     return mapProtocol(r) as unknown as Protocol;
   },
   async dispense(p: Protocol) {

@@ -74,6 +74,11 @@ export const medicalApi = {
     return data;
   },
 
+  async reviewSupplements(p: Protocol, _actor: Actor) {
+    if (p.state !== 'IN_TREATMENT') throw new Error('Chỉ duyệt thuốc bổ sung khi phác đồ đang điều trị.');
+    return p;
+  },
+
   async dispense(p: Protocol, input: { phaseNos?: number[]; lines: { itemId: string; phaseNo?: number; qty: number; lot: string }[]; receiver: string }, actor: Actor) {
     if (p.state !== 'READY_FOR_DISPENSING') throw new Error('Chỉ cấp phát phác đồ đã được bác sĩ xác nhận (READY_FOR_DISPENSING).');
     if (!isOpenProtocol(p)) throw new Error('Phác đồ đã đóng hoặc bị thay thế — không cấp phát.');

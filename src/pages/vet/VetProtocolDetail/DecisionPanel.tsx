@@ -1,15 +1,23 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { dateKey, isOpenProtocol, ITEM_ADDABLE, phaseRequiredBy, Protocol, stockShort, VetCase, VetHorse } from '../../../api/vetApi';
+import { dateKey, isOpenProtocol, ITEM_ADDABLE, phaseRequiredBy, Protocol, stockShort, vetApi, VetCase, VetHorse } from '../../../api/vetApi';
+import { useActor } from '../../../auth/AuthContext';
+import { useAction } from '../../../hooks/useAction';
 import { Icon } from '../../../components/ui/Icon';
 import { Callout, money, Panel } from '../../../components/ui/Ht';
 import { HorseBadges } from '../../../components/trainer/TrainerParts';
 import type { ProtocolAction } from './ActionDialog';
 
-interface Props { protocol: Protocol; horse: VetHorse; vetCase: VetCase | null; onAction: (a: ProtocolAction) => void; onNewVersion: () => void; onAddItems: () => void }
+interface Props { protocol: Protocol; horse: VetHorse; vetCase: VetCase | null; onAction: (a: ProtocolAction) => void; onNewVersion: () => void; onAddItems: () => void; onReload: () => void }
 
-export const DecisionPanel: React.FC<Props> = ({ protocol: p, horse, vetCase, onAction, onNewVersion, onAddItems }) => {
+const finishedPhases = (p: Protocol) => new Set(p.progress.map((n) => Number(n.text.match(/Hoàn thành giai đoạn (\d+)/)?.[1])).filter((n) => n > 0));
+
+export const DecisionPanel: React.FC<Props> = ({ protocol: p, horse, vetCase, onAction, onNewVersion, onAddItems, onReload }) => {
+  const actor = useActor();
+  const { busy, error, run } = useAction();
   const short = stockShort(p);
+  const done = finishedPhases(p);
+  const nextPhase = p.phases.find((ph) => !done.has(ph.no));
   const requiredBy = phaseRequiredBy(p, short.map((l) => l.itemId));
   const etaLate = p.wait && dateKey(p.wait.eta) > dateKey(requiredBy);
   const btn = (cls: string, icon: React.ComponentProps<typeof Icon>['name'], label: string, onClick: () => void) => (
@@ -58,7 +66,16 @@ export const DecisionPanel: React.FC<Props> = ({ protocol: p, horse, vetCase, on
         {p.state === 'IN_TREATMENT' && <>
           {btn('ht-btn--secondary', 'pulse', 'Ghi tiến triển', () => onAction('progress'))}
           <button type="button" className="ht-btn ht-btn--secondary ht-btn--block" data-testid="add-items-btn" onClick={onAddItems}><Icon name="box" />Bổ sung thuốc</button>
-          {btn('ht-btn--primary', 'check', 'Kết thúc điều trị', () => onAction('complete'))}
+          {nextPhase && (
+            <button type="button" className="ht-btn ht-btn--secondary ht-btn--block" data-testid="protocol-phase-done" disabled={busy}
+              onClick={() => { void run(() => vetApi.addProgress(p, `Hoàn thành giai đoạn ${nextPhase.no}: ${nextPhase.name}`, actor), `Đã hoàn thành giai đoạn ${nextPhase.no}.`).then((ok) => { if (ok) onReload(); }); }}>
+              <Icon name="check" />Hoàn thành giai đoạn {nextPhase.no}
+            </button>
+          )}
+          {nextPhase
+            ? <Callout tone="info">Phải hoàn thành từng giai đoạn trước khi kết thúc. Còn giai đoạn {nextPhase.no} · {nextPhase.name}.</Callout>
+            : btn('ht-btn--primary', 'check', 'Kết thúc điều trị', () => onAction('complete'))}
+          {error && <Callout tone="danger">{error}</Callout>}
         </>}
 
         {p.state !== 'DRAFT' && ITEM_ADDABLE.includes(p.state) && (

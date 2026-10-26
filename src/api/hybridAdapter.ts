@@ -110,7 +110,7 @@ interface BeAttachment { attachmentId: number; docType?: string | null; fileName
 const DOC_LABEL: Record<string, string> = { OWNERSHIP: 'Giấy tờ sở hữu', OTHER: 'Giấy chứng nhận sức khỏe / khác' };
 interface BeRegistration { attachments?: BeAttachment[] | null; registrationCode?: string | null; ownerName?: string | null; submittedAt?: string | null; status: string; ownerNote?: string | null; decisionNote?: string | null; allowResubmit?: boolean | null; decidedByName?: string | null; decidedAt?: string | null; checks?: BeRegCheck[] | null }
 interface BeInjury { injuryId: number; part: string; severity: string; severityLabel?: string | null; note?: string | null; x?: number | null; y?: number | null; caseCode?: string | null; createdByName?: string | null; createdAt?: string | null }
-const INJURY_VIEWERS = ['ClubManager', 'HeadTrainer', 'Veterinarian', 'Groom'];
+const INJURY_VIEWERS = ['ClubManager', 'HeadTrainer', 'Veterinarian', 'Groom', 'HorseOwner'];
 const injuriesOf = async (horseId: string) => {
   if (!INJURY_VIEWERS.includes(me()?.role ?? '') || !/^\d+$/.test(horseId)) return [];
   return (await orEmpty(data<BeInjury[]>(`/horses/${horseId}/injuries`))).map((i) => ({
@@ -410,6 +410,8 @@ interface BeOwnerProgress {
   endDate: string;
   status: string;
   progress?: number | null;
+  delayNote?: string | null;
+  phases?: BePhase[] | null;
   sessions?: (BeMonitor & {
     sessionId: number;
     sessionDate: string;
@@ -417,6 +419,8 @@ interface BeOwnerProgress {
     status: string;
     notes?: string | null;
     assignedToName?: string | null;
+    planName?: string | null;
+    late?: boolean | null;
     evaluationScore?: number | null;
     evaluationComment?: string | null;
     evaluatedBy?: string | null;
@@ -430,13 +434,15 @@ const ownerProgress = async () => {
     const weeks = Math.max(1, Math.round((new Date(p.endDate).getTime() - new Date(p.startDate).getTime()) / (7 * 864e5)));
     const plan: Row = {
       id: String(p.planId), horseId: h.id, horseName: h.name, name: p.planName, type: '—', goal: '', startDate: ddmmyyyy(p.startDate), createdBy: '—',
-      phases: [unknownPhase(weeks)],
-      currentPhase: 1, week: Math.max(1, Math.round(((p.progress ?? 0) * weeks) / 100)), status: PLAN_STATUS[(p.status ?? '').toUpperCase()] ?? 'PAUSED',
+      phases: toPhases(p.phases, weeks),
+      currentPhase: currentPhaseOf(p.phases), week: Math.max(1, Math.round(((p.progress ?? 0) * weeks) / 100)), status: PLAN_STATUS[(p.status ?? '').toUpperCase()] ?? 'PAUSED',
+      ...(p.delayNote ? { pausedReason: p.delayNote } : {}),
     };
     const sessions: Row[] = (p.sessions ?? []).map((x) => ({
-      id: String(x.sessionId), horseId: h.id, horseName: h.name, planId: String(p.planId), phaseNo: 1, label: x.activityType,
+      id: String(x.sessionId), horseId: h.id, horseName: h.name, planId: String(p.planId), phaseNo: 1, label: x.planName ? `${x.activityType} · ${x.planName}` : x.activityType,
       date: ddmmyyyy(x.sessionDate), time: hhmm(x.sessionDate), groom: x.assignedToName ?? '—', track: (x.notes ?? '').split(' · Ghi nhận:')[0] || '—',
       status: SESSION[x.status?.toUpperCase()] ?? 'SCHEDULED', confirmed: x.status?.toUpperCase() === 'CONFIRMED', ...monitor(x), decision: decisionFrom(x),
+      ...(x.late ? { pausedReason: 'Nhân viên chưa xác nhận, buổi tập đã quá giờ' } : {}),
       evaluation: x.evaluationScore ? { score: x.evaluationScore, comment: x.evaluationComment ?? '', by: x.evaluatedBy ?? 'HLV', at: x.evaluatedAt ?? '' } : null,
     }));
     return { plan, sessions };

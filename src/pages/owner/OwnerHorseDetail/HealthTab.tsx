@@ -23,6 +23,8 @@ export const HealthTab: React.FC<{ horse: VetHorse; protocols: Protocol[]; cases
                   <b><span className="ht-mono">{p.id}</span> · {p.diagnosis}</b><ProtocolBadge state={p.state} delayed={p.delayed} />
                 </div>
                 <small style={{ color: 'var(--muted)' }}>BS {p.vet} · lập {p.createdAt} · {p.phases.length} giai đoạn: {p.phases.map((ph) => ph.name).join(' → ')}</small>
+                <div style={{ fontSize: 13 }}>{p.diagnosis}{p.phases.some((ph) => ph.goal) && <> · {p.phases.map((ph) => ph.goal).filter(Boolean).join('; ')}</>}</div>
+                {h.injuries.filter((i) => !p.caseId || i.caseId === p.caseId).map((i) => <div key={i.id ?? i.part} style={{ fontSize: 13 }}>Vị trí {i.part} · {i.severity}{i.note ? `: ${i.note}` : ''}</div>)}
                 <ProtocolPath protocol={p} />
                 {p.outcome && <div style={{ fontSize: 13 }}><b>Kết quả:</b> {p.outcome}</div>}
               </div>

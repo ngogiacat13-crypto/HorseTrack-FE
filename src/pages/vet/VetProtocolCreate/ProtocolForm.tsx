@@ -32,7 +32,7 @@ export const ProtocolForm: React.FC<{ data: FormData; horseParam: string; casePa
     : [newPhase(1, addDays(DEMO_NOW.date, 2))]));
   const [open, setOpen] = useState(0);
   const [err, setErr] = useState('');
-  const [busy, setBusy] = useState<'' | 'draft' | 'send'>('');
+  const [busy, setBusy] = useState<'' | 'send'>('');
 
   const cases = data.cases.filter((c) => c.horseId === horseId);
   const horse = data.horses.find((h) => h.id === horseId);
@@ -58,14 +58,14 @@ export const ProtocolForm: React.FC<{ data: FormData; horseParam: string; casePa
     setOpen(phases.length);
   };
 
-  const submit = async (send: boolean) => {
+  const submit = async () => {
     setErr('');
     if (!horse) { setErr('Chọn ngựa.'); return; }
     if (!vetCase) { setErr('Chọn ca khám cho phác đồ.'); return; }
-    setBusy(send ? 'send' : 'draft');
+    setBusy('send');
     try {
-      const p = await vetApi.createProtocol({ horseId, caseId, diagnosis, requiredBy, phases, replaces: r?.id ?? null }, send, actor);
-      toast(send ? `${p.id} đã gửi kho kiểm tra tồn.` : `Đã lưu nháp ${p.id}.`);
+      const p = await vetApi.createProtocol({ horseId, caseId, diagnosis, requiredBy, phases, replaces: r?.id ?? null }, true, actor);
+      toast(`${p.id} đã gửi kho kiểm tra tồn.`);
       navigate(`/vet/protocols/${p.id}`);
     } catch (e) {
       setErr((e as ApiError).message ?? 'Lưu thất bại.');
@@ -101,7 +101,7 @@ export const ProtocolForm: React.FC<{ data: FormData; horseParam: string; casePa
           <Callout tone="info" icon="box">“Tồn khả dụng” chỉ để tham khảo (tồn thực tế trừ phần đang giữ). Số lượng có thể cấp, lô/hạn dùng và ETA do Quản lý kho phản hồi sau khi bạn gửi kiểm tồn.</Callout>
         </div>
         <div>
-          <SummaryPanel horse={horse} vetCase={vetCase} phases={phases} error={err} busy={busy} onSend={() => submit(true)} onDraft={() => submit(false)} />
+          <SummaryPanel horse={horse} vetCase={vetCase} phases={phases} error={err} busy={busy} onSend={() => submit()} />
         </div>
       </div>
     </div>

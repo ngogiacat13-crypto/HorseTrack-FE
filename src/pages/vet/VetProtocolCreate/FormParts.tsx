@@ -41,11 +41,11 @@ export const HorseCaseFields: React.FC<HorseCaseProps> = ({ horses, cases, locke
 );
 
 interface SummaryProps {
-  horse?: VetHorse; vetCase?: VetCase; phases: ProtoPhase[]; error: string; busy: '' | 'draft' | 'send';
-  onSend: () => void; onDraft: () => void;
+  horse?: VetHorse; vetCase?: VetCase; phases: ProtoPhase[]; error: string; busy: '' | 'send';
+  onSend: () => void;
 }
 
-export const SummaryPanel: React.FC<SummaryProps> = ({ horse, vetCase, phases, error, busy, onSend, onDraft }) => (
+export const SummaryPanel: React.FC<SummaryProps> = ({ horse, vetCase, phases, error, busy, onSend }) => (
   <>
     <Panel as="h3" title="Tóm tắt phác đồ">
       <div className="ht-panel__body" style={{ display: 'grid', gap: 14 }}>
@@ -60,10 +60,9 @@ export const SummaryPanel: React.FC<SummaryProps> = ({ horse, vetCase, phases, e
           <dt style={{ alignSelf: 'center', color: 'var(--foreground)', fontWeight: 600 }}>Tổng chi phí</dt><dd className="total">{money(protoCost(phases))}</dd>
         </dl>
         {error && <Callout tone="danger">{error}</Callout>}
-        <button type="button" className="ht-btn ht-btn--primary ht-btn--block" onClick={onSend} disabled={!!busy}>
+        <button type="button" className="ht-btn ht-btn--primary ht-btn--block" data-testid="protocol-send-btn" onClick={onSend} disabled={!!busy}>
           {busy === 'send' ? 'Đang gửi…' : <>Gửi kiểm tra tồn kho <Icon name="arrow" /></>}
         </button>
-        <button type="button" className="ht-btn ht-btn--secondary ht-btn--block" onClick={onDraft} disabled={!!busy}>{busy === 'draft' ? 'Đang lưu…' : 'Lưu nháp'}</button>
       </div>
     </Panel>
     <Callout tone="info" title="Không cần Quản lý CLB duyệt" icon="info">

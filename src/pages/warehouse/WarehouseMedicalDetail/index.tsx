@@ -1,6 +1,9 @@
 import React from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { warehouseApi } from '../../../api/warehouseApi';
+import type { Protocol } from '../../../api/vetApi';
+import { useActor } from '../../../auth/AuthContext';
+import { useAction } from '../../../hooks/useAction';
 import { useFetch } from '../../../hooks/useFetch';
 import { Icon } from '../../../components/ui/Icon';
 import { BackButton, Badge, Callout, PageHeader, Panel, Timeline } from '../../../components/ui/Ht';
@@ -19,6 +22,22 @@ const WAIT_TEXT: Record<string, string> = {
   IN_TREATMENT: 'Đã cấp phát — đang điều trị.',
   ON_HOLD_PAYMENT: 'Đã cấp phát — điều trị tạm dừng chờ chủ ngựa thanh toán.',
   COMPLETED: 'Đã cấp phát — điều trị hoàn tất.',
+};
+
+const SupplementReview: React.FC<{ protocol: Protocol; onDone: () => void }> = ({ protocol, onDone }) => {
+  const actor = useActor();
+  const { busy, error, run } = useAction(onDone);
+  return (
+    <Panel title="Thuốc bổ sung chờ duyệt" sub="Bác sĩ gửi yêu cầu khi đang điều trị. Kho quyết định giữ hàng hoặc ghi thiếu.">
+      <div className="ht-panel__body" style={{ display: 'grid', gap: 10 }}>
+        {error && <Callout tone="danger">{error}</Callout>}
+        <button type="button" className="ht-btn ht-btn--primary" data-testid="warehouse-review-supplement" disabled={busy}
+          onClick={() => { void run(() => warehouseApi.reviewSupplements(protocol, actor), 'Đã duyệt thuốc bổ sung. Nếu thiếu, hãy lập đơn nhập.'); }}>
+          Duyệt thuốc bổ sung
+        </button>
+      </div>
+    </Panel>
+  );
 };
 
 export const WarehouseMedicalDetail: React.FC = () => {
@@ -73,6 +92,7 @@ export const WarehouseMedicalDetail: React.FC = () => {
             </Panel>
           )}
           {WAIT_TEXT[p.state] && <Callout tone={['IN_TREATMENT', 'ON_HOLD_PAYMENT', 'COMPLETED'].includes(p.state) ? 'success' : 'info'} icon="info">{WAIT_TEXT[p.state]}</Callout>}
+          {p.state === 'IN_TREATMENT' && <SupplementReview protocol={p} onDone={reload} />}
 
           <DispensingHistory protocolBeId={(p as { beId?: number }).beId} />
           {p.stock && p.state !== 'WAITING_STOCK_CHECK' && (

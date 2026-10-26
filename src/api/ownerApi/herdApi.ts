@@ -43,10 +43,14 @@ export const herdApi = {
     const rs = results(horse).slice().sort((a, b) => b.date.split('/').reverse().join('').localeCompare(a.date.split('/').reverse().join('')));
     const billed = invoices.filter((i) => i.owner === actor.name).flatMap((i) => i.lines.filter((l) => l.kind === 'MED').map((l) => ({ ...l, invoiceId: i.id, paid: isPaid(i) })));
     const shown = protocols.filter((p) => p.state !== 'SUPERSEDED');
+    const medicalHistory = horse.medicalHistory.length ? horse.medicalHistory : [
+      ...cases.filter((c) => c.exam).map((c) => ({ date: c.at, title: `${c.type}: ${c.exam?.diagnosis ?? c.note}`, tone: 'warning' as const })),
+      ...shown.map((p) => ({ date: p.createdAt, title: `Phác đồ ${p.id}: ${p.diagnosis}${p.outcome ? ` — ${p.outcome}` : ''}`, tone: (p.state === 'COMPLETED' ? 'success' : 'warning') as 'success' | 'warning' })),
+    ];
     return {
-      horse,
-      plan: plans.find((p) => p.status === 'ACTIVE' || p.status === 'PLANNED') ?? plans.find((p) => p.status === 'COMPLETED') ?? plans[0] ?? null,
-      sessions: sessions.filter((s) => s.status === 'COMPLETED' || s.status === 'STOPPED').slice(-5).reverse(),
+      horse: { ...horse, medicalHistory },
+      plan: plans.find((p) => p.status === 'ACTIVE' || p.status === 'PLANNED' || p.status === 'PAUSED') ?? plans.find((p) => p.status === 'COMPLETED') ?? plans[0] ?? null,
+      sessions: sessions.slice().sort((a, b) => b.date.split('/').reverse().join('').localeCompare(a.date.split('/').reverse().join(''))),
       protocols: shown,
       cases: cases.slice().sort((a, b) => b.id.localeCompare(a.id)),
       vaccinations,

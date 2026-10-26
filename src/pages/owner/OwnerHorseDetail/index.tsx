@@ -5,6 +5,7 @@ import { useActor } from '../../../auth/AuthContext';
 import { useFetch } from '../../../hooks/useFetch';
 import { PATH, toPath } from '../../../routers/routerPath';
 import { BackButton, Badge, Callout, money, PageHeader, Panel, Tabs } from '../../../components/ui/Ht';
+import { SESSION_LABEL } from '../../../api/trainerApi';
 import { HorseBadges, LoadState, PhaseBar } from '../../../components/trainer/TrainerParts';
 import { HealthTab } from './HealthTab';
 import { PerformanceTab } from './PerformanceTab';
@@ -39,24 +40,29 @@ export const OwnerHorseDetail: React.FC = () => {
                 {plan ? (
                   <>
                     <div><b>{plan.name}</b> {plan.status === 'COMPLETED' && <Badge tone="success" plain>Đã hoàn thành</Badge>}<div style={{ fontSize: 13, color: 'var(--muted)' }}>{plan.goal} · bắt đầu {plan.startDate} · HLV {plan.createdBy}</div></div>
+                    {plan.pausedReason && <Callout tone="demo" icon="alarm" testId="plan-delay">{plan.pausedReason}</Callout>}
                     <PhaseBar phases={plan.phases} current={plan.status === 'COMPLETED' ? plan.phases.length : plan.currentPhase} />
                   </>
                 ) : <p style={{ margin: 0, color: 'var(--muted)' }}>Chưa có giáo án đang chạy.</p>}
                 {h.trainingLocked && <Callout tone="danger" icon="lock">Bác sĩ thú y tạm khóa huấn luyện — xem tab Sức khỏe.</Callout>}
               </div>
             </Panel>
-            <Panel title="Phiên tập gần đây">
+            <Panel title="Lịch sử phiên tập" sub="Gồm buổi đã xong, đang tập, chưa bắt đầu và buổi của giáo án trước">
               <div style={{ overflowX: 'auto' }}>
                 <table className="ht-table">
                   <thead><tr><th>Ngày</th><th>Nội dung</th><th>Kết quả</th><th>HLV đánh giá</th></tr></thead>
                   <tbody>
-                    {sessions.map((s) => (
-                      <tr key={s.id}>
+                    {sessions.map((s) => {
+                      const late = (s.pausedReason ?? '').includes('chưa xác nhận');
+                      const [label, tone] = late ? ['Trễ — chưa xác nhận', 'warning' as const] : (SESSION_LABEL[s.status] ?? ['Khác', 'neutral' as const]);
+                      return (
+                      <tr key={s.id} data-testid={late ? 'session-late' : undefined}>
                         <td className="ht-mono">{s.date}</td><td>{s.label}</td>
-                        <td><Badge tone={s.status === 'COMPLETED' ? 'success' : 'danger'} plain>{s.status === 'COMPLETED' ? 'Hoàn thành' : 'Dừng giữa chừng'}</Badge></td>
+                        <td><Badge tone={tone} plain>{label}</Badge></td>
                         <td>{s.evaluation ? <><b>{s.evaluation.score}/10</b> · {s.evaluation.comment}</> : '—'}</td>
                       </tr>
-                    ))}
+                      );
+                    })}
                     {sessions.length === 0 && <tr><td colSpan={4} className="ht-empty">Chưa có phiên tập.</td></tr>}
                   </tbody>
                 </table>

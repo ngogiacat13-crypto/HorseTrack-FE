@@ -44,7 +44,7 @@ export const VetProtocolDetail: React.FC = () => {
           <ProgressPanel protocol={p} onAdd={() => setAction('progress')} />
         </div>
         <div>
-          <DecisionPanel protocol={p} horse={horse} vetCase={vetCase} onAction={setAction} onNewVersion={newVersion} onAddItems={() => setAdding(true)} />
+          <DecisionPanel protocol={p} horse={horse} vetCase={vetCase} onAction={setAction} onNewVersion={newVersion} onAddItems={() => setAdding(true)} onReload={reload} />
           <VersionsPanel current={p.id} versions={versions} />
           <LogPanel protocol={p} />
         </div>

@@ -41,7 +41,7 @@ export const AddItemsDialog: React.FC<{ protocol: Protocol; onClose: () => void;
   const submit = async () => {
     if (!adds.length) return setError('Thêm ít nhất 1 thuốc / vật tư vào danh sách.');
     if (treating) {
-      if (await run(() => vetApi.addItemsDuringTreatment(p, adds, reason, actor), `Đã bổ sung ${adds.length} thuốc / vật tư — kho giữ hàng, chủ ngựa nhận hóa đơn thuốc bổ sung.`)) onDone(p.id);
+      if (await run(() => vetApi.addItemsDuringTreatment(p, adds, reason, actor), `Đã gửi ${adds.length} thuốc cho kho duyệt. Kho giữ hàng nếu đủ, hoặc ghi thiếu để đặt hàng.`)) onDone(p.id);
       return;
     }
     const out: { id?: string } = {};
@@ -62,7 +62,7 @@ export const AddItemsDialog: React.FC<{ protocol: Protocol; onClose: () => void;
       {error && <Callout tone="danger" style={{ marginBottom: 14 }}>{error}</Callout>}
       <Callout tone="info" style={{ marginBottom: 14 }}>
         {treating
-          ? <>Thuốc được thêm thẳng vào phác đồ đang điều trị (không tạo phiên bản mới). Kho giữ hàng ngay, chủ ngựa nhận <b>hóa đơn thuốc bổ sung</b>, kho cấp sau khi thanh toán. Chỉ thêm vào giai đoạn chưa kết thúc.</>
+          ? <>Thuốc được gửi cho <b>nhân viên kho duyệt</b>, không tự nhận vào kho. Đủ hàng thì kho giữ và lập hóa đơn; thiếu thì kho ghi thiếu và đặt hàng. Chỉ thêm vào giai đoạn chưa kết thúc.</>
           : <>Thuốc đang có được giữ nguyên, phần thêm được cộng vào giai đoạn đã chọn. Hệ thống tạo <b>phiên bản {p.version + 1}</b>, trả lại hàng kho đã giữ cho bản cũ và gửi kho kiểm tồn lại toàn bộ.</>}
       </Callout>
       {treating && (

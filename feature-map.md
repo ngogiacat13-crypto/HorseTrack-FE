@@ -33,7 +33,7 @@ Quy ước `data-testid`: menu trái `nav-<đường dẫn bỏ / đầu, / đ�
 | QL CLB · Nhật ký hệ thống | `src/pages/manager/ManagerAuditLogs/` | `/manager/audit-logs` | `nav-manager-audit-logs` |
 | HLV · Tổng quan đàn ngựa | `src/pages/trainer/TrainerHerdOverview/` | `/trainer` | `nav-trainer` |
 | HLV · Hồ sơ ngựa | `src/pages/trainer/TrainerHorseRecord/` | `/trainer/horses/:id` | `back-btn`, `care-task-btn` |
-| HLV · Giáo án | `src/pages/trainer/TrainerPlans/` | `/trainer/plans` · nút “Hủy” / “Chạy lại” trên từng dòng | `nav-trainer-plans`, `cancel-plan-<mã>`, `resume-plan-<mã>`, `cancel-plan-dialog`, `cancel-plan-reason` (ô lý do), `resume-plan-dialog` |
+| HLV · Giáo án | `src/pages/trainer/TrainerPlans/` | `/trainer/plans` · “Hủy” chỉ khi chưa bắt đầu · “Chạy lại” khi tạm dừng và bác sĩ đã đóng ca | `nav-trainer-plans`, `cancel-plan-<mã>`, `resume-plan-<mã>`, `plan-wait-vet-<mã>`, `cancel-plan-dialog`, `cancel-plan-reason` (ô lý do), `resume-plan-dialog` |
 | HLV · Tạo giáo án | `src/pages/trainer/TrainerPlanCreate/` | `/trainer/plans/new` | `back-btn` |
 | HLV · Lịch tập + phân công phiên | `src/pages/trainer/TrainerSchedule/` | `/trainer/schedule` · nút “Phân công phiên tập” | `nav-trainer-schedule`, `assign-session-dialog`, `assign-zone-select`, `assign-horse-select`, `assign-date-input`, `assign-time-input`, `assign-groom-select`, `assign-track-input` |
 | HLV · Chi tiết phiên tập | `src/pages/trainer/TrainerSessionDetail/` | `/trainer/sessions/:id` | `back-btn`, `session-waiting-vet` (đã gửi bác sĩ) |
@@ -44,8 +44,8 @@ Quy ước `data-testid`: menu trái `nav-<đường dẫn bỏ / đầu, / đ�
 | Bác sĩ · Ca bệnh | `src/pages/vet/VetInbox/` | `/vet/cases` | `nav-vet-cases` |
 | Bác sĩ · Sức khỏe ngựa | `src/pages/vet/VetHorseHealth/` | `/vet/horses/:id` | `back-btn` |
 | Bác sĩ · Phác đồ | `src/pages/vet/VetProtocols/` | `/vet/protocols` | `nav-vet-protocols` |
-| Bác sĩ · Tạo phác đồ | `src/pages/vet/VetProtocolCreate/` | `/vet/protocols/new` | `back-btn` |
-| Bác sĩ · Chi tiết phác đồ | `src/pages/vet/VetProtocolDetail/` | `/vet/protocols/:id` · nút “Thêm vật tư / thuốc” (phác đồ chưa cấp thuốc) · “Chờ nhập hàng” khi kho báo thiếu | `back-btn`, `add-items-btn`, `add-items-dialog`, `add-item-phase`, `add-item-select`, `add-item-qty`, `add-item-line`, `add-item-list`, `cancel-protocol-btn` (hủy kèm lý do, ô `pd-text`), `protocol-wait-btn` |
+| Bác sĩ · Tạo phác đồ | `src/pages/vet/VetProtocolCreate/` | `/vet/protocols/new` · gửi kho kiểm tồn, không còn lưu nháp | `back-btn`, `protocol-send-btn` |
+| Bác sĩ · Chi tiết phác đồ | `src/pages/vet/VetProtocolDetail/` | `/vet/protocols/:id` · nút “Thêm vật tư / thuốc” (phác đồ chưa cấp thuốc) · “Chờ nhập hàng” khi kho báo thiếu · hoàn thành từng giai đoạn rồi mới kết thúc | `back-btn`, `add-items-btn`, `add-items-dialog`, `add-item-phase`, `add-item-select`, `add-item-qty`, `add-item-line`, `add-item-list`, `cancel-protocol-btn` (hủy kèm lý do, ô `pd-text`), `protocol-wait-btn`, `protocol-phase-done` |
 | Bác sĩ · Thuốc | `src/pages/vet/VetMedicines/` | `/vet/medicines` | `nav-vet-medicines` |
 | Bác sĩ · Tiêm phòng | `src/pages/vet/VetVaccinations/` | `/vet/vaccinations` | `nav-vet-vaccinations` |
 | Bác sĩ · Khám trước thi đấu | `src/pages/vet/VetRaceExams/` | `/vet/race-exams` | `nav-vet-race-exams` |
@@ -56,7 +56,7 @@ Quy ước `data-testid`: menu trái `nav-<đường dẫn bỏ / đầu, / đ�
 | Mã phu · Báo sự cố | `src/pages/groom/GroomIncidents/` | `/groom/incidents` | `nav-groom-incidents` |
 | Mã phu · Yêu cầu vật tư | `src/pages/groom/GroomRequests/` | `/groom/requests` | `nav-groom-requests`, `cancel-requisition-btn` |
 | Chủ ngựa · Ngựa của tôi | `src/pages/owner/OwnerHorses/` | `/owner` | `nav-owner` |
-| Chủ ngựa · Chi tiết ngựa | `src/pages/owner/OwnerHorseDetail/` | `/owner/horses/:id` | `back-btn` |
+| Chủ ngựa · Chi tiết ngựa | `src/pages/owner/OwnerHorseDetail/` | `/owner/horses/:id` · lịch sử phiên tập và ghi chú trễ | `back-btn`, `plan-delay`, `session-late` |
 | Chủ ngựa · Xác nhận thi đấu | `src/pages/owner/OwnerRaces/` | `/owner/races` | `nav-owner-races` |
 | Chủ ngựa · Hóa đơn | `src/pages/owner/OwnerInvoices/` | `/owner/invoices` (VNPay quay về `?status=`) | `nav-owner-invoices`, `vnpay-result` |
 | Chủ ngựa · Chi tiết hóa đơn | `src/pages/owner/OwnerInvoiceDetail/` | `/owner/invoices/:id` | `back-btn` |
@@ -66,7 +66,7 @@ Quy ước `data-testid`: menu trái `nav-<đường dẫn bỏ / đầu, / đ�
 | Chủ ngựa · Thanh toán VNPay (mô phỏng) | `src/pages/owner/VNPayMock/` | `/payment/vnpay/:id` | — |
 | Kho · Tồn kho | `src/pages/warehouse/WarehouseInventory/` | `/warehouse` | `nav-warehouse` |
 | Kho · Phác đồ cần cấp | `src/pages/warehouse/WarehouseMedical/` | `/warehouse/medical` · tab “Bác sĩ đã đổi / hủy” | `nav-warehouse-medical`, `replaces-<mã>` |
-| Kho · Chi tiết cấp phát | `src/pages/warehouse/WarehouseMedicalDetail/` | `/warehouse/medical/:id` | `back-btn`, `protocol-changes` (so với bản cũ), `protocol-superseded`, `protocol-cancelled` |
+| Kho · Chi tiết cấp phát | `src/pages/warehouse/WarehouseMedicalDetail/` | `/warehouse/medical/:id` · duyệt thuốc bổ sung khi đang điều trị | `back-btn`, `protocol-changes` (so với bản cũ), `protocol-superseded`, `protocol-cancelled`, `warehouse-review-supplement` |
 | Kho · Yêu cầu vật tư | `src/pages/warehouse/WarehouseRequisitions/` | `/warehouse/requisitions` | `nav-warehouse-requisitions` |
 | Kho · Lô hàng nhập | `src/pages/warehouse/WarehouseShipments/` | `/warehouse/shipments` | `nav-warehouse-shipments` |
 | Kho · Kiểm kê | `src/pages/warehouse/WarehouseStockCheck/` | `/warehouse/check` | `nav-warehouse-check` |
