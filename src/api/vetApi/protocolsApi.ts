@@ -30,12 +30,8 @@ export const protocolsApi = {
   async getProtocolForm(opts: { horseId?: string; caseId?: string; replaceId?: string }) {
     const [horses, cases, inventory] = await Promise.all([get<VetHorse[]>('/horses'), get<VetCase[]>('/vetCases'), get<InventoryItem[]>('/inventory')]);
     const replacing = opts.replaceId ? await get<Protocol>(`/protocols/${opts.replaceId}`) : null;
-    const protocols = !replacing
-      ? await get<Protocol[]>('/protocols', opts.horseId ? { horseId: opts.horseId } : opts.caseId ? { caseId: opts.caseId } : undefined)
-      : [];
-    const blockedBy = protocols.find((p) => p.state !== 'CANCELLED' && (!opts.horseId || p.horseId === opts.horseId))
-      ?? protocols.find((p) => p.state !== 'CANCELLED')
-      ?? null;
+    const allProtocols = !replacing ? await get<Protocol[]>('/protocols') : [];
+    const blockedBy = allProtocols.find((p) => p.horseId === opts.horseId && isOpenProtocol(p)) ?? null;
     const replacingCase = replacing
       ? cases.find((c) => String(c.id) === String(replacing.caseId))
         ?? await get<VetCase>(`/vetCases/${replacing.caseId}`).catch(() => null)

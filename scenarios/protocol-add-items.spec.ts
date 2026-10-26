@@ -67,6 +67,13 @@ test('vet cannot create another protocol for a horse with an uncancelled protoco
   await expect(page.getByTestId('cancel-protocol-btn')).toBeVisible();
 });
 
+test('vet can open a new protocol form after an old protocol is closed', async ({ page }) => {
+  await signIn(page, 'Veterinarian');
+  await page.goto('/vet/protocols/new?horse=h-flash&case=C-0006');
+  await expect(page).toHaveURL(/\/vet\/protocols\/new\?horse=h-flash&case=C-0006$/);
+  await expect(page.getByText(/Tạo phác đồ điều trị/)).toBeVisible();
+});
+
 test('vet cannot complete a phase before its medicine is dispensed and paid', async ({ page }) => {
   await signIn(page, 'Veterinarian');
   await page.goto('/vet/protocols/PD-0009');
