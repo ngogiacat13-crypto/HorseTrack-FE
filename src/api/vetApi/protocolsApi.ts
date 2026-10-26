@@ -29,8 +29,12 @@ export const protocolsApi = {
   async getProtocolForm(opts: { horseId?: string; caseId?: string; replaceId?: string }) {
     const [horses, cases, inventory] = await Promise.all([get<VetHorse[]>('/horses'), get<VetCase[]>('/vetCases'), get<InventoryItem[]>('/inventory')]);
     const replacing = opts.replaceId ? await get<Protocol>(`/protocols/${opts.replaceId}`) : null;
-    const protocols = !replacing && opts.caseId ? await get<Protocol[]>('/protocols', { caseId: opts.caseId }) : [];
-    const blockedBy = protocols.find((p) => p.state !== 'CANCELLED') ?? null;
+    const protocols = !replacing
+      ? await get<Protocol[]>('/protocols', opts.horseId ? { horseId: opts.horseId } : opts.caseId ? { caseId: opts.caseId } : undefined)
+      : [];
+    const blockedBy = protocols.find((p) => p.state !== 'CANCELLED' && (!opts.horseId || p.horseId === opts.horseId))
+      ?? protocols.find((p) => p.state !== 'CANCELLED')
+      ?? null;
     const replacingCase = replacing
       ? cases.find((c) => String(c.id) === String(replacing.caseId))
         ?? await get<VetCase>(`/vetCases/${replacing.caseId}`).catch(() => null)
@@ -57,7 +61,7 @@ export const protocolsApi = {
     if (input.requiredBy && !isDate(input.requiredBy)) throw new Error('Ngày cần thuốc theo dạng dd/mm/yyyy.');
 
     const all = await get<Protocol[]>('/protocols');
-    if (!input.replaces && all.some((p) => p.caseId === input.caseId && p.state !== 'CANCELLED')) throw new Error('Ca khám đã có phác đồ. Chỉ có thể tạo lại sau khi phác đồ cũ được hủy.');
+    if (!input.replaces && all.some((p) => p.horseId === input.horseId && p.state !== 'CANCELLED')) throw new Error('Ngựa đã có phác đồ. Chỉ có thể tạo lại sau khi phác đồ cũ được hủy.');
     const replaced = input.replaces ? all.find((p) => p.id === input.replaces) : undefined;
     if (input.replaces && (!replaced || !isOpenProtocol(replaced))) throw new Error('Phác đồ cũ không còn hiệu lực để thay thế.');
     const id = nextId(all.map((p) => p.id), 'PD-');

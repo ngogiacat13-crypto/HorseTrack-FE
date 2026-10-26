@@ -40,10 +40,10 @@ export const VetHorseHealth: React.FC = () => {
             ? <button type="button" className="ht-btn ht-btn--secondary" onClick={() => setUnlockOpen(true)}><Icon name="unlock" />Mở khóa huấn luyện</button>
             : <button type="button" className="ht-btn ht-btn--danger" onClick={() => setLockOpen(true)}><Icon name="lock" />Khóa huấn luyện</button>}
           {activeProto
-            ? <Link className="ht-btn ht-btn--primary" to={`/vet/protocols/${activeProto.id}`}><Icon name="file" />Phác đồ {activeProto.id}</Link>
+            ? <button data-testid="create-protocol-btn" type="button" className="ht-btn ht-btn--primary" disabled title={`Ngựa đã có phác đồ ${activeProto.id}; chỉ tạo lại sau khi hủy phác đồ.`}><Icon name="file" />Đã có phác đồ {activeProto.id}</button>
             : examined
-              ? <Link className="ht-btn ht-btn--primary" to={`/vet/protocols/new?horse=${horse.id}&case=${examined.id}`}><Icon name="file" />Tạo phác đồ</Link>
-              : <button type="button" className="ht-btn ht-btn--primary" disabled title="Cần một ca khám đã ghi nhận"><Icon name="file" />Tạo phác đồ</button>}
+              ? <Link data-testid="create-protocol-btn" className="ht-btn ht-btn--primary" to={`/vet/protocols/new?horse=${horse.id}&case=${examined.id}`}><Icon name="file" />Tạo phác đồ</Link>
+              : <button data-testid="create-protocol-btn" type="button" className="ht-btn ht-btn--primary" disabled title="Cần một ca khám đã ghi nhận"><Icon name="file" />Tạo phác đồ</button>}
         </>}
       />
 

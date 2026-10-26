@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { CaseSource, CaseStatus, SOURCE_LABEL, VetCase, vetApi } from '../../../api/vetApi';
+import { CaseSource, CaseStatus, isOpenProtocol, SOURCE_LABEL, VetCase, vetApi } from '../../../api/vetApi';
 import { useFetch } from '../../../hooks/useFetch';
 import { PageHeader, Panel, Tabs } from '../../../components/ui/Ht';
 import { LoadState } from '../../../components/trainer/TrainerParts';
@@ -52,7 +52,7 @@ export const VetInbox: React.FC = () => {
           {sel && horse
             ? <CaseDetail vetCase={sel} horse={horse}
                 session={sel.sessionId ? data.sessions.find((s) => s.id === sel.sessionId) : undefined}
-                protocol={sel.protocolId ? data.protocols.find((p) => p.id === sel.protocolId) : undefined}
+                protocol={data.protocols.find((p) => p.horseId === sel.horseId && isOpenProtocol(p))}
                 onExam={() => setExamFor(sel)} onClose={() => setCloseFor(sel)} onLock={() => setLockOpen(true)} />
             : <Panel><div className="ht-empty">Chọn một ca để xem chi tiết.</div></Panel>}
         </div>
