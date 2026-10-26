@@ -58,6 +58,15 @@ test('vet cancels a protocol waiting for stock check, giving a reason', async ({
   await expect(page.getByText('Phác đồ đã đóng.')).toBeVisible();
 });
 
+test('vet cannot create another protocol for a horse with an uncancelled protocol', async ({ page }) => {
+  await signIn(page, 'Veterinarian');
+  await page.goto('/vet/horses/h-bolt');
+  await expect(page.getByTestId('create-protocol-btn')).toBeDisabled();
+  await page.goto('/vet/protocols/new?horse=h-bolt&case=C-0009');
+  await expect(page).toHaveURL(/\/vet\/protocols\/PD-0014$/);
+  await expect(page.getByTestId('cancel-protocol-btn')).toBeVisible();
+});
+
 test('warehouse sees replaced protocols and what changed between versions', async ({ page }) => {
   await signIn(page, 'WarehouseManager');
   await page.goto('/warehouse/medical');

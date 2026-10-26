@@ -1,6 +1,7 @@
 import { DEMO_NOW, http } from './http';
 import { EMAIL_TIMEOUT, USE_BACKEND, be, beData, type ApiResponse } from './beClient';
 import { invalidate } from './hybridAdapter';
+import { assignmentApi, assignmentText } from './assignmentApi';
 import { financeBe } from './beFinance';
 
 export type RegStatus = 'Pending' | 'Approved' | 'Rejected';
@@ -53,7 +54,7 @@ export interface ManagedUser {
   beId?: number;
   emailConfirmed?: boolean;
 }
-export interface GroomAssignment { id: string; name: string; zones: string[]; role?: UserRole }
+export interface GroomAssignment { id: string; name: string; zones: string[]; role?: UserRole; pendingNote?: string }
 export type StaffRole = 'HeadTrainer' | 'Veterinarian' | 'Groom' | 'WarehouseManager';
 export interface StaffInput {
   fullName: string; username: string; email: string; phone: string; password: string; role: StaffRole;
@@ -62,7 +63,7 @@ export interface StaffInput {
 }
 export const BE_STAFF_ROLE: Partial<Record<StaffRole, string>> = { HeadTrainer: 'Trainer', Veterinarian: 'Veterinarian', Groom: 'Groom', WarehouseManager: 'Warehouse Manager' };
 export interface AssignedStall { id: string; zone: string; horseId: string | null; horse: string | null; status: string; groom: string }
-export interface AssignedHorse { id: string; name: string; owner: string; stall: string; health: string; trainerId?: string; trainerName?: string | null }
+export interface AssignedHorse { id: string; name: string; owner: string; stall: string; health: string; trainerId?: string; trainerName?: string | null; pendingNote?: string }
 export interface RoleCheck { level: 'pass' | 'warn' | 'fail'; text: string }
 
 export type AuditArea = 'reg' | 'med' | 'train' | 'fin' | 'acct';
@@ -381,7 +382,18 @@ export const managerApi = {
     const staffZones = users
       .filter((u) => u.role === 'HeadTrainer' || u.role === 'Groom')
       .map((u) => ({ id: u.id, name: u.fullname, role: u.role, zones: u.role === 'HeadTrainer' ? zonesOfTrainer(u.id) : u.zones ?? [] }));
-    if (USE_BACKEND) return { grooms: staffZones, stalls, horses };
+    if (USE_BACKEND) {
+      const pending = await assignmentApi.pending();
+      const horsesPending = horses.map((h) => {
+        const req = pending.find((r) => r.horseId === Number(h.id) && (r.requestType === 'TRAINER_HORSE' || r.requestType === 'TRAINER_RELEASE'));
+        return req ? { ...h, pendingNote: `Chờ xác nhận: ${assignmentText(req)}` } : h;
+      });
+      const groomsPending = staffZones.map((s) => {
+        const req = pending.find((r) => r.requestType === 'GROOM_ZONE' && String(r.targetUserId) === s.id);
+        return req ? { ...s, pendingNote: `Chờ xác nhận: ${assignmentText(req)}` } : s;
+      });
+      return { grooms: groomsPending, stalls, horses: horsesPending };
+    }
     const allAssignments = [
       ...grooms.map((g) => ({ ...g, role: g.role ?? 'Groom' as const })),
       ...staffZones.filter((s) => !grooms.some((g) => g.id === s.id)),
@@ -420,6 +432,7 @@ export const managerApi = {
     const dropped = assignments.horses.filter((h) => h.trainerId === user.id && !selected.has(h.id));
     const added = assignments.horses.filter((h) => selected.has(h.id) && h.trainerId !== user.id);
     if (USE_BACKEND) {
+      if (!added.length && !dropped.length) throw new Error('Không có thay đổi phân công.');
       for (const h of added) await be.put(`/horses/${h.id}/assign-trainer`, { trainerId: Number(user.id) });
       for (const h of dropped) await be.delete(`/horses/${h.id}/assign-trainer`);
       invalidate('horses', 'auditLogs');

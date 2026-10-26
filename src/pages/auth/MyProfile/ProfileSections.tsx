@@ -1,10 +1,31 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { AuthUser } from '../../../api/mockData';
+import { authApi } from '../../../api/authApi';
+import { USE_BACKEND } from '../../../api/beClient';
 import { Icon } from '../../../components/ui/Icon';
+import { Callout } from '../../../components/ui/Ht';
 import { ROLE_LABEL } from '../../../components/layout/nav';
 
-export const ProfileDetails: React.FC<{ user: AuthUser }> = ({ user }) => {
+export const ProfileDetails: React.FC<{ user: AuthUser; onUpdated: (patch: Partial<AuthUser>) => void }> = ({ user, onUpdated }) => {
+  const [fullName, setFullName] = useState(user.fullname);
+  const [phone, setPhone] = useState(user.phone ?? '');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const [saved, setSaved] = useState('');
+  const save = async () => {
+    setBusy(true);
+    setError('');
+    setSaved('');
+    try {
+      onUpdated(await authApi.updateProfile(fullName, phone));
+      setSaved('Đã cập nhật thông tin cá nhân.');
+    } catch (e) {
+      setError((e as { message?: string }).message ?? 'Không lưu được hồ sơ.');
+    } finally {
+      setBusy(false);
+    }
+  };
   const rows: [string, string, boolean?][] = [
     ['Họ và tên', user.fullname],
     ['Tên đăng nhập', user.username, true],
@@ -36,6 +57,21 @@ export const ProfileDetails: React.FC<{ user: AuthUser }> = ({ user }) => {
           </React.Fragment>
         ))}
       </dl>
+      {USE_BACKEND && (
+        <div style={{ display: 'grid', gap: 10, marginTop: 16 }}>
+          <label className="ht-field">
+            <span className="ht-label">Họ và tên</span>
+            <input className="ht-input" data-testid="profile-fullname" value={fullName} onChange={(e) => setFullName(e.target.value)} />
+          </label>
+          <label className="ht-field">
+            <span className="ht-label">Số điện thoại</span>
+            <input className="ht-input" data-testid="profile-phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="0912345678" />
+          </label>
+          {error && <Callout tone="danger">{error}</Callout>}
+          {saved && <Callout tone="success">{saved}</Callout>}
+          <button type="button" className="ht-btn ht-btn--primary" data-testid="profile-save" disabled={busy} onClick={() => { void save(); }}>{busy ? 'Đang lưu…' : 'Lưu hồ sơ'}</button>
+        </div>
+      )}
     </section>
   );
 };

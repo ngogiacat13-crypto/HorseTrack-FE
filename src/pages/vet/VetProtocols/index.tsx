@@ -40,7 +40,7 @@ export const VetProtocols: React.FC = () => {
   return (
     <div className="ht ht-page">
       <PageHeader title="Phác đồ điều trị" sub="Bác sĩ lập phác đồ, gửi kho kiểm tồn và tự xác nhận — không qua Quản lý CLB duyệt (BR_07)."
-        actions={<Link className="ht-btn ht-btn--primary" to="/vet/protocols/new"><Icon name="file" />Tạo phác đồ</Link>} />
+        actions={<Link data-testid="create-protocol-btn" className="ht-btn ht-btn--primary" to="/vet/protocols/new"><Icon name="file" />Tạo phác đồ</Link>} />
       <Tabs<Tab> value={tab} onChange={setTab} items={[
         { value: 'act', label: 'Cần bác sĩ xử lý', count: groups.act.length },
         { value: 'running', label: 'Chờ kho / đang chờ hàng', count: groups.running.length },

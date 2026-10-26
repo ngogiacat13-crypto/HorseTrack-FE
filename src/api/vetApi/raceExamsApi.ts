@@ -8,9 +8,14 @@ import { get, now, min } from './shared';
 
 export const raceExamsApi = {
   async getRaceExams() {
-    const [proposals, tournaments, horses, protocols, inventory] = await Promise.all([
+    const [loaded, tournaments, horses, protocols, inventory, waiting, done] = await Promise.all([
       get<RaceProposal[]>('/raceProposals'), get<Tournament[]>('/tournaments'), get<VetHorse[]>('/horses'), get<Protocol[]>('/protocols'), get<InventoryItem[]>('/inventory'),
+      USE_BACKEND ? beData<{ proposalCode: string }[]>(be.get('/prerace-exams', { params: { tab: 'CHO_KHAM' } })).catch(() => []) : Promise.resolve([]),
+      USE_BACKEND ? beData<{ proposalCode: string }[]>(be.get('/prerace-exams', { params: { tab: 'DA_CO_KET_QUA' } })).catch(() => []) : Promise.resolve([]),
     ]);
+    const codes = new Set([...waiting, ...done].map((e) => e.proposalCode));
+    const matched = loaded.filter((p) => codes.has(p.id));
+    const proposals = matched.length ? matched : loaded;
     return { proposals, tournaments, horses, protocols, inventory };
   },
 

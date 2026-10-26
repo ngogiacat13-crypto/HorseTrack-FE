@@ -1,4 +1,5 @@
 import type { Actor } from '../managerApi';
+import { be, beData, USE_BACKEND } from '../beClient';
 import type { Horse, RaceProposal, Tournament, TrainingPlan, TrainingSession, Vaccination } from '../trainerApi';
 import { isOpenProtocol, type Protocol, type VetCase } from '../vetApi';
 import { invoiceDue, isPaid } from './labels';
@@ -16,9 +17,13 @@ export const raceStats = (rs: RaceResult[]) => ({
 
 export const herdApi = {
   async getMyHorses(actor: Actor) {
-    const [horses, plans, protocols, proposals, invoices] = await Promise.all([
+    const [listed, plans, protocols, proposals, invoices, owned] = await Promise.all([
       myHorses(actor), get<TrainingPlan[]>('/trainingPlans'), get<Protocol[]>('/protocols'), get<RaceProposal[]>('/raceProposals'), get<OwnerInvoice[]>('/invoices'),
+      USE_BACKEND ? beData<{ horseId: number }[]>(be.get('/owner/training/my-horses')).catch(() => null) : Promise.resolve(null),
     ]);
+    const allowed = owned?.length ? new Set(owned.map((h) => String(h.horseId))) : null;
+    const filtered = allowed ? listed.filter((h) => allowed.has(h.id)) : listed;
+    const horses = filtered.length ? filtered : listed;
     const mine = invoices.filter((i) => i.owner === actor.name);
     return {
       horses: horses.map((h) => ({

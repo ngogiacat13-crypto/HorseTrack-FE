@@ -6,7 +6,7 @@ import { AvatarCard } from './AvatarCard';
 import { ProfileDetails, SecurityCard } from './ProfileSections';
 
 export const MyProfile: React.FC = () => {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   if (!user) return null;
 
   return (
@@ -17,8 +17,8 @@ export const MyProfile: React.FC = () => {
         sub="Thông tin tài khoản và ảnh đại diện của bạn trong hệ thống HorseTrack."
       />
       <div className="ht-profile-layout">
-        <AvatarCard user={user} />
-        <ProfileDetails user={user} />
+        <AvatarCard user={user} onUpdated={updateUser} />
+        <ProfileDetails user={user} onUpdated={updateUser} />
         <SecurityCard />
       </div>
     </div>

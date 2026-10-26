@@ -20,7 +20,7 @@ const WAIT_TEXT: Record<string, string> = {
   WAITING_RESTOCK: 'Bác sĩ chọn chờ hàng. Khi nhận lô hàng ở trang Đơn nhập, hệ thống tự giữ hàng và báo bác sĩ rà soát lại.',
   REQUIRES_VET_REVIEW: 'Chờ bác sĩ đánh giá lại (hàng trễ hoặc hàng vừa về). Chưa được cấp phát.',
   IN_TREATMENT: 'Đã cấp phát — đang điều trị.',
-  ON_HOLD_PAYMENT: 'Đã cấp phát — điều trị tạm dừng chờ chủ ngựa thanh toán.',
+  ON_HOLD_PAYMENT: 'Đã cấp phát — chờ chủ ngựa thanh toán giai đoạn 1. Chưa chuyển sang điều trị.',
   COMPLETED: 'Đã cấp phát — điều trị hoàn tất.',
 };
 
@@ -61,7 +61,7 @@ export const WarehouseMedicalDetail: React.FC = () => {
       <div className="ht-cols">
         <div>
           {p.state === 'WAITING_STOCK_CHECK' && <StockCheckForm protocol={p} items={items} openShipments={openShipments} onDone={reload} />}
-          {p.state === 'READY_FOR_DISPENSING' && <DispenseForm protocol={p} items={items} onDone={reload} />}
+          {(p.state === 'READY_FOR_DISPENSING' || (p.state === 'IN_TREATMENT' && (p.dispensedPhases?.length ?? 0) > 0 && p.phases.some((ph) => !p.dispensedPhases!.includes(ph.no)))) && <DispenseForm protocol={p} items={items} onDone={reload} />}
           {p.state === 'SUPERSEDED' && (
             <Callout tone="danger" icon="warn" title="Bác sĩ đã đổi phác đồ" testId="protocol-superseded">
               Bản này đã được thay bằng {p.supersededBy ? <Link to={`/warehouse/medical/${p.supersededBy}`} className="ht-mono">{p.supersededBy}</Link> : 'phiên bản mới'} — <b>không cấp phát theo bản này</b>. Hàng đã giữ cho bản này đã được trả lại kho.

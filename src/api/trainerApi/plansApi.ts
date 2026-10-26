@@ -25,15 +25,20 @@ const beCreatePlan = async (horse: Horse, name: string, input: { type: string; g
 
 export const plansApi = {
   async getPlans(actor: Actor) {
-    const [plans, horses] = await Promise.all([get<TrainingPlan[]>('/trainingPlans'), myHorses(actor)]);
-    return { plans: await withLiveStatus(ofHorses(plans, horses)), horses };
+    const [plans, horses, available] = await Promise.all([
+      get<TrainingPlan[]>('/trainingPlans'),
+      myHorses(actor),
+      USE_BACKEND ? beData<{ horseId: number }[]>(be.get('/horses/available-for-training')).catch(() => null) : Promise.resolve(null),
+    ]);
+    const availableIds = available ? available.map((h) => String(h.horseId)) : null;
+    return { plans: await withLiveStatus(ofHorses(plans, horses)), horses, availableIds };
   },
 
   async createPlan(input: { horseId: string; name: string; type: string; goal: string; startDate: string; phases: PlanPhase[] }, actor: Actor) {
     const horse = await getHorseChecked(input.horseId, actor);
     const name = input.name.trim();
     if (name.length < 5 || name.length > 80) throw new Error('Tên giáo án từ 5 đến 80 ký tự.');
-    if (!input.phases.length) throw new Error('Giáo án cần ít nhất 1 giai đoạn.');
+    if (input.phases.length !== 1) throw new Error('Mỗi giáo án chỉ gồm đúng 1 giai đoạn. Hết giai đoạn này hãy kết thúc giáo án, rồi lập giáo án mới.');
     if (USE_BACKEND) return beCreatePlan(horse, name, input);
     const all = await get<TrainingPlan[]>('/trainingPlans');
     const old = all.filter((p) => p.horseId === horse.id && CURRENT_PLAN.includes(p.status));

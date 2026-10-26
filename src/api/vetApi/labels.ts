@@ -15,12 +15,12 @@ export const PROTOCOL_LABEL: Record<ProtocolState, [string, Tone]> = {
   VET_CONFIRMED: ['BS đã xác nhận', 'success'],
   READY_FOR_DISPENSING: ['Chờ kho cấp phát', 'success'],
   IN_TREATMENT: ['Đang điều trị', 'success'],
-  ON_HOLD_PAYMENT: ['Tạm dừng · chờ chủ ngựa thanh toán', 'danger'],
+  ON_HOLD_PAYMENT: ['Chờ thanh toán', 'danger'],
   COMPLETED: ['Hoàn tất', 'neutral'],
   SUPERSEDED: ['Đã bị thay thế', 'neutral'],
   CANCELLED: ['Đã hủy', 'neutral'],
 };
-export const PROTOCOL_FLOW: ProtocolState[] = ['DRAFT', 'WAITING_STOCK_CHECK', 'STOCK_AVAILABLE', 'VET_CONFIRMED', 'READY_FOR_DISPENSING', 'IN_TREATMENT', 'COMPLETED'];
+export const PROTOCOL_FLOW: ProtocolState[] = ['DRAFT', 'WAITING_STOCK_CHECK', 'STOCK_AVAILABLE', 'VET_CONFIRMED', 'READY_FOR_DISPENSING', 'ON_HOLD_PAYMENT', 'IN_TREATMENT', 'COMPLETED'];
 export const VET_ACTION_STATES: ProtocolState[] = ['DRAFT', 'STOCK_SHORTAGE', 'STOCK_AVAILABLE', 'REQUIRES_VET_REVIEW', 'IN_TREATMENT', 'ON_HOLD_PAYMENT'];
 const CLOSED_STATES: ProtocolState[] = ['COMPLETED', 'SUPERSEDED', 'CANCELLED'];
 export const isOpenProtocol = (p: Pick<Protocol, 'state'>) => !CLOSED_STATES.includes(p.state);

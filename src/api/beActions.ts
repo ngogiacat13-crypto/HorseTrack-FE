@@ -83,6 +83,12 @@ export const vetProtocolBe = {
   },
   async addProgress(p: Protocol, text: string) {
     if (text.trim().length < 5) throw new Error('Ghi chú tiến triển ít nhất 5 ký tự.');
+    const phaseNo = Number(text.match(/Hoàn thành giai đoạn (\d+)/)?.[1]);
+    if (phaseNo > 0) {
+      if (p.dispensedPhases != null && !p.dispensedPhases.includes(phaseNo)) throw new Error(`Chưa cấp thuốc giai đoạn ${phaseNo}. Kho phải cấp thuốc giai đoạn này trước khi hoàn thành.`);
+      const phase = p.phases.find((ph) => ph.no === phaseNo);
+      if (phase?.invoiceStatus && !p.emergency && ['UNPAID', 'OVERDUE', 'PARTIALLY_PAID'].includes(phase.invoiceStatus)) throw new Error(`Chủ ngựa chưa thanh toán chi phí giai đoạn ${phaseNo}. Chưa thể kết thúc giai đoạn.`);
+    }
     const r = await beData<Parameters<typeof mapProtocol>[0]>(be.post(`/medical-management/protocols/${beId(p)}/progress-notes`, { content: text.trim() }));
     after('protocols');
     return mapProtocol(r) as unknown as Protocol;
@@ -141,9 +147,11 @@ export const warehouseBe = {
     after('protocols', 'inventory', 'invoices');
     return mapProtocol(r) as unknown as Protocol;
   },
-  async dispense(p: Protocol) {
-    if (p.state !== 'READY_FOR_DISPENSING') throw new Error('Chỉ cấp phát phác đồ đã được bác sĩ xác nhận.');
-    const r = await beData<Parameters<typeof mapProtocol>[0]>(be.put(`/inventory/protocols/${beId(p)}/dispense`));
+  async dispense(p: Protocol, input?: { phaseNos?: number[] }) {
+    const phaseNos = input?.phaseNos?.filter((n) => Number.isInteger(n));
+    if (p.state === 'ON_HOLD_PAYMENT') throw new Error('Phác đồ đang chờ thanh toán, chưa cấp thêm thuốc.');
+    if (p.state !== 'READY_FOR_DISPENSING' && !(p.state === 'IN_TREATMENT' && !!phaseNos?.length)) throw new Error('Chỉ cấp phát phác đồ đã được bác sĩ xác nhận.');
+    const r = await beData<Parameters<typeof mapProtocol>[0]>(be.put(`/inventory/protocols/${beId(p)}/dispense`, phaseNos?.length ? { phaseNos } : {}));
     after('protocols', 'inventory', 'stockTx');
     return mapProtocol(r) as unknown as Protocol;
   },

@@ -33,7 +33,7 @@ export const PlanSummary: React.FC<{ name: string; horse?: Horse; type: PlanType
           {block && <p className="ht-error" style={{ marginTop: 10 }}><Icon name="lock" /><span>{block}</span></p>}
         </div>
       </Panel>
-      <Callout tone="info">Sau khi lưu, vào <b>Lịch tập</b> để phân công phiên cho Mã phu theo giai đoạn hiện tại.</Callout>
+      <Callout tone="info">Giáo án này chỉ có một giai đoạn. Khi giai đoạn kết thúc, lập giáo án mới cho giai đoạn tiếp theo. Sau khi lưu, vào <b>Lịch tập</b> để phân công phiên cho Mã phu.</Callout>
     </>
   );
 };

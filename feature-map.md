@@ -18,7 +18,7 @@ Quy ước `data-testid`: menu trái `nav-<đường dẫn bỏ / đầu, / đ�
 | Xác nhận tài khoản nhân viên | `src/pages/auth/ConfirmAccount/` | `/confirm-account?token=` (liên kết trong email) · đăng nhập nhận `?confirmed=&message=` | `confirm-account-ok`, `confirm-account-login`, `confirm-account-error`, `login-confirm-result` |
 | Quên mật khẩu (OTP) | `src/pages/auth/ForgotPassword/` | `/forgot-password` | `<tên-trường>-input` |
 | Đổi mật khẩu (OTP) | `src/pages/auth/ChangePassword/` | `/change-password` · menu tài khoản | `nav-change-password`, `menu-change-password`, `oldPassword-input`, `newPassword-input`, `confirmPassword-input`, `otp-input` |
-| Hồ sơ cá nhân | `src/pages/auth/MyProfile/` | `/my-profile` · menu tài khoản | `nav-my-profile`, `menu-my-profile` |
+| Hồ sơ cá nhân | `src/pages/auth/MyProfile/` | `/my-profile` · menu tài khoản · sửa tên, số điện thoại và ảnh khi chạy server | `nav-my-profile`, `menu-my-profile`, `profile-card`, `profile-fullname`, `profile-phone`, `profile-save`, `profile-avatar` |
 | Hồ sơ ngựa (dùng chung) | `src/pages/shared/HorseProfile/` | `/horses/:id` | `page-title`, `back-btn` |
 | Khung ứng dụng: menu trái, thanh trên | `src/components/layout/` | Sau khi đăng nhập | `sidebar`, `nav-<đường-dẫn>`, `user-menu-btn`, `logout-btn`, `notifications-btn` |
 | Hộp thoại xác nhận (dùng chung) | `src/components/ui/Ht/Dialog.tsx` | Các nút hành động | `dialog` (hoặc `testId` riêng), `dialog-confirm`, `dialog-cancel` |
@@ -29,27 +29,27 @@ Quy ước `data-testid`: menu trái `nav-<đường dẫn bỏ / đầu, / đ�
 | QL CLB · Theo dõi y tế | `src/pages/manager/ManagerMedicalMonitoring/` | `/manager/medical-monitoring` | `nav-manager-medical-monitoring`, `medical-monitoring-empty` |
 | QL CLB · Hóa đơn | `src/pages/manager/ManagerInvoices/` | `/manager/invoices` | `nav-manager-invoices`, `generate-invoices-btn`, `generate-invoices-dialog`, `generate-month-input`, `stall-fee-btn`, `stall-fee-dialog`, `cancel-invoice-btn`, `cancel-invoice-dialog` |
 | QL CLB · Báo cáo tài chính | `src/pages/manager/ManagerFinanceReport/` | `/manager/reports` | `nav-manager-reports` |
-| QL CLB · Người dùng & phân quyền | `src/pages/manager/ManagerUsers/` | `/manager/users` · nút "Phân công" | `nav-manager-users`, `assign-<username>`, `trainer-horses-dialog`, `trainer-horse-<horseId>`, `groom-zone-dialog`, `groom-zone-<Khu X>`, `pending-confirm-<username>` (chờ xác nhận email), `resend-confirm-<username>` (gửi lại mail) |
+| QL CLB · Người dùng & phân quyền | `src/pages/manager/ManagerUsers/` | `/manager/users` · nút "Phân công" gửi yêu cầu, nhân viên xác nhận rồi phân công mới có hiệu lực · khóa tài khoản gửi email | `nav-manager-users`, `assign-<username>`, `trainer-horses-dialog`, `trainer-horse-<horseId>`, `trainer-pending-<horseId>`, `groom-zone-dialog`, `groom-zone-<Khu X>`, `groom-zone-pending`, `assignment-waiting`, `pending-confirm-<username>` (chờ xác nhận email), `resend-confirm-<username>` (gửi lại mail), `lock-reason` |
 | QL CLB · Nhật ký hệ thống | `src/pages/manager/ManagerAuditLogs/` | `/manager/audit-logs` | `nav-manager-audit-logs` |
-| HLV · Tổng quan đàn ngựa | `src/pages/trainer/TrainerHerdOverview/` | `/trainer` | `nav-trainer` |
+| HLV · Tổng quan đàn ngựa | `src/pages/trainer/TrainerHerdOverview/` | `/trainer` · hộp phân công chờ xác nhận | `nav-trainer`, `assignment-inbox`, `assignment-accept-<id>`, `assignment-reject-<id>`, `assignment-reject-dialog`, `assignment-reject-reason` |
 | HLV · Hồ sơ ngựa | `src/pages/trainer/TrainerHorseRecord/` | `/trainer/horses/:id` | `back-btn`, `care-task-btn` |
 | HLV · Giáo án | `src/pages/trainer/TrainerPlans/` | `/trainer/plans` · “Hủy” chỉ khi chưa bắt đầu · “Chạy lại” khi tạm dừng và bác sĩ đã đóng ca | `nav-trainer-plans`, `cancel-plan-<mã>`, `resume-plan-<mã>`, `plan-wait-vet-<mã>`, `cancel-plan-dialog`, `cancel-plan-reason` (ô lý do), `resume-plan-dialog` |
-| HLV · Tạo giáo án | `src/pages/trainer/TrainerPlanCreate/` | `/trainer/plans/new` | `back-btn` |
+| HLV · Tạo giáo án | `src/pages/trainer/TrainerPlanCreate/` | `/trainer/plans/new` · đúng 1 giai đoạn, không thêm giai đoạn thứ hai | `back-btn`, `plan-single-phase` |
 | HLV · Lịch tập + phân công phiên | `src/pages/trainer/TrainerSchedule/` | `/trainer/schedule` · nút “Phân công phiên tập” | `nav-trainer-schedule`, `assign-session-dialog`, `assign-zone-select`, `assign-horse-select`, `assign-date-input`, `assign-time-input`, `assign-groom-select`, `assign-track-input` |
 | HLV · Chi tiết phiên tập | `src/pages/trainer/TrainerSessionDetail/` | `/trainer/sessions/:id` | `back-btn`, `session-waiting-vet` (đã gửi bác sĩ) |
 | HLV · Giải đua & đề xuất | `src/pages/trainer/TrainerRaces/` | `/trainer/races` | `nav-trainer-races` |
 | HLV · Tạo đề xuất thi đấu | `src/pages/trainer/TrainerProposalCreate/` | `/trainer/races/new` | `back-btn` |
 | HLV · Sơ đồ chuồng | `src/pages/trainer/StableMap/` | `/trainer/stable` | `nav-trainer-stable` |
 | Bác sĩ · Đàn ngựa | `src/pages/vet/VetHerd/` | `/vet` | `nav-vet` |
-| Bác sĩ · Ca bệnh | `src/pages/vet/VetInbox/` | `/vet/cases` | `nav-vet-cases` |
+| Bác sĩ · Ca bệnh | `src/pages/vet/VetInbox/` | `/vet/cases` · đóng ca chỉ khi phác đồ đã hoàn thành hoặc đã hủy | `nav-vet-cases` |
 | Bác sĩ · Sức khỏe ngựa | `src/pages/vet/VetHorseHealth/` | `/vet/horses/:id` | `back-btn` |
 | Bác sĩ · Phác đồ | `src/pages/vet/VetProtocols/` | `/vet/protocols` | `nav-vet-protocols` |
-| Bác sĩ · Tạo phác đồ | `src/pages/vet/VetProtocolCreate/` | `/vet/protocols/new` · gửi kho kiểm tồn, không còn lưu nháp | `back-btn`, `protocol-send-btn` |
-| Bác sĩ · Chi tiết phác đồ | `src/pages/vet/VetProtocolDetail/` | `/vet/protocols/:id` · nút “Thêm vật tư / thuốc” (phác đồ chưa cấp thuốc) · “Chờ nhập hàng” khi kho báo thiếu · hoàn thành từng giai đoạn rồi mới kết thúc | `back-btn`, `add-items-btn`, `add-items-dialog`, `add-item-phase`, `add-item-select`, `add-item-qty`, `add-item-line`, `add-item-list`, `cancel-protocol-btn` (hủy kèm lý do, ô `pd-text`), `protocol-wait-btn`, `protocol-phase-done` |
+| Bác sĩ · Tạo phác đồ | `src/pages/vet/VetProtocolCreate/` | `/vet/protocols/new` · gửi kho kiểm tồn, không còn lưu nháp; khóa theo ngựa khi còn phác đồ chưa hủy | `back-btn`, `protocol-send-btn`, `create-protocol-btn`, `open-protocol-btn` |
+| Bác sĩ · Chi tiết phác đồ | `src/pages/vet/VetProtocolDetail/` | `/vet/protocols/:id` · nút “Thêm vật tư / thuốc” (phác đồ chưa cấp thuốc) · “Chờ nhập hàng” khi kho báo thiếu · hoàn thành từng giai đoạn rồi mới kết thúc | `back-btn`, `add-items-btn`, `add-items-dialog`, `add-item-phase`, `add-item-select`, `add-item-qty`, `add-item-line`, `add-item-list`, `cancel-protocol-btn` (hủy kèm lý do, ô `pd-text`), `protocol-wait-btn`, `protocol-phase-done`, `protocol-phase-blocked` |
 | Bác sĩ · Thuốc | `src/pages/vet/VetMedicines/` | `/vet/medicines` | `nav-vet-medicines` |
 | Bác sĩ · Tiêm phòng | `src/pages/vet/VetVaccinations/` | `/vet/vaccinations` | `nav-vet-vaccinations` |
 | Bác sĩ · Khám trước thi đấu | `src/pages/vet/VetRaceExams/` | `/vet/race-exams` | `nav-vet-race-exams` |
-| Mã phu · Việc hôm nay | `src/pages/groom/GroomTodayTasks/` | `/groom` | `nav-groom` |
+| Mã phu · Việc hôm nay | `src/pages/groom/GroomTodayTasks/` | `/groom` · hộp phân công khu chờ xác nhận | `nav-groom`, `assignment-inbox`, `assignment-accept-<id>`, `assignment-reject-<id>`, `assignment-reject-dialog`, `assignment-reject-reason` |
 | Mã phu · Chuồng phụ trách | `src/pages/groom/GroomStable/` | `/groom/stable` | `nav-groom-stable` |
 | Mã phu · Phiên tập | `src/pages/groom/GroomSessions/` | `/groom/sessions` | `nav-groom-sessions` |
 | Mã phu · Thực hiện phiên | `src/pages/groom/GroomSessionRun/` | `/groom/sessions/:id` | `back-btn`, `confirm-session-btn`, `start-session-btn`, `session-waiting-vet`, `session-adjusted` |

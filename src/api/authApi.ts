@@ -209,4 +209,18 @@ export const authApi = {
     if (USE_BACKEND) return beAuth.requestChangePasswordOtp();
     return '';
   },
+
+  async updateProfile(fullName: string, phone: string): Promise<AuthUser> {
+    if (!USE_BACKEND) throw new Error('Chỉ cập nhật hồ sơ khi chạy với server.');
+    const profile = await beData<BeProfile>(be.put('/account/my-profile', { fullName: fullName.trim(), phone: phone.trim() }));
+    return fromProfile(profile);
+  },
+
+  async updateAvatar(file: File): Promise<AuthUser> {
+    if (!USE_BACKEND) throw new Error('Chỉ đổi ảnh khi chạy với server.');
+    const form = new FormData();
+    form.append('file', file);
+    const profile = await beData<BeProfile>(be.post('/account/avatar', form));
+    return fromProfile(profile);
+  },
 };

@@ -23,7 +23,7 @@ const NEXT: Partial<Record<Protocol['state'], string>> = {
   WAITING_RESTOCK: 'Chờ hàng về — theo dõi đơn nhập',
   REQUIRES_VET_REVIEW: 'Chờ bác sĩ đánh giá lại',
   IN_TREATMENT: 'Đã cấp phát · đang điều trị',
-  ON_HOLD_PAYMENT: 'Đã cấp phát · tạm dừng chờ chủ ngựa thanh toán',
+  ON_HOLD_PAYMENT: 'Đã cấp phát · chờ thanh toán giai đoạn 1',
   COMPLETED: 'Đã cấp phát · điều trị hoàn tất',
 };
 const cancelReason = (p: Protocol) => p.note.match(/Hủy:s*(.+)$/)?.[1] ?? p.note;
