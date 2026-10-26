@@ -1,13 +1,17 @@
 import type { Actor } from '../managerApi';
+import { be, beData, USE_BACKEND } from '../beClient';
 import type { TrainingPlan, TrainingSession, Tournament, RaceProposal, Vaccination, Stall } from './types';
 import { get, myHorses, getMyHorse, ofHorses, withLiveStatus } from './shared';
 
 export const herdApi = {
   async getHerd(actor: Actor) {
-    const [horses, plans, sessions, vaccinations] = await Promise.all([
+    const [horses, plans, sessions, vaccinations, stats] = await Promise.all([
       myHorses(actor), get<TrainingPlan[]>('/trainingPlans'), get<TrainingSession[]>('/trainingSessions'), get<Vaccination[]>('/vaccinations'),
+      USE_BACKEND
+        ? beData<{ totalActivePlans: number; todaysSessions: number; injuredHorses: number }>(be.get('/training-plans/dashboard-stats')).catch(() => null)
+        : Promise.resolve(null),
     ]);
-    return { horses, plans: await withLiveStatus(ofHorses(plans, horses), sessions), sessions: ofHorses(sessions, horses), vaccinations: ofHorses(vaccinations, horses) };
+    return { horses, plans: await withLiveStatus(ofHorses(plans, horses), sessions), sessions: ofHorses(sessions, horses), vaccinations: ofHorses(vaccinations, horses), stats };
   },
 
   async getHorse(id: string, actor: Actor) {

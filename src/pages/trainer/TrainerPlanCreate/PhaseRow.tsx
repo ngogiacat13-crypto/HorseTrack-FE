@@ -7,7 +7,7 @@ export const PhaseRow: React.FC<{ phase: PhaseDraft; index: number; invalid: boo
   <div className="ht-phase" style={invalid ? { borderColor: 'var(--danger-line)' } : undefined}>
     <div className="ht-phase__head">
       <span style={{ display: 'inline-flex', gap: 10, alignItems: 'center' }}><span className="ht-phase__no">{String(i + 1).padStart(2, '0')}</span><b>Giai đoạn {i + 1}</b></span>
-      <button type="button" className="ht-iconbtn" aria-label={`Xóa giai đoạn ${i + 1}`} disabled={!canRemove} onClick={onRemove}><Icon name="x" /></button>
+      {canRemove && <button type="button" className="ht-iconbtn" aria-label={`Xóa giai đoạn ${i + 1}`} onClick={onRemove}><Icon name="x" /></button>}
     </div>
     <div className="ht-phase__grid">
       <div className="ht-field"><label className="ht-label" htmlFor={`n${i}`}>Tên</label><input id={`n${i}`} className="ht-input" value={p.name} onChange={(e) => onChange({ name: e.target.value })} placeholder="VD: Tăng sức bền" /></div>

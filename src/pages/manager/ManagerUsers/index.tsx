@@ -54,6 +54,9 @@ export const ManagerUsers: React.FC = () => {
         )
       )}
 
+      {tab === 'users' && (assignmentData.horses.some((h) => h.pendingNote) || assignmentData.grooms.some((g) => g.pendingNote)) ? (
+        <Callout tone="demo" testId="assignment-waiting" style={{ marginBottom: 16 }}>Có phân công đang chờ nhân viên xác nhận. Ngựa và khu chưa đổi cho đến khi họ đồng ý.</Callout>
+      ) : null}
       {tab === 'users' ? <UserTable users={users} meId={me?.userId} showService={USE_BACKEND} onAction={(kind, user) => (kind === 'resend' ? void resend(user) : setDlg({ kind, user }))} /> : <RbacMatrix />}
 
       {creating && <CreateStaffDialog onClose={() => setCreating(false)} onDone={(u) => { setUsers((xs) => [u, ...xs!]); setCreating(false); setTab('users'); }} />}

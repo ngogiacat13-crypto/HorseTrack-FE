@@ -62,7 +62,8 @@ export const DecisionPanel: React.FC<Props> = ({ protocol: p, horse, vetCase, on
           {btn('ht-btn--primary', 'check', 'Xác nhận phác đồ', () => onAction('confirm'))}
         </>}
 
-        {p.state === 'READY_FOR_DISPENSING' && <Callout tone="success" icon="box">Đã xác nhận. Quản lý kho chuẩn bị và cấp phát theo phác đồ này; trạng thái chuyển “Đang điều trị” khi cấp xong.</Callout>}
+        {p.state === 'READY_FOR_DISPENSING' && <Callout tone="success" icon="box">Đã xác nhận. Kho cấp phát xong thì phác đồ chuyển “Chờ thanh toán”. Chủ ngựa trả giai đoạn 1 xong mới sang “Đang điều trị”.</Callout>}
+        {p.state === 'ON_HOLD_PAYMENT' && <Callout tone="demo" icon="warn">Đã cấp thuốc và bác sĩ đã xác nhận. Phác đồ đang chờ chủ ngựa thanh toán giai đoạn 1 — chưa bắt đầu điều trị.</Callout>}
 
         {p.state === 'IN_TREATMENT' && <>
           {btn('ht-btn--secondary', 'pulse', 'Ghi tiến triển', () => onAction('progress'))}

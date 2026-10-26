@@ -8,7 +8,7 @@ import { useFetch } from '../../../hooks/useFetch';
 import { Icon } from '../../../components/ui/Icon';
 import { BackButton, Callout, PageHeader, Panel, useToast } from '../../../components/ui/Ht';
 import { HorseBadges, LoadState } from '../../../components/trainer/TrainerParts';
-import { NEW_PHASE, PhaseDraft, PlanType, TEMPLATES, TYPES, validPhase } from './templates';
+import { PhaseDraft, PlanType, TEMPLATES, TYPES, validPhase } from './templates';
 import { PhaseRow } from './PhaseRow';
 import { PlanSummary } from './PlanSummary';
 
@@ -31,7 +31,12 @@ export const TrainerPlanCreate: React.FC = () => {
   const [busy, setBusy] = useState(false);
   const [serverError, setServerError] = useState('');
 
-  const horses = useMemo(() => data?.horses ?? [], [data]);
+  const horses = useMemo(() => {
+    const all = data?.horses ?? [];
+    if (!data?.availableIds) return all;
+    const ok = new Set(data.availableIds);
+    return all.filter((h) => ok.has(h.id));
+  }, [data]);
   const horse = horses.find((h) => h.id === horseId);
   const running = data?.plans.find((p) => p.horseId === horseId && (p.status === 'PLANNED' || p.status === 'ACTIVE' || p.status === 'PAUSED'));
 
@@ -42,7 +47,7 @@ export const TrainerPlanCreate: React.FC = () => {
     name: name.trim().length < 5 ? 'Tên giáo án ít nhất 5 ký tự' : name.trim().length > 80 ? 'Tên giáo án tối đa 80 ký tự' : '',
     horse: !horseId ? 'Chọn ngựa' : block ?? '',
     goal: goal.trim().length < 5 ? 'Mục tiêu ít nhất 5 ký tự' : '',
-    phases: phases.length === 0 ? 'Cần ít nhất 1 giai đoạn' : phases.some((p) => !validPhase(p)) ? 'Kiểm tra lại các giai đoạn: tuần 1–12, quãng đường 200–4000 m, 1–7 buổi/tuần, ngưỡng 120–200 bpm' : '',
+    phases: phases.length !== 1 ? 'Mỗi giáo án chỉ có 1 giai đoạn' : phases.some((p) => !validPhase(p)) ? 'Kiểm tra lại giai đoạn: tuần 1–12, quãng đường 200–4000 m, 1–7 buổi/tuần, ngưỡng 120–200 bpm' : '',
   };
   const valid = !errors.name && !errors.horse && !errors.goal && !errors.phases;
 
@@ -73,7 +78,7 @@ export const TrainerPlanCreate: React.FC = () => {
       <PageHeader
         crumbs={<BackButton fallback="/trainer/plans" />}
         title="Tạo giáo án huấn luyện"
-        sub="Chọn ngựa, đặt mục tiêu, rồi chia giai đoạn. Ngựa đang bị khóa y tế không thể lập giáo án (BR_01)."
+        sub="Mỗi lần lập giáo án chỉ một giai đoạn. Hết giai đoạn thì kết thúc giáo án, rồi lập giáo án mới cho giai đoạn tiếp theo. Ngựa đang bị khóa y tế không thể lập giáo án (BR_01)."
       />
       {serverError && <Callout tone="danger" style={{ marginBottom: 16 }}>{serverError}</Callout>}
 
@@ -112,7 +117,7 @@ export const TrainerPlanCreate: React.FC = () => {
                 <div className="ht-seg" role="group" aria-label="Loại giáo án">
                   {TYPES.map((t) => <button key={t} type="button" aria-pressed={type === t} onClick={() => applyTemplate(t)}>{t}</button>)}
                 </div>
-                <span className="ht-hint">Đổi loại sẽ nạp lại giai đoạn mẫu — bạn vẫn sửa được từng giai đoạn bên dưới.</span>
+                <span className="ht-hint">Đổi loại sẽ nạp giai đoạn mẫu — bạn vẫn sửa được giai đoạn bên dưới.</span>
               </div>
               <div className="ht-field" style={{ marginBottom: 0 }}>
                 <label className="ht-label" htmlFor="goal">Mục tiêu<span className="ht-req">*</span></label>
@@ -122,12 +127,11 @@ export const TrainerPlanCreate: React.FC = () => {
             </div>
           </Panel>
 
-          <Panel title="Các giai đoạn" sub="Mỗi giai đoạn: số tuần, cường độ, quãng đường mỗi buổi, số buổi/tuần và ngưỡng nhịp tim (BR_02)."
-            right={<button type="button" className="ht-btn ht-btn--secondary ht-btn--sm" disabled={phases.length >= 6} onClick={() => setPhases((ps) => [...ps, { ...NEW_PHASE }])}>+ Thêm giai đoạn</button>}>
-            <div className="ht-panel__body" style={{ display: 'grid', gap: 12 }}>
-              {phases.map((p, i) => (
-                <PhaseRow key={i} phase={p} index={i} invalid={tried && !validPhase(p)} canRemove={phases.length > 1}
-                  onChange={(patch) => setPhase(i, patch)} onRemove={() => setPhases((ps) => ps.filter((_, k) => k !== i))} />
+          <Panel title="Giai đoạn" sub="Một giai đoạn: số tuần, cường độ, quãng đường mỗi buổi, số buổi/tuần và ngưỡng nhịp tim (BR_02).">
+            <div className="ht-panel__body" data-testid="plan-single-phase" style={{ display: 'grid', gap: 12 }}>
+              {phases.slice(0, 1).map((p, i) => (
+                <PhaseRow key={i} phase={p} index={i} invalid={tried && !validPhase(p)} canRemove={false}
+                  onChange={(patch) => setPhase(i, patch)} onRemove={() => undefined} />
               ))}
               {fieldError(errors.phases)}
             </div>

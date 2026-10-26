@@ -33,7 +33,7 @@ export const OverviewTab: React.FC<{ horse: Horse; plan?: TrainingPlan; recent: 
                 </dl>
                 {plan.pausedReason && <Callout tone="demo" icon="warn">{plan.pausedReason}</Callout>}
               </div>
-            ) : <p style={{ margin: 0, color: 'var(--muted)' }}>Chưa có giáo án. {block ?? 'Bấm “Tạo giáo án” để lập kế hoạch nhiều giai đoạn.'}</p>}
+            ) : <p style={{ margin: 0, color: 'var(--muted)' }}>Chưa có giáo án. {block ?? 'Bấm “Tạo giáo án” để lập một giai đoạn.'}</p>}
           </div>
         </Panel>
         <Panel title="Phiên tập gần đây" right={<span style={{ fontSize: 13, color: 'var(--muted)' }}>Điểm TB <span className="ht-score-chip">{avg}</span></span>}>

@@ -3,6 +3,7 @@ import { AssignedHorse, AssignedStall, ManagedUser, managerApi } from '../../../
 import { useActor } from '../../../auth/AuthContext';
 import { useAction } from '../../../hooks/useAction';
 import { Callout, Dialog } from '../../../components/ui/Ht';
+import { USE_BACKEND } from '../../../api/beClient';
 
 const NO_ZONE = 'Chưa rõ khu';
 
@@ -15,7 +16,10 @@ export const TrainerHorsesDialog: React.FC<{ user: ManagedUser; stalls: Assigned
   const toggle = (id: string) => setHorseIds((xs) => (xs.includes(id) ? xs.filter((x) => x !== id) : [...xs, id]));
   const summary = zones.map((z) => [z, horses.filter((h) => zoneOf(h) === z && horseIds.includes(h.id)).length] as const).filter(([, n]) => n > 0);
   const save = async () => {
-    if (await run(() => managerApi.assignTrainer(user, horseIds, actor), `Đã phân công ${horseIds.length} ngựa cho ${user.fullName}.`)) onDone();
+    const done = USE_BACKEND
+      ? `Đã gửi yêu cầu. ${user.fullName} cần xác nhận trước khi phân công có hiệu lực.`
+      : `Đã phân công ${horseIds.length} ngựa cho ${user.fullName}.`;
+    if (await run(() => managerApi.assignTrainer(user, horseIds, actor), done)) onDone();
   };
 
   return (
@@ -36,6 +40,7 @@ export const TrainerHorsesDialog: React.FC<{ user: ManagedUser; stalls: Assigned
                   <span>
                     <b>{h.name}</b> · {h.stall}
                     {other && <span style={{ display: 'block', fontSize: 12, color: 'var(--muted)' }}>Đang do {other} phụ trách</span>}
+                    {h.pendingNote && <span data-testid={`trainer-pending-${h.id}`} style={{ display: 'block', fontSize: 12, color: 'var(--warning-ink, var(--muted))' }}>{h.pendingNote}</span>}
                   </span>
                 </label>
               );
@@ -45,7 +50,7 @@ export const TrainerHorsesDialog: React.FC<{ user: ManagedUser; stalls: Assigned
       ))}
       <Callout tone="info" style={{ marginTop: 6 }}>
         {summary.length ? `Đã chọn ${horseIds.length} ngựa: ${summary.map(([z, n]) => `${z} ${n}`).join(' · ')}.` : 'Chưa chọn ngựa nào.'}
-        {' '}Ngựa đang do HLV khác phụ trách sẽ được bàn giao cùng giáo án đang chạy.
+        {' '}{USE_BACKEND ? 'Ngựa đang do HLV khác phụ trách chỉ được bàn giao sau khi HLV mới xác nhận. Cả hai HLV đều nhận email.' : 'Ngựa đang do HLV khác phụ trách sẽ được bàn giao cùng giáo án đang chạy.'}
       </Callout>
     </Dialog>
   );

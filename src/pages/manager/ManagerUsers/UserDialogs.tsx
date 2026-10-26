@@ -4,6 +4,7 @@ import { useActor } from '../../../auth/AuthContext';
 import { useAction } from '../../../hooks/useAction';
 import { Callout, Dialog, ReasonField } from '../../../components/ui/Ht';
 import { ROLE_LABEL } from '../../../components/layout/nav';
+import { USE_BACKEND } from '../../../api/beClient';
 import { TrainerHorsesDialog } from './TrainerHorsesDialog';
 
 const useReason = () => {
@@ -28,7 +29,9 @@ const GroomZoneDialog: React.FC<{ user: ManagedUser; data: { grooms: GroomAssign
   const occupied = new Set(data.grooms.filter((g) => g.id !== user.id && g.role === 'Groom').flatMap((g) => g.zones));
   const [zone, setZone] = useState(currentZone);
   const save = async () => {
-    const done = zone ? `Đã cập nhật khu cho ${user.fullName}: ${zone}.` : `Đã bỏ phân công khu của ${user.fullName}.`;
+    const done = USE_BACKEND
+      ? `Đã gửi yêu cầu. ${user.fullName} cần xác nhận trước khi khu có hiệu lực.`
+      : zone ? `Đã cập nhật khu cho ${user.fullName}: ${zone}.` : `Đã bỏ phân công khu của ${user.fullName}.`;
     if (await run(() => managerApi.assignGroom(user, zone ? [zone] : [], actor), done)) onDone();
   };
   return (
@@ -41,7 +44,8 @@ const GroomZoneDialog: React.FC<{ user: ManagedUser; data: { grooms: GroomAssign
       })}
         {currentZone && <label className="ht-role"><input type="radio" name={`zone-${user.id}`} data-testid="groom-zone-none" checked={zone === ''} onChange={() => setZone('')} />Bỏ phân công</label>}
       </div>
-      <Callout tone="info" style={{ marginTop: 16 }}>Mỗi người chăm phụ trách đúng một khu và mọi chuồng trong khu đó; mỗi khu chỉ có một người chăm. Chỉ đổi hoặc bỏ khu được khi người chăm không còn việc chăm sóc / buổi tập chưa thực hiện ở khu hiện tại.</Callout>
+      {current?.pendingNote && <Callout tone="demo" testId="groom-zone-pending" style={{ marginTop: 16 }}>{current.pendingNote} Khu hiện tại chưa đổi.</Callout>}
+      <Callout tone="info" style={{ marginTop: 16 }}>Mỗi người chăm phụ trách đúng một khu và mọi chuồng trong khu đó; mỗi khu chỉ có một người chăm. Chỉ đổi hoặc bỏ khu được khi người chăm không còn việc chăm sóc / buổi tập chưa thực hiện ở khu hiện tại.{USE_BACKEND ? ' Khu chỉ đổi sau khi người chăm xác nhận.' : ''}</Callout>
     </Dialog>
   );
 };
@@ -60,7 +64,7 @@ export const LockUserDialog: React.FC<{ user: ManagedUser; lock: boolean; onClos
   return (
     <Dialog open onClose={onClose} icon={lock ? 'lock' : 'unlock'} tone={lock ? 'danger' : 'brand'} danger={lock} busy={busy} busyLabel="Đang lưu…"
       title={lock ? `Khóa tài khoản ${user.fullName}?` : `Mở khóa ${user.fullName}?`}
-      sub={lock ? 'Người dùng bị đăng xuất ngay và không thể đăng nhập cho đến khi được mở khóa.' : `Bị khóa vì: ${user.lockReason}. Người dùng đăng nhập lại được với vai trò ${ROLE_LABEL[user.role]}.`}
+      sub={lock ? 'Người dùng bị đăng xuất ngay, nhận email thông báo kèm lý do, và không thể đăng nhập cho đến khi được mở khóa.' : `Bị khóa vì: ${user.lockReason}. Người dùng đăng nhập lại được với vai trò ${ROLE_LABEL[user.role]}.`}
       confirmLabel={lock ? 'Khóa tài khoản' : 'Mở khóa'} onConfirm={confirm}>
       {error && <Callout tone="danger" style={{ marginBottom: 14 }}>{error}</Callout>}
       {lock && user.openTasks ? <Callout tone="demo" style={{ marginBottom: 14 }}>{user.openTasks} công việc đang mở của người này cần được giao lại.</Callout> : null}
