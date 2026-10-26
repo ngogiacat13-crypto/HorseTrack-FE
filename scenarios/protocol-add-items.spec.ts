@@ -67,6 +67,22 @@ test('vet cannot create another protocol for a horse with an uncancelled protoco
   await expect(page.getByTestId('cancel-protocol-btn')).toBeVisible();
 });
 
+test('vet cannot complete a phase before its medicine is dispensed and paid', async ({ page }) => {
+  await signIn(page, 'Veterinarian');
+  await page.goto('/vet/protocols/PD-0009');
+  await expect(page.getByTestId('protocol-phase-start')).toBeDisabled();
+  await expect(page.getByTestId('protocol-phase-done')).toHaveCount(0);
+  await expect(page.getByText(/chủ ngựa thanh toán và kho cấp thuốc/i)).toBeVisible();
+});
+
+test('owner sees the phase payment notice and invoice', async ({ page }) => {
+  await signIn(page, 'HorseOwner', 'Vũ Thị Mai');
+  await page.goto('/owner/horses/h-wind');
+  await page.getByText('Sức khỏe & điều trị', { exact: true }).click();
+  await expect(page.getByTestId('phase-payment-notice')).toContainText('giai đoạn 2');
+  await expect(page.getByTestId('phase-payment-notice')).toContainText('INV-0052');
+});
+
 test('warehouse sees replaced protocols and what changed between versions', async ({ page }) => {
   await signIn(page, 'WarehouseManager');
   await page.goto('/warehouse/medical');

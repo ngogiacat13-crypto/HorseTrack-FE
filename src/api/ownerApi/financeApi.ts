@@ -79,6 +79,12 @@ export const financeApi = {
     const { data } = await http.patch<Payment>(`/payments/${p.id}`, { status: 'VERIFIED', verifiedAt: now(), bankRef, note: 'Máy chủ đã xác minh chữ ký, mã tham chiếu và số tiền' });
     const to = inv.status === 'SUSPENDED' ? 'REACTIVATION_PENDING' : 'PAID';
     await http.patch(`/invoices/${inv.id}`, { status: to, paidRef: p.id, overdueDays: 0 });
+    const linkedLine = inv.lines.find((line) => line.protocolId && line.phaseNo);
+    if (linkedLine?.protocolId && linkedLine.phaseNo) {
+      const protocols = await get<{ id: string; phaseBilling?: { phaseNo: number; invoiceId: string | null; amount: number; status: string }[] }[]>('/protocols');
+      const linked = protocols.find((protocol) => protocol.id === linkedLine.protocolId);
+      if (linked) await http.patch(`/protocols/${linked.id}`, { phaseBilling: (linked.phaseBilling ?? []).map((billing) => billing.phaseNo === linkedLine.phaseNo ? { ...billing, status: 'PAID' } : billing) });
+    }
     await addAudit(SYSTEM, { action: 'PAYMENT_VERIFIED', label: 'Xác minh thanh toán (IPN)', object: `${p.id} · ${inv.id}`, area: 'fin', from: inv.status, to, reason: `Mã NH ${bankRef} · ${p.amount.toLocaleString('vi-VN')} ₫` });
     return data;
   },

@@ -1193,6 +1193,15 @@
         }
       ],
       "note": "Đánh giá lại 06/10.",
+      "dispensedPhases": [1],
+      "phaseProgress": [
+        { "phaseNo": 1, "status": "COMPLETED", "reason": "Đáp ứng tốt với kháng sinh." },
+        { "phaseNo": 2, "status": "WAITING_PAYMENT" }
+      ],
+      "phaseBilling": [
+        { "phaseNo": 1, "invoiceId": "INV-0051", "amount": 2200000, "status": "PAID" },
+        { "phaseNo": 2, "invoiceId": "INV-0052", "amount": 800000, "status": "UNPAID", "notice": "Chủ ngựa cần thanh toán trước khi bắt đầu giai đoạn 2." }
+      ],
       "log": [
         {
           "tone": "success",
@@ -2002,6 +2011,36 @@
           "amount": 4200000
         }
       ]
+    },
+    {
+      "id": "INV-0051",
+      "horse": "Wind",
+      "owner": "Vũ Thị Mai",
+      "period": "09/2026",
+      "dueDate": "27/09/2026",
+      "amount": 2200000,
+      "overdueDays": 0,
+      "status": "PAID",
+      "paidRef": "TXN-00051",
+      "horseId": "h-wind",
+      "issuedAt": "26/09/2026",
+      "service": "Phác đồ PD-0009 · giai đoạn 1",
+      "lines": [{ "label": "Phác đồ PD-0009 · Kháng sinh · GĐ1", "kind": "MED", "period": "09/2026", "amount": 2200000, "protocolId": "PD-0009", "phaseNo": 1 }]
+    },
+    {
+      "id": "INV-0052",
+      "horse": "Wind",
+      "owner": "Vũ Thị Mai",
+      "period": "10/2026",
+      "dueDate": "04/10/2026",
+      "amount": 800000,
+      "overdueDays": 0,
+      "status": "UNPAID",
+      "dueInDays": 1,
+      "horseId": "h-wind",
+      "issuedAt": "03/10/2026",
+      "service": "Phác đồ PD-0009 · giai đoạn 2",
+      "lines": [{ "label": "Phác đồ PD-0009 · Theo dõi sau điều trị · GĐ2", "kind": "MED", "period": "10/2026", "amount": 800000, "protocolId": "PD-0009", "phaseNo": 2 }]
     }
   ],
   "auditLogs": [
