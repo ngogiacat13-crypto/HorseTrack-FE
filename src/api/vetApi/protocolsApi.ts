@@ -181,7 +181,7 @@ export const protocolsApi = {
     return saveProtocol(p, { phaseProgress, note: `Bắt đầu giai đoạn ${phaseNo} sau khi đã thanh toán và nhận thuốc.` }, { tone: 'success', who: `BS ${actor.name}`, text: `bắt đầu giai đoạn ${phaseNo}`, at: now() });
   },
 
-  async completePhase(p: Protocol, phaseNo: number, decision: 'CONTINUE' | 'STOP', reason: string, actor: Actor) {
+  async completePhase(p: Protocol, phaseNo: number, decision: 'CONTINUE' | 'STOP', reason: string, actor: Actor, startNext = false) {
     const progress = phaseProgressOf(p);
     const current = progress.find((item) => item.status === 'IN_PROGRESS');
     if (!current || current.phaseNo !== phaseNo) throw new Error('Chỉ được kết thúc giai đoạn đang điều trị.');
@@ -190,8 +190,9 @@ export const protocolsApi = {
     const why = min(reason, 10, 'Lý do quyết định giai đoạn');
     const phaseProgress: PhaseProgress[] = progress.map((item) => item.phaseNo === phaseNo ? { ...item, status: decision === 'CONTINUE' ? 'COMPLETED' : 'STOPPED', reason: why } : item);
     const next = p.phases.find((item) => item.no > phaseNo && !phaseProgress.some((state) => state.phaseNo === item.no && ['COMPLETED', 'STOPPED'].includes(state.status)));
-    const nextProgress = next && decision === 'CONTINUE' ? phaseProgress.map((item) => item.phaseNo === next.no ? { ...item, status: 'WAITING_PAYMENT' as const } : item) : phaseProgress;
-    return saveProtocol(p, { phaseProgress: nextProgress, outcome: decision === 'STOP' ? `Ngưng sau giai đoạn ${phaseNo}: ${why}` : p.outcome, note: decision === 'CONTINUE' && next ? `Đã hoàn thành giai đoạn ${phaseNo}. Chủ ngựa cần thanh toán giai đoạn ${next.no} trước khi bắt đầu.` : `Đã ngưng sau giai đoạn ${phaseNo}: ${why}` }, { tone: decision === 'CONTINUE' ? 'success' : 'warning', who: `BS ${actor.name}`, text: decision === 'CONTINUE' ? `hoàn thành giai đoạn ${phaseNo}, tiếp tục điều trị` : `ngưng sau giai đoạn ${phaseNo}: ${why}`, at: now() });
+    const startNextNow = decision === 'CONTINUE' && startNext && !!next && phaseReadyToStart(p, next.no);
+    const nextProgress = next && decision === 'CONTINUE' ? phaseProgress.map((item) => item.phaseNo === next.no ? { ...item, status: startNextNow ? 'IN_PROGRESS' as const : 'WAITING_PAYMENT' as const } : item) : phaseProgress;
+    return saveProtocol(p, { phaseProgress: nextProgress, outcome: decision === 'STOP' ? `Ngưng sau giai đoạn ${phaseNo}: ${why}` : p.outcome, note: decision === 'CONTINUE' && next ? (startNextNow ? `Đã hoàn thành giai đoạn ${phaseNo} và bắt đầu giai đoạn ${next.no}.` : `Đã hoàn thành giai đoạn ${phaseNo}. Giai đoạn ${next.no} chờ đủ điều kiện bắt đầu.`) : `Đã ngưng sau giai đoạn ${phaseNo}: ${why}` }, { tone: decision === 'CONTINUE' ? 'success' : 'warning', who: `BS ${actor.name}`, text: decision === 'CONTINUE' ? (startNextNow ? `hoàn thành giai đoạn ${phaseNo}, bắt đầu giai đoạn ${next?.no ?? ''}` : `hoàn thành giai đoạn ${phaseNo}, tiếp tục điều trị`) : `ngưng sau giai đoạn ${phaseNo}: ${why}`, at: now() });
   },
 
   async completeProtocol(p: Protocol, outcome: string, actor: Actor) {

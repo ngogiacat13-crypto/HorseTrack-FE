@@ -5,7 +5,7 @@ import { useAction } from '../../../hooks/useAction';
 import { Callout, Dialog, ReasonField } from '../../../components/ui/Ht';
 import { phaseProgressOf } from '../../../features/protocol-phases/phaseState';
 
-export type ProtocolAction = 'send' | 'cancel' | 'wait' | 'confirm' | 'progress' | 'complete' | 'continue-phase' | 'stop-phase';
+export type ProtocolAction = 'send' | 'cancel' | 'wait' | 'confirm' | 'progress' | 'complete' | 'continue-phase' | 'continue-start-next' | 'stop-phase';
 
 interface Spec { title: string; sub?: string; label: string; field?: [label: string, placeholder: string, min?: number]; danger?: boolean; ok: string }
 
@@ -35,6 +35,8 @@ const specFor = (p: Protocol, a: ProtocolAction): Spec => {
     case 'continue-phase': return { title: 'Tiếp tục phác đồ', label: 'Hoàn thành giai đoạn & tiếp tục', ok: 'Đã hoàn thành giai đoạn và gửi thông báo thanh toán giai đoạn tiếp theo.',
       sub: 'Chủ ngựa phải thanh toán chi phí giai đoạn tiếp theo trước khi bác sĩ bắt đầu giai đoạn đó.',
       field: ['Đánh giá giai đoạn', 'VD: Đáp ứng tốt, tiếp tục theo dõi thêm 7 ngày.'] };
+    case 'continue-start-next': return { title: 'Bắt đầu sớm giai đoạn kế tiếp', label: 'Kết thúc & bắt đầu ngay', ok: 'Đã kết thúc giai đoạn hiện tại và bắt đầu giai đoạn kế tiếp.',
+      sub: 'Giai đoạn kế tiếp đã thanh toán và đủ điều kiện cấp phát.', field: ['Đánh giá giai đoạn', 'VD: Đáp ứng tốt, chuyển sang giai đoạn phục hồi.'] };
     case 'stop-phase': return { title: 'Ngưng phác đồ sau giai đoạn', label: 'Ngưng sau giai đoạn', danger: true, ok: 'Đã ngưng phác đồ và lưu lý do quyết định.',
       field: ['Lý do ngưng', 'VD: Đã đạt mục tiêu, không cần tiếp tục giai đoạn sau.', 10] };
   }
@@ -54,6 +56,7 @@ export const ActionDialog: React.FC<{ protocol: Protocol; action: ProtocolAction
     progress: () => vetApi.addProgress(p, text, actor),
     complete: () => vetApi.completeProtocol(p, text, actor),
     'continue-phase': () => vetApi.completePhase(p, activePhaseNo, 'CONTINUE', text, actor),
+    'continue-start-next': () => vetApi.completePhase(p, activePhaseNo, 'CONTINUE', text, actor, true),
     'stop-phase': () => vetApi.completePhase(p, activePhaseNo, 'STOP', text, actor),
   };
   const confirm = async () => { if (await run(call[action], spec.ok)) onDone(); };

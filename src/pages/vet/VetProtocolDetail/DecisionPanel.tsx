@@ -19,6 +19,8 @@ export const DecisionPanel: React.FC<Props> = ({ protocol: p, horse, vetCase, on
   const currentPhase = currentPhaseOf(p);
   const currentPhaseState = currentPhase ? phaseProgress.find((item) => item.phaseNo === currentPhase.phaseNo) : undefined;
   const phaseReady = !!currentPhase && phaseReadyToStart(p, currentPhase.phaseNo);
+  const nextPhase = currentPhase && p.phases.find((item) => item.no > currentPhase.phaseNo && !phaseProgress.some((state) => state.phaseNo === item.no && ['COMPLETED', 'STOPPED'].includes(state.status)));
+  const nextPhaseReady = !!nextPhase && phaseReadyToStart(p, nextPhase.no);
   const requiredBy = phaseRequiredBy(p, short.map((l) => l.itemId));
   const etaLate = p.wait && dateKey(p.wait.eta) > dateKey(requiredBy);
   const btn = (cls: string, icon: React.ComponentProps<typeof Icon>['name'], label: string, onClick: () => void) => (
@@ -72,6 +74,9 @@ export const DecisionPanel: React.FC<Props> = ({ protocol: p, horse, vetCase, on
             <button type="button" className="ht-btn ht-btn--secondary ht-btn--block" data-testid="protocol-phase-done" disabled={busy} onClick={() => onAction('continue-phase')}>
               <Icon name="check" />Hoàn thành GĐ {currentPhase.phaseNo} và tiếp tục
             </button>
+            {nextPhaseReady && <button type="button" className="ht-btn ht-btn--primary ht-btn--block" data-testid="protocol-phase-done-start-next" disabled={busy} onClick={() => onAction('continue-start-next')}>
+              <Icon name="arrow" />Kết thúc GĐ {currentPhase.phaseNo} và bắt đầu GĐ {nextPhase.no}
+            </button>}
             <button type="button" className="ht-btn ht-btn--ghost ht-btn--block" data-testid="protocol-phase-stop" disabled={busy} onClick={() => onAction('stop-phase')}>
               <Icon name="ban" />Ngưng sau GĐ {currentPhase.phaseNo}
             </button>
