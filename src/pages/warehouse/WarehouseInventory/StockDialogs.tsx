@@ -39,7 +39,7 @@ export const StockMoveDialog: React.FC<{ item: StockItem; onClose: () => void; o
           )}
         </div>
         {kind === 'ISSUE' && <Callout tone="info">Xuất theo phác đồ hoặc yêu cầu của Mã phu nên làm ở trang tương ứng để liên kết chứng từ. Ở đây chỉ dùng cho xuất khác (hư hỏng, mẫu thử…).</Callout>}
-        <ReasonField id="mv-note" label={kind === 'RECEIVE' ? 'Ghi chú / chứng từ' : 'Lý do'} min={kind === 'RECEIVE' ? 5 : 10} value={note} onChange={setNote}
+        <ReasonField id="mv-note" label={kind === 'RECEIVE' ? 'Ghi chú / chứng từ' : 'Lý do'} min={kind === 'RECEIVE' ? undefined : 10} value={note} onChange={setNote}
           placeholder={kind === 'RECEIVE' ? 'VD: Hóa đơn NCC số 0457' : kind === 'ADJUST' ? 'VD: Kiểm tra phát hiện 2 lọ vỡ nắp' : 'VD: Hủy 1 chai do nhiễm bẩn'} minHeight={56} />
       </div>
     </Dialog>

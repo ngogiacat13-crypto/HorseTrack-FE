@@ -8,10 +8,10 @@ const selectStyle: React.CSSProperties = { height: 44, width: '100%', fontSize: 
 interface HorseCaseProps {
   horses: VetHorse[]; cases: VetCase[]; locked: boolean;
   horseId: string; caseId: string; diagnosis: string; requiredBy: string;
-  onHorse: (id: string) => void; onCase: (id: string) => void; onDiagnosis: (v: string) => void; onRequiredBy: (v: string) => void;
+  emergency: boolean; onHorse: (id: string) => void; onCase: (id: string) => void; onDiagnosis: (v: string) => void; onRequiredBy: (v: string) => void; onEmergency: (v: boolean) => void;
 }
 
-export const HorseCaseFields: React.FC<HorseCaseProps> = ({ horses, cases, locked, horseId, caseId, diagnosis, requiredBy, onHorse, onCase, onDiagnosis, onRequiredBy }) => (
+export const HorseCaseFields: React.FC<HorseCaseProps> = ({ horses, cases, locked, horseId, caseId, diagnosis, requiredBy, emergency, onHorse, onCase, onDiagnosis, onRequiredBy, onEmergency }) => (
   <Panel title="Ngựa & chẩn đoán">
     <div className="ht-panel__body ht-proto-phase__grid" style={{ gridTemplateColumns: 'minmax(170px, 1.2fr) minmax(200px, 1.4fr) minmax(0, 2fr) minmax(140px, 1fr)' }}>
       <div className="ht-field">
@@ -36,6 +36,10 @@ export const HorseCaseFields: React.FC<HorseCaseProps> = ({ horses, cases, locke
         <label className="ht-label" htmlFor="pc-req">Ngày cần thuốc</label>
         <input id="pc-req" className="ht-input ht-mono" value={requiredBy} onChange={(e) => onRequiredBy(e.target.value)} placeholder="dd/mm/yyyy" />
       </div>
+      <label className="ht-field" style={{ display: 'flex', alignItems: 'center', gap: 8, margin: 0, gridColumn: '1 / -1' }}>
+        <input id="pc-emergency" data-testid="protocol-emergency" type="checkbox" checked={emergency} onChange={(e) => onEmergency(e.target.checked)} />
+        <span><b className="ht-label" style={{ display: 'block', margin: 0 }}>Trạng thái cấp cứu</b><small className="ht-hint">Kho được cấp thuốc/vật tư ngay, không chờ chủ ngựa thanh toán.</small></span>
+      </label>
     </div>
   </Panel>
 );

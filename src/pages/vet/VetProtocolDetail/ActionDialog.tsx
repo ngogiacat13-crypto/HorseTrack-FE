@@ -5,7 +5,7 @@ import { useAction } from '../../../hooks/useAction';
 import { Callout, Dialog, ReasonField } from '../../../components/ui/Ht';
 import { phaseProgressOf } from '../../../features/protocol-phases/phaseState';
 
-export type ProtocolAction = 'send' | 'cancel' | 'wait' | 'confirm' | 'progress' | 'complete' | 'continue-phase' | 'stop-phase';
+export type ProtocolAction = 'send' | 'cancel' | 'wait' | 'confirm' | 'progress' | 'complete' | 'continue-phase' | 'continue-start-next' | 'stop-phase';
 
 interface Spec { title: string; sub?: string; label: string; field?: [label: string, placeholder: string, min?: number]; danger?: boolean; ok: string }
 
@@ -23,7 +23,7 @@ const specFor = (p: Protocol, a: ProtocolAction): Spec => {
         field: ['Lý do hủy', 'VD: Khám lại thấy cần đổi hướng điều trị, sẽ lập phác đồ mới.', 10] };
     case 'wait': return { title: 'Chờ hàng về', label: 'Chọn chờ hàng', ok: `${p.id}: chờ hàng về.`,
       sub: `Hàng thiếu dự kiến về ${short.map((l) => l.eta).filter(Boolean).join(', ') || '—'}; mốc cần thuốc ${requiredBy}.`,
-      field: [late ? 'Đánh giá chờ vẫn an toàn về chuyên môn' : 'Ghi chú', 'VD: Ngựa ổn định, chườm lạnh thay thế đến khi hàng về.', late ? 15 : 10] };
+      field: [late ? 'Đánh giá chờ vẫn an toàn về chuyên môn' : 'Ghi chú', 'VD: Ngựa ổn định, chườm lạnh thay thế đến khi hàng về.'] };
     case 'confirm': return { title: `Xác nhận phác đồ ${p.id}`, label: 'Xác nhận & chuyển kho cấp phát', ok: `${p.id} đã xác nhận — kho chuẩn bị cấp phát.`,
       sub: 'Kho đã đủ khả năng cấp. Xác nhận phác đồ vẫn phù hợp với tình trạng ngựa hiện tại.',
       field: ['Đánh giá tính phù hợp', 'VD: Đã khám lại, tình trạng không đổi, giữ nguyên liều.'] };
@@ -34,7 +34,9 @@ const specFor = (p: Protocol, a: ProtocolAction): Spec => {
       field: ['Kết quả & chỉ định tiếp theo', 'VD: Hết sưng, tái khám sau 2 tuần, tập nhẹ 1 tuần đầu.'] };
     case 'continue-phase': return { title: 'Tiếp tục phác đồ', label: 'Hoàn thành giai đoạn & tiếp tục', ok: 'Đã hoàn thành giai đoạn và gửi thông báo thanh toán giai đoạn tiếp theo.',
       sub: 'Chủ ngựa phải thanh toán chi phí giai đoạn tiếp theo trước khi bác sĩ bắt đầu giai đoạn đó.',
-      field: ['Đánh giá giai đoạn', 'VD: Đáp ứng tốt, tiếp tục theo dõi thêm 7 ngày.', 10] };
+      field: ['Đánh giá giai đoạn', 'VD: Đáp ứng tốt, tiếp tục theo dõi thêm 7 ngày.'] };
+    case 'continue-start-next': return { title: 'Bắt đầu sớm giai đoạn kế tiếp', label: 'Kết thúc & bắt đầu ngay', ok: 'Đã kết thúc giai đoạn hiện tại và bắt đầu giai đoạn kế tiếp.',
+      sub: 'Giai đoạn kế tiếp đã thanh toán và đủ điều kiện cấp phát.', field: ['Đánh giá giai đoạn', 'VD: Đáp ứng tốt, chuyển sang giai đoạn phục hồi.'] };
     case 'stop-phase': return { title: 'Ngưng phác đồ sau giai đoạn', label: 'Ngưng sau giai đoạn', danger: true, ok: 'Đã ngưng phác đồ và lưu lý do quyết định.',
       field: ['Lý do ngưng', 'VD: Đã đạt mục tiêu, không cần tiếp tục giai đoạn sau.', 10] };
   }
@@ -54,6 +56,7 @@ export const ActionDialog: React.FC<{ protocol: Protocol; action: ProtocolAction
     progress: () => vetApi.addProgress(p, text, actor),
     complete: () => vetApi.completeProtocol(p, text, actor),
     'continue-phase': () => vetApi.completePhase(p, activePhaseNo, 'CONTINUE', text, actor),
+    'continue-start-next': () => vetApi.completePhase(p, activePhaseNo, 'CONTINUE', text, actor, true),
     'stop-phase': () => vetApi.completePhase(p, activePhaseNo, 'STOP', text, actor),
   };
   const confirm = async () => { if (await run(call[action], spec.ok)) onDone(); };
@@ -62,7 +65,7 @@ export const ActionDialog: React.FC<{ protocol: Protocol; action: ProtocolAction
     <Dialog open onClose={onClose} icon={action === 'cancel' ? 'x' : action === 'wait' ? 'clock' : 'check'} tone={spec.danger ? 'danger' : 'brand'} danger={spec.danger}
       busy={busy} title={spec.title} sub={spec.sub} confirmLabel={spec.label} onConfirm={confirm}>
       {error && <Callout tone="danger" style={{ marginBottom: spec.field ? 14 : 0 }}>{error}</Callout>}
-      {spec.field && <ReasonField id="pd-text" label={spec.field[0]} value={text} onChange={setText} placeholder={spec.field[1]} min={spec.field[2] ?? 10} />}
+      {spec.field && <ReasonField id="pd-text" label={spec.field[0]} value={text} onChange={setText} placeholder={spec.field[1]} min={spec.field[2]} />}
     </Dialog>
   );
 };

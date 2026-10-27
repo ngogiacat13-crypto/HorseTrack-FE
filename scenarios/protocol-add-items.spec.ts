@@ -74,6 +74,15 @@ test('vet can open a new protocol form after an old protocol is closed', async (
   await expect(page.getByText(/Tạo phác đồ điều trị/)).toBeVisible();
 });
 
+test('vet can mark a protocol as emergency', async ({ page }) => {
+  await signIn(page, 'Veterinarian');
+  await page.goto('/vet/protocols/new?horse=h-flash&case=C-0006');
+  const emergency = page.getByTestId('protocol-emergency');
+  await expect(emergency).not.toBeChecked();
+  await emergency.check();
+  await expect(emergency).toBeChecked();
+});
+
 test('vet cannot complete a phase before its medicine is dispensed and paid', async ({ page }) => {
   await signIn(page, 'Veterinarian');
   await page.goto('/vet/protocols/PD-0009');

@@ -8,7 +8,6 @@ import { Callout, Dialog, EMAIL_RE, EMAIL_RULE, Field, PASSWORD_RE, PASSWORD_RUL
 import { ROLE_LABEL } from '../../../components/layout/nav';
 
 const STAFF_ROLES: StaffRole[] = ['HeadTrainer', 'Veterinarian', 'Groom', 'WarehouseManager'];
-const ZONES = ['Khu A', 'Khu B', 'Khu C'];
 
 export const CreateStaffDialog: React.FC<{ onClose: () => void; onDone: (u: ManagedUser) => void }> = ({ onClose, onDone }) => {
   const actor = useActor();
@@ -22,7 +21,6 @@ export const CreateStaffDialog: React.FC<{ onClose: () => void; onDone: (u: Mana
       email: !v.email.trim() ? 'Vui lòng nhập email' : !EMAIL_RE.test(v.email.trim()) ? EMAIL_RULE : undefined,
       phone: !v.phone.trim() ? 'Vui lòng nhập số điện thoại' : !PHONE_RE.test(normalizePhone(v.phone)) ? PHONE_RULE : undefined,
       password: !v.password ? 'Vui lòng nhập mật khẩu tạm' : !PASSWORD_RE.test(v.password) ? PASSWORD_RULE : undefined,
-      specialization: v.role === 'Groom' && !v.specialization ? 'Chọn khu chuồng phụ trách' : undefined,
     }),
   );
   const role = form.values.role as StaffRole;
@@ -87,15 +85,6 @@ export const CreateStaffDialog: React.FC<{ onClose: () => void; onDone: (u: Mana
             <TextInput icon="heart" placeholder="VD: Phòng khám thú y CLB" {...form.field('specialization')} />
           </Field>
         </div>
-      )}
-      {role === 'Groom' && (
-        <Field label="Khu chuồng phụ trách" htmlFor="specialization" required error={form.errors.specialization}>
-          <select id="specialization" className="ht-input" value={form.values.specialization}
-            onChange={(e) => form.setValues((s) => ({ ...s, specialization: e.target.value }))}>
-            <option value="">— Chọn khu —</option>
-            {ZONES.map((z) => <option key={z}>{z}</option>)}
-          </select>
-        </Field>
       )}
     </Dialog>
   );

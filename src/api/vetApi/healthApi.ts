@@ -37,7 +37,7 @@ export const healthApi = {
   async addInjury(horse: Horse, input: { part: string; severity: string; note: string; x: number; y: number; caseId?: string }, actor: Actor) {
     if (!input.part.trim()) throw new Error('Chọn bộ phận bị ảnh hưởng.');
     if (!(INJURY_SEVERITIES as readonly string[]).includes(input.severity)) throw new Error('Chọn mức độ.');
-    const note = min(input.note, 5, 'Mô tả');
+    const note = input.note.trim();
     if (USE_BACKEND) {
       await be.post(`/horses/${horse.id}/injuries`, {
         part: input.part.trim(), severity: input.severity, note, caseId: input.caseId || undefined,
@@ -84,7 +84,7 @@ export const healthApi = {
 
   async unlockTraining(horse: Horse, note: string, actor: Actor) {
     if (!horse.trainingLocked) throw new Error(`${horse.name} không bị khóa huấn luyện.`);
-    const why = min(note, 10, 'Đánh giá đủ điều kiện');
+    const why = note.trim();
     const { data } = await http.patch<VetHorse>(`/horses/${horse.id}`, { trainingLocked: false, lock: null });
     await addHistory({ ...horse, ...data }, 'Mở khóa huấn luyện — đủ điều kiện y tế', 'success');
     await addAudit(actor, { action: 'UNLOCK_TRAINING', label: 'Mở khóa huấn luyện', object: horse.name, area: 'med', from: 'Khóa tập', to: 'Được tập', reason: why });
@@ -94,7 +94,6 @@ export const healthApi = {
   async setDiet(horse: VetHorse, diet: Omit<MedicalDiet, 'by' | 'at'> | null, actor: Actor) {
     if (diet) {
       if (![diet.morning, diet.noon, diet.evening].some((m) => m.trim())) throw new Error('Nhập ít nhất một bữa.');
-      min(diet.note, 10, 'Lý do / ghi chú chỉ định');
     }
     const medicalDiet: MedicalDiet | null = diet ? { ...diet, by: actor.name, at: DEMO_NOW.date } : null;
     const { data } = await http.patch<VetHorse>(`/horses/${horse.id}`, { medicalDiet });

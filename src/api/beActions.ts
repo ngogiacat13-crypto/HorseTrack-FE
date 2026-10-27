@@ -33,12 +33,12 @@ const toBePhases = async (phases: ProtoPhase[]) => {
 const numOrUndef = (v?: string | null) => (v && /\d/.test(v) ? Number(v.replace(/\D/g, '')) : undefined);
 
 export const vetProtocolBe = {
-  async createProtocol(input: { horseId: string; caseId: string; diagnosis: string; requiredBy: string; phases: ProtoPhase[]; replaces?: string | null }, _send: boolean, actor: Actor) {
+  async createProtocol(input: { horseId: string; caseId: string; diagnosis: string; requiredBy: string; phases: ProtoPhase[]; emergency?: boolean; replaces?: string | null }, _send: boolean, actor: Actor) {
     if (input.diagnosis.trim().length < 5) throw new Error('Chẩn đoán ít nhất 5 ký tự.');
     if (!input.phases.some((ph) => ph.items.length)) throw new Error('Thêm ít nhất 1 thuốc/vật tư để gửi kiểm tồn.');
     const body = {
       horseId: Number(input.horseId), caseId: numOrUndef(input.caseId), diagnosis: input.diagnosis.trim(), requiredBy: iso(input.requiredBy),
-      phases: await toBePhases(input.phases),
+      phases: await toBePhases(input.phases), emergency: !!input.emergency, isEmergency: !!input.emergency,
     };
     const p = input.replaces
       ? await beData<Parameters<typeof mapProtocol>[0]>(be.post(`/medical-management/protocols/${numOrUndef(input.replaces)}/new-version`, body))
@@ -82,7 +82,6 @@ export const vetProtocolBe = {
     return mapProtocol(r) as unknown as Protocol;
   },
   async addProgress(p: Protocol, text: string) {
-    if (text.trim().length < 5) throw new Error('Ghi chú tiến triển ít nhất 5 ký tự.');
     const phaseNo = Number(text.match(/Hoàn thành giai đoạn (\d+)/)?.[1]);
     if (phaseNo > 0) {
       if (p.dispensedPhases != null && !p.dispensedPhases.includes(phaseNo)) throw new Error(`Chưa cấp thuốc giai đoạn ${phaseNo}. Kho phải cấp thuốc giai đoạn này trước khi hoàn thành.`);
@@ -94,11 +93,22 @@ export const vetProtocolBe = {
     return mapProtocol(r) as unknown as Protocol;
   },
   async completeProtocol(p: Protocol, outcome: string) {
-    if (outcome.trim().length < 10) throw new Error('Kết quả điều trị ít nhất 10 ký tự.');
     const done = new Set(p.progress.map((n) => Number(n.text.match(/Hoàn thành giai đoạn (\d+)/)?.[1])).filter((n) => n > 0));
     const missing = p.phases.find((ph) => !done.has(ph.no));
     if (missing) throw new Error(`Phải hoàn thành giai đoạn ${missing.no} (${missing.name}) trước khi kết thúc phác đồ.`);
     const r = await beData<Parameters<typeof mapProtocol>[0]>(be.put(`/medical-management/protocols/${beId(p)}/complete`, { content: outcome.trim() }));
+    after('protocols');
+    return mapProtocol(r) as unknown as Protocol;
+  },
+  async startPhase(p: Protocol, phaseNo: number) {
+    const r = await beData<Parameters<typeof mapProtocol>[0]>(be.put(`/medical-management/protocols/${beId(p)}/phases/${phaseNo}/start-early`, { note: `Bắt đầu giai đoạn ${phaseNo}` }));
+    after('protocols');
+    return mapProtocol(r) as unknown as Protocol;
+  },
+  async completePhase(p: Protocol, phaseNo: number, decision: 'CONTINUE' | 'STOP', reason: string) {
+    const note = reason.trim();
+    if (decision === 'STOP' && note.length < 10) throw new Error('Lý do quyết định giai đoạn ít nhất 10 ký tự.');
+    const r = await beData<Parameters<typeof mapProtocol>[0]>(be.put(`/medical-management/protocols/${beId(p)}/phases/${phaseNo}/complete`, { note, continueTreatment: decision === 'CONTINUE' }));
     after('protocols');
     return mapProtocol(r) as unknown as Protocol;
   },
@@ -109,7 +119,7 @@ const MOVE: Record<MoveKind, string> = { RECEIVE: 'RECEIVE', ISSUE: 'ISSUE', ADJ
 export const warehouseBe = {
   async moveStock(item: StockItem, input: { kind: MoveKind; qty: number; lot: string; expiry: string; note: string }, actor: Actor) {
     if (!input.qty) throw new Error('Nhập số lượng.');
-    if (input.note.trim().length < (input.kind === 'RECEIVE' ? 5 : 10)) throw new Error(input.kind === 'RECEIVE' ? 'Ghi chú nhập ít nhất 5 ký tự.' : 'Lý do ít nhất 10 ký tự.');
+    if (input.kind !== 'RECEIVE' && input.note.trim().length < 10) throw new Error('Lý do ít nhất 10 ký tự.');
     const r = await beData<{ item: Parameters<typeof mapItem>[0]; lowStockWarning?: string | null }>(be.post('/inventory/stock-movements', {
       itemId: beId(item), movementType: MOVE[input.kind], quantity: input.qty, lotNo: input.lot.trim() || undefined,
       expiryDate: expiryIso(input.expiry.trim()), note: input.note.trim(),
@@ -153,7 +163,7 @@ export const warehouseBe = {
   },
   async dispense(p: Protocol, input?: { phaseNos?: number[] }) {
     const phaseNos = input?.phaseNos?.filter((n) => Number.isInteger(n));
-    if (p.state === 'ON_HOLD_PAYMENT') throw new Error('Phác đồ đang chờ thanh toán, chưa cấp thêm thuốc.');
+    if (p.state === 'ON_HOLD_PAYMENT' && !p.emergency) throw new Error('Phác đồ đang chờ thanh toán, chưa cấp thêm thuốc.');
     if (p.state !== 'READY_FOR_DISPENSING' && !(p.state === 'IN_TREATMENT' && !!phaseNos?.length)) throw new Error('Chỉ cấp phát phác đồ đã được bác sĩ xác nhận.');
     const r = await beData<Parameters<typeof mapProtocol>[0]>(be.put(`/inventory/protocols/${beId(p)}/dispense`, phaseNos?.length ? { phaseNos } : {}));
     after('protocols', 'inventory', 'stockTx');

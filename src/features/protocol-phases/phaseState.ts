@@ -27,3 +27,8 @@ export const currentPhaseOf = (p: Protocol) => phaseProgressOf(p).find((phase) =
   ?? phaseProgressOf(p).find((phase) => !['COMPLETED', 'STOPPED'].includes(phase.status));
 
 export const phaseIsPaid = (p: Protocol, phaseNo: number) => phaseBillingOf(p).find((phase) => phase.phaseNo === phaseNo)?.status === 'PAID';
+export const phaseIsDispensed = (p: Protocol, phaseNo: number) => {
+  const phase = p.phases.find((item) => item.no === phaseNo);
+  return !!phase && (phase.items.length === 0 || (p.dispensedPhases ?? []).includes(phaseNo));
+};
+export const phaseReadyToStart = (p: Protocol, phaseNo: number) => (p.emergency || phaseIsPaid(p, phaseNo)) && phaseIsDispensed(p, phaseNo);

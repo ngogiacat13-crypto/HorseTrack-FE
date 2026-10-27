@@ -21,7 +21,7 @@ export const inventoryApi = {
   },
 
   async moveStock(item: StockItem, input: { kind: MoveKind; qty: number; lot: string; expiry: string; note: string }, actor: Actor) {
-    const note = min(input.note, input.kind === 'RECEIVE' ? 5 : 10, input.kind === 'RECEIVE' ? 'Ghi chú nhập' : 'Lý do');
+    const note = input.kind === 'RECEIVE' ? input.note.trim() : min(input.note, 10, 'Lý do');
     let qty = input.qty;
     if (input.kind === 'ADJUST') {
       if (!Number.isInteger(qty) || qty === 0) throw new Error('Số lượng điều chỉnh phải là số nguyên khác 0 (âm = giảm).');
