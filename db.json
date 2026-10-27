@@ -596,6 +596,72 @@
           "at": "15/09 09:00"
         }
       ]
+    },
+    {
+      "id": "REG-0020",
+      "horse": {
+        "name": "Sương Mai",
+        "breed": "Thoroughbred",
+        "sex": "♀",
+        "age": 4,
+        "code": "HT-9020"
+      },
+      "owner": {
+        "fullName": "Hồ sơ thiếu giấy",
+        "email": "thieugiay@horsetrack.vn",
+        "phone": "0901234567"
+      },
+      "submittedAt": "02/10/2026 08:00",
+      "waitingDays": 1,
+      "passed": 3,
+      "status": "Pending",
+      "ownerExtra": {
+        "taxCode": "",
+        "billingAddress": "",
+        "otherHorses": "—"
+      },
+      "horseExtra": {
+        "color": "Xám",
+        "height": "162 cm",
+        "weight": 450,
+        "passport": "—",
+        "healthCert": "—"
+      },
+      "checklist": [
+        {
+          "key": "identity",
+          "label": "Danh tính chủ ngựa",
+          "detail": "Họ tên, CCCD và email khớp tài khoản.",
+          "passed": true
+        },
+        {
+          "key": "health",
+          "label": "Giấy chứng nhận sức khỏe còn hiệu lực",
+          "detail": "Đã kiểm tra thủ công.",
+          "passed": true
+        },
+        {
+          "key": "ownership",
+          "label": "Giấy tờ sở hữu hợp lệ",
+          "detail": "Chưa có tệp giấy tờ sở hữu.",
+          "passed": true
+        }
+      ],
+      "attachments": [
+        {
+          "name": "Giấy chứng nhận sức khỏe",
+          "docType": "OTHER",
+          "meta": "PDF · 0,8 MB · 02/10",
+          "problem": false
+        }
+      ],
+      "history": [
+        {
+          "who": "Hồ sơ thiếu giấy",
+          "text": "gửi hồ sơ",
+          "at": "02/10 08:00"
+        }
+      ]
     }
   ],
   "protocols": [

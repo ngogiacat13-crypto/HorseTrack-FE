@@ -13,19 +13,19 @@ Quy ước `data-testid`: menu trái `nav-<đường dẫn bỏ / đầu, / đ�
 | :--- | :--- | :--- | :--- |
 | Trang chủ / chuyển hướng | `src/routers/index.tsx` | `/` → `/login` hoặc trang chủ theo vai trò | — |
 | Giới thiệu | `src/pages/public/Landing/` | `/gioi-thieu` | — |
-| Đăng nhập | `src/pages/auth/Login/` | `/login` (mặc định khi chưa đăng nhập) | `login-form`, `username-input`, `password-input`, `login-submit`, `login-error` |
+| Đăng nhập | `src/pages/auth/Login/` | `/login` (mặc định khi chưa đăng nhập) · chủ ngựa dùng email đã đăng ký | `login-form`, `username-input`, `password-input`, `login-submit`, `login-error`, `login-owner-email-hint` |
 | Đăng ký chủ ngựa (2 bước OTP email) | `src/pages/auth/Register/` | `/register` | `<tên-trường>-input`, `register-otp-form`, `register-otp-input`, `register-otp-submit`, `register-otp-resend`, `register-otp-back`, `register-otp-error` |
 | Xác nhận tài khoản nhân viên | `src/pages/auth/ConfirmAccount/` | `/confirm-account?token=` (liên kết trong email) · đăng nhập nhận `?confirmed=&message=` | `confirm-account-ok`, `confirm-account-login`, `confirm-account-error`, `login-confirm-result` |
 | Quên mật khẩu (OTP) | `src/pages/auth/ForgotPassword/` | `/forgot-password` | `<tên-trường>-input` |
 | Đổi mật khẩu (OTP) | `src/pages/auth/ChangePassword/` | `/change-password` · menu tài khoản | `nav-change-password`, `menu-change-password`, `oldPassword-input`, `newPassword-input`, `confirmPassword-input`, `otp-input` |
-| Hồ sơ cá nhân | `src/pages/auth/MyProfile/` | `/my-profile` · menu tài khoản · sửa tên, số điện thoại và ảnh khi chạy server | `nav-my-profile`, `menu-my-profile`, `profile-card`, `profile-fullname`, `profile-phone`, `profile-save`, `profile-avatar` |
+| Hồ sơ cá nhân | `src/pages/auth/MyProfile/` | `/my-profile` · menu tài khoản · sửa tên, số điện thoại, mã chứng chỉ, kinh nghiệm (HLV), phòng khám (bác sĩ) và ảnh khi chạy server | `nav-my-profile`, `menu-my-profile`, `profile-card`, `profile-fullname`, `profile-phone`, `profile-license`, `profile-experience`, `profile-clinic`, `profile-save`, `profile-save-error`, `profile-avatar` |
 | Hồ sơ ngựa (dùng chung) | `src/pages/shared/HorseProfile/` | `/horses/:id` | `page-title`, `back-btn` |
 | Khung ứng dụng: menu trái, thanh trên | `src/components/layout/` | Sau khi đăng nhập | `sidebar`, `nav-<đường-dẫn>`, `user-menu-btn`, `logout-btn`, `notifications-btn` |
 | Hộp thoại xác nhận (dùng chung) | `src/components/ui/Ht/Dialog.tsx` | Các nút hành động | `dialog` (hoặc `testId` riêng), `dialog-confirm`, `dialog-cancel` |
 | Thông báo nhanh / callout | `src/components/ui/Ht/Toast.tsx, Callout.tsx` | Sau thao tác | `toast`, `callout-<tone>` |
 | QL CLB · Bảng điều khiển | `src/pages/manager/ManagerDashboard/` | `/manager` | `nav-manager`, `page-title` |
 | QL CLB · Hàng chờ đăng ký ngựa | `src/pages/manager/ManagerRegistrationQueue/` | `/manager/registrations` | `nav-manager-registrations` |
-| QL CLB · Duyệt hồ sơ ngựa (cấp chuồng) | `src/pages/manager/ManagerRegistrationDetail/` | `/manager/registrations/:id` | `view-attachment-<id>` (mở giấy tờ), `attachment-file-name` (tên tệp rút gọn, rê chuột xem đủ), `attachments-empty`, `approve-registration-dialog`, `approve-stall-select`, `approve-note-input`, `reject-registration-dialog` |
+| QL CLB · Duyệt hồ sơ ngựa (cấp chuồng) | `src/pages/manager/ManagerRegistrationDetail/` | `/manager/registrations/:id` · nút phê duyệt khóa khi thiếu giấy tờ sở hữu | `view-attachment-<id>` (mở giấy tờ), `attachment-file-name` (tên tệp rút gọn, rê chuột xem đủ), `attachments-empty`, `approve-registration-btn`, `approve-needs-docs`, `approve-registration-dialog`, `approve-stall-select`, `approve-note-input`, `reject-registration-dialog` |
 | QL CLB · Theo dõi y tế | `src/pages/manager/ManagerMedicalMonitoring/` | `/manager/medical-monitoring` | `nav-manager-medical-monitoring`, `medical-monitoring-empty` |
 | QL CLB · Hóa đơn | `src/pages/manager/ManagerInvoices/` | `/manager/invoices` | `nav-manager-invoices`, `generate-invoices-btn`, `generate-invoices-dialog`, `generate-month-input`, `stall-fee-btn`, `stall-fee-dialog`, `cancel-invoice-btn`, `cancel-invoice-dialog` |
 | QL CLB · Báo cáo tài chính | `src/pages/manager/ManagerFinanceReport/` | `/manager/reports` | `nav-manager-reports` |

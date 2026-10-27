@@ -488,6 +488,7 @@ const toRegistration = (h: BeHorse, history: BeRegistration[], owner: { fullName
     checklist,
     attachments: (latest?.attachments ?? []).map((a) => ({
       name: DOC_LABEL[(a.docType ?? '').toUpperCase()] ?? 'Giấy tờ', file: a.fileName, beId: a.attachmentId, mime: a.mimeType ?? undefined,
+      docType: (a.docType ?? '').toUpperCase() || undefined,
       meta: `${(a.fileName.split('.').pop() ?? '').toUpperCase()} · ${a.fileSizeKb ?? 0} KB · ${stamp(a.uploadedAt)}`,
     })),
     history: history.length

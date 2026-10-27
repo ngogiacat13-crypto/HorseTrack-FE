@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { managerApi, Registration } from '../../../api/managerApi';
 import { useActor } from '../../../auth/AuthContext';
 import { Icon } from '../../../components/ui/Icon';
-import { BackButton, Badge, Loading, PageHeader, TimelineItem } from '../../../components/ui/Ht';
+import { BackButton, Badge, Callout, Loading, PageHeader, TimelineItem } from '../../../components/ui/Ht';
 import { ChecklistPanel } from './ChecklistPanel';
 import { Attachments, HorseInfo, OwnerInfo, RegistrationHistory } from './InfoPanels';
 import { ApproveDialog, RejectDialog } from './DecisionDialogs';
@@ -47,6 +47,7 @@ export const ManagerRegistrationDetail: React.FC = () => {
     );
 
   const allPassed = checks.every((c) => c.passed);
+  const hasOwnership = d.attachments.some((a) => (a.docType ?? '').toUpperCase() === 'OWNERSHIP' || /sở hữu/i.test(a.name));
   const setCheck = (key: string, ok: boolean) =>
     setChecks((cs) =>
       cs.map((c) =>
@@ -105,7 +106,9 @@ export const ManagerRegistrationDetail: React.FC = () => {
               <button
                 type="button"
                 className="ht-btn ht-btn--primary"
-                disabled={!allPassed}
+                disabled={!allPassed || !hasOwnership}
+                title={hasOwnership ? undefined : 'Hồ sơ chưa có giấy tờ sở hữu để đối chiếu'}
+                data-testid="approve-registration-btn"
                 aria-describedby="approve-why"
                 onClick={() => setDlg('approve')}
               >
@@ -116,6 +119,12 @@ export const ManagerRegistrationDetail: React.FC = () => {
           )
         }
       />
+
+      {!decision && !hasOwnership && (
+        <Callout tone="danger" testId="approve-needs-docs" style={{ marginBottom: 16 }}>
+          Hồ sơ chưa có giấy tờ sở hữu. Chỉ phê duyệt khi đã xem được nội dung giấy tờ chủ ngựa tải lên — hãy từ chối và cho phép nộp lại.
+        </Callout>
+      )}
 
       <div className="ht-cols">
         <div>
