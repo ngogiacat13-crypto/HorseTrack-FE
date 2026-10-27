@@ -100,6 +100,18 @@ export const vetProtocolBe = {
     after('protocols');
     return mapProtocol(r) as unknown as Protocol;
   },
+  async startPhase(p: Protocol, phaseNo: number) {
+    const r = await beData<Parameters<typeof mapProtocol>[0]>(be.put(`/medical-management/protocols/${beId(p)}/phases/${phaseNo}/start-early`, { note: `Bắt đầu giai đoạn ${phaseNo}` }));
+    after('protocols');
+    return mapProtocol(r) as unknown as Protocol;
+  },
+  async completePhase(p: Protocol, phaseNo: number, decision: 'CONTINUE' | 'STOP', reason: string) {
+    const note = reason.trim();
+    if (decision === 'STOP' && note.length < 10) throw new Error('Lý do quyết định giai đoạn ít nhất 10 ký tự.');
+    const r = await beData<Parameters<typeof mapProtocol>[0]>(be.put(`/medical-management/protocols/${beId(p)}/phases/${phaseNo}/complete`, { note, continueTreatment: decision === 'CONTINUE' }));
+    after('protocols');
+    return mapProtocol(r) as unknown as Protocol;
+  },
 };
 
 const MOVE: Record<MoveKind, string> = { RECEIVE: 'RECEIVE', ISSUE: 'ISSUE', ADJUST: 'ADJUST' };
