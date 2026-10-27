@@ -210,9 +210,15 @@ export const authApi = {
     return '';
   },
 
-  async updateProfile(fullName: string, phone: string): Promise<AuthUser> {
+  async updateProfile(input: { fullName: string; phone: string; licenseNumber?: string; experienceYears?: number; clinicAffiliation?: string }): Promise<AuthUser> {
     if (!USE_BACKEND) throw new Error('Chỉ cập nhật hồ sơ khi chạy với server.');
-    const profile = await beData<BeProfile>(be.put('/account/my-profile', { fullName: fullName.trim(), phone: phone.trim() }));
+    const profile = await beData<BeProfile>(be.put('/account/my-profile', {
+      fullName: input.fullName.trim(),
+      phone: input.phone.trim(),
+      ...(input.licenseNumber ? { licenseNumber: input.licenseNumber } : {}),
+      ...(input.experienceYears != null ? { experienceYears: input.experienceYears } : {}),
+      ...(input.clinicAffiliation ? { clinicAffiliation: input.clinicAffiliation } : {}),
+    }));
     return fromProfile(profile);
   },
 

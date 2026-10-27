@@ -79,11 +79,10 @@ export const medicalApi = {
     return p;
   },
 
-  async dispense(p: Protocol, input: { phaseNos?: number[]; lines: { itemId: string; phaseNo?: number; qty: number; lot: string }[]; receiver: string }, actor: Actor) {
+  async dispense(p: Protocol, input: { phaseNos?: number[]; lines: { itemId: string; phaseNo?: number; qty: number; lot: string }[] }, actor: Actor) {
     if (p.state !== 'READY_FOR_DISPENSING') throw new Error('Chỉ cấp phát phác đồ đã được bác sĩ xác nhận (READY_FOR_DISPENSING).');
     if (!isOpenProtocol(p)) throw new Error('Phác đồ đã đóng hoặc bị thay thế — không cấp phát.');
-    const receiver = input.receiver.trim();
-    if (receiver.length < 3) throw new Error('Nhập người nhận.');
+    const receiver = 'Kho';
     const items = await get<StockItem[]>('/inventory');
     const out: string[] = [];
     for (const l of input.lines) {

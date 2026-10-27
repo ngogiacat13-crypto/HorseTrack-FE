@@ -7,17 +7,18 @@ import { Icon } from '../../../components/ui/Icon';
 import { Callout, money, Panel } from '../../../components/ui/Ht';
 import { HorseBadges } from '../../../components/trainer/TrainerParts';
 import type { ProtocolAction } from './ActionDialog';
+import { currentPhaseOf, phaseIsPaid, phaseProgressOf } from '../../../features/protocol-phases/phaseState';
 
 interface Props { protocol: Protocol; horse: VetHorse; vetCase: VetCase | null; onAction: (a: ProtocolAction) => void; onNewVersion: () => void; onAddItems: () => void; onReload: () => void }
-
-const finishedPhases = (p: Protocol) => new Set(p.progress.map((n) => Number(n.text.match(/Hoàn thành giai đoạn (\d+)/)?.[1])).filter((n) => n > 0));
 
 export const DecisionPanel: React.FC<Props> = ({ protocol: p, horse, vetCase, onAction, onNewVersion, onAddItems, onReload }) => {
   const actor = useActor();
   const { busy, error, run } = useAction();
   const short = stockShort(p);
-  const done = finishedPhases(p);
-  const nextPhase = p.phases.find((ph) => !done.has(ph.no));
+  const phaseProgress = phaseProgressOf(p);
+  const currentPhase = currentPhaseOf(p);
+  const currentPhaseState = currentPhase ? phaseProgress.find((item) => item.phaseNo === currentPhase.phaseNo) : undefined;
+  const phaseReady = !!currentPhase && phaseIsPaid(p, currentPhase.phaseNo) && (p.dispensedPhases ?? []).includes(currentPhase.phaseNo);
   const requiredBy = phaseRequiredBy(p, short.map((l) => l.itemId));
   const etaLate = p.wait && dateKey(p.wait.eta) > dateKey(requiredBy);
   const btn = (cls: string, icon: React.ComponentProps<typeof Icon>['name'], label: string, onClick: () => void) => (
@@ -67,18 +68,23 @@ export const DecisionPanel: React.FC<Props> = ({ protocol: p, horse, vetCase, on
         {p.state === 'IN_TREATMENT' && <>
           {btn('ht-btn--secondary', 'pulse', 'Ghi tiến triển', () => onAction('progress'))}
           <button type="button" className="ht-btn ht-btn--secondary ht-btn--block" data-testid="add-items-btn" onClick={onAddItems}><Icon name="box" />Bổ sung thuốc</button>
-          {nextPhase && (p.dispensedPhases != null && !p.dispensedPhases.includes(nextPhase.no) ? (
-            <Callout tone="demo" testId="protocol-phase-blocked">Chưa cấp thuốc giai đoạn {nextPhase.no}. Kho phải cấp thuốc giai đoạn này trước khi hoàn thành.</Callout>
-          ) : nextPhase.invoiceStatus && !p.emergency && ['UNPAID', 'OVERDUE', 'PARTIALLY_PAID'].includes(nextPhase.invoiceStatus) ? (
-            <Callout tone="demo" testId="protocol-phase-blocked">Chủ ngựa chưa thanh toán chi phí giai đoạn {nextPhase.no}. Chưa thể kết thúc giai đoạn.</Callout>
-          ) : (
-            <button type="button" className="ht-btn ht-btn--secondary ht-btn--block" data-testid="protocol-phase-done" disabled={busy}
-              onClick={() => { void run(() => vetApi.addProgress(p, `Hoàn thành giai đoạn ${nextPhase.no}: ${nextPhase.name}`, actor), `Đã hoàn thành giai đoạn ${nextPhase.no}.`).then((ok) => { if (ok) onReload(); }); }}>
-              <Icon name="check" />Hoàn thành giai đoạn {nextPhase.no}
+          {currentPhase && currentPhaseState?.status === 'IN_PROGRESS' && phaseReady && <>
+            <button type="button" className="ht-btn ht-btn--secondary ht-btn--block" data-testid="protocol-phase-done" disabled={busy} onClick={() => onAction('continue-phase')}>
+              <Icon name="check" />Hoàn thành GĐ {currentPhase.phaseNo} và tiếp tục
             </button>
-          ))}
-          {nextPhase
-            ? <Callout tone="info">Phải hoàn thành từng giai đoạn trước khi kết thúc. Còn giai đoạn {nextPhase.no} · {nextPhase.name}.</Callout>
+            <button type="button" className="ht-btn ht-btn--ghost ht-btn--block" data-testid="protocol-phase-stop" disabled={busy} onClick={() => onAction('stop-phase')}>
+              <Icon name="ban" />Ngưng sau GĐ {currentPhase.phaseNo}
+            </button>
+          </>}
+          {currentPhase && currentPhaseState?.status !== 'IN_PROGRESS'
+            ? <>
+              <button type="button" className="ht-btn ht-btn--primary ht-btn--block" data-testid="protocol-phase-start" disabled={busy || !phaseReady} onClick={() => { void run(() => vetApi.startPhase(p, currentPhase.phaseNo, actor), `Đã bắt đầu giai đoạn ${currentPhase.phaseNo}.`).then((ok) => { if (ok) onReload(); }); }}>
+                <Icon name="arrow" />Bắt đầu giai đoạn {currentPhase.phaseNo}
+              </button>
+              <Callout tone={phaseReady ? 'info' : 'danger'}>{phaseReady ? `Đã đủ điều kiện bắt đầu GĐ ${currentPhase.phaseNo}.` : `Chưa thể bắt đầu GĐ ${currentPhase.phaseNo}: cần chủ ngựa thanh toán và kho cấp thuốc.`}</Callout>
+            </>
+            : currentPhase
+            ? <Callout tone="info">Đã bắt đầu GĐ {currentPhase.phaseNo}. Bác sĩ cần quyết định tiếp tục hoặc ngưng và ghi lý do khi kết thúc.</Callout>
             : btn('ht-btn--primary', 'check', 'Kết thúc điều trị', () => onAction('complete'))}
           {error && <Callout tone="danger">{error}</Callout>}
         </>}

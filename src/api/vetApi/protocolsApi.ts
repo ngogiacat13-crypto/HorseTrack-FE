@@ -6,6 +6,7 @@ import { isOpenProtocol } from './labels';
 import { dateKey, isDate } from './dates';
 import { get, nextId, now, min, addHistory, lastEta, phaseRequiredBy, stockShort, watchFields, saveProtocol, goTo, releaseHeld } from './shared';
 import { ITEM_ADDABLE, withAddedItems, type ItemAddition } from './labels';
+import { phaseIsPaid, phaseProgressOf, type PhaseProgress } from '../../features/protocol-phases/phaseState';
 
 export const protocolsApi = {
   async getProtocols() {
@@ -29,12 +30,8 @@ export const protocolsApi = {
   async getProtocolForm(opts: { horseId?: string; caseId?: string; replaceId?: string }) {
     const [horses, cases, inventory] = await Promise.all([get<VetHorse[]>('/horses'), get<VetCase[]>('/vetCases'), get<InventoryItem[]>('/inventory')]);
     const replacing = opts.replaceId ? await get<Protocol>(`/protocols/${opts.replaceId}`) : null;
-    const protocols = !replacing
-      ? await get<Protocol[]>('/protocols', opts.horseId ? { horseId: opts.horseId } : opts.caseId ? { caseId: opts.caseId } : undefined)
-      : [];
-    const blockedBy = protocols.find((p) => p.state !== 'CANCELLED' && (!opts.horseId || p.horseId === opts.horseId))
-      ?? protocols.find((p) => p.state !== 'CANCELLED')
-      ?? null;
+    const allProtocols = !replacing ? await get<Protocol[]>('/protocols') : [];
+    const blockedBy = allProtocols.find((p) => p.horseId === opts.horseId && isOpenProtocol(p)) ?? null;
     const replacingCase = replacing
       ? cases.find((c) => String(c.id) === String(replacing.caseId))
         ?? await get<VetCase>(`/vetCases/${replacing.caseId}`).catch(() => null)
@@ -73,13 +70,28 @@ export const protocolsApi = {
       phases: input.phases.map((ph, i) => ({ ...ph, no: i + 1, name: ph.name.trim(), goal: ph.goal.trim() })),
       state: states[states.length - 1], path: states, stock: null, wait: null, delayed: false, progress: [], outcome: null,
       label: '', tone: 'neutral', cost: 0, open: true, materials: [], note: send ? 'Đã gửi kho kiểm tra tồn, chờ phản hồi.' : 'Bản nháp chưa gửi kho.',
+      phaseProgress: input.phases.map((ph) => ({ phaseNo: ph.no, status: 'WAITING_PAYMENT' as const })),
+      phaseBilling: input.phases.map((ph) => ({ phaseNo: ph.no, invoiceId: null, amount: ph.items.reduce((sum, item) => sum + item.qty * item.unitPrice, 0), status: 'UNPAID' as const })),
       log: [{ who: `BS ${actor.name}`, text: send ? `gửi kiểm tồn${replaced ? ` · thay thế ${replaced.id}` : ''}` : 'lưu bản nháp', at: now() }],
     };
     const { data } = await http.post<Protocol>('/protocols', { ...draft, ...watchFields(draft, horse.trainingLocked) });
+    const invoices = await get<{ id: string }[]>('/invoices');
+    const phaseBilling = (data.phaseBilling ?? []).map((billing) => ({
+      ...billing,
+      status: billing.amount === 0 ? 'PAID' as const : billing.status,
+      invoiceId: billing.amount === 0 ? null : nextId(invoices.map((invoice) => invoice.id), 'INV-', 4),
+    }));
+    for (const billing of phaseBilling.filter((item) => item.invoiceId)) {
+      const phase = data.phases.find((item) => item.no === billing.phaseNo)!;
+      const invoiceId = billing.invoiceId as string;
+      await http.post('/invoices', { id: invoiceId, horse: horse.name, owner: horse.owner, horseId: horse.id, period: DEMO_NOW.date.slice(3), dueDate: DEMO_NOW.date, amount: billing.amount, overdueDays: 0, status: 'UNPAID', issuedAt: DEMO_NOW.date, service: `Phác đồ ${data.id} · giai đoạn ${billing.phaseNo}`, lines: [{ label: `Phác đồ ${data.id} · ${phase.name} · GĐ${billing.phaseNo}`, kind: 'MED', period: DEMO_NOW.date.slice(3), amount: billing.amount, protocolId: data.id, phaseNo: billing.phaseNo }] });
+      invoices.push({ id: invoiceId });
+    }
+    const saved = await http.patch<Protocol>(`/protocols/${data.id}`, { phaseBilling });
     await http.patch(`/vetCases/${vetCase.id}`, { protocolId: data.id });
     if (send && replaced) await protocolsApi.supersede(replaced, data.id, actor);
     await addAudit(actor, { action: send ? 'SEND_STOCK_CHECK' : 'CREATE_PROTOCOL_DRAFT', label: send ? 'Gửi kiểm tra tồn kho' : 'Lưu phác đồ nháp', object: `${data.id} · ${horse.name}`, area: 'med', to: data.state, reason: replaced ? `Phiên bản ${data.version}, thay ${replaced.id}` : diagnosis });
-    return data;
+    return saved.data;
   },
 
   async sendStockCheck(p: Protocol, actor: Actor) {
@@ -157,6 +169,29 @@ export const protocolsApi = {
     const data = await saveProtocol(p, { progress: [entry, ...p.progress] });
     await addAudit(actor, { action: 'TREATMENT_PROGRESS', label: 'Ghi tiến triển điều trị', object: `${p.id} · ${p.horse}`, area: 'med', reason: entry.text });
     return data;
+  },
+
+  async startPhase(p: Protocol, phaseNo: number, actor: Actor) {
+    const progress = phaseProgressOf(p);
+    const current = progress.find((item) => !['COMPLETED', 'STOPPED'].includes(item.status));
+    if (!p.phases.some((item) => item.no === phaseNo) || !current || current.phaseNo !== phaseNo) throw new Error('Chỉ được bắt đầu giai đoạn kế tiếp theo thứ tự.');
+    if (!phaseIsPaid(p, phaseNo)) throw new Error(`Giai đoạn ${phaseNo} chưa được chủ ngựa thanh toán.`);
+    if (!(p.dispensedPhases ?? []).includes(phaseNo)) throw new Error(`Giai đoạn ${phaseNo} chưa được kho cấp thuốc.`);
+    const phaseProgress: PhaseProgress[] = progress.map((item) => item.phaseNo === phaseNo ? { ...item, status: 'IN_PROGRESS' } : item);
+    return saveProtocol(p, { phaseProgress, note: `Bắt đầu giai đoạn ${phaseNo} sau khi đã thanh toán và nhận thuốc.` }, { tone: 'success', who: `BS ${actor.name}`, text: `bắt đầu giai đoạn ${phaseNo}`, at: now() });
+  },
+
+  async completePhase(p: Protocol, phaseNo: number, decision: 'CONTINUE' | 'STOP', reason: string, actor: Actor) {
+    const progress = phaseProgressOf(p);
+    const current = progress.find((item) => item.status === 'IN_PROGRESS');
+    if (!current || current.phaseNo !== phaseNo) throw new Error('Chỉ được kết thúc giai đoạn đang điều trị.');
+    if (!(p.dispensedPhases ?? []).includes(phaseNo)) throw new Error(`Giai đoạn ${phaseNo} chưa được kho cấp thuốc.`);
+    if (!phaseIsPaid(p, phaseNo)) throw new Error(`Giai đoạn ${phaseNo} chưa được chủ ngựa thanh toán.`);
+    const why = min(reason, 10, 'Lý do quyết định giai đoạn');
+    const phaseProgress: PhaseProgress[] = progress.map((item) => item.phaseNo === phaseNo ? { ...item, status: decision === 'CONTINUE' ? 'COMPLETED' : 'STOPPED', reason: why } : item);
+    const next = p.phases.find((item) => item.no > phaseNo && !phaseProgress.some((state) => state.phaseNo === item.no && ['COMPLETED', 'STOPPED'].includes(state.status)));
+    const nextProgress = next && decision === 'CONTINUE' ? phaseProgress.map((item) => item.phaseNo === next.no ? { ...item, status: 'WAITING_PAYMENT' as const } : item) : phaseProgress;
+    return saveProtocol(p, { phaseProgress: nextProgress, outcome: decision === 'STOP' ? `Ngưng sau giai đoạn ${phaseNo}: ${why}` : p.outcome, note: decision === 'CONTINUE' && next ? `Đã hoàn thành giai đoạn ${phaseNo}. Chủ ngựa cần thanh toán giai đoạn ${next.no} trước khi bắt đầu.` : `Đã ngưng sau giai đoạn ${phaseNo}: ${why}` }, { tone: decision === 'CONTINUE' ? 'success' : 'warning', who: `BS ${actor.name}`, text: decision === 'CONTINUE' ? `hoàn thành giai đoạn ${phaseNo}, tiếp tục điều trị` : `ngưng sau giai đoạn ${phaseNo}: ${why}`, at: now() });
   },
 
   async completeProtocol(p: Protocol, outcome: string, actor: Actor) {

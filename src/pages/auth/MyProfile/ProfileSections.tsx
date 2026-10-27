@@ -4,12 +4,19 @@ import type { AuthUser } from '../../../api/mockData';
 import { authApi } from '../../../api/authApi';
 import { USE_BACKEND } from '../../../api/beClient';
 import { Icon } from '../../../components/ui/Icon';
-import { Callout } from '../../../components/ui/Ht';
+import { Callout, PHONE_RE, normalizePhone } from '../../../components/ui/Ht';
 import { ROLE_LABEL } from '../../../components/layout/nav';
 
+const LICENSE_RE = /^[A-Za-z0-9][A-Za-z0-9\-_/.]{1,49}$/;
+
 export const ProfileDetails: React.FC<{ user: AuthUser; onUpdated: (patch: Partial<AuthUser>) => void }> = ({ user, onUpdated }) => {
+  const isTrainer = user.role === 'HeadTrainer';
+  const isVet = user.role === 'Veterinarian';
   const [fullName, setFullName] = useState(user.fullname);
   const [phone, setPhone] = useState(user.phone ?? '');
+  const [license, setLicense] = useState(user.licenseNumber ?? '');
+  const [experience, setExperience] = useState(user.experienceYears != null ? String(user.experienceYears) : '');
+  const [clinic, setClinic] = useState(user.clinicAffiliation ?? '');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [saved, setSaved] = useState('');
@@ -17,8 +24,42 @@ export const ProfileDetails: React.FC<{ user: AuthUser; onUpdated: (patch: Parti
     setBusy(true);
     setError('');
     setSaved('');
+    const phoneValue = phone.trim();
+    const licenseValue = license.trim();
+    const clinicValue = clinic.trim();
+    if (phoneValue && !PHONE_RE.test(normalizePhone(phoneValue))) {
+      setError('Số điện thoại không hợp lệ (ví dụ 0912345678)');
+      setBusy(false);
+      return;
+    }
+    if ((isTrainer || isVet) && licenseValue && !LICENSE_RE.test(licenseValue)) {
+      setError('Mã chứng chỉ 2-50 ký tự, chỉ gồm chữ, số và - _ / .');
+      setBusy(false);
+      return;
+    }
+    let experienceYears: number | undefined;
+    if (isTrainer && experience.trim()) {
+      const years = Number(experience);
+      if (!Number.isInteger(years) || years < 0 || years > 60) {
+        setError('Số năm kinh nghiệm từ 0 đến 60.');
+        setBusy(false);
+        return;
+      }
+      experienceYears = years;
+    }
+    if (isVet && clinicValue.length > 150) {
+      setError('Tên phòng khám tối đa 150 ký tự.');
+      setBusy(false);
+      return;
+    }
     try {
-      onUpdated(await authApi.updateProfile(fullName, phone));
+      onUpdated(await authApi.updateProfile({
+        fullName,
+        phone: phoneValue ? normalizePhone(phoneValue) : '',
+        licenseNumber: (isTrainer || isVet) && licenseValue ? licenseValue : undefined,
+        experienceYears,
+        clinicAffiliation: isVet && clinicValue ? clinicValue : undefined,
+      }));
       setSaved('Đã cập nhật thông tin cá nhân.');
     } catch (e) {
       setError((e as { message?: string }).message ?? 'Không lưu được hồ sơ.');
@@ -67,7 +108,25 @@ export const ProfileDetails: React.FC<{ user: AuthUser; onUpdated: (patch: Parti
             <span className="ht-label">Số điện thoại</span>
             <input className="ht-input" data-testid="profile-phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="0912345678" />
           </label>
-          {error && <Callout tone="danger">{error}</Callout>}
+          {(isTrainer || isVet) && (
+            <label className="ht-field">
+              <span className="ht-label">Mã chứng chỉ / mã nhân viên</span>
+              <input className="ht-input" data-testid="profile-license" value={license} onChange={(e) => setLicense(e.target.value)} placeholder="Để trống nếu giữ nguyên" />
+            </label>
+          )}
+          {isTrainer && (
+            <label className="ht-field">
+              <span className="ht-label">Số năm kinh nghiệm</span>
+              <input className="ht-input" data-testid="profile-experience" inputMode="numeric" value={experience} onChange={(e) => setExperience(e.target.value)} placeholder="Để trống nếu giữ nguyên" />
+            </label>
+          )}
+          {isVet && (
+            <label className="ht-field">
+              <span className="ht-label">Phòng khám</span>
+              <input className="ht-input" data-testid="profile-clinic" value={clinic} onChange={(e) => setClinic(e.target.value)} placeholder="Để trống nếu giữ nguyên" />
+            </label>
+          )}
+          {error && <Callout tone="danger" testId="profile-save-error">{error}</Callout>}
           {saved && <Callout tone="success">{saved}</Callout>}
           <button type="button" className="ht-btn ht-btn--primary" data-testid="profile-save" disabled={busy} onClick={() => { void save(); }}>{busy ? 'Đang lưu…' : 'Lưu hồ sơ'}</button>
         </div>

@@ -53,7 +53,8 @@ export const Login: React.FC = () => {
       barRight={<span style={{ fontSize: 13, color: 'var(--muted)' }}>Chủ ngựa mới? <Link className="ht-link" to="/register">Đăng ký</Link></span>}
     >
       <h1 className="ht-auth__title">Đăng nhập</h1>
-      <p className="ht-auth__sub">Dùng tên đăng nhập và mật khẩu để truy cập hệ thống.</p>
+      <p className="ht-auth__sub">Nhân viên dùng tên đăng nhập, email hoặc số điện thoại.</p>
+      <p className="ht-auth__sub" data-testid="login-owner-email-hint">Chủ ngựa đăng nhập bằng email đã đăng ký, không dùng tên đăng nhập.</p>
 
       {confirmed && (
         <Callout tone={confirmed === 'true' ? 'success' : 'danger'} testId="login-confirm-result" style={{ marginBottom: 16 }}>

@@ -6,19 +6,18 @@ import { useAction } from '../../../hooks/useAction';
 import { Icon } from '../../../components/ui/Icon';
 import { Busy, Callout, Panel } from '../../../components/ui/Ht';
 
-export const DispenseForm: React.FC<{ protocol: Protocol; items: StockItem[]; groom?: string; onDone: () => void }> = ({ protocol: p, items, groom, onDone }) => {
+export const DispenseForm: React.FC<{ protocol: Protocol; items: StockItem[]; onDone: () => void }> = ({ protocol: p, items, onDone }) => {
   const actor = useActor();
   const { busy, error, run } = useAction(onDone);
   const approved = (p.approvedPhases ?? p.phases.map((ph) => ph.no)).filter((no) => !(p.dispensedPhases ?? []).includes(no));
   const [phaseNos, setPhaseNos] = useState<number[]>(approved);
-  const [receiver, setReceiver] = useState(groom ?? '');
   const [lines, setLines] = useState(() => needs(p, approved).map((n) => {
     const it = items.find((i) => i.id === n.itemId);
     const held = p.stock?.lines.find((l) => l.itemId === n.itemId && l.phaseNo === n.phaseNo);
     return { itemId: n.itemId, phaseNo: n.phaseNo, name: n.name, unit: n.unit, need: n.need, qty: String(n.need), lot: held?.lot ?? byExpiry((it?.lots ?? []).filter((l) => l.qty > 0))[0]?.lot ?? '', lots: it?.lots?.filter((l) => l.qty > 0) ?? [] };
   }));
   const set = (i: number, patch: Partial<(typeof lines)[number]>) => setLines(lines.map((l, k) => (k === i ? { ...l, ...patch } : l)));
-  const submit = () => run(() => warehouseApi.dispense(p, { receiver, phaseNos, lines: lines.filter((l) => phaseNos.includes(l.phaseNo)).map((l) => ({ itemId: l.itemId, phaseNo: l.phaseNo, qty: Number(l.qty), lot: l.lot })) }, actor), `${p.id}: đã cấp phát ${phaseNos.length} giai đoạn cho ${receiver}.`);
+  const submit = () => run(() => warehouseApi.dispense(p, { phaseNos, lines: lines.filter((l) => phaseNos.includes(l.phaseNo)).map((l) => ({ itemId: l.itemId, phaseNo: l.phaseNo, qty: Number(l.qty), lot: l.lot })) }, actor), `${p.id}: đã cấp phát ${phaseNos.length} giai đoạn.`);
 
   return (
     <Panel title="Cấp phát theo phác đồ" sub="Chọn các giai đoạn đã đủ thuốc để cấp phát.">
@@ -43,10 +42,6 @@ export const DispenseForm: React.FC<{ protocol: Protocol; items: StockItem[]; gr
         </tbody>
       </table>
       <div className="ht-panel__body" style={{ display: 'grid', gap: 12, paddingTop: 16 }}>
-        <div className="ht-field" style={{ margin: 0, maxWidth: 360 }}>
-          <label className="ht-label" htmlFor="ds-to">Người nhận<span className="ht-req">*</span></label>
-          <input id="ds-to" className="ht-input" value={receiver} onChange={(e) => setReceiver(e.target.value)} placeholder="Mã phu / bác sĩ nhận thuốc" />
-        </div>
         {error && <Callout tone="danger">{error}</Callout>}
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
           <button type="button" className="ht-btn ht-btn--primary" onClick={submit} disabled={busy || !phaseNos.length}><Busy busy={busy} label="Đang cấp phát…"><Icon name="check" />Cấp phát {phaseNos.length} giai đoạn</Busy></button>

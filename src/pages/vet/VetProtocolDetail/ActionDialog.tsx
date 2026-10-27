@@ -3,8 +3,9 @@ import { dateKey, phaseRequiredBy, Protocol, stockShort, vetApi } from '../../..
 import { useActor } from '../../../auth/AuthContext';
 import { useAction } from '../../../hooks/useAction';
 import { Callout, Dialog, ReasonField } from '../../../components/ui/Ht';
+import { phaseProgressOf } from '../../../features/protocol-phases/phaseState';
 
-export type ProtocolAction = 'send' | 'cancel' | 'wait' | 'confirm' | 'progress' | 'complete';
+export type ProtocolAction = 'send' | 'cancel' | 'wait' | 'confirm' | 'progress' | 'complete' | 'continue-phase' | 'stop-phase';
 
 interface Spec { title: string; sub?: string; label: string; field?: [label: string, placeholder: string, min?: number]; danger?: boolean; ok: string }
 
@@ -31,6 +32,11 @@ const specFor = (p: Protocol, a: ProtocolAction): Spec => {
     case 'complete': return { title: `Kết thúc điều trị ${p.id}`, label: 'Kết thúc điều trị', ok: `${p.id} đã kết thúc điều trị.`,
       sub: 'Ghi kết quả và chỉ định tiếp theo. Mở khóa huấn luyện (nếu đủ điều kiện) làm riêng ở hồ sơ ngựa.',
       field: ['Kết quả & chỉ định tiếp theo', 'VD: Hết sưng, tái khám sau 2 tuần, tập nhẹ 1 tuần đầu.'] };
+    case 'continue-phase': return { title: 'Tiếp tục phác đồ', label: 'Hoàn thành giai đoạn & tiếp tục', ok: 'Đã hoàn thành giai đoạn và gửi thông báo thanh toán giai đoạn tiếp theo.',
+      sub: 'Chủ ngựa phải thanh toán chi phí giai đoạn tiếp theo trước khi bác sĩ bắt đầu giai đoạn đó.',
+      field: ['Đánh giá giai đoạn', 'VD: Đáp ứng tốt, tiếp tục theo dõi thêm 7 ngày.', 10] };
+    case 'stop-phase': return { title: 'Ngưng phác đồ sau giai đoạn', label: 'Ngưng sau giai đoạn', danger: true, ok: 'Đã ngưng phác đồ và lưu lý do quyết định.',
+      field: ['Lý do ngưng', 'VD: Đã đạt mục tiêu, không cần tiếp tục giai đoạn sau.', 10] };
   }
 };
 
@@ -39,6 +45,7 @@ export const ActionDialog: React.FC<{ protocol: Protocol; action: ProtocolAction
   const { busy, error, run } = useAction();
   const [text, setText] = useState('');
   const spec = specFor(p, action);
+  const activePhaseNo = phaseProgressOf(p).find((phase) => phase.status === 'IN_PROGRESS')?.phaseNo ?? 0;
   const call: Record<ProtocolAction, () => Promise<unknown>> = {
     send: () => vetApi.sendStockCheck(p, actor),
     cancel: () => vetApi.cancelDraft(p, actor, text),
@@ -46,6 +53,8 @@ export const ActionDialog: React.FC<{ protocol: Protocol; action: ProtocolAction
     confirm: () => vetApi.confirmProtocol(p, text, actor),
     progress: () => vetApi.addProgress(p, text, actor),
     complete: () => vetApi.completeProtocol(p, text, actor),
+    'continue-phase': () => vetApi.completePhase(p, activePhaseNo, 'CONTINUE', text, actor),
+    'stop-phase': () => vetApi.completePhase(p, activePhaseNo, 'STOP', text, actor),
   };
   const confirm = async () => { if (await run(call[action], spec.ok)) onDone(); };
 

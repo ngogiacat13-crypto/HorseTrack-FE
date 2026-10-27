@@ -21,7 +21,7 @@ export interface Registration {
   ownerExtra: { otherHorses: string };
   horseExtra: { color: string; height: string; weight: number; passport: string; healthCert: string };
   checklist: ChecklistItem[];
-  attachments: { name: string; meta: string; problem?: boolean; beId?: number; mime?: string; file?: string }[];
+  attachments: { name: string; meta: string; problem?: boolean; beId?: number; mime?: string; file?: string; docType?: string }[];
   history: HistoryItem[];
 }
 

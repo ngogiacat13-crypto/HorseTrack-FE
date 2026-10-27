@@ -128,14 +128,18 @@ export const warehouseBe = {
   async respondStock(p: Protocol, etaFor: Record<string, string | null>) {
     const [items, ships] = await Promise.all([http.get<StockItem[]>('/inventory'), http.get<ShipmentOrder[]>('/shipments')]);
     const need = new Map<string, number>();
-    p.phases.forEach((ph) => ph.items.forEach((it) => need.set(it.itemId, (need.get(it.itemId) ?? 0) + it.qty)));
+    p.phases.forEach((ph) => ph.items.forEach((it) => {
+      if (!Number.isInteger(it.qty) || it.qty < 1) throw new Error(`${it.name}: số lượng theo phác đồ phải là số nguyên ≥ 1.`);
+      need.set(it.itemId, (need.get(it.itemId) ?? 0) + it.qty);
+    }));
     const shortages = [...need].flatMap(([code, qty]) => {
       const it = items.data.find((i) => i.id === code);
+      if (!it) throw new Error(`Không tìm thấy thuốc/vật tư ${code} trong danh mục kho.`);
       const avail = it ? Math.max(0, it.onHand - it.held) : 0;
       if (avail >= qty) return [];
       const etaId = etaFor[code] ?? Object.entries(etaFor).find(([key]) => key.endsWith(`:${code}`))?.[1] ?? null;
       const ship = etaId ? ships.data.find((s) => s.id === etaId) : undefined;
-      return [{ itemId: beId(it ?? { id: code }), eta: iso(ship?.eta), purchaseOrderId: ship ? beId(ship) : undefined }];
+      return [{ itemId: beId(it), qtyNeeded: qty, qtyShort: qty - avail, eta: iso(ship?.eta), purchaseOrderId: ship ? beId(ship) : undefined }];
     });
     const r = await beData<Parameters<typeof mapProtocol>[0]>(be.put(`/inventory/protocols/${beId(p)}/stock-check`, { shortages, note: shortages.length ? 'Kho báo thiếu' : 'Kho đủ hàng, đã giữ' }));
     after('protocols', 'inventory', 'stockTx');

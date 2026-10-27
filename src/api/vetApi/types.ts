@@ -1,5 +1,6 @@
 import type { ProtocolState } from '../managerApi';
 import type { HealthStatus, Horse } from '../trainerApi';
+import type { PhaseBilling, PhaseProgress } from '../../features/protocol-phases/phaseState';
 
 export type CaseSource = 'SESSION_STOP' | 'GROOM_REPORT' | 'TRAINER_REQUEST';
 export type Severity = 'HIGH' | 'MEDIUM' | 'LOW';
@@ -28,7 +29,7 @@ export interface Protocol {
   horseId: string; horse: string; caseId: string; diagnosis: string; vet: string; createdAt: string; requiredBy: string;
   phases: ProtoPhase[]; state: ProtocolState; path: ProtocolState[];
   stock: null | { at: string; by: string; lines: StockLine[] };
-  approvedPhases?: number[]; dispensedPhases?: number[];
+  approvedPhases?: number[]; dispensedPhases?: number[]; phaseProgress?: PhaseProgress[]; phaseBilling?: PhaseBilling[];
   wait: null | { eta: string; requiredBy: string; at: string; note: string };
   delayed: boolean;
   progress: { at: string; by: string; text: string }[];
