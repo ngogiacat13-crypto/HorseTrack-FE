@@ -89,7 +89,6 @@ export const TrainerPlanCreate: React.FC = () => {
               <div className="ht-field">
                 <div className="ht-field__top">
                   <label className="ht-label" htmlFor="plan-name">Tên giáo án<span className="ht-req">*</span></label>
-                  <span className="ht-counter" data-ok={name.trim().length >= 5 && name.trim().length <= 80}>{name.trim().length}/80</span>
                 </div>
                 <input id="plan-name" className="ht-input" value={name} maxLength={80} onChange={(e) => setName(e.target.value)}
                   placeholder="VD: Giáo án tăng sức bền cự ly dài" aria-invalid={(tried && !!errors.name) || undefined} />
