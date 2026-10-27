@@ -29,7 +29,7 @@ Quy ước `data-testid`: menu trái `nav-<đường dẫn bỏ / đầu, / đ�
 | QL CLB · Theo dõi y tế | `src/pages/manager/ManagerMedicalMonitoring/` | `/manager/medical-monitoring` | `nav-manager-medical-monitoring`, `medical-monitoring-empty` |
 | QL CLB · Hóa đơn | `src/pages/manager/ManagerInvoices/` | `/manager/invoices` | `nav-manager-invoices`, `generate-invoices-btn`, `generate-invoices-dialog`, `generate-month-input`, `stall-fee-btn`, `stall-fee-dialog`, `cancel-invoice-btn`, `cancel-invoice-dialog` |
 | QL CLB · Báo cáo tài chính | `src/pages/manager/ManagerFinanceReport/` | `/manager/reports` | `nav-manager-reports` |
-| QL CLB · Người dùng & phân quyền | `src/pages/manager/ManagerUsers/` | `/manager/users` · nút "Phân công" gửi yêu cầu, nhân viên xác nhận rồi phân công mới có hiệu lực · khóa tài khoản gửi email | `nav-manager-users`, `assign-<username>`, `trainer-horses-dialog`, `trainer-horse-<horseId>`, `trainer-pending-<horseId>`, `groom-zone-dialog`, `groom-zone-<Khu X>`, `groom-zone-pending`, `assignment-waiting`, `pending-confirm-<username>` (chờ xác nhận email), `resend-confirm-<username>` (gửi lại mail), `lock-reason` |
+| QL CLB · Người dùng & phân quyền | `src/pages/manager/ManagerUsers/` | `/manager/users` · tạo tài khoản Người chăm ngựa không chọn khu chuồng · nút "Phân khu" gửi yêu cầu, nhân viên xác nhận rồi phân công mới có hiệu lực · khóa tài khoản gửi email | `nav-manager-users`, `assign-<username>`, `trainer-horses-dialog`, `trainer-horse-<horseId>`, `trainer-pending-<horseId>`, `groom-zone-dialog`, `groom-zone-<Khu X>`, `groom-zone-pending`, `assignment-waiting`, `pending-confirm-<username>` (chờ xác nhận email), `resend-confirm-<username>` (gửi lại mail), `lock-reason` |
 | QL CLB · Nhật ký hệ thống | `src/pages/manager/ManagerAuditLogs/` | `/manager/audit-logs` | `nav-manager-audit-logs` |
 | HLV · Tổng quan đàn ngựa | `src/pages/trainer/TrainerHerdOverview/` | `/trainer` · hộp phân công chờ xác nhận | `nav-trainer`, `assignment-inbox`, `assignment-accept-<id>`, `assignment-reject-<id>`, `assignment-reject-dialog`, `assignment-reject-reason` |
 | HLV · Hồ sơ ngựa | `src/pages/trainer/TrainerHorseRecord/` | `/trainer/horses/:id` | `back-btn`, `care-task-btn` |
@@ -88,7 +88,7 @@ Quy ước `data-testid`: menu trái `nav-<đường dẫn bỏ / đầu, / đ�
 | `scenarios/sign-in.spec.ts` | Khách vào `/` → `/login`; sai mật khẩu báo lỗi; 6 vai trò đăng nhập đúng trang chủ và đăng xuất được |
 | `scenarios/menu-pages.spec.ts` | Mỗi vai trò bấm lần lượt mọi mục menu trái: trang mở được, không lỗi console |
 | `scenarios/trainer-horses.spec.ts` | QL CLB giao cho HLV ngựa ở nhiều khu (không chọn khu), có bàn giao ngựa của HLV khác |
-| `scenarios/groom-zone.spec.ts` | Mã phu chỉ một khu; khu đã có Mã phu khác bị khóa |
+| `scenarios/groom-zone.spec.ts` | Tạo tài khoản Người chăm ngựa không có ô khu chuồng; Mã phu chỉ một khu; khu đã có Mã phu khác bị khóa |
 | `scenarios/assign-session.spec.ts` | Hộp phân công phiên tập: ngày mặc định hôm nay, không chọn được ngày đã qua |
 | `scenarios/registration-validation.spec.ts` | Đăng ký chủ ngựa: SĐT/email đúng định dạng, họ tên không bắt buộc; đăng ký phải nhập OTP (mã sai báo lỗi, đúng thì thành công); hồ sơ ngựa: gợi ý + validate giống, không còn hộ chiếu, chặn tệp đổi đuôi |
 | `scenarios/layout-alignment.spec.ts` | Mọi trang menu + trang tạo (giáo án, đề xuất, phác đồ, hồ sơ ngựa, hồ sơ cá nhân, đổi mật khẩu, đăng ký) của 6 vai trò ở 1280px và 1920px: ô nhập cùng hàng phải thẳng hàng, ô chọn không bị cắt chữ, trang không cuộn ngang |
