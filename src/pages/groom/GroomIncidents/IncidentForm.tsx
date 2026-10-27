@@ -6,7 +6,6 @@ import { useActor } from '../../../auth/AuthContext';
 import { useAction } from '../../../hooks/useAction';
 import { Icon } from '../../../components/ui/Icon';
 import { Callout, ReasonField, Segmented, useToast } from '../../../components/ui/Ht';
-import { PhotoPicker } from '../../../components/groom/PhotoPicker';
 
 const TYPES = ['Mất ăn', 'Đau bụng', 'Sốt', 'Đi khập khiễng', 'Vết thương ngoài da', 'Móng chân'];
 
@@ -18,7 +17,6 @@ export const IncidentForm: React.FC<{ horses: Horse[]; initialHorse: string; onD
   const [type, setType] = useState('');
   const [severity, setSeverity] = useState<Severity>('MEDIUM');
   const [note, setNote] = useState('');
-  const [photo, setPhoto] = useState<string | null>(null);
   const [notifyTrainer, setNotifyTrainer] = useState(true);
 
   const submit = async (e: React.FormEvent) => {
@@ -26,10 +24,10 @@ export const IncidentForm: React.FC<{ horses: Horse[]; initialHorse: string; onD
     let msg = '';
     const ok = await run(async () => {
       if (!horseId) throw new Error('Chọn ngựa gặp sự cố.');
-      const r = await groomApi.reportIncident({ horseId, type, severity, note, photo, notifyTrainer }, actor);
+      const r = await groomApi.reportIncident({ horseId, type, severity, note, photo: null, notifyTrainer }, actor);
       msg = `Đã gửi ca ${r.vetCase.id} cho Bác sĩ thú y${r.paused ? ` · phiên ${r.paused} đã tạm dừng` : ''}.`;
     });
-    if (ok) { toast(msg); setType(''); setNote(''); setPhoto(null); }
+    if (ok) { toast(msg); setType(''); setNote(''); }
   };
 
   return (
@@ -54,7 +52,6 @@ export const IncidentForm: React.FC<{ horses: Horse[]; initialHorse: string; onD
         <Segmented<Severity> label="Mức độ" value={severity} onChange={setSeverity} items={[{ value: 'LOW', label: 'Thấp' }, { value: 'MEDIUM', label: 'Trung bình' }, { value: 'HIGH', label: 'Cao' }]} />
       </div>
       <ReasonField id="ic-note" label="Mô tả dấu hiệu" value={note} min={15} onChange={setNote} placeholder="VD: Bỏ ăn sáng, nằm lăn nhiều lần, toát mồ hôi vùng cổ." minHeight={80} />
-      <PhotoPicker value={photo} onChange={setPhoto} label="Ảnh hiện trường (không bắt buộc)" />
       <label style={{ display: 'flex', gap: 8, alignItems: 'flex-start', fontSize: 14 }}>
         <input type="checkbox" checked={notifyTrainer} onChange={(e) => setNotifyTrainer(e.target.checked)} style={{ marginTop: 3 }} />
         <span>Báo HLV trưởng — nếu ngựa đang trong phiên tập, phiên sẽ <b>tạm dừng</b> chờ HLV quyết định.</span>
