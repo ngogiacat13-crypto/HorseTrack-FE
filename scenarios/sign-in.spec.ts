@@ -5,7 +5,7 @@ test('the login form is the first screen for a guest', async ({ page }) => {
   await page.goto('/');
   await expect(page).toHaveURL(/\/login$/);
   await expect(page.getByTestId('login-form')).toBeVisible();
-  await expect(page.getByTestId('login-owner-email-hint')).toContainText('email đã đăng ký');
+  await expect(page.getByTestId('login-identifier-hint')).toContainText('tên đăng nhập, email hoặc số điện thoại');
 });
 
 test('a wrong password shows an error and stays on login', async ({ page }) => {

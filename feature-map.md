@@ -13,7 +13,7 @@ Quy ước `data-testid`: menu trái `nav-<đường dẫn bỏ / đầu, / đ�
 | :--- | :--- | :--- | :--- |
 | Trang chủ / chuyển hướng | `src/routers/index.tsx` | `/` → `/login` hoặc trang chủ theo vai trò | — |
 | Giới thiệu | `src/pages/public/Landing/` | `/gioi-thieu` | — |
-| Đăng nhập | `src/pages/auth/Login/` | `/login` (mặc định khi chưa đăng nhập) · chủ ngựa dùng email đã đăng ký | `login-form`, `username-input`, `password-input`, `login-submit`, `login-error`, `login-owner-email-hint` |
+| Đăng nhập | `src/pages/auth/Login/` | `/login` (mặc định khi chưa đăng nhập) · tên đăng nhập, email hoặc số điện thoại | `login-form`, `username-input`, `password-input`, `login-submit`, `login-error`, `login-identifier-hint` |
 | Đăng ký chủ ngựa (2 bước OTP email) | `src/pages/auth/Register/` | `/register` | `<tên-trường>-input`, `register-otp-form`, `register-otp-input`, `register-otp-submit`, `register-otp-resend`, `register-otp-back`, `register-otp-error` |
 | Xác nhận tài khoản nhân viên | `src/pages/auth/ConfirmAccount/` | `/confirm-account?token=` (liên kết trong email) · đăng nhập nhận `?confirmed=&message=` | `confirm-account-ok`, `confirm-account-login`, `confirm-account-error`, `login-confirm-result` |
 | Quên mật khẩu (OTP) | `src/pages/auth/ForgotPassword/` | `/forgot-password` | `<tên-trường>-input` |
