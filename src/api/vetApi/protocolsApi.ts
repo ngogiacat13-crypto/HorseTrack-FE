@@ -6,7 +6,7 @@ import { isOpenProtocol } from './labels';
 import { dateKey, isDate } from './dates';
 import { get, nextId, now, min, addHistory, lastEta, phaseRequiredBy, stockShort, watchFields, saveProtocol, goTo, releaseHeld } from './shared';
 import { ITEM_ADDABLE, withAddedItems, type ItemAddition } from './labels';
-import { phaseIsPaid, phaseProgressOf, type PhaseProgress } from '../../features/protocol-phases/phaseState';
+import { phaseIsPaid, phaseProgressOf, phaseReadyToStart, type PhaseProgress } from '../../features/protocol-phases/phaseState';
 
 export const protocolsApi = {
   async getProtocols() {
@@ -175,8 +175,7 @@ export const protocolsApi = {
     const progress = phaseProgressOf(p);
     const current = progress.find((item) => !['COMPLETED', 'STOPPED'].includes(item.status));
     if (!p.phases.some((item) => item.no === phaseNo) || !current || current.phaseNo !== phaseNo) throw new Error('Chỉ được bắt đầu giai đoạn kế tiếp theo thứ tự.');
-    if (!phaseIsPaid(p, phaseNo)) throw new Error(`Giai đoạn ${phaseNo} chưa được chủ ngựa thanh toán.`);
-    if (!(p.dispensedPhases ?? []).includes(phaseNo)) throw new Error(`Giai đoạn ${phaseNo} chưa được kho cấp thuốc.`);
+    if (!phaseReadyToStart(p, phaseNo)) throw new Error(`Giai đoạn ${phaseNo} chưa đủ điều kiện bắt đầu: cần chủ ngựa thanh toán và kho cấp thuốc nếu giai đoạn có thuốc.`);
     const phaseProgress: PhaseProgress[] = progress.map((item) => item.phaseNo === phaseNo ? { ...item, status: 'IN_PROGRESS' } : item);
     return saveProtocol(p, { phaseProgress, note: `Bắt đầu giai đoạn ${phaseNo} sau khi đã thanh toán và nhận thuốc.` }, { tone: 'success', who: `BS ${actor.name}`, text: `bắt đầu giai đoạn ${phaseNo}`, at: now() });
   },

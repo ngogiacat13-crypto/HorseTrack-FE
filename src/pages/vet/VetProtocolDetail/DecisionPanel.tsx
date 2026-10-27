@@ -7,7 +7,7 @@ import { Icon } from '../../../components/ui/Icon';
 import { Callout, money, Panel } from '../../../components/ui/Ht';
 import { HorseBadges } from '../../../components/trainer/TrainerParts';
 import type { ProtocolAction } from './ActionDialog';
-import { currentPhaseOf, phaseIsPaid, phaseProgressOf } from '../../../features/protocol-phases/phaseState';
+import { currentPhaseOf, phaseProgressOf, phaseReadyToStart } from '../../../features/protocol-phases/phaseState';
 
 interface Props { protocol: Protocol; horse: VetHorse; vetCase: VetCase | null; onAction: (a: ProtocolAction) => void; onNewVersion: () => void; onAddItems: () => void; onReload: () => void }
 
@@ -18,7 +18,7 @@ export const DecisionPanel: React.FC<Props> = ({ protocol: p, horse, vetCase, on
   const phaseProgress = phaseProgressOf(p);
   const currentPhase = currentPhaseOf(p);
   const currentPhaseState = currentPhase ? phaseProgress.find((item) => item.phaseNo === currentPhase.phaseNo) : undefined;
-  const phaseReady = !!currentPhase && phaseIsPaid(p, currentPhase.phaseNo) && (p.dispensedPhases ?? []).includes(currentPhase.phaseNo);
+  const phaseReady = !!currentPhase && phaseReadyToStart(p, currentPhase.phaseNo);
   const requiredBy = phaseRequiredBy(p, short.map((l) => l.itemId));
   const etaLate = p.wait && dateKey(p.wait.eta) > dateKey(requiredBy);
   const btn = (cls: string, icon: React.ComponentProps<typeof Icon>['name'], label: string, onClick: () => void) => (
@@ -81,7 +81,7 @@ export const DecisionPanel: React.FC<Props> = ({ protocol: p, horse, vetCase, on
               <button type="button" className="ht-btn ht-btn--primary ht-btn--block" data-testid="protocol-phase-start" disabled={busy || !phaseReady} onClick={() => { void run(() => vetApi.startPhase(p, currentPhase.phaseNo, actor), `Đã bắt đầu giai đoạn ${currentPhase.phaseNo}.`).then((ok) => { if (ok) onReload(); }); }}>
                 <Icon name="arrow" />Bắt đầu giai đoạn {currentPhase.phaseNo}
               </button>
-              <Callout tone={phaseReady ? 'info' : 'danger'}>{phaseReady ? `Đã đủ điều kiện bắt đầu GĐ ${currentPhase.phaseNo}.` : `Chưa thể bắt đầu GĐ ${currentPhase.phaseNo}: cần chủ ngựa thanh toán và kho cấp thuốc.`}</Callout>
+              <Callout tone={phaseReady ? 'info' : 'danger'}>{phaseReady ? `Đã đủ điều kiện bắt đầu GĐ ${currentPhase.phaseNo}; Bác sĩ có thể quyết định bắt đầu sớm.` : `Chưa thể bắt đầu GĐ ${currentPhase.phaseNo}: cần chủ ngựa thanh toán và kho cấp thuốc nếu giai đoạn có thuốc.`}</Callout>
             </>
             : currentPhase
             ? <Callout tone="info">Đã bắt đầu GĐ {currentPhase.phaseNo}. Bác sĩ cần quyết định tiếp tục hoặc ngưng và ghi lý do khi kết thúc.</Callout>
