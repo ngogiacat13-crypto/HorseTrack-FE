@@ -70,16 +70,16 @@ export const DecisionPanel: React.FC<Props> = ({ protocol: p, horse, vetCase, on
         {p.state === 'IN_TREATMENT' && <>
           {btn('ht-btn--secondary', 'pulse', 'Ghi tiến triển', () => onAction('progress'))}
           <button type="button" className="ht-btn ht-btn--secondary ht-btn--block" data-testid="add-items-btn" onClick={onAddItems}><Icon name="box" />Bổ sung thuốc</button>
-          {currentPhase && currentPhaseState?.status === 'IN_PROGRESS' && phaseReady && <>
+          {currentPhase && currentPhaseState?.status === 'IN_PROGRESS' && <>
             <button type="button" className="ht-btn ht-btn--secondary ht-btn--block" data-testid="protocol-phase-done" disabled={busy} onClick={() => onAction('continue-phase')}>
-              <Icon name="check" />Hoàn thành GĐ {currentPhase.phaseNo} và tiếp tục
+              <Icon name="check" />{nextPhase ? `Hoàn thành GĐ ${currentPhase.phaseNo} và tiếp tục` : `Hoàn thành GĐ ${currentPhase.phaseNo}`}
             </button>
             {nextPhaseReady && <button type="button" className="ht-btn ht-btn--primary ht-btn--block" data-testid="protocol-phase-done-start-next" disabled={busy} onClick={() => onAction('continue-start-next')}>
               <Icon name="arrow" />Kết thúc GĐ {currentPhase.phaseNo} và bắt đầu GĐ {nextPhase.no}
             </button>}
-            <button type="button" className="ht-btn ht-btn--ghost ht-btn--block" data-testid="protocol-phase-stop" disabled={busy} onClick={() => onAction('stop-phase')}>
+            {nextPhase && <button type="button" className="ht-btn ht-btn--ghost ht-btn--block" data-testid="protocol-phase-stop" disabled={busy} onClick={() => onAction('stop-phase')}>
               <Icon name="ban" />Ngưng sau GĐ {currentPhase.phaseNo}
-            </button>
+            </button>}
           </>}
           {currentPhase && currentPhaseState?.status !== 'IN_PROGRESS'
             ? <>
