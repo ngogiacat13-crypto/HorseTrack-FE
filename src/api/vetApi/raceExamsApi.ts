@@ -34,7 +34,7 @@ export const raceExamsApi = {
     const horse = await get<Horse>(`/horses/${p.horseId}`);
     if (input.pass && horse.trainingLocked) throw new Error(`${horse.name} đang bị khóa huấn luyện — không thể kết luận ĐẠT (BR_01).`);
     if (input.pass && (horse.health === 'INJURED' || horse.health === 'QUARANTINE')) throw new Error(`${horse.name} đang ${horse.health === 'INJURED' ? 'chấn thương' : 'cách ly'} — không thể kết luận ĐẠT.`);
-    const note = min(input.note, 10, input.pass ? 'Nhận xét khám' : 'Lý do không đạt');
+    const note = input.pass ? input.note.trim() : min(input.note, 10, 'Lý do không đạt');
     const vetResult = { pass: input.pass, by: actor.name, at: now(), note, conditions: input.conditions.trim() || undefined };
     const status = input.pass ? 'READY_TO_SUBMIT' : 'VET_FAILED';
     const history = [

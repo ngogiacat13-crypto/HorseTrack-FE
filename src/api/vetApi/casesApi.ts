@@ -17,7 +17,7 @@ export const casesApi = {
   async examineCase(c: VetCase, input: { symptoms: string; diagnosis: string; severity: Severity; plan: string; health: HealthStatus }, actor: Actor) {
     if (c.status === 'CLOSED') throw new Error('Ca đã đóng.');
     const exam: CaseExam = {
-      symptoms: min(input.symptoms, 10, 'Triệu chứng'), diagnosis: min(input.diagnosis, 5, 'Chẩn đoán'), plan: min(input.plan, 10, 'Hướng xử lý'),
+      symptoms: input.symptoms.trim(), diagnosis: min(input.diagnosis, 5, 'Chẩn đoán'), plan: input.plan.trim(),
       severity: input.severity, health: input.health, by: actor.name, at: now(),
     };
     const horse = await get<Horse>(`/horses/${c.horseId}`);
@@ -35,7 +35,7 @@ export const casesApi = {
     const caseKey = String((c as VetCase & { beId?: number }).beId ?? '');
     const open = protocols.find((p) => isOpenProtocol(p) && (p.caseId === c.id || (!!caseKey && p.caseId === caseKey)));
     if (open) throw new Error(`Phác đồ ${open.id} còn đang mở (${PROTOCOL_LABEL[open.state][0]}) — hoàn tất hoặc hủy trước khi đóng ca.`);
-    const { data } = await http.patch<VetCase>(`/vetCases/${c.id}`, { status: 'CLOSED', outcome: min(outcome, 10, 'Kết luận') });
+    const { data } = await http.patch<VetCase>(`/vetCases/${c.id}`, { status: 'CLOSED', outcome: outcome.trim() });
     await addAudit(actor, { action: 'CLOSE_CASE', label: 'Đóng ca khám', object: `${c.id} · ${c.horse}`, area: 'med', from: c.status, to: 'CLOSED', reason: outcome.trim() });
     return data;
   },

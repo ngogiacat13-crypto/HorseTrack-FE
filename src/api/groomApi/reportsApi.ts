@@ -20,7 +20,7 @@ export const reportsApi = {
   async reportIncident(input: { horseId: string; type: string; severity: Severity; note: string; photo: string | null; notifyTrainer: boolean }, actor: Actor) {
     const horse = await get<Horse>(`/horses/${input.horseId}`);
     const type = min(input.type, 3, 'Loại sự cố');
-    const note = min(input.note, 15, 'Mô tả dấu hiệu');
+    const note = input.note.trim();
     const cases = await get<VetCase[]>('/vetCases');
     const c = {
       id: nextId(cases.map((x) => x.id), 'C-'), horseId: horse.id, horse: horse.name, source: 'GROOM_REPORT', type, severity: input.severity, status: 'NEW',

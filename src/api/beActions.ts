@@ -82,7 +82,6 @@ export const vetProtocolBe = {
     return mapProtocol(r) as unknown as Protocol;
   },
   async addProgress(p: Protocol, text: string) {
-    if (text.trim().length < 5) throw new Error('Ghi chú tiến triển ít nhất 5 ký tự.');
     const phaseNo = Number(text.match(/Hoàn thành giai đoạn (\d+)/)?.[1]);
     if (phaseNo > 0) {
       if (p.dispensedPhases != null && !p.dispensedPhases.includes(phaseNo)) throw new Error(`Chưa cấp thuốc giai đoạn ${phaseNo}. Kho phải cấp thuốc giai đoạn này trước khi hoàn thành.`);
@@ -94,7 +93,6 @@ export const vetProtocolBe = {
     return mapProtocol(r) as unknown as Protocol;
   },
   async completeProtocol(p: Protocol, outcome: string) {
-    if (outcome.trim().length < 10) throw new Error('Kết quả điều trị ít nhất 10 ký tự.');
     const done = new Set(p.progress.map((n) => Number(n.text.match(/Hoàn thành giai đoạn (\d+)/)?.[1])).filter((n) => n > 0));
     const missing = p.phases.find((ph) => !done.has(ph.no));
     if (missing) throw new Error(`Phải hoàn thành giai đoạn ${missing.no} (${missing.name}) trước khi kết thúc phác đồ.`);
@@ -109,7 +107,7 @@ const MOVE: Record<MoveKind, string> = { RECEIVE: 'RECEIVE', ISSUE: 'ISSUE', ADJ
 export const warehouseBe = {
   async moveStock(item: StockItem, input: { kind: MoveKind; qty: number; lot: string; expiry: string; note: string }, actor: Actor) {
     if (!input.qty) throw new Error('Nhập số lượng.');
-    if (input.note.trim().length < (input.kind === 'RECEIVE' ? 5 : 10)) throw new Error(input.kind === 'RECEIVE' ? 'Ghi chú nhập ít nhất 5 ký tự.' : 'Lý do ít nhất 10 ký tự.');
+    if (input.kind !== 'RECEIVE' && input.note.trim().length < 10) throw new Error('Lý do ít nhất 10 ký tự.');
     const r = await beData<{ item: Parameters<typeof mapItem>[0]; lowStockWarning?: string | null }>(be.post('/inventory/stock-movements', {
       itemId: beId(item), movementType: MOVE[input.kind], quantity: input.qty, lotNo: input.lot.trim() || undefined,
       expiryDate: expiryIso(input.expiry.trim()), note: input.note.trim(),

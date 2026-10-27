@@ -21,7 +21,6 @@ export const sessionsApi = {
 
   async stopAndRequestVet(s: TrainingSession, note: string, actor: Actor) {
     if (USE_BACKEND) {
-      if (note.trim().length < 10) throw new Error('Mô tả dấu hiệu cho bác sĩ ít nhất 10 ký tự.');
       const peak = s.readings[s.readings.length - 1];
       const res = await be.put<ApiResponse<{ status: string; caseCode?: string | null }>>(`/training-sessions/${s.id}/stop`, { reason: note.trim(), requestVet: true, severity: 'HIGH', heartRate: peak?.hr });
       const caseId = res.data.data?.caseCode ?? '';
@@ -31,7 +30,6 @@ export const sessionsApi = {
     }
     await getMyHorse(s.horseId, actor);
     if (s.status !== 'PAUSED_PENDING_TRAINER') throw new Error('Phiên này không còn chờ quyết định.');
-    if (note.trim().length < 10) throw new Error('Mô tả dấu hiệu cho bác sĩ ít nhất 10 ký tự.');
     const cases = await get<{ id: string }[]>('/vetCases');
     const caseId = nextId(cases.map((c) => c.id), 'C-');
     const peak = s.readings[s.readings.length - 1];
@@ -52,7 +50,6 @@ export const sessionsApi = {
   async adjustAndContinue(s: TrainingSession, adj: { intensity: Intensity; distanceM: number; hrLimit: number; note: string }, actor: Actor) {
     if (s.status !== 'PAUSED_PENDING_TRAINER') throw new Error('Phiên này không còn chờ quyết định.');
     if (USE_BACKEND) {
-      if (adj.note.trim().length < 10) throw new Error('Ghi rõ nội dung điều chỉnh ít nhất 10 ký tự.');
       await be.put(`/training-sessions/${s.id}/resume`, { intensity: adj.intensity, distanceM: adj.distanceM, maxHeartRate: adj.hrLimit, note: adj.note.trim() });
       invalidate('trainingSessions', 'trainingPlans');
       return get<TrainingSession>(`/trainingSessions/${s.id}`);
@@ -60,7 +57,6 @@ export const sessionsApi = {
     await getHorseChecked(s.horseId, actor);
     const last = (s.recovery ?? [])[(s.recovery ?? []).length - 1];
     if (!last || last.hr >= s.thresholds.hr) throw new Error(`Nhịp tim hồi phục chưa về dưới ngưỡng ${s.thresholds.hr} bpm — không thể tiếp tục (BR_02).`);
-    if (adj.note.trim().length < 10) throw new Error('Ghi rõ nội dung điều chỉnh ít nhất 10 ký tự.');
     const plan = await get<TrainingPlan>(`/trainingPlans/${s.planId}`);
     const phases = plan.phases.map((p) => (p.no === s.phaseNo ? { ...p, intensity: adj.intensity, distanceM: adj.distanceM, hrLimit: adj.hrLimit } : p));
     await http.patch(`/trainingPlans/${plan.id}`, { phases });

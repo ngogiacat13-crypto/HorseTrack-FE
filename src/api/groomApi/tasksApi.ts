@@ -24,7 +24,6 @@ export const tasksApi = {
     if (t.status === 'DONE') throw new Error('Công việc đã hoàn thành.');
     const doneAt = DEMO_NOW.time;
     const late = Math.max(0, toMin(doneAt) - toMin(t.sla));
-    if (late > 0) min(input.note, 5, 'Việc trễ SLA — ghi chú lý do');
     const { data } = await http.patch<CareTask>(`/tasks/${t.id}`, { status: 'DONE', doneAt, note: input.note.trim(), photo: input.photo });
     if (t.type === 'CLEAN' && t.stall) {
       const stall = await get<Stall>(`/stalls/${t.stall}`);

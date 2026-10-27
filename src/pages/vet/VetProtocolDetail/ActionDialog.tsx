@@ -23,7 +23,7 @@ const specFor = (p: Protocol, a: ProtocolAction): Spec => {
         field: ['Lý do hủy', 'VD: Khám lại thấy cần đổi hướng điều trị, sẽ lập phác đồ mới.', 10] };
     case 'wait': return { title: 'Chờ hàng về', label: 'Chọn chờ hàng', ok: `${p.id}: chờ hàng về.`,
       sub: `Hàng thiếu dự kiến về ${short.map((l) => l.eta).filter(Boolean).join(', ') || '—'}; mốc cần thuốc ${requiredBy}.`,
-      field: [late ? 'Đánh giá chờ vẫn an toàn về chuyên môn' : 'Ghi chú', 'VD: Ngựa ổn định, chườm lạnh thay thế đến khi hàng về.', late ? 15 : 10] };
+      field: [late ? 'Đánh giá chờ vẫn an toàn về chuyên môn' : 'Ghi chú', 'VD: Ngựa ổn định, chườm lạnh thay thế đến khi hàng về.'] };
     case 'confirm': return { title: `Xác nhận phác đồ ${p.id}`, label: 'Xác nhận & chuyển kho cấp phát', ok: `${p.id} đã xác nhận — kho chuẩn bị cấp phát.`,
       sub: 'Kho đã đủ khả năng cấp. Xác nhận phác đồ vẫn phù hợp với tình trạng ngựa hiện tại.',
       field: ['Đánh giá tính phù hợp', 'VD: Đã khám lại, tình trạng không đổi, giữ nguyên liều.'] };
@@ -34,7 +34,7 @@ const specFor = (p: Protocol, a: ProtocolAction): Spec => {
       field: ['Kết quả & chỉ định tiếp theo', 'VD: Hết sưng, tái khám sau 2 tuần, tập nhẹ 1 tuần đầu.'] };
     case 'continue-phase': return { title: 'Tiếp tục phác đồ', label: 'Hoàn thành giai đoạn & tiếp tục', ok: 'Đã hoàn thành giai đoạn và gửi thông báo thanh toán giai đoạn tiếp theo.',
       sub: 'Chủ ngựa phải thanh toán chi phí giai đoạn tiếp theo trước khi bác sĩ bắt đầu giai đoạn đó.',
-      field: ['Đánh giá giai đoạn', 'VD: Đáp ứng tốt, tiếp tục theo dõi thêm 7 ngày.', 10] };
+      field: ['Đánh giá giai đoạn', 'VD: Đáp ứng tốt, tiếp tục theo dõi thêm 7 ngày.'] };
     case 'stop-phase': return { title: 'Ngưng phác đồ sau giai đoạn', label: 'Ngưng sau giai đoạn', danger: true, ok: 'Đã ngưng phác đồ và lưu lý do quyết định.',
       field: ['Lý do ngưng', 'VD: Đã đạt mục tiêu, không cần tiếp tục giai đoạn sau.', 10] };
   }
@@ -62,7 +62,7 @@ export const ActionDialog: React.FC<{ protocol: Protocol; action: ProtocolAction
     <Dialog open onClose={onClose} icon={action === 'cancel' ? 'x' : action === 'wait' ? 'clock' : 'check'} tone={spec.danger ? 'danger' : 'brand'} danger={spec.danger}
       busy={busy} title={spec.title} sub={spec.sub} confirmLabel={spec.label} onConfirm={confirm}>
       {error && <Callout tone="danger" style={{ marginBottom: spec.field ? 14 : 0 }}>{error}</Callout>}
-      {spec.field && <ReasonField id="pd-text" label={spec.field[0]} value={text} onChange={setText} placeholder={spec.field[1]} min={spec.field[2] ?? 10} />}
+      {spec.field && <ReasonField id="pd-text" label={spec.field[0]} value={text} onChange={setText} placeholder={spec.field[1]} min={spec.field[2]} />}
     </Dialog>
   );
 };

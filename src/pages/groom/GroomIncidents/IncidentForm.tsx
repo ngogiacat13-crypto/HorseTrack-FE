@@ -51,7 +51,7 @@ export const IncidentForm: React.FC<{ horses: Horse[]; initialHorse: string; onD
         <span className="ht-label">Mức độ</span>
         <Segmented<Severity> label="Mức độ" value={severity} onChange={setSeverity} items={[{ value: 'LOW', label: 'Thấp' }, { value: 'MEDIUM', label: 'Trung bình' }, { value: 'HIGH', label: 'Cao' }]} />
       </div>
-      <ReasonField id="ic-note" label="Mô tả dấu hiệu" value={note} min={15} onChange={setNote} placeholder="VD: Bỏ ăn sáng, nằm lăn nhiều lần, toát mồ hôi vùng cổ." minHeight={80} />
+      <ReasonField id="ic-note" label="Mô tả dấu hiệu" value={note} onChange={setNote} placeholder="VD: Bỏ ăn sáng, nằm lăn nhiều lần, toát mồ hôi vùng cổ." minHeight={80} />
       <label style={{ display: 'flex', gap: 8, alignItems: 'flex-start', fontSize: 14 }}>
         <input type="checkbox" checked={notifyTrainer} onChange={(e) => setNotifyTrainer(e.target.checked)} style={{ marginTop: 3 }} />
         <span>Báo HLV trưởng — nếu ngựa đang trong phiên tập, phiên sẽ <b>tạm dừng</b> chờ HLV quyết định.</span>

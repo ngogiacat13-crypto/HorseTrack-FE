@@ -141,7 +141,7 @@ export const protocolsApi = {
     if (!eta) throw new Error('Kho chưa có ngày dự kiến hàng về — chưa thể chọn chờ.');
     const requiredBy = phaseRequiredBy(p, short.map((l) => l.itemId));
     const late = dateKey(eta) > dateKey(requiredBy);
-    const why = min(note, late ? 15 : 10, late ? 'Đánh giá an toàn khi chờ quá mốc cần thuốc' : 'Ghi chú');
+    const why = note.trim();
     const data = await saveProtocol(p,
       { ...goTo(p, 'WAITING_RESTOCK'), wait: { eta, requiredBy, at: now(), note: why }, delayed: late,
         note: late ? `Chờ hàng về ${eta.slice(0, 5)} — trễ so với mốc cần thuốc ${requiredBy.slice(0, 5)}; BS đã đánh giá chờ vẫn an toàn.` : `Chờ hàng về ${eta.slice(0, 5)}, trước mốc cần thuốc ${requiredBy.slice(0, 5)}.` },
@@ -156,7 +156,7 @@ export const protocolsApi = {
     const short = stockShort(p);
     if (short.length) throw new Error(`Còn thiếu ${short.map((l) => `${l.name} ${l.short} ${l.unit}`).join(', ')} — chỉ xác nhận khi kho đủ khả năng cấp.`);
     const horse = await get<Horse>(`/horses/${p.horseId}`);
-    const why = min(note, 10, 'Đánh giá tính phù hợp');
+    const why = note.trim();
     const data = await saveProtocol(p, { ...goTo(p, 'VET_CONFIRMED', 'READY_FOR_DISPENSING'), delayed: false, note: 'BS đã xác nhận — kho chuẩn bị cấp phát.' },
       { tone: 'success', who: `BS ${actor.name}`, text: 'xác nhận phác đồ, chuyển kho cấp phát', at: now() });
     await addAudit(actor, { action: 'CONFIRM_PROTOCOL', label: 'Xác nhận phác đồ', object: `${p.id} · ${horse.name}`, area: 'med', from: p.state, to: 'READY_FOR_DISPENSING', reason: why });
@@ -165,7 +165,7 @@ export const protocolsApi = {
 
   async addProgress(p: Protocol, text: string, actor: Actor) {
     if (p.state !== 'IN_TREATMENT') throw new Error('Chỉ ghi tiến triển khi đang điều trị.');
-    const entry = { at: now(), by: actor.name, text: min(text, 10, 'Tiến triển') };
+    const entry = { at: now(), by: actor.name, text: text.trim() };
     const data = await saveProtocol(p, { progress: [entry, ...p.progress] });
     await addAudit(actor, { action: 'TREATMENT_PROGRESS', label: 'Ghi tiến triển điều trị', object: `${p.id} · ${p.horse}`, area: 'med', reason: entry.text });
     return data;
@@ -196,7 +196,7 @@ export const protocolsApi = {
 
   async completeProtocol(p: Protocol, outcome: string, actor: Actor) {
     if (p.state !== 'IN_TREATMENT') throw new Error('Chỉ kết thúc khi phác đồ đang điều trị.');
-    const why = min(outcome, 10, 'Kết quả điều trị');
+    const why = outcome.trim();
     const data = await saveProtocol(p, { ...goTo(p, 'COMPLETED'), outcome: why, note: `Hoàn tất: ${why}` }, { tone: 'success', who: `BS ${actor.name}`, text: 'kết thúc điều trị', at: now() });
     const horse = await get<Horse>(`/horses/${p.horseId}`);
     await addHistory(horse, `Hoàn tất phác đồ ${p.id} — ${why}`, 'success');
