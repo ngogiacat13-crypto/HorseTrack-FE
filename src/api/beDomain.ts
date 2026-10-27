@@ -67,7 +67,7 @@ interface BeProtocol {
   protocolId: number; protocolCode: string; horseId: number; horseName: string; vetName?: string; caseId?: number | null; versionNo?: number;
   replacesProtocolCode?: string | null; replacedByProtocolCode?: string | null; diagnosis: string; state: string; requiredBy?: string | null;
   isDelayed?: boolean; trainingLocked?: boolean; waitEta?: string | null; waitNote?: string | null; note?: string | null; outcome?: string | null;
-  createdAt?: string; totalCost?: number; emergency?: boolean | null;
+  createdAt?: string; totalCost?: number; emergency?: boolean | null; isEmergency?: boolean | null;
   phases?: { phaseNo: number; phaseName: string; startDate: string; durationDays: number; goal?: string | null; invoiceStatus?: string | null; items: { itemId: number; itemCode: string; itemName: string; unit: string; quantity: number; unitPrice: number; dosage?: string | null }[] }[] | null;
   stockAnswer?: { itemId: number; itemName: string; unit: string; qtyNeeded: number; qtyAvailable: number; qtyHeld: number; qtyShort: number; eta?: string | null; purchaseOrderId?: number | null; status?: string | null; checkedByName?: string; checkedAt?: string }[] | null;
   progressNotes?: { writtenByName: string; writtenAt: string; content: string }[] | null;
@@ -101,7 +101,7 @@ export const mapProtocol = (p: BeProtocol): Row => {
     } : null,
     wait: p.waitEta ? { eta: dmy(p.waitEta), requiredBy: dmy(p.requiredBy), at: '—', note: p.waitNote ?? '' } : null,
     delayed: !!p.isDelayed, progress: (p.progressNotes ?? []).map((n) => ({ at: dmhm(n.writtenAt), by: n.writtenByName, text: n.content })),
-    outcome: p.outcome ?? null, emergency: !!p.emergency,
+    outcome: p.outcome ?? null, emergency: !!p.emergency || !!p.isEmergency,
     dispensedPhases: dispensedMarked.length ? [...new Set(dispensedMarked)] : answer.length > 0 && answer.every((a) => a.status === 'ISSUED') ? phases.map((ph) => ph.no) : [],
     label: PROTOCOL_LABEL[state][0], tone, cost: Number(p.totalCost) || 0, trainingLocked: !!p.trainingLocked,
     open: !CLOSED.includes(state), materials: answer.map((a) => ({ item: `${a.itemName} · ${a.qtyNeeded} ${a.unit}`, status: a.qtyShort > 0 ? `Thiếu ${a.qtyShort}` : 'Đủ', tone: a.qtyShort > 0 ? 'danger' : 'success' })),

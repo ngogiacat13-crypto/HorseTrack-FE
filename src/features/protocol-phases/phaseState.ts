@@ -31,4 +31,4 @@ export const phaseIsDispensed = (p: Protocol, phaseNo: number) => {
   const phase = p.phases.find((item) => item.no === phaseNo);
   return !!phase && (phase.items.length === 0 || (p.dispensedPhases ?? []).includes(phaseNo));
 };
-export const phaseReadyToStart = (p: Protocol, phaseNo: number) => phaseIsPaid(p, phaseNo) && phaseIsDispensed(p, phaseNo);
+export const phaseReadyToStart = (p: Protocol, phaseNo: number) => (p.emergency || phaseIsPaid(p, phaseNo)) && phaseIsDispensed(p, phaseNo);

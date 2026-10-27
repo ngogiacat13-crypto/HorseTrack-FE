@@ -41,7 +41,7 @@ export const protocolsApi = {
     return { horses, cases: visibleCases, inventory: inventory.filter((i) => i.category !== 'Thức ăn'), replacing, blockedBy };
   },
 
-  async createProtocol(input: { horseId: string; caseId: string; diagnosis: string; requiredBy: string; phases: ProtoPhase[]; replaces?: string | null }, send: boolean, actor: Actor) {
+  async createProtocol(input: { horseId: string; caseId: string; diagnosis: string; requiredBy: string; phases: ProtoPhase[]; emergency?: boolean; replaces?: string | null }, send: boolean, actor: Actor) {
     const horse = await get<Horse>(`/horses/${input.horseId}`);
     const vetCase = await get<VetCase>(`/vetCases/${input.caseId}`).catch(() => { throw new Error('Chọn ca khám cho phác đồ.'); });
     if (vetCase.horseId !== horse.id) throw new Error('Ca khám không thuộc ngựa này.');
@@ -71,6 +71,7 @@ export const protocolsApi = {
       state: states[states.length - 1], path: states, stock: null, wait: null, delayed: false, progress: [], outcome: null,
       label: '', tone: 'neutral', cost: 0, open: true, materials: [], note: send ? 'Đã gửi kho kiểm tra tồn, chờ phản hồi.' : 'Bản nháp chưa gửi kho.',
       phaseProgress: input.phases.map((ph) => ({ phaseNo: ph.no, status: 'WAITING_PAYMENT' as const })),
+      emergency: !!input.emergency,
       phaseBilling: input.phases.map((ph) => ({ phaseNo: ph.no, invoiceId: null, amount: ph.items.reduce((sum, item) => sum + item.qty * item.unitPrice, 0), status: 'UNPAID' as const })),
       log: [{ who: `BS ${actor.name}`, text: send ? `gửi kiểm tồn${replaced ? ` · thay thế ${replaced.id}` : ''}` : 'lưu bản nháp', at: now() }],
     };
@@ -185,7 +186,7 @@ export const protocolsApi = {
     const current = progress.find((item) => item.status === 'IN_PROGRESS');
     if (!current || current.phaseNo !== phaseNo) throw new Error('Chỉ được kết thúc giai đoạn đang điều trị.');
     if (!(p.dispensedPhases ?? []).includes(phaseNo)) throw new Error(`Giai đoạn ${phaseNo} chưa được kho cấp thuốc.`);
-    if (!phaseIsPaid(p, phaseNo)) throw new Error(`Giai đoạn ${phaseNo} chưa được chủ ngựa thanh toán.`);
+    if (!p.emergency && !phaseIsPaid(p, phaseNo)) throw new Error(`Giai đoạn ${phaseNo} chưa được chủ ngựa thanh toán.`);
     const why = min(reason, 10, 'Lý do quyết định giai đoạn');
     const phaseProgress: PhaseProgress[] = progress.map((item) => item.phaseNo === phaseNo ? { ...item, status: decision === 'CONTINUE' ? 'COMPLETED' : 'STOPPED', reason: why } : item);
     const next = p.phases.find((item) => item.no > phaseNo && !phaseProgress.some((state) => state.phaseNo === item.no && ['COMPLETED', 'STOPPED'].includes(state.status)));

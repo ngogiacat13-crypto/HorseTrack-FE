@@ -27,6 +27,7 @@ export const ProtocolForm: React.FC<{ data: FormData; horseParam: string; casePa
   const [caseId, setCaseId] = useState(r?.caseId ?? firstCase?.id ?? '');
   const [diagnosis, setDiagnosis] = useState(r?.diagnosis ?? firstCase?.exam?.diagnosis ?? '');
   const [requiredBy, setRequiredBy] = useState(r?.requiredBy ?? addDays(DEMO_NOW.date, 2));
+  const [emergency, setEmergency] = useState(r?.emergency ?? false);
   const [phases, setPhases] = useState<ProtoPhase[]>(() => (r
     ? r.phases.map((p) => ({ ...p, items: p.items.map((i) => ({ ...i })) }))
     : [newPhase(1, addDays(DEMO_NOW.date, 2))]));
@@ -64,7 +65,7 @@ export const ProtocolForm: React.FC<{ data: FormData; horseParam: string; casePa
     if (!vetCase) { setErr('Chọn ca khám cho phác đồ.'); return; }
     setBusy('send');
     try {
-      const p = await vetApi.createProtocol({ horseId, caseId, diagnosis, requiredBy, phases, replaces: r?.id ?? null }, true, actor);
+      const p = await vetApi.createProtocol({ horseId, caseId, diagnosis, requiredBy, phases, emergency, replaces: r?.id ?? null }, true, actor);
       toast(`${p.id} đã gửi kho kiểm tra tồn.`);
       navigate(`/vet/protocols/${p.id}`);
     } catch (e) {
@@ -92,7 +93,7 @@ export const ProtocolForm: React.FC<{ data: FormData; horseParam: string; casePa
         <div>
           <HorseCaseFields horses={data.horses.filter((h) => data.cases.some((c) => c.horseId === h.id))} cases={cases} locked={!!r}
             horseId={horseId} caseId={caseId} diagnosis={diagnosis} requiredBy={requiredBy}
-            onHorse={chooseHorse} onCase={chooseCase} onDiagnosis={setDiagnosis} onRequiredBy={setRequiredBy} />
+            emergency={emergency} onHorse={chooseHorse} onCase={chooseCase} onDiagnosis={setDiagnosis} onRequiredBy={setRequiredBy} onEmergency={setEmergency} />
           {phases.map((ph, idx) => (
             <PhaseEditor key={idx} phase={ph} index={idx} open={open === idx} inventory={data.inventory} availableOf={availableOf} needOf={needOf}
               onToggle={() => setOpen(open === idx ? -1 : idx)} onRemove={phases.length > 1 ? () => removePhase(idx) : undefined} onChange={(patch) => setPhase(idx, patch)} />

@@ -44,7 +44,7 @@ Quy ước `data-testid`: menu trái `nav-<đường dẫn bỏ / đầu, / đ�
 | Bác sĩ · Ca bệnh | `src/pages/vet/VetInbox/` | `/vet/cases` · đóng ca chỉ khi phác đồ đã hoàn thành hoặc đã hủy | `nav-vet-cases` |
 | Bác sĩ · Sức khỏe ngựa | `src/pages/vet/VetHorseHealth/` | `/vet/horses/:id` | `back-btn` |
 | Bác sĩ · Phác đồ | `src/pages/vet/VetProtocols/` | `/vet/protocols` | `nav-vet-protocols` |
-| Bác sĩ · Tạo phác đồ | `src/pages/vet/VetProtocolCreate/` | `/vet/protocols/new` · gửi kho kiểm tồn, không còn lưu nháp; khóa theo ngựa khi còn phác đồ chưa hủy | `back-btn`, `protocol-send-btn`, `create-protocol-btn`, `open-protocol-btn` |
+| Bác sĩ · Tạo phác đồ | `src/pages/vet/VetProtocolCreate/` | `/vet/protocols/new` · gửi kho kiểm tồn, không còn lưu nháp; hỗ trợ đánh dấu phác đồ cấp cứu; khóa theo ngựa khi còn phác đồ chưa hủy | `back-btn`, `protocol-send-btn`, `protocol-emergency`, `create-protocol-btn`, `open-protocol-btn` |
 | Bác sĩ · Chi tiết phác đồ | `src/pages/vet/VetProtocolDetail/` | `/vet/protocols/:id` · cấp thuốc, thanh toán và bác sĩ quyết định từng giai đoạn trước khi bắt đầu/kết thúc | `back-btn`, `add-items-btn`, `add-items-dialog`, `add-item-phase`, `add-item-select`, `add-item-qty`, `add-item-line`, `add-item-list`, `cancel-protocol-btn`, `protocol-wait-btn`, `protocol-phase-start`, `protocol-phase-done`, `protocol-phase-stop` |
 | Bác sĩ · Thuốc | `src/pages/vet/VetMedicines/` | `/vet/medicines` | `nav-vet-medicines` |
 | Bác sĩ · Tiêm phòng | `src/pages/vet/VetVaccinations/` | `/vet/vaccinations` | `nav-vet-vaccinations` |

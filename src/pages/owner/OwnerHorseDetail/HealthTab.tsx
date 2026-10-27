@@ -28,7 +28,7 @@ export const HealthTab: React.FC<{ horse: VetHorse; protocols: Protocol[]; cases
                 <div style={{ fontSize: 13 }}>{p.diagnosis}{p.phases.some((ph) => ph.goal) && <> · {p.phases.map((ph) => ph.goal).filter(Boolean).join('; ')}</>}</div>
                 {h.injuries.filter((i) => !p.caseId || i.caseId === p.caseId).map((i) => <div key={i.id ?? i.part} style={{ fontSize: 13 }}>Vị trí {i.part} · {i.severity}{i.note ? `: ${i.note}` : ''}</div>)}
                 <ProtocolPath protocol={p} />
-                {p.phaseBilling?.filter((billing) => billing.status === 'UNPAID').map((billing) => {
+                {!p.emergency && p.phaseBilling?.filter((billing) => billing.status === 'UNPAID').map((billing) => {
                   const phase = p.phases.find((item) => item.no === billing.phaseNo);
                   const progress = phaseProgressOf(p).find((item) => item.phaseNo === billing.phaseNo);
                   return <Callout key={billing.phaseNo} tone="danger" icon="card" testId="phase-payment-notice">

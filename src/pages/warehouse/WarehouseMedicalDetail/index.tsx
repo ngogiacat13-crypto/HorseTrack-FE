@@ -57,11 +57,12 @@ export const WarehouseMedicalDetail: React.FC = () => {
         sub={<>{p.diagnosis} · BS {p.vet} · chuồng <b>{horse.stall}</b> · cần thuốc từ <b className="ht-mono">{p.requiredBy}</b></>}
       />
       <div style={{ marginBottom: 20 }}><ProtocolPath protocol={p} /></div>
+      {p.emergency && <Callout tone="success" icon="alarm">Phác đồ cấp cứu: không cần chờ thanh toán. Nếu còn báo thiếu, kho chỉ có thể cấp phần hàng đang có.</Callout>}
 
       <div className="ht-cols">
         <div>
           {p.state === 'WAITING_STOCK_CHECK' && <StockCheckForm protocol={p} items={items} openShipments={openShipments} onDone={reload} />}
-          {(p.state === 'READY_FOR_DISPENSING' || (p.state === 'IN_TREATMENT' && (p.dispensedPhases?.length ?? 0) > 0 && p.phases.some((ph) => !p.dispensedPhases!.includes(ph.no)))) && <DispenseForm protocol={p} items={items} onDone={reload} />}
+          {(p.state === 'READY_FOR_DISPENSING' || (p.state === 'ON_HOLD_PAYMENT' && p.emergency) || (p.state === 'IN_TREATMENT' && (p.dispensedPhases?.length ?? 0) > 0 && p.phases.some((ph) => !p.dispensedPhases!.includes(ph.no)))) && <DispenseForm protocol={p} items={items} onDone={reload} />}
           {p.state === 'SUPERSEDED' && (
             <Callout tone="danger" icon="warn" title="Bác sĩ đã đổi phác đồ" testId="protocol-superseded">
               Bản này đã được thay bằng {p.supersededBy ? <Link to={`/warehouse/medical/${p.supersededBy}`} className="ht-mono">{p.supersededBy}</Link> : 'phiên bản mới'} — <b>không cấp phát theo bản này</b>. Hàng đã giữ cho bản này đã được trả lại kho.

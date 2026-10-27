@@ -33,12 +33,12 @@ const toBePhases = async (phases: ProtoPhase[]) => {
 const numOrUndef = (v?: string | null) => (v && /\d/.test(v) ? Number(v.replace(/\D/g, '')) : undefined);
 
 export const vetProtocolBe = {
-  async createProtocol(input: { horseId: string; caseId: string; diagnosis: string; requiredBy: string; phases: ProtoPhase[]; replaces?: string | null }, _send: boolean, actor: Actor) {
+  async createProtocol(input: { horseId: string; caseId: string; diagnosis: string; requiredBy: string; phases: ProtoPhase[]; emergency?: boolean; replaces?: string | null }, _send: boolean, actor: Actor) {
     if (input.diagnosis.trim().length < 5) throw new Error('Chẩn đoán ít nhất 5 ký tự.');
     if (!input.phases.some((ph) => ph.items.length)) throw new Error('Thêm ít nhất 1 thuốc/vật tư để gửi kiểm tồn.');
     const body = {
       horseId: Number(input.horseId), caseId: numOrUndef(input.caseId), diagnosis: input.diagnosis.trim(), requiredBy: iso(input.requiredBy),
-      phases: await toBePhases(input.phases),
+      phases: await toBePhases(input.phases), emergency: !!input.emergency, isEmergency: !!input.emergency,
     };
     const p = input.replaces
       ? await beData<Parameters<typeof mapProtocol>[0]>(be.post(`/medical-management/protocols/${numOrUndef(input.replaces)}/new-version`, body))
@@ -151,7 +151,7 @@ export const warehouseBe = {
   },
   async dispense(p: Protocol, input?: { phaseNos?: number[] }) {
     const phaseNos = input?.phaseNos?.filter((n) => Number.isInteger(n));
-    if (p.state === 'ON_HOLD_PAYMENT') throw new Error('Phác đồ đang chờ thanh toán, chưa cấp thêm thuốc.');
+    if (p.state === 'ON_HOLD_PAYMENT' && !p.emergency) throw new Error('Phác đồ đang chờ thanh toán, chưa cấp thêm thuốc.');
     if (p.state !== 'READY_FOR_DISPENSING' && !(p.state === 'IN_TREATMENT' && !!phaseNos?.length)) throw new Error('Chỉ cấp phát phác đồ đã được bác sĩ xác nhận.');
     const r = await beData<Parameters<typeof mapProtocol>[0]>(be.put(`/inventory/protocols/${beId(p)}/dispense`, phaseNos?.length ? { phaseNos } : {}));
     after('protocols', 'inventory', 'stockTx');

@@ -34,6 +34,7 @@ export const VetProtocolDetail: React.FC = () => {
       />
 
       <div style={{ marginBottom: 20 }}><ProtocolPath protocol={p} /></div>
+      {p.emergency && <div className="ht-banner" role="status"><Icon name="alarm" /><div><b>Phác đồ cấp cứu</b><p>Kho được cấp thuốc và vật tư ngay, không chờ chủ ngựa thanh toán.</p></div></div>}
       <ProtocolBanners protocol={p} />
 
       <div className="ht-cols">
