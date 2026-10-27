@@ -84,7 +84,7 @@ export const healthApi = {
 
   async unlockTraining(horse: Horse, note: string, actor: Actor) {
     if (!horse.trainingLocked) throw new Error(`${horse.name} không bị khóa huấn luyện.`);
-    const why = min(note, 10, 'Đánh giá đủ điều kiện');
+    const why = note.trim();
     const { data } = await http.patch<VetHorse>(`/horses/${horse.id}`, { trainingLocked: false, lock: null });
     await addHistory({ ...horse, ...data }, 'Mở khóa huấn luyện — đủ điều kiện y tế', 'success');
     await addAudit(actor, { action: 'UNLOCK_TRAINING', label: 'Mở khóa huấn luyện', object: horse.name, area: 'med', from: 'Khóa tập', to: 'Được tập', reason: why });
