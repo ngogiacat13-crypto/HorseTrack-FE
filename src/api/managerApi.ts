@@ -98,6 +98,7 @@ const beUserAction = async (url: string, body: Record<string, string>): Promise<
     status: u.status === 'LOCKED' ? 'LOCKED' : 'ACTIVE', lockReason: u.lockReason ?? undefined, openTasks: u.openTasks ?? 0, horsesOwned: u.horsesOwned ?? 0, lastLogin: u.lastLogin && /^\d{4}-\d{2}-\d{2}/.test(u.lastLogin) ? `${u.lastLogin.slice(8, 10)}/${u.lastLogin.slice(5, 7)} ${u.lastLogin.slice(11, 16)}` : u.lastLogin || '—',
   };
 };
+const beUserStatus = async (id: string) => (await beData<{ status?: string | null; isActive?: boolean }>(be.get(`/users/${id}`)));
 const toManaged = ({ password: _pw, fullname, ...u }: UserRecord): ManagedUser => ({ ...u, fullName: fullname });
 
 interface BeOverdueTask { taskCode?: string | null; title?: string | null; taskType: string; horseName?: string | null; groomName?: string | null; taskDate?: string | null; scheduledTime?: string | null }
@@ -408,7 +409,9 @@ export const managerApi = {
     const target = assignments.grooms.find((g) => g.id === user.id || g.name === user.fullName);
     if (!target) throw new Error('Không tìm thấy hồ sơ phân công của người chăm ngựa.');
     if (USE_BACKEND) {
-      const same = target.zones.length === zones.length && zones.every((z) => target.zones.includes(z));
+      const current = await beData<{ barnZone?: string | null }>(be.get(`/users/${target.id}/barn-zone`));
+      const currentZones = current.barnZone ? [current.barnZone.replace(/^Zone\s+/i, 'Khu ')] : [];
+      const same = currentZones.length === zones.length && zones.every((z) => currentZones.includes(z));
       if (same) return { zones };
       await be.put(`/users/${target.id}/barn-zone`, { barnZone: zones[0] ?? null });
       invalidate('users', 'auditLogs');
@@ -464,14 +467,22 @@ export const managerApi = {
   },
 
   async lockUser(user: ManagedUser, reason: string, actor: Actor) {
-    if (USE_BACKEND) return beUserAction(`/users/${user.id}/lock`, { reason: reason.trim() });
+    if (USE_BACKEND) {
+      const fresh = await beUserStatus(user.id);
+      if (fresh.status === 'LOCKED' || fresh.isActive === false) throw new Error(`Tài khoản ${user.username} đã bị khóa trước đó, tải lại trang để xem.`);
+      return beUserAction(`/users/${user.id}/lock`, { reason: reason.trim() });
+    }
     const { data } = await http.patch<UserRecord>(`/users/${user.id}`, { status: 'LOCKED', lockReason: reason });
     await addAudit(actor, { action: 'LOCK_ACCOUNT', label: 'Khóa tài khoản', object: `${user.username} · ${user.fullName}`, area: 'acct', from: 'ACTIVE', to: 'LOCKED', reason });
     return toManaged(data);
   },
 
   async unlockUser(user: ManagedUser, reason: string, actor: Actor) {
-    if (USE_BACKEND) return beUserAction(`/users/${user.id}/unlock`, { reason: reason.trim() });
+    if (USE_BACKEND) {
+      const fresh = await beUserStatus(user.id);
+      if (fresh.status !== 'LOCKED' && fresh.isActive !== false) throw new Error(`Tài khoản ${user.username} đang hoạt động, không cần mở khóa.`);
+      return beUserAction(`/users/${user.id}/unlock`, { reason: reason.trim() });
+    }
     const { data } = await http.patch<UserRecord>(`/users/${user.id}`, { status: 'ACTIVE', lockReason: null });
     await addAudit(actor, { action: 'UNLOCK_ACCOUNT', label: 'Mở khóa tài khoản', object: `${user.username} · ${user.fullName}`, area: 'acct', from: 'LOCKED', to: 'ACTIVE', reason });
     return toManaged(data);

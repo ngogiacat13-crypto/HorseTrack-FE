@@ -814,3 +814,14 @@ Có trong code nhưng giao diện chưa có nút gọi: `authApi.updateAvatar` (
 - `PUT /training-sessions/{id}/stop` giờ trả buổi `STOPPED` (không còn `WAITING_VET`), giáo án không tạm dừng. FE bỏ trạng thái “Chờ bác sĩ” của buổi tập; dữ liệu cũ `WAITING_VET` hiện là “Đã dừng”.
 - `PUT /training-sessions/{id}/evaluate` nhận cả `COMPLETED` và `STOPPED`: Lịch tập và trang chi tiết phiên có nút “Đánh giá” cho buổi đã dừng. Buổi `CANCELLED` (bác sĩ khóa huấn luyện) không có nút vì BE từ chối.
 - Khi ca khám từ buổi bị dừng còn mở, BE chặn Mã phu bắt đầu buổi mới của ngựa; FE hiện nguyên thông báo lỗi của BE.
+
+## 34. Nối nhóm API xem chi tiết theo id (28/10/2026)
+
+FE gọi thêm 10 API, nâng số API dùng lên 169/181. Khi mở trang chi tiết, `hybridAdapter.ts · DETAILS` gọi API chi tiết để làm mới bản ghi lấy từ danh sách; API lỗi thì giữ bản ghi cũ. Mỗi API chỉ gọi khi vai trò được BE cho phép.
+
+- `GET /horses/{id}` (mọi vai trò trừ Kho), `GET /race-proposals/{id}` (HLV, Chủ ngựa), `GET /horses/{horseId}/registration-attachments` (QL CLB, Chủ ngựa), `GET /inventory/purchase-orders/{orderId}` (Kho).
+- QL CLB: `GET /users` (danh sách phân trang, size 500; thiếu thì quay về `/users/all`); `GET /users/{id}` kiểm tra trạng thái trước khi khóa / mở khóa; `GET /users/{id}/barn-zone` đọc khu hiện tại trước khi đổi khu Mã phu; `GET /billing/invoices/{invoiceId}` kiểm tra trước khi hủy hóa đơn (đã thanh toán / đã hủy / có giao dịch thì chặn).
+- Bác sĩ: `GET /diet-requests/{requestId}` kiểm tra đề xuất còn `PENDING` trước khi duyệt / từ chối.
+- HLV, Bác sĩ: `GET /nutrition-plans/{planId}` kiểm tra thực đơn còn `ACTIVE` trước khi sửa.
+
+Còn 12 API không gọi: `POST /tournaments`, `PUT /horses/{id}`, `DELETE /nutrition-plans/{planId}`, `PUT /inventory/stock-counts/{id}`, `PUT …/finish-early`, `GET /auth/confirm-account`, `GET /audit-logs`, và 5 API cũ / do VNPay gọi (xem §32).

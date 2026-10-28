@@ -31,8 +31,12 @@ export const nutritionApi = {
     return planId;
   },
 
+  getPlan: (planId: number) => beData<NutritionPlan>(be.get(`/nutrition-plans/${planId}`)),
+
   async update(planId: number, horseId: number, draft: PlanDraft) {
     validateDraft(draft);
+    const latest = await nutritionApi.getPlan(planId);
+    if (latest.status !== 'ACTIVE') throw new Error('Thực đơn này không còn hiệu lực, tải lại để xem thực đơn mới.');
     const plan = await beData<NutritionPlan>(be.put(`/nutrition-plans/${planId}`, toBody(horseId, draft)));
     changed();
     return plan;
