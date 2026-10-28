@@ -128,7 +128,7 @@ const toPhases = (phases: BePhase[] | null | undefined, weeks: number) => phases
 const currentPhaseOf = (phases: BePhase[] | null | undefined) => phases?.find((ph) => ph.current)?.phaseNo ?? 1;
 interface BePlanDetail { planId: number; planName: string; horseId: number | null; horseName: string; startDate: string; endDate: string; status: string; sessions: (BeMonitor & { sessionId: number; phaseNo?: number | null; sessionDate: string; activityType: string; status: string; notes: string | null; assignedToId: number | null; assignedToName: string | null; evaluationScore?: number | null; evaluationComment?: string | null; evaluatedBy?: string | null; evaluatedAt?: string | null })[] }
 interface BeSchedule extends BeMonitor { sessionId: number; sessionDate: string; activityType: string; status: string; planName: string; horseName: string; stallZone: string; evaluationScore?: number | null; evaluationComment?: string | null; evaluatedBy?: string | null; evaluatedAt?: string | null }
-interface BeTask { taskId: number; taskCode?: string | null; taskType: string; title?: string | null; status: string; taskDate?: string | null; scheduledTime?: string | null; dueDate?: string | null; instructions?: string | null; completedAt?: string | null; horseName: string; stallCode?: string | null; stallZone: string; groomName?: string | null; warningNote?: string | null; dietNote?: string | null; overdue?: boolean | null }
+interface BeTask { taskId: number; taskCode?: string | null; taskType: string; title?: string | null; status: string; taskDate?: string | null; scheduledTime?: string | null; dueDate?: string | null; instructions?: string | null; completedAt?: string | null; horseName: string; stallCode?: string | null; stallZone: string; groomName?: string | null; warningNote?: string | null; dietNote?: string | null; overdue?: boolean | null; lateMinutes?: number | null }
 interface BeCase { caseId: string; id?: number; horseId: number; horseName: string; source: string; issueType: string; severity: string; status: string; description: string; imageUrl?: string | null; reportedByName?: string | null; assignedVetName?: string | null; maxHeartRate: number; vetResult: string | null; createdAt: string; closedAt?: string | null }
 interface BeVacc { id: number; recordCode: string; horseId: number; horseName: string; kind?: string | null; typeName: string; category?: string | null; expectedDate: string; countdown?: string | null; cycleMonths?: number | null; statusCode?: string | null; status: string; doneAt?: string | null; doneByName?: string | null; lotNo?: string | null; itemName?: string | null; note?: string | null }
 const VACC_STATUS: Record<string, string> = { OVERDUE: 'DUE_SOON', DUE_SOON: 'DUE_SOON', SCHEDULED: 'SCHEDULED', POSTPONED: 'POSTPONED', SKIPPED: 'POSTPONED', DONE: 'DONE' };
@@ -188,6 +188,27 @@ const toHorse = (h: BeHorse, stalls: BeStall[], u: Me | null): Row => ({
   lock: h.isLocked ? { by: 'Bác sĩ thú y', at: '—', reason: 'Khóa từ hệ thống', review: '—' } : null,
   injuries: [], medicalHistory: [], raceResults: [], medicalDiet: null,
 });
+
+const isoToday = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+const loadTasks = async (dateIso?: string): Promise<Row[]> => {
+  const u = me();
+  if (u?.role !== 'Groom') return [];
+  const [rows, horses] = await Promise.all([orEmpty(data<BeTask[]>('/care-tasks/my-tasks', dateIso ? { date: dateIso } : undefined)), LOADERS.horses()]);
+  return rows.filter((t) => (t.status ?? '').toUpperCase() !== 'SKIPPED').map((t) => {
+    const [type, typeTitle] = TASK_TYPE[(t.taskType ?? '').toLowerCase()] ?? ['GROOM', t.taskType];
+    const h = byName(horses, t.horseName);
+    const time = t.scheduledTime ? t.scheduledTime.slice(0, 5) : hhmm(t.dueDate);
+    return {
+      id: String(t.taskId), code: t.taskCode ?? null, date: ddmmyyyy(t.taskDate ?? t.dueDate), groom: u.name, zone: zone(t.stallZone), type, title: t.title || typeTitle,
+      horseId: (h?.id as string) ?? null, horse: t.horseName, stall: t.stallCode ?? (h?.stall as string) ?? '—', time, sla: plusMinutes(time, CARE_SLA_MINUTES),
+      status: (t.status ?? '').toUpperCase() === 'COMPLETED' || (t.status ?? '').toUpperCase() === 'DONE' ? 'DONE' : 'TODO',
+      doneAt: t.completedAt ? hhmm(t.completedAt) : null, note: t.warningNote ?? '', photo: null,
+      instructions: t.instructions ? t.instructions.split(/\r?\n|;\s*/).map((line) => line.trim()).filter(Boolean) : [],
+      diet: t.dietNote ?? undefined, medicalDiet: /khẩu phần y tế/i.test(t.title ?? ''),
+      overdue: !!t.overdue, lateMinutes: t.lateMinutes ?? undefined,
+    };
+  });
+};
 
 const LOADERS: Record<string, () => Promise<Row[]>> = {
   async horses() {
@@ -258,25 +279,7 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
     }));
   },
 
-  async tasks() {
-    const u = me();
-    if (u?.role !== 'Groom') return [];
-    const [rows, horses] = await Promise.all([orEmpty(data<BeTask[]>('/care-tasks/my-tasks')), LOADERS.horses()]);
-    return rows.filter((t) => (t.status ?? '').toUpperCase() !== 'SKIPPED').map((t) => {
-      const [type, typeTitle] = TASK_TYPE[(t.taskType ?? '').toLowerCase()] ?? ['GROOM', t.taskType];
-      const h = byName(horses, t.horseName);
-      const time = t.scheduledTime ? t.scheduledTime.slice(0, 5) : hhmm(t.dueDate);
-      return {
-        id: String(t.taskId), code: t.taskCode ?? null, date: ddmmyyyy(t.taskDate ?? t.dueDate), groom: u.name, zone: zone(t.stallZone), type, title: t.title || typeTitle,
-        horseId: (h?.id as string) ?? null, horse: t.horseName, stall: t.stallCode ?? (h?.stall as string) ?? '—', time, sla: plusMinutes(time, CARE_SLA_MINUTES),
-        status: (t.status ?? '').toUpperCase() === 'COMPLETED' || (t.status ?? '').toUpperCase() === 'DONE' ? 'DONE' : 'TODO',
-        doneAt: t.completedAt ? hhmm(t.completedAt) : null, note: t.warningNote ?? '', photo: null,
-        instructions: t.instructions ? t.instructions.split(/\r?\n|;\s*/).map((line) => line.trim()).filter(Boolean) : [],
-        diet: t.dietNote ?? undefined, medicalDiet: /khẩu phần y tế/i.test(t.title ?? ''),
-        overdue: !!t.overdue,
-      };
-    });
-  },
+  tasks: () => loadTasks(),
 
   async vetCases() {
     if (me()?.role === 'HorseOwner') return [];
@@ -738,9 +741,10 @@ export const hybridAdapter: AxiosAdapter = async (config) => {
 
   const method = (config.method ?? 'get').toLowerCase();
   const params: Record<string, unknown> = { ...Object.fromEntries(url.searchParams), ...(config.params ?? {}) };
+  const taskDay = name === 'tasks' && typeof params.date === 'string' && /^\d{2}\/\d{2}\/\d{4}$/.test(params.date) ? params.date.split('/').reverse().join('-') : null;
   if (name === 'tasks') delete params.date;
   const body = typeof config.data === 'string' && config.data ? (JSON.parse(config.data) as Row) : ((config.data as Row) ?? {});
-  const rows = await rowsOf(name);
+  const rows = taskDay && taskDay !== isoToday() ? await loadTasks(taskDay) : await rowsOf(name);
 
   if (method === 'get') {
     if (id === undefined) return respond(config, 200, queryRows(rows, params));

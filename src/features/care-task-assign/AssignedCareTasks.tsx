@@ -33,12 +33,12 @@ export const AssignedCareTasks: React.FC<{ horseId?: string; refreshKey?: number
           <thead><tr><th>Giờ</th><th>Công việc</th>{!horseId && <th>Ngựa</th>}<th>Mã phu</th><th>Trạng thái</th><th style={{ textAlign: 'right' }}>Hoàn thành lúc</th></tr></thead>
           <tbody>
             {rows.map((t) => (
-              <tr key={t.taskId} className={t.overdue && t.status !== 'DONE' ? 'is-danger' : undefined}>
+              <tr key={t.taskId} className={(t.overdue && t.status !== 'DONE') || t.lateMinutes != null ? 'is-danger' : undefined}>
                 <td className="mono">{hhmm(t.scheduledTime)}</td>
                 <td><span className="strong">{t.title || TASK_LABEL[t.taskType] || t.taskType}</span>{t.instructions && <span className="sub">{t.instructions}</span>}</td>
                 {!horseId && <td>{t.horseName ?? '—'}{t.stallCode && <span className="sub mono">{t.stallCode}</span>}</td>}
                 <td>{t.groomName ?? '—'}</td>
-                <td><Badge tone={STATUS[t.status]?.[1] ?? 'neutral'}>{STATUS[t.status]?.[0] ?? t.status}</Badge>{t.overdue && t.status !== 'DONE' && <span className="sub" style={{ color: 'var(--danger-ink)' }}>Quá hạn</span>}</td>
+                <td><Badge tone={STATUS[t.status]?.[1] ?? 'neutral'}>{STATUS[t.status]?.[0] ?? t.status}</Badge>{t.lateMinutes != null ? <span className="sub" style={{ color: 'var(--danger-ink)' }}>Trễ {t.lateMinutes} phút</span> : t.overdue && t.status !== 'DONE' && <span className="sub" style={{ color: 'var(--danger-ink)' }}>Quá hạn</span>}</td>
                 <td className="mono" style={{ textAlign: 'right' }}>{hhmm(t.completedAt)}</td>
               </tr>
             ))}

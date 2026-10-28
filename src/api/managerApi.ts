@@ -101,19 +101,24 @@ const beUserAction = async (url: string, body: Record<string, string>): Promise<
 const beUserStatus = async (id: string) => (await beData<{ status?: string | null; isActive?: boolean }>(be.get(`/users/${id}`)));
 const toManaged = ({ password: _pw, fullname, ...u }: UserRecord): ManagedUser => ({ ...u, fullName: fullname });
 
-interface BeOverdueTask { taskCode?: string | null; title?: string | null; taskType: string; horseName?: string | null; groomName?: string | null; taskDate?: string | null; scheduledTime?: string | null }
+interface BeOverdueTask { taskCode?: string | null; title?: string | null; taskType: string; horseName?: string | null; groomName?: string | null; taskDate?: string | null; scheduledTime?: string | null; status?: string | null; completedAt?: string | null; lateMinutes?: number | null }
 const lateBy = (task: BeOverdueTask) => {
-  if (!task.taskDate || !task.scheduledTime) return '—';
-  const minutes = Math.max(0, Math.round((Date.now() - new Date(`${task.taskDate}T${task.scheduledTime}`).getTime()) / 60000));
+  if (task.lateMinutes == null && (!task.taskDate || !task.scheduledTime)) return '—';
+  const minutes = task.lateMinutes ?? Math.max(0, Math.round((Date.now() - new Date(`${task.taskDate}T${task.scheduledTime}`).getTime()) / 60000));
   return minutes >= 60 ? `+${Math.floor(minutes / 60)} giờ ${String(minutes % 60).padStart(2, '0')}` : `+${minutes} phút`;
 };
 const loadOverdueTasks = async () => {
   if (!USE_BACKEND) return null;
-  const rows = await beData<BeOverdueTask[]>(be.get('/care-tasks/overdue')).catch(() => null);
-  return rows?.map((task) => ({
+  const [rows, today] = await Promise.all([
+    beData<BeOverdueTask[]>(be.get('/care-tasks/overdue')).catch(() => null),
+    beData<BeOverdueTask[]>(be.get('/care-tasks/overdue', { params: { scope: 'today' } })).catch(() => null),
+  ]);
+  const toLate = (task: BeOverdueTask) => ({
     title: `${task.title || task.taskType}${task.horseName ? ` — ${task.horseName}` : ''}`,
     groom: task.groomName ?? '—', due: task.scheduledTime?.slice(0, 5) ?? '—', late: lateBy(task),
-  })) ?? null;
+    doneAt: task.completedAt ? task.completedAt.slice(11, 16) : undefined,
+  });
+  return rows ? { open: rows.map(toLate), today: today ? today.length : rows.length } : null;
 };
 
 interface BeHorseLite { horseId: number; horseName: string; approvalStatus?: string | null; stallId?: number | null; createdAt?: string | null; assignedTrainerName?: string | null }
@@ -209,10 +214,10 @@ export const managerApi = {
     return {
       ...dash,
       ...(USE_BACKEND ? { vetCost: vetCostByMonth(protocols) } : {}),
-      ...(overdueTasks ? { lateTasks: overdueTasks.slice(0, 4), moreLateTasks: Math.max(0, overdueTasks.length - 4) } : {}),
+      ...(overdueTasks ? { lateTasks: overdueTasks.open.slice(0, 4), moreLateTasks: Math.max(0, overdueTasks.open.length - 4) } : {}),
       kpi: {
         ...dash.kpi,
-        ...(overdueTasks ? { lateTasks: overdueTasks.length, lateTasksToday: overdueTasks.length } : {}),
+        ...(overdueTasks ? { lateTasks: overdueTasks.open.length, lateTasksToday: overdueTasks.today } : {}),
         pendingRegs: pending.length,
         oldestPendingDays: Math.max(0, ...pending.map((r) => r.waitingDays)),
         medicalWatch: protocols.filter((p) => p.state === 'REQUIRES_VET_REVIEW' || p.state === 'WAITING_STOCK_CHECK').length,

@@ -6,7 +6,7 @@ export interface CareTaskDraft { groomId: string; taskType: string; title: strin
 export type AssignedStatus = 'TODO' | 'IN_PROGRESS' | 'DONE' | 'SKIPPED';
 export interface AssignedTask {
   taskId: number; taskCode?: string | null; taskType: string; title?: string | null; status: AssignedStatus; taskDate: string; scheduledTime?: string | null;
-  instructions?: string | null; completedAt?: string | null; horseId?: number | null; horseName?: string | null; stallCode?: string | null; groomName?: string | null; overdue?: boolean | null;
+  instructions?: string | null; completedAt?: string | null; horseId?: number | null; horseName?: string | null; stallCode?: string | null; groomName?: string | null; overdue?: boolean | null; lateMinutes?: number | null;
 }
 
 export const TASK_TYPES: [string, string][] = [

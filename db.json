@@ -6490,6 +6490,25 @@
       "note": "",
       "photo": null,
       "instructions": []
+    },
+    {
+      "id": "TK-0324",
+      "date": "04/10/2026",
+      "groom": "Phạm Văn Toàn",
+      "zone": "Khu A",
+      "type": "FEED",
+      "title": "Cho ăn sáng",
+      "horseId": "h-galaxy",
+      "horse": "Galaxy",
+      "stall": "A-01",
+      "time": "06:00",
+      "sla": "06:45",
+      "status": "TODO",
+      "doneAt": null,
+      "note": "",
+      "photo": null,
+      "instructions": [],
+      "diet": "3 kg cám + 2 kg cỏ khô"
     }
   ],
   "payments": [

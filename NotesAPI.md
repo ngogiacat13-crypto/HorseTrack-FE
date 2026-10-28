@@ -834,3 +834,11 @@ Còn 12 API không gọi: `POST /tournaments`, `PUT /horses/{id}`, `DELETE /nutr
 - BE gửi email cho HLV khi Mã phu hoàn thành việc (trừ việc cho ăn tự sinh) và server chạy giờ Việt Nam — FE không cần đổi.
 
 Swagger server giờ có 182 API; FE gọi 170.
+
+## 36. BE `6591e02`: việc theo ngày, phút trễ, thống kê trễ trong ngày (29/10/2026)
+
+- `GET /care-tasks/my-tasks?date=yyyy-MM-dd`: trang “Công việc hôm nay” của Mã phu có ô chọn ngày (nút “Hôm nay” để quay lại). Ngày khác hôm nay thì `hybridAdapter` gọi thẳng `my-tasks?date=` (không dùng bộ nhớ đệm của hôm nay).
+- BE chặn hoàn thành việc của ngày sau: FE hiện nhãn “NGÀY SAU”, ẩn ô hoàn thành, báo “chỉ xem trước”; `groomApi.completeTask` cũng chặn trước khi gọi API.
+- `lateMinutes` (phút trễ so với giờ hẹn khi quá SLA): thẻ việc của Mã phu tính “trễ X phút SLA” từ trường này; bảng việc trễ và bảng “Việc chăm sóc đã giao” của QL CLB / HLV hiện “Trễ X phút”.
+- `GET /care-tasks/overdue?scope=today`: thẻ “Việc trễ SLA” trên trang chủ QL CLB hiện số việc trễ trong ngày (kể cả đã hoàn thành trễ) ở dòng “+N hôm nay”; danh sách vẫn là việc trễ đang mở.
+- Lập / sửa khẩu phần giờ gửi việc cho ăn cả hôm nay và ngày mai — Mã phu xem trước bằng ô chọn ngày.

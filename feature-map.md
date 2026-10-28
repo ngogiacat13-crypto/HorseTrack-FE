@@ -49,7 +49,7 @@ Quy ước `data-testid`: menu trái `nav-<đường dẫn bỏ / đầu, / đ�
 | Bác sĩ · Thuốc | `src/pages/vet/VetMedicines/` | `/vet/medicines` | `nav-vet-medicines` |
 | Bác sĩ · Tiêm phòng | `src/pages/vet/VetVaccinations/` | `/vet/vaccinations` | `nav-vet-vaccinations` |
 | Bác sĩ · Khám trước thi đấu | `src/pages/vet/VetRaceExams/` | `/vet/race-exams` | `nav-vet-race-exams` |
-| Mã phu · Việc hôm nay | `src/pages/groom/GroomTodayTasks/` | `/groom` · hộp phân công khu chờ xác nhận | `nav-groom`, `assignment-inbox`, `assignment-accept-<id>`, `assignment-reject-<id>`, `assignment-reject-dialog`, `assignment-reject-reason` |
+| Mã phu · Việc hôm nay | `src/pages/groom/GroomTodayTasks/` | `/groom` · hộp phân công khu chờ xác nhận · chọn ngày xem việc (`my-tasks?date=`), việc ngày sau chỉ xem trước, không hoàn thành được | `nav-groom`, `task-day-input`, `task-day-today`, `task-day-preview`, `task-<mã>`, `task-done-<mã>`, `assignment-inbox`, `assignment-accept-<id>`, `assignment-reject-<id>`, `assignment-reject-dialog`, `assignment-reject-reason` |
 | Mã phu · Chuồng phụ trách | `src/pages/groom/GroomStable/` | `/groom/stable` | `nav-groom-stable` |
 | Mã phu · Phiên tập | `src/pages/groom/GroomSessions/` | `/groom/sessions` | `nav-groom-sessions` |
 | Mã phu · Thực hiện phiên | `src/pages/groom/GroomSessionRun/` | `/groom/sessions/:id` | `back-btn`, `confirm-session-btn`, `start-session-btn`, `session-adjusted` |
@@ -96,6 +96,7 @@ Quy ước `data-testid`: menu trái `nav-<đường dẫn bỏ / đầu, / đ�
 | `scenarios/protocol-add-items.spec.ts` | Bác sĩ thêm thuốc vào phác đồ đủ hàng → tạo phiên bản 2 gửi kho kiểm tồn; số lượng < 1 bị chặn; có nút ở phác đồ thiếu hàng, không có khi đang điều trị; đang điều trị thì bổ sung thuốc kèm lý do (không tạo phiên bản); bác sĩ hủy phác đồ chờ kiểm tồn phải ghi lý do ≥ 10 ký tự; kho thấy bản bị thay ở tab “Bác sĩ đã đổi / hủy” và bảng thay đổi giữa 2 phiên bản |
 | `scenarios/session-stop-evaluate.spec.ts` | Phiên HLV dừng và gửi bác sĩ kết thúc ngay (không còn “chờ bác sĩ”), HLV đánh giá được phiên đã dừng |
 | `scenarios/nutrition-start-date.spec.ts` | Thực đơn mới không bắt đầu ở ngày đã qua; sửa thực đơn đang chạy giữ được ngày bắt đầu cũ nhưng không lùi về quá khứ |
+| `scenarios/groom-task-day.spec.ts` | Mã phu chọn ngày mai xem trước việc (nhãn “NGÀY SAU”, không có nút hoàn thành), bấm “Hôm nay” quay lại việc hôm nay |
 | `scenarios/staff-email.spec.ts` | QL CLB có menu Nhật ký email; link xác nhận thiếu mã báo lỗi; trang đăng nhập hiện kết quả xác nhận tài khoản |
 
 ## Kịch bản chạy với backend thật (`scenarios-live/`, lệnh `npm run scenarios:live`)
