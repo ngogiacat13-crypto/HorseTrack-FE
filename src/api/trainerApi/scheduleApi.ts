@@ -71,7 +71,8 @@ export const scheduleApi = {
 
   async evaluateSession(s: TrainingSession, score: number, comment: string, actor: Actor) {
     await getMyHorse(s.horseId, actor);
-    if (s.status !== 'COMPLETED') throw new Error('Chỉ đánh giá được phiên đã hoàn thành.');
+    if (s.status !== 'COMPLETED' && (s.status !== 'STOPPED' || s.cancelled)) throw new Error('Chỉ đánh giá được phiên đã kết thúc (hoàn thành hoặc dừng giữa chừng).');
+    if (s.evaluation) throw new Error('Phiên này đã được đánh giá.');
     if (!Number.isInteger(score) || score < 1 || score > 10) throw new Error('Điểm phong độ phải từ 1 đến 10.');
     const evaluation = { score, comment: comment.trim(), by: actor.name, at: DEMO_NOW.short };
     const { data } = await http.patch<TrainingSession>(`/trainingSessions/${s.id}`, { evaluation });

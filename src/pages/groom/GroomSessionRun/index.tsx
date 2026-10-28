@@ -45,16 +45,9 @@ export const GroomSessionRun: React.FC = () => {
           </div>
         </div>
       )}
-      {s.status === 'WAITING_VET' && (
-        <Callout tone="danger" title="HLV trưởng đã dừng phiên và gửi bác sĩ" style={{ marginBottom: 16 }} testId="session-waiting-vet">
-          {d?.note ? <>{d.note} </> : null}
-          {d?.caseId ? <>Ca khám <span className="ht-mono">{d.caseId}</span>. </> : null}
-          Đưa ngựa về chuồng. Không nhập thêm chỉ số cho đến khi bác sĩ xử lý ca.
-        </Callout>
-      )}
       {s.status === 'STOPPED' && (
         <Callout tone="danger" title="HLV trưởng đã dừng phiên" style={{ marginBottom: 16 }}>
-          {d?.note ?? 'Phiên đã dừng.'}{d?.caseId && <> Đã chuyển Bác sĩ thú y — ca <span className="ht-mono">{d.caseId}</span>.</>} Đưa ngựa về chuồng, không nhập thêm chỉ số.
+          {d?.note ?? 'Phiên đã dừng.'}{d?.caseId && <> Đã chuyển Bác sĩ thú y — ca <span className="ht-mono">{d.caseId}</span>. Chưa bắt đầu được buổi tập mới của ngựa cho đến khi bác sĩ xử lý ca.</>} Đưa ngựa về chuồng, không nhập thêm chỉ số.
         </Callout>
       )}
       {(s.status === 'RESUMED' || s.status === 'IN_PROGRESS') && d?.type === 'ADJUST_CONTINUE' && d.adjustment && (

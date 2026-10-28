@@ -87,7 +87,7 @@ const HEALTH: Record<string, string> = { healthy: 'HEALTHY', injured: 'INJURED',
 const health = (h?: string | null) => HEALTH[(h ?? '').toLowerCase()] ?? 'HEALTHY';
 const sex = (g?: string | null) => (['mare', 'filly'].includes((g ?? '').toLowerCase()) ? '♀' : '♂');
 const CLEAN: Record<string, string> = { clean: 'CLEAN', 'needs cleaning': 'NEEDS_CLEANING', needs_cleaning: 'NEEDS_CLEANING', 'under maintenance': 'MAINTENANCE', maintenance: 'MAINTENANCE' };
-const SESSION: Record<string, string> = { PENDING: 'SCHEDULED', CONFIRMED: 'SCHEDULED', COMPLETED: 'COMPLETED', CANCELLED: 'STOPPED', STOPPED: 'STOPPED', WAITING_VET: 'WAITING_VET', IN_PROGRESS: 'IN_PROGRESS', PAUSED: 'PAUSED_PENDING_TRAINER', PAUSED_PENDING_TRAINER: 'PAUSED_PENDING_TRAINER' };
+const SESSION: Record<string, string> = { PENDING: 'SCHEDULED', CONFIRMED: 'SCHEDULED', COMPLETED: 'COMPLETED', CANCELLED: 'STOPPED', STOPPED: 'STOPPED', WAITING_VET: 'STOPPED', IN_PROGRESS: 'IN_PROGRESS', PAUSED: 'PAUSED_PENDING_TRAINER', PAUSED_PENDING_TRAINER: 'PAUSED_PENDING_TRAINER' };
 const SERVER_DEFAULT_MAX_HR = 180;
 const unknownPhase = (weeks: number) => ({ no: 1, name: 'Toàn giáo án', weeks, intensity: 'Vừa', distanceM: 0, sessionsPerWeek: 0, hrLimit: SERVER_DEFAULT_MAX_HR, estimated: true });
 const planMeta = (goal: string) => {
@@ -222,7 +222,7 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
         id: String(s.sessionId), horseId: plans[i].horseId, horseName: d!.horseName, planId: String(d!.planId), phaseNo: s.phaseNo ?? 1, label: s.activityType,
         date: ddmmyyyy(s.sessionDate), time: hhmm(s.sessionDate), groom: s.assignedToName ?? '—', groomId: s.assignedToId ? String(s.assignedToId) : null,
         track: (s.notes ?? '').split(' · Ghi nhận:')[0] || '—', metrics: (s.notes ?? '').split(' · Ghi nhận:')[1]?.split(',').map((m) => m.trim()).filter(Boolean),
-        status: SESSION[s.status?.toUpperCase()] ?? 'SCHEDULED', confirmed: s.status?.toUpperCase() === 'CONFIRMED', ...monitor(s), decision: decisionFrom(s),
+        status: SESSION[s.status?.toUpperCase()] ?? 'SCHEDULED', confirmed: s.status?.toUpperCase() === 'CONFIRMED', cancelled: s.status?.toUpperCase() === 'CANCELLED', ...monitor(s), decision: decisionFrom(s),
         evaluation: s.evaluationScore ? { score: s.evaluationScore, comment: s.evaluationComment ?? '', by: s.evaluatedBy ?? 'HLV', at: s.evaluatedAt ?? '' } : null,
       })));
     }
@@ -233,7 +233,7 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
       id: String(s.sessionId), horseId: (byName(horses, s.horseName)?.id as string) ?? '', horseName: s.horseName,
       planId: (plans.find((p) => p.name === s.planName)?.id as string) ?? '', phaseNo: 1, label: s.activityType,
       date: ddmmyyyy(s.sessionDate), time: hhmm(s.sessionDate), groom: u.role === 'Groom' ? u.name : '—', track: zone(s.stallZone),
-      status: SESSION[s.status?.toUpperCase()] ?? 'SCHEDULED', confirmed: s.status?.toUpperCase() === 'CONFIRMED', ...monitor(s), decision: decisionFrom(s),
+      status: SESSION[s.status?.toUpperCase()] ?? 'SCHEDULED', confirmed: s.status?.toUpperCase() === 'CONFIRMED', cancelled: s.status?.toUpperCase() === 'CANCELLED', ...monitor(s), decision: decisionFrom(s),
       evaluation: s.evaluationScore ? { score: s.evaluationScore, comment: s.evaluationComment ?? '', by: s.evaluatedBy ?? 'HLV', at: s.evaluatedAt ?? '' } : null,
     }));
   },
@@ -441,7 +441,7 @@ const ownerProgress = async () => {
     const sessions: Row[] = (p.sessions ?? []).map((x) => ({
       id: String(x.sessionId), horseId: h.id, horseName: h.name, planId: String(p.planId), phaseNo: 1, label: x.planName ? `${x.activityType} · ${x.planName}` : x.activityType,
       date: ddmmyyyy(x.sessionDate), time: hhmm(x.sessionDate), groom: x.assignedToName ?? '—', track: (x.notes ?? '').split(' · Ghi nhận:')[0] || '—',
-      status: SESSION[x.status?.toUpperCase()] ?? 'SCHEDULED', confirmed: x.status?.toUpperCase() === 'CONFIRMED', ...monitor(x), decision: decisionFrom(x),
+      status: SESSION[x.status?.toUpperCase()] ?? 'SCHEDULED', confirmed: x.status?.toUpperCase() === 'CONFIRMED', cancelled: x.status?.toUpperCase() === 'CANCELLED', ...monitor(x), decision: decisionFrom(x),
       ...(x.late ? { pausedReason: 'Nhân viên chưa xác nhận, buổi tập đã quá giờ' } : {}),
       evaluation: x.evaluationScore ? { score: x.evaluationScore, comment: x.evaluationComment ?? '', by: x.evaluatedBy ?? 'HLV', at: x.evaluatedAt ?? '' } : null,
     }));

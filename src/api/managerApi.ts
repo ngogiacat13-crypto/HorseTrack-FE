@@ -122,7 +122,7 @@ type SessionTone = 'success' | 'danger' | 'info' | 'neutral' | 'warning';
 const SESSION_LABEL: Record<string, [string, SessionTone]> = {
   PENDING: ['Chờ Mã phu xác nhận', 'neutral'], CONFIRMED: ['Sắp diễn ra', 'info'], IN_PROGRESS: ['Đang tập', 'info'],
   PAUSED: ['Tạm dừng — chờ HLV', 'warning'], PAUSED_PENDING_TRAINER: ['Tạm dừng — chờ HLV', 'warning'],
-  WAITING_VET: ['Đã dừng — chờ Bác sĩ', 'danger'], STOPPED: ['Đã dừng', 'danger'], COMPLETED: ['Hoàn thành', 'success'], CANCELLED: ['Đã hủy', 'neutral'],
+  WAITING_VET: ['Đã dừng', 'danger'], STOPPED: ['Đã dừng', 'danger'], COMPLETED: ['Hoàn thành', 'success'], CANCELLED: ['Đã hủy', 'neutral'],
 };
 const WEEKDAY = ['Chủ nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
 const localIso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;

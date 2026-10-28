@@ -35,8 +35,8 @@ Quy ước `data-testid`: menu trái `nav-<đường dẫn bỏ / đầu, / đ�
 | HLV · Hồ sơ ngựa | `src/pages/trainer/TrainerHorseRecord/` | `/trainer/horses/:id` | `back-btn`, `care-task-btn` |
 | HLV · Giáo án | `src/pages/trainer/TrainerPlans/` | `/trainer/plans` · “Hủy” chỉ khi chưa bắt đầu · “Chạy lại” khi tạm dừng và bác sĩ đã đóng ca | `nav-trainer-plans`, `cancel-plan-<mã>`, `resume-plan-<mã>`, `plan-wait-vet-<mã>`, `cancel-plan-dialog`, `cancel-plan-reason` (ô lý do), `resume-plan-dialog` |
 | HLV · Tạo giáo án | `src/pages/trainer/TrainerPlanCreate/` | `/trainer/plans/new` · đúng 1 giai đoạn, không thêm giai đoạn thứ hai | `back-btn`, `plan-single-phase` |
-| HLV · Lịch tập + phân công phiên | `src/pages/trainer/TrainerSchedule/` | `/trainer/schedule` · nút “Phân công phiên tập” | `nav-trainer-schedule`, `assign-session-dialog`, `assign-zone-select`, `assign-horse-select`, `assign-date-input`, `assign-time-input`, `assign-groom-select`, `assign-track-input` |
-| HLV · Chi tiết phiên tập | `src/pages/trainer/TrainerSessionDetail/` | `/trainer/sessions/:id` | `back-btn`, `session-waiting-vet` (đã gửi bác sĩ) |
+| HLV · Lịch tập + phân công phiên | `src/pages/trainer/TrainerSchedule/` | `/trainer/schedule` · nút “Phân công phiên tập” | `nav-trainer-schedule`, `assign-session-dialog`, `assign-zone-select`, `assign-horse-select`, `assign-date-input`, `assign-time-input`, `assign-groom-select`, `assign-track-input`, `evaluate-session-<mã>` (phiên hoàn thành hoặc đã dừng) |
+| HLV · Chi tiết phiên tập | `src/pages/trainer/TrainerSessionDetail/` | `/trainer/sessions/:id` · phiên dừng giữa chừng kết thúc ngay (STOPPED), HLV đánh giá được | `back-btn`, `session-sent-vet` (đã gửi ca bác sĩ), `session-evaluate-btn` |
 | HLV · Giải đua & đề xuất | `src/pages/trainer/TrainerRaces/` | `/trainer/races` | `nav-trainer-races` |
 | HLV · Tạo đề xuất thi đấu | `src/pages/trainer/TrainerProposalCreate/` | `/trainer/races/new` | `back-btn` |
 | HLV · Sơ đồ chuồng | `src/pages/trainer/StableMap/` | `/trainer/stable` | `nav-trainer-stable` |
@@ -52,7 +52,7 @@ Quy ước `data-testid`: menu trái `nav-<đường dẫn bỏ / đầu, / đ�
 | Mã phu · Việc hôm nay | `src/pages/groom/GroomTodayTasks/` | `/groom` · hộp phân công khu chờ xác nhận | `nav-groom`, `assignment-inbox`, `assignment-accept-<id>`, `assignment-reject-<id>`, `assignment-reject-dialog`, `assignment-reject-reason` |
 | Mã phu · Chuồng phụ trách | `src/pages/groom/GroomStable/` | `/groom/stable` | `nav-groom-stable` |
 | Mã phu · Phiên tập | `src/pages/groom/GroomSessions/` | `/groom/sessions` | `nav-groom-sessions` |
-| Mã phu · Thực hiện phiên | `src/pages/groom/GroomSessionRun/` | `/groom/sessions/:id` | `back-btn`, `confirm-session-btn`, `start-session-btn`, `session-waiting-vet`, `session-adjusted` |
+| Mã phu · Thực hiện phiên | `src/pages/groom/GroomSessionRun/` | `/groom/sessions/:id` | `back-btn`, `confirm-session-btn`, `start-session-btn`, `session-adjusted` |
 | Mã phu · Báo sự cố | `src/pages/groom/GroomIncidents/` | `/groom/incidents` | `nav-groom-incidents` |
 | Mã phu · Yêu cầu vật tư | `src/pages/groom/GroomRequests/` | `/groom/requests` | `nav-groom-requests`, `cancel-requisition-btn` |
 | Chủ ngựa · Ngựa của tôi | `src/pages/owner/OwnerHorses/` | `/owner` | `nav-owner` |
@@ -94,6 +94,7 @@ Quy ước `data-testid`: menu trái `nav-<đường dẫn bỏ / đầu, / đ�
 | `scenarios/layout-alignment.spec.ts` | Mọi trang menu + trang tạo (giáo án, đề xuất, phác đồ, hồ sơ ngựa, hồ sơ cá nhân, đổi mật khẩu, đăng ký) của 6 vai trò ở 1280px và 1920px: ô nhập cùng hàng phải thẳng hàng, ô chọn không bị cắt chữ, trang không cuộn ngang |
 | `scenarios/plan-cancel-resume.spec.ts` | HLV hủy giáo án phải ghi lý do, giáo án chuyển sang Lịch sử; giáo án tạm dừng có nút “Chạy lại” |
 | `scenarios/protocol-add-items.spec.ts` | Bác sĩ thêm thuốc vào phác đồ đủ hàng → tạo phiên bản 2 gửi kho kiểm tồn; số lượng < 1 bị chặn; có nút ở phác đồ thiếu hàng, không có khi đang điều trị; đang điều trị thì bổ sung thuốc kèm lý do (không tạo phiên bản); bác sĩ hủy phác đồ chờ kiểm tồn phải ghi lý do ≥ 10 ký tự; kho thấy bản bị thay ở tab “Bác sĩ đã đổi / hủy” và bảng thay đổi giữa 2 phiên bản |
+| `scenarios/session-stop-evaluate.spec.ts` | Phiên HLV dừng và gửi bác sĩ kết thúc ngay (không còn “chờ bác sĩ”), HLV đánh giá được phiên đã dừng |
 | `scenarios/staff-email.spec.ts` | QL CLB có menu Nhật ký email; link xác nhận thiếu mã báo lỗi; trang đăng nhập hiện kết quả xác nhận tài khoản |
 
 ## Kịch bản chạy với backend thật (`scenarios-live/`, lệnh `npm run scenarios:live`)

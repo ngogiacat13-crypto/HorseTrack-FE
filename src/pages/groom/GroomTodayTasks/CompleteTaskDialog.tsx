@@ -3,17 +3,15 @@ import { CareTask, groomApi } from '../../../api/groomApi';
 import { useActor } from '../../../auth/AuthContext';
 import { useAction } from '../../../hooks/useAction';
 import { Callout, Dialog } from '../../../components/ui/Ht';
-import { PhotoPicker } from '../../../components/groom/PhotoPicker';
 import { taskState } from './taskState';
 
 export const CompleteTaskDialog: React.FC<{ task: CareTask; onClose: () => void; onDone: () => void }> = ({ task: t, onClose, onDone }) => {
   const actor = useActor();
   const { busy, error, run } = useAction();
   const [note, setNote] = useState('');
-  const [photo, setPhoto] = useState<string | null>(null);
   const late = taskState(t) === 'late';
   const save = async () => {
-    if (await run(() => groomApi.completeTask(t, { note, photo }, actor), late ? `Đã hoàn thành ${t.title} · trễ SLA, đã báo Quản lý CLB.` : `Đã hoàn thành ${t.title}.`)) onDone();
+    if (await run(() => groomApi.completeTask(t, { note, photo: null }, actor), late ? `Đã hoàn thành ${t.title} · trễ SLA, đã báo Quản lý CLB.` : `Đã hoàn thành ${t.title}.`)) onDone();
   };
   return (
     <Dialog open onClose={onClose} icon="check" tone="brand" busy={busy} busyLabel="Đang lưu…" width={520}
@@ -26,7 +24,6 @@ export const CompleteTaskDialog: React.FC<{ task: CareTask; onClose: () => void;
           <label className="ht-label" htmlFor="tk-note">Ghi chú{late && <span className="ht-req">*</span>}</label>
           <textarea id="tk-note" className="ht-textarea" style={{ minHeight: 64 }} value={note} onChange={(e) => setNote(e.target.value)} placeholder="VD: Ngựa ăn hết khẩu phần, nước uống đầy đủ." />
         </div>
-        <PhotoPicker value={photo} onChange={setPhoto} />
       </div>
     </Dialog>
   );

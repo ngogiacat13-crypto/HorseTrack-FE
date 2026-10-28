@@ -5,7 +5,7 @@ export const HEALTH_LABEL: Record<HealthStatus, [string, 'success' | 'warning' |
 };
 export const SESSION_LABEL: Record<SessionStatus, [string, 'success' | 'warning' | 'danger' | 'info' | 'neutral']> = {
   SCHEDULED: ['Chưa bắt đầu', 'neutral'], IN_PROGRESS: ['Đang diễn ra', 'info'], PAUSED_PENDING_TRAINER: ['Tạm dừng — chờ HLV', 'warning'],
-  RESUMED: ['Tiếp tục (đã điều chỉnh)', 'info'], WAITING_VET: ['Đã dừng — chờ bác sĩ', 'danger'], STOPPED: ['Đã dừng', 'danger'], COMPLETED: ['Hoàn thành', 'success'],
+  RESUMED: ['Tiếp tục (đã điều chỉnh)', 'info'], STOPPED: ['Đã dừng', 'danger'], COMPLETED: ['Hoàn thành', 'success'],
 };
 export const PROPOSAL_LABEL: Record<ProposalStatus, [string, 'success' | 'warning' | 'danger' | 'info' | 'neutral' | 'brand']> = {
   PROPOSED: ['Mới tạo', 'neutral'], WAITING_VET_EXAM: ['Chờ BS khám', 'info'], VET_FAILED: ['Không đạt khám', 'danger'],
