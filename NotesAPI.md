@@ -825,3 +825,12 @@ FE gọi thêm 10 API, nâng số API dùng lên 169/181. Khi mở trang chi ti�
 - HLV, Bác sĩ: `GET /nutrition-plans/{planId}` kiểm tra thực đơn còn `ACTIVE` trước khi sửa.
 
 Còn 12 API không gọi: `POST /tournaments`, `PUT /horses/{id}`, `DELETE /nutrition-plans/{planId}`, `PUT /inventory/stock-counts/{id}`, `PUT …/finish-early`, `GET /auth/confirm-account`, `GET /audit-logs`, và 5 API cũ / do VNPay gọi (xem §32).
+
+## 35. BE `5aec6cb`: việc chăm sóc đã giao, ngày bắt đầu khẩu phần (28/10/2026)
+
+- `GET /care-tasks/assigned?date=&status=` (HLV: ngựa mình phụ trách; QL CLB: mọi ngựa): bảng “Việc chăm sóc đã giao” (`features/care-task-assign/AssignedCareTasks.tsx`) ở tab “Việc chăm sóc” trong hồ sơ ngựa của HLV (lọc theo ngựa, tự tải lại sau khi giao việc) và ở bảng điều khiển QL CLB. Lọc theo ngày và trạng thái, hiện giờ hoàn thành.
+- Giao việc chăm sóc: bỏ loại “Cho ăn” (việc cho ăn sinh từ thực đơn dinh dưỡng) và “Cho thuốc” (thuốc đi theo phác đồ). Việc cũ loại này vẫn hiện đúng nhãn.
+- Khẩu phần: BE chặn ngày bắt đầu ở quá khứ. FE chặn trước: tạo mới thì ô ngày nhỏ nhất là hôm nay; sửa thực đơn đang chạy thì giữ được ngày bắt đầu cũ, đổi ngày thì không được lùi về quá khứ.
+- BE gửi email cho HLV khi Mã phu hoàn thành việc (trừ việc cho ăn tự sinh) và server chạy giờ Việt Nam — FE không cần đổi.
+
+Swagger server giờ có 182 API; FE gọi 170.
