@@ -316,6 +316,9 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
       vetNote: r.vetNote ?? undefined,
       decidedBy: r.decidedByName ?? undefined,
       decidedAt: r.decidedAt ? ddmmyyyy(r.decidedAt as string) : undefined,
+      approverRole: r.approverRole ?? null,
+      approverName: r.approverName ?? null,
+      canDecide: r.canDecide ?? null,
     }));
   },
 

@@ -64,7 +64,7 @@ export const TrainerHorseRecord: React.FC = () => {
           <Tabs.Tab value="races" count={proposals.length}>Thi đấu</Tabs.Tab>
           {USE_BACKEND && <Tabs.Tab value="care">Việc chăm sóc</Tabs.Tab>}
         </Tabs.List>
-        <Tabs.Panel value="overview"><OverviewTab horse={horse} plan={plan} recent={history.slice(0, 4)} avg={avg} vaccinations={vaccinations} block={block} /></Tabs.Panel>
+        <Tabs.Panel value="overview"><OverviewTab horse={horse} plan={plan} recent={history.slice(0, 4)} avg={avg} vaccinations={vaccinations} block={block} feedRequests={data.feedRequests} onChanged={reload} /></Tabs.Panel>
         <Tabs.Panel value="health"><HealthTab horse={horse} /></Tabs.Panel>
         <Tabs.Panel value="training"><TrainingTab history={history} plans={plans} scored={scored.length} avg={avg} /></Tabs.Panel>
         <Tabs.Panel value="races"><RacesTab proposals={proposals} tournaments={tournaments} /></Tabs.Panel>

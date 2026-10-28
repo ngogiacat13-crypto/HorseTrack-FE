@@ -8,6 +8,7 @@ import { Badge, PageHeader, Panel, Tabs, Timeline } from '../../../components/ui
 import { HorseBadges, LoadState } from '../../../components/trainer/TrainerParts';
 import { useDebounce } from '../../../hooks/useDebounce';
 import { PendingAssignments } from '../../../features/assignment-confirm/PendingAssignments';
+import { USE_BACKEND } from '../../../api/beClient';
 
 type HealthTab = 'ALL' | HealthStatus;
 
@@ -136,6 +137,18 @@ export const TrainerHerdOverview: React.FC = () => {
             </ul>
           </Panel>
 
+          {USE_BACKEND && (
+            <Panel as="h3" title="Đề nghị điều chỉnh khẩu phần" right={<Badge tone="neutral" plain style={{ fontFamily: 'var(--font-mono)' }}>BR_03</Badge>}>
+              <div className="ht-panel__body" style={{ display: 'grid', gap: 10 }}>
+                {data.feedRequests.filter((f) => f.status === 'PENDING' && f.canDecide === true).map((f) => (
+                  <Link key={f.id} to={`/trainer/horses/${f.horseId}`} className="ht-quote" data-testid={`diet-request-${f.id}`} style={{ color: 'inherit', textDecoration: 'none', display: 'block' }}>
+                    <b>{f.horse}</b> · {f.item}<div style={{ fontSize: 12, color: 'var(--muted)' }}>{f.by} · {f.at}</div>
+                  </Link>
+                ))}
+                {data.feedRequests.every((f) => f.status !== 'PENDING' || f.canDecide !== true) && <p style={{ margin: 0, fontSize: 13, color: 'var(--muted)' }}>Không có đề nghị chờ bạn duyệt. Ngựa đang khóa tập do bác sĩ duyệt.</p>}
+              </div>
+            </Panel>
+          )}
           <Panel as="h3" title="Lịch tiêm phòng 7 ngày tới" right={<span className="ht-mono" style={{ fontSize: 12, color: 'var(--muted)' }}>chỉ xem</span>}>
             <div className="ht-panel__body">
               <Timeline items={dueSoon.map((v) => ({
