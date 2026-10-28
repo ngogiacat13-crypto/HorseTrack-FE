@@ -29,7 +29,7 @@ export const UserTable: React.FC<{ users: ManagedUser[]; meId?: string; onAction
       </select>
     </>}>
       <table className="ht-table">
-        <thead><tr><th>Người dùng</th><th>Tên đăng nhập</th><th>Vai trò</th><th>Đăng nhập gần nhất</th><th>Trạng thái</th><th style={{ textAlign: 'right' }}>Thao tác</th></tr></thead>
+        <thead><tr><th>Người dùng</th><th>Tên đăng nhập</th><th>Vai trò</th><th>Trạng thái</th><th style={{ textAlign: 'right' }}>Thao tác</th></tr></thead>
         <tbody>
           {list.map((u) => (
             <tr key={u.id}>
@@ -41,7 +41,6 @@ export const UserTable: React.FC<{ users: ManagedUser[]; meId?: string; onAction
               </td>
               <td className="mono">{u.username}</td>
               <td><Badge tone="brand" plain>{ROLE_LABEL[u.role]}</Badge></td>
-              <td className="mono">{u.lastLogin}</td>
               <td>
                 {u.status === 'ACTIVE' && u.emailConfirmed === false
                   ? <><span data-testid={`pending-confirm-${u.username}`}><Badge tone="warning">Chờ xác nhận email</Badge></span><span className="sub">Chưa nhận việc được</span></>
