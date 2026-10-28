@@ -12,14 +12,19 @@ test('vet adds medicine to a stock-available protocol, creating the next version
 
   const select = page.getByTestId('add-item-select');
   await expect(select.locator('option')).not.toHaveCount(1);
+  await expect(select.locator('optgroup')).not.toHaveCount(0);
+  await expect(page.getByTestId('add-item-line')).toBeDisabled();
   const firstItem = await select.locator('option').nth(1).getAttribute('value');
   await select.selectOption(firstItem!);
+  await expect(page.getByTestId('dialog-confirm')).toBeEnabled();
+  await expect(dialog.getByText('Chi phí thêm:')).toHaveCount(0);
   await page.getByTestId('add-item-qty').fill('0');
   await page.getByTestId('add-item-line').click();
   await expect(dialog.getByText('Số lượng phải là số nguyên ≥ 1.')).toBeVisible();
   await page.getByTestId('add-item-qty').fill('2');
   await page.getByTestId('add-item-line').click();
   await expect(page.getByTestId('add-item-list').locator('tbody tr')).toHaveCount(1);
+  await expect(dialog.getByText('Chi phí thêm:')).toBeVisible();
 
   await page.getByTestId('dialog-confirm').click();
   await expect(dialog).toBeHidden();

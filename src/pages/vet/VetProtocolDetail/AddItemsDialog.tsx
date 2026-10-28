@@ -6,6 +6,7 @@ import { useAction } from '../../../hooks/useAction';
 import { useFetch } from '../../../hooks/useFetch';
 import { Icon } from '../../../components/ui/Icon';
 import { Callout, Dialog, ReasonField, money } from '../../../components/ui/Ht';
+import { MedicinePicker } from '../../../components/vet/MedicinePicker';
 
 const requiredByFrom = (current: string) =>
   /^\d{2}\/\d{2}\/\d{4}$/.test(current) && dateKey(current) >= dateKey(DEMO_NOW.date) ? current : DEMO_NOW.date;
@@ -24,41 +25,48 @@ export const AddItemsDialog: React.FC<{ protocol: Protocol; onClose: () => void;
   const phaseName = (no: number) => p.phases.find((ph) => ph.no === no)?.name ?? `Giai đoạn ${no}`;
   const addedCost = adds.reduce((s, a) => s + a.qty * a.unitPrice, 0);
 
-  const addLine = () => {
+  const withSelected = (xs: ItemAddition[]): ItemAddition[] | null => {
     const item = items.find((i) => i.id === itemId);
     const n = Number(qty);
-    if (!item) return setError('Chọn thuốc / vật tư cần thêm.');
-    if (!Number.isInteger(n) || n < 1) return setError('Số lượng phải là số nguyên ≥ 1.');
+    if (!item) { setError('Chọn thuốc / vật tư cần thêm.'); return null; }
+    if (!Number.isInteger(n) || n < 1) { setError('Số lượng phải là số nguyên ≥ 1.'); return null; }
     setError('');
-    setAdds((xs) => {
-      const same = xs.find((a) => a.phaseNo === phaseNo && a.itemId === item.id);
-      return same ? xs.map((a) => (a === same ? { ...a, qty: a.qty + n } : a)) : [...xs, { phaseNo, itemId: item.id, name: item.name, unit: item.unit, unitPrice: item.unitPrice, qty: n }];
-    });
+    const same = xs.find((a) => a.phaseNo === phaseNo && a.itemId === item.id);
+    return same ? xs.map((a) => (a === same ? { ...a, qty: a.qty + n } : a)) : [...xs, { phaseNo, itemId: item.id, name: item.name, unit: item.unit, unitPrice: item.unitPrice, qty: n }];
+  };
+
+  const addLine = () => {
+    const next = withSelected(adds);
+    if (!next) return;
+    setAdds(next);
     setItemId('');
     setQty('1');
   };
 
   const submit = async () => {
-    if (!adds.length) return setError('Thêm ít nhất 1 thuốc / vật tư vào danh sách.');
+    const lines = itemId ? withSelected(adds) : adds;
+    if (!lines) return;
+    if (!lines.length) return setError('Thêm ít nhất 1 thuốc / vật tư vào danh sách.');
+    if (lines !== adds) { setAdds(lines); setItemId(''); setQty('1'); }
     if (treating) {
-      if (await run(() => vetApi.addItemsDuringTreatment(p, adds, reason, actor), `Đã gửi ${adds.length} thuốc cho kho duyệt. Kho giữ hàng nếu đủ, hoặc ghi thiếu để đặt hàng.`)) onDone(p.id);
+      if (await run(() => vetApi.addItemsDuringTreatment(p, lines, reason, actor), `Đã gửi ${lines.length} thuốc cho kho duyệt. Kho giữ hàng nếu đủ, hoặc ghi thiếu để đặt hàng.`)) onDone(p.id);
       return;
     }
     const out: { id?: string } = {};
     const ok = await run(async () => {
       const created = await vetApi.createProtocol({
         horseId: p.horseId, caseId: p.caseId, diagnosis: p.diagnosis, requiredBy: requiredByFrom(p.requiredBy),
-        phases: withAddedItems(p.phases, adds), replaces: p.id,
+        phases: withAddedItems(p.phases, lines), replaces: p.id,
       }, true, actor);
       out.id = created.id;
-    }, `Đã thêm ${adds.length} thuốc / vật tư — tạo phiên bản mới và gửi kho kiểm tồn.`);
+    }, `Đã thêm ${lines.length} thuốc / vật tư — tạo phiên bản mới và gửi kho kiểm tồn.`);
     if (ok && out.id) onDone(out.id);
   };
 
   return (
     <Dialog open onClose={onClose} icon="box" tone="brand" width={760} busy={busy} busyLabel="Đang gửi…" testId="add-items-dialog"
       title={`${treating ? 'Bổ sung thuốc khi điều trị' : 'Thêm vật tư / thuốc'} · ${p.id}`} sub={treating ? `${p.horse} · đang điều trị` : `${p.horse} · phiên bản ${p.version} → ${p.version + 1}`}
-      confirmLabel={treating ? 'Bổ sung thuốc' : 'Thêm và gửi kho kiểm tồn'} onConfirm={submit} disabled={!adds.length || (treating && reason.trim().length < 5)}>
+      confirmLabel={treating ? 'Bổ sung thuốc' : 'Thêm và gửi kho kiểm tồn'} onConfirm={submit} disabled={(!adds.length && !itemId) || (treating && reason.trim().length < 5)}>
       {error && <Callout tone="danger" style={{ marginBottom: 14 }}>{error}</Callout>}
       <Callout tone="info" style={{ marginBottom: 14 }}>
         {treating
@@ -82,10 +90,8 @@ export const AddItemsDialog: React.FC<{ protocol: Protocol; onClose: () => void;
         )}
         <div className="ht-field" style={{ margin: 0 }}>
           <label className="ht-label" htmlFor="add-item">Thuốc / vật tư</label>
-          <select id="add-item" data-testid="add-item-select" className="ht-select" style={{ height: 44, width: '100%', fontSize: 14 }} value={itemId} onChange={(e) => setItemId(e.target.value)} disabled={loading}>
-            <option value="">{loading ? 'Đang tải danh mục…' : '— Chọn từ danh mục kho —'}</option>
-            {items.map((i) => <option key={i.id} value={i.id}>{i.name} · {money(i.unitPrice)}/{i.unit} · còn {Math.max(0, i.onHand - i.held)}</option>)}
-          </select>
+          <MedicinePicker id="add-item" testId="add-item-select" items={items} value={itemId} onChange={setItemId} disabled={loading} showStock
+            placeholder={loading ? 'Đang tải danh mục…' : '— Chọn thuốc / vật tư từ danh mục kho —'} style={{ height: 44, width: '100%', fontSize: 14 }} />
         </div>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '140px auto', justifyContent: 'start', gap: 10, alignItems: 'end', marginTop: 10 }}>
@@ -93,7 +99,7 @@ export const AddItemsDialog: React.FC<{ protocol: Protocol; onClose: () => void;
           <label className="ht-label" htmlFor="add-qty">Số lượng</label>
           <input id="add-qty" data-testid="add-item-qty" className="ht-input" type="number" min={1} value={qty} onChange={(e) => setQty(e.target.value)} />
         </div>
-        <button type="button" className="ht-btn ht-btn--secondary" data-testid="add-item-line" onClick={addLine} style={{ height: 44 }}><Icon name="check" size={15} />Thêm vào danh sách</button>
+        <button type="button" className="ht-btn ht-btn--secondary" data-testid="add-item-line" onClick={addLine} disabled={!itemId} style={{ height: 44 }}><Icon name="check" size={15} />Thêm vào danh sách</button>
       </div>
 
       <table className="ht-table" style={{ marginTop: 16 }} data-testid="add-item-list">
