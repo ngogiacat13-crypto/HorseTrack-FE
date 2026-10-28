@@ -167,10 +167,6 @@ export const Register: React.FC = () => {
             Thông tin dùng để đăng nhập và nhận thông báo hóa đơn, thi đấu.
           </p>
 
-          <Callout tone="info" title="Vai trò mặc định: Chủ ngựa" style={{ marginBottom: 20 }}>
-            Các vai trò nhân sự (HLV, Bác sĩ, Kho, Mã phu) do Quản lý CLB cấp.
-          </Callout>
-
           {submitAttempted && Object.keys(form.errors).length > 0 && (
             <Callout
               tone="danger"

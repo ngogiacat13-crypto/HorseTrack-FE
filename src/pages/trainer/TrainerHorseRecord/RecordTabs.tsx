@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Horse, PLAN_LABEL, PROPOSAL_LABEL, phaseHr, phaseLoad, RaceProposal, Tournament, TrainingPlan, TrainingSession, Vaccination } from '../../../api/trainerApi';
+import type { FeedRequest } from '../../../api/vetApi';
 import { Icon } from '../../../components/ui/Icon';
 import { Badge, Callout, Panel, Timeline } from '../../../components/ui/Ht';
 import { HorseBadges, PhaseBar } from '../../../components/trainer/TrainerParts';
@@ -8,11 +9,12 @@ import { InjuryMap } from '../../../components/vet/InjuryMap';
 import { SessionTable } from './SessionTable';
 import { USE_BACKEND } from '../../../api/beClient';
 import { NutritionPlanPanel } from '../../../features/nutrition-plan';
+import { FeedRequestList } from '../../vet/VetHorseHealth/FeedRequestList';
 
 const muted: React.CSSProperties = { margin: 0, color: 'var(--muted)', fontSize: 13 };
 
 
-export const OverviewTab: React.FC<{ horse: Horse; plan?: TrainingPlan; recent: TrainingSession[]; avg: string; vaccinations: Vaccination[]; block: string | null }> = ({ horse, plan, recent, avg, vaccinations, block }) => {
+export const OverviewTab: React.FC<{ horse: Horse; plan?: TrainingPlan; recent: TrainingSession[]; avg: string; vaccinations: Vaccination[]; block: string | null; feedRequests?: FeedRequest[]; onChanged?: () => void }> = ({ horse, plan, recent, avg, vaccinations, block, feedRequests = [], onChanged }) => {
   const phase = plan?.phases.find((p) => p.no === plan.currentPhase);
   return (
     <div className="ht-cols">
@@ -41,7 +43,14 @@ export const OverviewTab: React.FC<{ horse: Horse; plan?: TrainingPlan; recent: 
         </Panel>
       </div>
       <div>
-        {USE_BACKEND && <NutritionPlanPanel horseId={horse.id} horseName={horse.name} locked={horse.trainingLocked} role="HeadTrainer" />}
+        {USE_BACKEND && <NutritionPlanPanel key={`np-${feedRequests.length}`} horseId={horse.id} horseName={horse.name} locked={horse.trainingLocked} role="HeadTrainer" />}
+        {USE_BACKEND && (
+          <Panel as="h3" title="Đề nghị điều chỉnh khẩu phần" right={<span style={{ fontSize: 12, color: 'var(--muted)' }}>BR_03</span>}>
+            <div className="ht-panel__body" style={{ display: 'grid', gap: 10 }}>
+              <FeedRequestList requests={feedRequests.filter((f) => f.horseId === horse.id)} onChanged={() => onChanged?.()} empty="Không có đề nghị đang chờ." />
+            </div>
+          </Panel>
+        )}
         <Panel as="h3" title="Lịch tiêm phòng">
           <div className="ht-panel__body">
             {vaccinations.length ? <Timeline items={vaccinations.map((v) => ({ tone: v.status === 'POSTPONED' ? 'warning' : 'info', what: <><b>{v.type}</b>{v.note && <> — {v.note}</>}</>, when: v.due }))} />

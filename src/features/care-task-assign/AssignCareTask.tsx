@@ -8,14 +8,14 @@ import { TASK_TYPES, careTaskApi, emptyDraft, type CareTaskDraft } from './careT
 
 const selectStyle: React.CSSProperties = { height: 44, width: '100%', fontSize: 14 };
 
-const AssignDialog: React.FC<{ horseId: string; horseName: string; onClose: () => void }> = ({ horseId, horseName, onClose }) => {
+const AssignDialog: React.FC<{ horseId: string; horseName: string; onClose: () => void; onDone: () => void }> = ({ horseId, horseName, onClose, onDone }) => {
   const { busy, error, run } = useAction();
   const { data: grooms, loading, error: loadError } = useFetch(() => careTaskApi.zoneGrooms(horseId), [horseId]);
   const [d, setD] = useState<CareTaskDraft>(emptyDraft);
   const set = <K extends keyof CareTaskDraft>(k: K, v: CareTaskDraft[K]) => setD((x) => ({ ...x, [k]: v }));
   const confirm = async () => {
     const groom = grooms?.find((g) => String(g.id) === d.groomId);
-    if (await run(() => careTaskApi.create(horseId, d), `Đã giao việc cho ${groom?.name ?? 'Mã phu'} · ${horseName}.`)) onClose();
+    if (await run(() => careTaskApi.create(horseId, d), `Đã giao việc cho ${groom?.name ?? 'Mã phu'} · ${horseName}.`)) onDone();
   };
 
   return (
@@ -58,7 +58,7 @@ const AssignDialog: React.FC<{ horseId: string; horseName: string; onClose: () =
   );
 };
 
-export const AssignCareTask: React.FC<{ horseId: string; horseName: string; disabledReason?: string }> = ({ horseId, horseName, disabledReason }) => {
+export const AssignCareTask: React.FC<{ horseId: string; horseName: string; disabledReason?: string; onAssigned?: () => void }> = ({ horseId, horseName, disabledReason, onAssigned }) => {
   const [open, setOpen] = useState(false);
   if (!USE_BACKEND) return null;
   return (
@@ -66,7 +66,7 @@ export const AssignCareTask: React.FC<{ horseId: string; horseName: string; disa
       <button type="button" className="ht-btn ht-btn--secondary" data-testid="care-task-btn" disabled={!!disabledReason} title={disabledReason} onClick={() => setOpen(true)}>
         <Icon name="task" />Giao việc chăm sóc
       </button>
-      {open && <AssignDialog horseId={horseId} horseName={horseName} onClose={() => setOpen(false)} />}
+      {open && <AssignDialog horseId={horseId} horseName={horseName} onClose={() => setOpen(false)} onDone={() => { setOpen(false); onAssigned?.(); }} />}
     </>
   );
 };

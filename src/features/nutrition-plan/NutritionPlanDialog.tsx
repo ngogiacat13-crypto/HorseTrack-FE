@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Callout, Dialog } from '../../components/ui/Ht';
 import { Icon } from '../../components/ui/Icon';
 import { useAction } from '../../hooks/useAction';
-import { MEALS, type MealType, type PlanDraft, newLine, plusDaysIso, toMealType, todayIso } from './logic';
+import { MEALS, type MealType, type PlanDraft, newLine, plusDaysIso, startMin, toMealType, todayIso } from './logic';
 import { type FeedItem, type NutritionPlan, nutritionApi } from './nutritionApi';
 
 const fromPlan = (p: NutritionPlan): PlanDraft => ({
@@ -41,7 +41,7 @@ export const NutritionPlanDialog: React.FC<{ horseId: number; horseName: string;
         <div className="ht-grid-2">
           <div className="ht-field" style={{ margin: 0 }}>
             <label className="ht-label" htmlFor="np-start">Áp dụng từ<span className="ht-req">*</span></label>
-            <input id="np-start" data-testid="nutrition-start-input" type="date" className="ht-input" value={draft.startDate} onChange={(e) => setDraft({ ...draft, startDate: e.target.value })} />
+            <input id="np-start" data-testid="nutrition-start-input" type="date" className="ht-input" min={startMin(plan?.startDate)} value={draft.startDate} onChange={(e) => setDraft({ ...draft, startDate: e.target.value })} />
           </div>
           <div className="ht-field" style={{ margin: 0 }}>
             <label className="ht-label" htmlFor="np-end">Đến ngày<span className="ht-req">*</span></label>

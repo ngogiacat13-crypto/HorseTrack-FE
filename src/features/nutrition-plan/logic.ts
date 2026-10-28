@@ -20,8 +20,11 @@ export const editBlock = (role: string, locked: boolean): string | null => {
   return 'Bạn chỉ được xem thực đơn.';
 };
 
-export const validateDraft = (d: PlanDraft) => {
+export const startMin = (keptStart?: string | null, today = todayIso()) => (keptStart && keptStart.slice(0, 10) < today ? keptStart.slice(0, 10) : today);
+
+export const validateDraft = (d: PlanDraft, keptStart?: string | null) => {
   if (!d.startDate || !d.endDate) throw new Error('Chọn ngày bắt đầu và ngày kết thúc.');
+  if (d.startDate < todayIso() && d.startDate !== keptStart?.slice(0, 10)) throw new Error(`Ngày bắt đầu không được ở quá khứ (hôm nay là ${dmy(todayIso())}).`);
   if (d.endDate < d.startDate) throw new Error('Ngày kết thúc không được trước ngày bắt đầu.');
   if (!d.lines.length) throw new Error('Thêm ít nhất 1 món vào thực đơn.');
   d.lines.forEach((l, i) => {

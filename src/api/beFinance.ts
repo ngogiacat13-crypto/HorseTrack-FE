@@ -9,7 +9,7 @@ interface BeTransaction {
   transactionId: number; invoiceId?: number | null; invoiceCode?: string | null; amount: Money; transactionRef?: string | null; gatewayTransId?: string | null;
   status: string; createdAt?: string | null; verifiedAt?: string | null; notes?: string | null;
 }
-interface BeInvoice {
+export interface BeInvoice {
   invoiceId: number; invoiceCode?: string | null; horseId?: number | null; horseName?: string | null; ownerId: number; ownerName?: string | null;
   ownerServiceStatus?: string | null; billingMonth?: string | null; issuedAt?: string | null; dueDate?: string | null; status: string;
   subtotal?: Money; principal?: Money; lateFee?: Money; reactivationFee?: Money; amountDue?: Money; amountPaid?: Money;

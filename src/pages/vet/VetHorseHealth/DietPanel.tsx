@@ -5,30 +5,17 @@ import { Panel } from '../../../components/ui/Ht';
 import { USE_BACKEND } from '../../../api/beClient';
 import { NutritionPlanPanel } from '../../../features/nutrition-plan';
 import { DietDialog } from './DietDialog';
-import { FeedDecisionDialog } from './FeedDecisionDialog';
+import { FeedRequestList } from './FeedRequestList';
 
 export const DietPanel: React.FC<{ horse: VetHorse; pendingFeeds: FeedRequest[]; onChanged: () => void }> = ({ horse, pendingFeeds, onChanged }) => {
   const [dietOpen, setDietOpen] = useState(false);
-  const [feedFor, setFeedFor] = useState<{ req: FeedRequest; approve: boolean } | null>(null);
   const diet = horse.medicalDiet;
-
-  const feedList = pendingFeeds.map((f) => (
-    <div key={f.id} className="ht-quote" style={{ display: 'grid', gap: 8 }}>
-      <span><b>{f.item}</b> — {f.by} đề nghị lúc <span className="ht-mono">{f.at}</span></span>
-      <span style={{ color: 'var(--muted)' }}>{f.reason}</span>
-      <span style={{ display: 'flex', gap: 8 }}>
-        <button type="button" className="ht-btn ht-btn--primary ht-btn--sm" data-testid={`feed-approve-${f.id}`} onClick={() => setFeedFor({ req: f, approve: true })}>Duyệt</button>
-        <button type="button" className="ht-btn ht-btn--secondary ht-btn--sm" data-testid={`feed-reject-${f.id}`} onClick={() => setFeedFor({ req: f, approve: false })}>Từ chối</button>
-      </span>
-    </div>
-  ));
-  const decision = feedFor && <FeedDecisionDialog request={feedFor.req} approve={feedFor.approve} onClose={() => setFeedFor(null)} onDone={() => { setFeedFor(null); onChanged(); }} />;
+  const feedList = <FeedRequestList requests={pendingFeeds} onChanged={onChanged} />;
 
   if (USE_BACKEND) {
     return (
       <>
         <NutritionPlanPanel key={`np-${pendingFeeds.length}`} horseId={horse.id} horseName={horse.name} locked={horse.trainingLocked} role="Veterinarian" title="Khẩu phần / thực đơn" onChanged={onChanged}>{feedList}</NutritionPlanPanel>
-        {decision}
       </>
     );
   }
@@ -50,7 +37,6 @@ export const DietPanel: React.FC<{ horse: VetHorse; pendingFeeds: FeedRequest[];
         {feedList}
       </div>
       {dietOpen && <DietDialog horse={horse} onClose={() => setDietOpen(false)} onDone={() => { setDietOpen(false); onChanged(); }} />}
-      {decision}
     </Panel>
   );
 };

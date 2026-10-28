@@ -17,7 +17,7 @@ export const MyProfile: React.FC = () => {
         sub="Thông tin tài khoản và ảnh đại diện của bạn trong hệ thống HorseTrack."
       />
       <div className="ht-profile-layout">
-        <AvatarCard user={user} onUpdated={updateUser} />
+        <AvatarCard user={user} />
         <ProfileDetails user={user} onUpdated={updateUser} />
         <SecurityCard />
       </div>

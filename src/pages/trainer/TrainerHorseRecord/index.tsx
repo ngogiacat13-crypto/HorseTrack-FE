@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { horseInitials, raceBlock, trainerApi, trainingBlock } from '../../../api/trainerApi';
 import { useActor } from '../../../auth/AuthContext';
@@ -7,7 +7,8 @@ import { Icon } from '../../../components/ui/Icon';
 import { BackButton, PageHeader, Tabs } from '../../../components/ui/Ht';
 import { HorseBadges, LoadState } from '../../../components/trainer/TrainerParts';
 import { HealthTab, OverviewTab, RacesTab, TrainingTab } from './RecordTabs';
-import { AssignCareTask } from '../../../features/care-task-assign';
+import { AssignCareTask, AssignedCareTasks } from '../../../features/care-task-assign';
+import { USE_BACKEND } from '../../../api/beClient';
 
 const sortKey = (s: { date: string; time: string }) => s.date.split('/').reverse().join('') + s.time;
 
@@ -15,6 +16,7 @@ export const TrainerHorseRecord: React.FC = () => {
   const { id = '' } = useParams<{ id: string }>();
   const actor = useActor();
   const { data, loading, error, reload } = useFetch(() => trainerApi.getHorse(id, actor), [id, actor]);
+  const [careKey, setCareKey] = useState(0);
 
   if (!data) return <LoadState loading={loading} error={error} onRetry={reload} />;
   const { horse, plans, sessions, vaccinations, proposals, tournaments } = data;
@@ -34,7 +36,7 @@ export const TrainerHorseRecord: React.FC = () => {
         badge={<HorseBadges horse={horse} />}
         sub={<>{horse.breed} · {horse.sex} {horse.age} tuổi · Chuồng <b>{horse.stall}</b> · Chủ: <b>{horse.owner}</b></>}
         actions={<>
-          <AssignCareTask horseId={horse.id} horseName={horse.name} disabledReason={horse.stall && horse.stall !== '—' ? undefined : 'Ngựa chưa được cấp chuồng'} />
+          <AssignCareTask horseId={horse.id} horseName={horse.name} disabledReason={horse.stall && horse.stall !== '—' ? undefined : 'Ngựa chưa được cấp chuồng'} onAssigned={() => setCareKey((k) => k + 1)} />
           {raceNo
             ? <button type="button" className="ht-btn ht-btn--secondary" disabled title={raceNo}><Icon name="send" />Đề xuất thi đấu</button>
             : <Link className="ht-btn ht-btn--secondary" to={`/trainer/races/new?horse=${horse.id}`}><Icon name="send" />Đề xuất thi đấu</Link>}
@@ -60,11 +62,13 @@ export const TrainerHorseRecord: React.FC = () => {
           <Tabs.Tab value="health">Sức khỏe</Tabs.Tab>
           <Tabs.Tab value="training" count={sessions.length}>Huấn luyện</Tabs.Tab>
           <Tabs.Tab value="races" count={proposals.length}>Thi đấu</Tabs.Tab>
+          {USE_BACKEND && <Tabs.Tab value="care">Việc chăm sóc</Tabs.Tab>}
         </Tabs.List>
-        <Tabs.Panel value="overview"><OverviewTab horse={horse} plan={plan} recent={history.slice(0, 4)} avg={avg} vaccinations={vaccinations} block={block} /></Tabs.Panel>
+        <Tabs.Panel value="overview"><OverviewTab horse={horse} plan={plan} recent={history.slice(0, 4)} avg={avg} vaccinations={vaccinations} block={block} feedRequests={data.feedRequests} onChanged={reload} /></Tabs.Panel>
         <Tabs.Panel value="health"><HealthTab horse={horse} /></Tabs.Panel>
         <Tabs.Panel value="training"><TrainingTab history={history} plans={plans} scored={scored.length} avg={avg} /></Tabs.Panel>
         <Tabs.Panel value="races"><RacesTab proposals={proposals} tournaments={tournaments} /></Tabs.Panel>
+        {USE_BACKEND && <Tabs.Panel value="care"><AssignedCareTasks horseId={horse.id} refreshKey={careKey} /></Tabs.Panel>}
       </Tabs.Group>
     </div>
   );

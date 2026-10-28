@@ -30,7 +30,7 @@ export const VetHerd: React.FC = () => {
   const delayed = data.protocols.filter((p) => p.delayed && isOpenProtocol(p));
   const due7 = data.vaccinations.filter(dueWithin7);
   const exams = data.proposals.filter((p) => p.status === 'WAITING_VET_EXAM');
-  const feeds = data.feedRequests.filter((f) => f.status === 'PENDING');
+  const feeds = data.feedRequests.filter((f) => f.status === 'PENDING' && (f.canDecide == null || f.canDecide === true));
   const count = (s: HealthStatus) => horses.filter((h) => h.health === s).length;
   const openProto = (hid: string) => data.protocols.filter((p) => p.horseId === hid && isOpenProtocol(p)).sort((a, b) => b.version - a.version)[0];
   const openCase = (hid: string) => data.cases.find((c) => c.horseId === hid && c.status !== 'CLOSED');

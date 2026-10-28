@@ -43,5 +43,6 @@ export interface MedicalDiet { by: string; at: string; morning: string; noon: st
 export interface FeedRequest {
   id: string; horseId: string; horse: string; item: string; reason: string; by: string; at: string;
   status: 'PENDING' | 'APPROVED' | 'REJECTED'; vetNote?: string; decidedBy?: string; decidedAt?: string;
+  approverRole?: string | null; approverName?: string | null; canDecide?: boolean | null;
 }
 export type VetHorse = Horse & { medicalDiet: MedicalDiet | null };

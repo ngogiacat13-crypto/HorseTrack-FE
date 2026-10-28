@@ -797,3 +797,54 @@ BE `4125816` (đã chạy trên server, 167 API).
 - Nguyên nhân 1: BE đặt `VET_CONFIRMED` sau khi bác sĩ xác nhận, FE kho chờ `READY_FOR_DISPENSING` → phác đồ đã xác nhận không ở tab nào, không có form cấp phát. Sửa `beDomain.ts · mapProtocol`: `VET_CONFIRMED` → `READY_FOR_DISPENSING` (Chờ kho cấp phát). Trên server lúc sửa: PD-1020, 1023, 1027, 1028.
 - Nguyên nhân 2: `GET /inventory/protocols` mặc định chỉ trả WAITING_STOCK_CHECK, WAITING_RESTOCK, REQUIRES_VET_REVIEW, VET_CONFIRMED. FE kho lấy thêm `?state=` STOCK_AVAILABLE, STOCK_SHORTAGE, IN_TREATMENT, ON_HOLD_PAYMENT, COMPLETED, SUPERSEDED, CANCELLED. Tab “Đã cấp phát” gồm đang điều trị / tạm dừng chờ thanh toán / hoàn tất; dòng thuốc `status = ISSUED` hiện “Đã cấp”.
 - Gửi BE (không bắt buộc): trả thời điểm và người cấp phát trong `stockAnswer` (`issuedAt`, `issuedByName`) để kho có lịch sử cấp phát đầy đủ; cân nhắc thêm các trạng thái trên vào danh sách mặc định của `/inventory/protocols`.
+
+## 32. Đối chiếu toàn bộ API với Swagger server (28/10/2026)
+
+Swagger server (BE `9fca439`) có 181 API (đã gộp bản `/api/...` trùng với `/api/v1/...`). Code FE nhánh dev (`153a020`) gọi 159 (map 189 dòng vì một API có thể dùng ở nhiều vai trò). 22 API không gọi:
+
+- Chưa có màn hình trong đặc tả: `POST /tournaments`, `PUT /horses/{id}`.
+- FE dùng cách khác: `DELETE /nutrition-plans/{planId}` (dùng `/cancel`), `PUT /inventory/stock-counts/{id}` (tạo rồi chốt ngay), `PUT …/phases/{phaseNo}/finish-early` (dùng `…/complete`), `GET /audit-logs` (dùng `/paged`), `GET /auth/confirm-account` (FE gọi `POST`).
+- Xem chi tiết theo id, FE lấy từ API danh sách: race-proposals, purchase-orders, diet-requests, billing/invoices, nutrition-plans, horses, users, users/{id}/barn-zone; cùng `GET /users`, `GET /horses/{id}/registration-attachments`.
+- API cũ hoặc do VNPay gọi: `POST /veterinary/medical-records`, `PUT /manager/medical-records/{id}/approve`, `POST /owner/payments/medical-records/{id}/vnpay`, `GET /payments/vnpay/return`, `GET /payments/vnpay/ipn`.
+
+Có trong code nhưng giao diện chưa có nút gọi: `authApi.updateAvatar` (`POST /account/avatar`, nút bị bỏ ở `153a020`) và `managerApi.changeRole` (`PUT /users/{id}/role`).
+
+## 33. Dừng buổi tập kết thúc ngay (BE `2bca05b`, 28/10/2026)
+
+- `PUT /training-sessions/{id}/stop` giờ trả buổi `STOPPED` (không còn `WAITING_VET`), giáo án không tạm dừng. FE bỏ trạng thái “Chờ bác sĩ” của buổi tập; dữ liệu cũ `WAITING_VET` hiện là “Đã dừng”.
+- `PUT /training-sessions/{id}/evaluate` nhận cả `COMPLETED` và `STOPPED`: Lịch tập và trang chi tiết phiên có nút “Đánh giá” cho buổi đã dừng. Buổi `CANCELLED` (bác sĩ khóa huấn luyện) không có nút vì BE từ chối.
+- Khi ca khám từ buổi bị dừng còn mở, BE chặn Mã phu bắt đầu buổi mới của ngựa; FE hiện nguyên thông báo lỗi của BE.
+
+## 34. Nối nhóm API xem chi tiết theo id (28/10/2026)
+
+FE gọi thêm 10 API, nâng số API dùng lên 169/181. Khi mở trang chi tiết, `hybridAdapter.ts · DETAILS` gọi API chi tiết để làm mới bản ghi lấy từ danh sách; API lỗi thì giữ bản ghi cũ. Mỗi API chỉ gọi khi vai trò được BE cho phép.
+
+- `GET /horses/{id}` (mọi vai trò trừ Kho), `GET /race-proposals/{id}` (HLV, Chủ ngựa), `GET /horses/{horseId}/registration-attachments` (QL CLB, Chủ ngựa), `GET /inventory/purchase-orders/{orderId}` (Kho).
+- QL CLB: `GET /users` (danh sách phân trang, size 500; thiếu thì quay về `/users/all`); `GET /users/{id}` kiểm tra trạng thái trước khi khóa / mở khóa; `GET /users/{id}/barn-zone` đọc khu hiện tại trước khi đổi khu Mã phu; `GET /billing/invoices/{invoiceId}` kiểm tra trước khi hủy hóa đơn (đã thanh toán / đã hủy / có giao dịch thì chặn).
+- Bác sĩ: `GET /diet-requests/{requestId}` kiểm tra đề xuất còn `PENDING` trước khi duyệt / từ chối.
+- HLV, Bác sĩ: `GET /nutrition-plans/{planId}` kiểm tra thực đơn còn `ACTIVE` trước khi sửa.
+
+Còn 12 API không gọi: `POST /tournaments`, `PUT /horses/{id}`, `DELETE /nutrition-plans/{planId}`, `PUT /inventory/stock-counts/{id}`, `PUT …/finish-early`, `GET /auth/confirm-account`, `GET /audit-logs`, và 5 API cũ / do VNPay gọi (xem §32).
+
+## 35. BE `5aec6cb`: việc chăm sóc đã giao, ngày bắt đầu khẩu phần (28/10/2026)
+
+- `GET /care-tasks/assigned?date=&status=` (HLV: ngựa mình phụ trách; QL CLB: mọi ngựa): bảng “Việc chăm sóc đã giao” (`features/care-task-assign/AssignedCareTasks.tsx`) ở tab “Việc chăm sóc” trong hồ sơ ngựa của HLV (lọc theo ngựa, tự tải lại sau khi giao việc) và ở bảng điều khiển QL CLB. Lọc theo ngày và trạng thái, hiện giờ hoàn thành.
+- Giao việc chăm sóc: bỏ loại “Cho ăn” (việc cho ăn sinh từ thực đơn dinh dưỡng) và “Cho thuốc” (thuốc đi theo phác đồ). Việc cũ loại này vẫn hiện đúng nhãn.
+- Khẩu phần: BE chặn ngày bắt đầu ở quá khứ. FE chặn trước: tạo mới thì ô ngày nhỏ nhất là hôm nay; sửa thực đơn đang chạy thì giữ được ngày bắt đầu cũ, đổi ngày thì không được lùi về quá khứ.
+- BE gửi email cho HLV khi Mã phu hoàn thành việc (trừ việc cho ăn tự sinh) và server chạy giờ Việt Nam — FE không cần đổi.
+
+Swagger server giờ có 182 API; FE gọi 170.
+
+## 36. BE `6591e02`: việc theo ngày, phút trễ, thống kê trễ trong ngày (29/10/2026)
+
+- `GET /care-tasks/my-tasks?date=yyyy-MM-dd`: trang “Công việc hôm nay” của Mã phu có ô chọn ngày (nút “Hôm nay” để quay lại). Ngày khác hôm nay thì `hybridAdapter` gọi thẳng `my-tasks?date=` (không dùng bộ nhớ đệm của hôm nay).
+- BE chặn hoàn thành việc của ngày sau: FE hiện nhãn “NGÀY SAU”, ẩn ô hoàn thành, báo “chỉ xem trước”; `groomApi.completeTask` cũng chặn trước khi gọi API.
+- `lateMinutes` (phút trễ so với giờ hẹn khi quá SLA): thẻ việc của Mã phu tính “trễ X phút SLA” từ trường này; bảng việc trễ và bảng “Việc chăm sóc đã giao” của QL CLB / HLV hiện “Trễ X phút”.
+- `GET /care-tasks/overdue?scope=today`: thẻ “Việc trễ SLA” trên trang chủ QL CLB hiện số việc trễ trong ngày (kể cả đã hoàn thành trễ) ở dòng “+N hôm nay”; danh sách vẫn là việc trễ đang mở.
+- Lập / sửa khẩu phần giờ gửi việc cho ăn cả hôm nay và ngày mai — Mã phu xem trước bằng ô chọn ngày.
+
+## 37. BE `ccb73e8` + `464963d`: khung giờ xác nhận hoàn thành việc (29/10/2026)
+
+- `CareTaskDTO` thêm `canComplete` và `completableFrom` (giờ hẹn − `CARE_EARLY_COMPLETE_MINUTES`, mặc định 30 phút). BE chặn `PUT /care-tasks/{id}/complete` trước thời điểm này, kể cả việc hôm nay.
+- FE: `groomApi.completeWindow` dùng `canComplete` / `completableFrom` của BE (dữ liệu mẫu tự tính giờ hẹn − 30 phút). Thẻ việc chưa tới giờ ẩn ô hoàn thành và ghi “Chưa tới giờ · xác nhận hoàn thành được từ HH:mm”; `completeTask` chặn trước khi gọi API.
+- `464963d` chỉ thêm chẩn đoán lỗi chữ ký VNPay ở BE và tài liệu `API_BY_ROLE.md` — FE không cần sửa. File `DATABASE_delete_all_horses.sql` xóa toàn bộ ngựa: không chạy trên dữ liệu thật.

@@ -26,7 +26,7 @@ export const sessionsApi = {
       const caseId = res.data.data?.caseCode ?? '';
       invalidate('trainingSessions', 'trainingPlans', 'vetCases');
       const fresh = await get<TrainingSession>(`/trainingSessions/${s.id}`);
-      return { ...fresh, status: 'WAITING_VET' as const, decision: fresh.decision ?? { type: 'STOP_VET' as const, by: actor.name, at: '', note: note.trim(), caseId } };
+      return { ...fresh, status: 'STOPPED' as const, decision: fresh.decision ?? { type: 'STOP_VET' as const, by: actor.name, at: '', note: note.trim(), caseId } };
     }
     await getMyHorse(s.horseId, actor);
     if (s.status !== 'PAUSED_PENDING_TRAINER') throw new Error('Phiên này không còn chờ quyết định.');
@@ -39,7 +39,6 @@ export const sessionsApi = {
       note: `Nhịp tim ${peak?.hr} bpm (ngưỡng ${s.thresholds.hr}). ${note.trim()}`,
     });
     await http.patch(`/horses/${s.horseId}`, { pendingCase: caseId });
-    await http.patch(`/trainingPlans/${s.planId}`, { status: 'PAUSED', pausedReason: `Phiên ${s.id} vượt ngưỡng — chờ BS đánh giá ca ${caseId}` });
     const { data } = await http.patch<TrainingSession>(`/trainingSessions/${s.id}`, {
       status: 'STOPPED', decision: { type: 'STOP_VET', by: actor.name, at: DEMO_NOW.time, caseId, note: note.trim() },
     });

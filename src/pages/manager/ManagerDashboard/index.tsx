@@ -7,6 +7,7 @@ import { Loading, PageHeader, StatCard, useToast } from '../../../components/ui/
 import { USE_BACKEND } from '../../../api/beClient';
 import { DEMO_NOW } from '../../../api/http';
 import type { Dash } from './types';
+import { AssignedCareTasks } from '../../../features/care-task-assign';
 import { RecentRegistrations, TodaySessions, VetCostChart } from './MainPanels';
 import { LateTasks, MedicalWatch, OverdueInvoices, SystemLog } from './SidePanels';
 
@@ -67,6 +68,7 @@ export const ManagerDashboard: React.FC = () => {
         <div>
           <RecentRegistrations d={d} />
           <TodaySessions d={d} />
+          <AssignedCareTasks />
           {d.vetCost?.some((c: { value: number }) => c.value > 0) && <VetCostChart d={d} />}
         </div>
         <div>

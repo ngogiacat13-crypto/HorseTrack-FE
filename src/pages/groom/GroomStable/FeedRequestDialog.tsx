@@ -10,7 +10,7 @@ export const FeedRequestDialog: React.FC<{ horse: VetHorse; onClose: () => void;
   const { busy, error, run } = useAction();
   const [item, setItem] = useState('');
   const [reason, setReason] = useState('');
-  const save = async () => { if (await run(() => groomApi.requestFeed(horse, { item, reason }, actor), 'Đã gửi đề nghị cho Bác sĩ thú y.')) onDone(); };
+  const save = async () => { if (await run(() => groomApi.requestFeed(horse, { item, reason }, actor), 'Đã gửi đề nghị. Ngựa không khóa thì HLV phụ trách duyệt; ngựa đang khóa tập thì bác sĩ duyệt.')) onDone(); };
   return (
     <Dialog open onClose={onClose} icon="heart" tone="brand" busy={busy} title={`Đề nghị chỉnh khẩu phần · ${horse.name}`}
       sub="Khẩu phần do Bác sĩ chỉ định — Mã phu không tự sửa. Đề nghị được gửi vào hồ sơ của Bác sĩ để duyệt." confirmLabel="Gửi Bác sĩ" onConfirm={save}>

@@ -35,7 +35,8 @@ export const GroomStable: React.FC = () => {
   const count = (st: Stall['status']) => stalls.filter((s) => s.status === st).length;
   const diet = horse?.medicalDiet;
   const pendingFeed = horse ? feeds.filter((f) => f.horseId === horse.id && f.status === 'PENDING') : [];
-  const feedRequest = horse && <>{pendingFeed.map((f) => <div key={f.id} style={{ fontSize: 13, color: 'var(--info-ink)' }}><Icon name="clock" size={13} /> Đề nghị “{f.item}” đang chờ Bác sĩ duyệt</div>)}<button type="button" className="ht-btn ht-btn--secondary ht-btn--sm" data-testid="feed-request-btn" onClick={() => setFeedFor(horse)}><Icon name="send" size={14} />Đề nghị chỉnh khẩu phần</button></>;
+  const approver = (f: { approverName?: string | null; approverRole?: string | null }) => f.approverName || (f.approverRole === 'Trainer' ? 'HLV phụ trách' : f.approverRole === 'Veterinarian' ? 'Bác sĩ thú y' : 'Bác sĩ');
+  const feedRequest = horse && <>{pendingFeed.map((f) => <div key={f.id} style={{ fontSize: 13, color: 'var(--info-ink)' }}><Icon name="clock" size={13} /> Đề nghị “{f.item}” đang chờ {approver(f)} duyệt</div>)}<button type="button" className="ht-btn ht-btn--secondary ht-btn--sm" data-testid="feed-request-btn" onClick={() => setFeedFor(horse)}><Icon name="send" size={14} />Đề nghị chỉnh khẩu phần</button></>;
 
   return (
     <div className="ht ht-page">
