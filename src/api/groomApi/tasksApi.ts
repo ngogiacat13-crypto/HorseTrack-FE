@@ -7,9 +7,18 @@ import { get, me, min, nextId, now, toMin } from './shared';
 import type { CareTask } from './types';
 
 const SLA_MINUTES = 45;
+const EARLY_COMPLETE_MINUTES = 30;
 
 const dayKey = (ddmmyyyy: string) => ddmmyyyy.split('/').reverse().join('');
 export const isFutureDay = (ddmmyyyy: string) => dayKey(ddmmyyyy) > dayKey(DEMO_NOW.date);
+const hhmmOf = (minutes: number) => `${String(Math.floor(Math.max(0, minutes) / 60)).padStart(2, '0')}:${String(Math.max(0, minutes) % 60).padStart(2, '0')}`;
+export const completeWindow = (t: CareTask) => {
+  const from = t.completableFrom ?? `${hhmmOf(toMin(t.time) - EARLY_COMPLETE_MINUTES)} ${t.date.slice(0, 5)}`;
+  if (t.status === 'DONE') return { open: false, from };
+  if (t.canComplete != null) return { open: t.canComplete, from };
+  if (isFutureDay(t.date)) return { open: false, from };
+  return { open: dayKey(t.date) < dayKey(DEMO_NOW.date) || toMin(t.time) - EARLY_COMPLETE_MINUTES <= toMin(DEMO_NOW.time), from };
+};
 export const lateBy = (t: CareTask) => (t.lateMinutes != null ? Math.max(0, t.lateMinutes - SLA_MINUTES) : Math.max(0, toMin(t.doneAt ?? DEMO_NOW.time) - toMin(t.sla)));
 const lateText = (m: number) => (m >= 60 ? `+${Math.floor(m / 60)} giờ ${m % 60 ? `${m % 60} phút` : ''}`.trim() : `+${m} phút`);
 
@@ -24,7 +33,8 @@ export const tasksApi = {
 
   async completeTask(t: CareTask, input: { note: string; photo: string | null }, actor: Actor) {
     if (t.status === 'DONE') throw new Error('Công việc đã hoàn thành.');
-    if (isFutureDay(t.date)) throw new Error(`Công việc được lên lịch ngày ${t.date}, chưa thể hoàn thành trước ngày đó.`);
+    const slot = completeWindow(t);
+    if (!slot.open) throw new Error(`Chưa tới giờ thực hiện: việc hẹn ${t.time} ${t.date}, chỉ được xác nhận hoàn thành từ ${slot.from}.`);
     const doneAt = DEMO_NOW.time;
     const late = Math.max(0, toMin(doneAt) - toMin(t.sla));
     const { data } = await http.patch<CareTask>(`/tasks/${t.id}`, { status: 'DONE', doneAt, note: input.note.trim(), photo: input.photo });

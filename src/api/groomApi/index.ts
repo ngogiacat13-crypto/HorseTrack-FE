@@ -5,7 +5,7 @@ import { USE_BACKEND } from '../beClient';
 import { groomSupplyBe } from '../beActions';
 
 export * from './types';
-export { isFutureDay, lateBy } from './tasksApi';
+export { completeWindow, isFutureDay, lateBy } from './tasksApi';
 export { CANCELLABLE } from './reportsApi';
 
 const base = { ...tasksApi, ...sessionsApi, ...reportsApi };

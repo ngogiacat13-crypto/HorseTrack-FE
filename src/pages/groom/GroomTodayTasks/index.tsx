@@ -51,7 +51,7 @@ export const GroomTodayTasks: React.FC = () => {
           <Badge tone="neutral">{tasks.length} việc</Badge><Badge tone="success">{done} xong</Badge>{late > 0 && <Badge tone="danger">{late} quá hạn</Badge>}
         </span>} />
       <PendingAssignments />
-      {future && <Callout tone="info" style={{ marginBottom: 16 }} testId="task-day-preview">Đang xem trước việc ngày <b className="ht-mono">{day}</b> (ví dụ việc cho ăn đã gửi trước). Chỉ được đánh dấu hoàn thành từ ngày đó.</Callout>}
+      {future && <Callout tone="info" style={{ marginBottom: 16 }} testId="task-day-preview">Đang xem trước việc ngày <b className="ht-mono">{day}</b> (ví dụ việc cho ăn đã gửi trước). Mỗi việc chỉ xác nhận hoàn thành được từ 30 phút trước giờ hẹn.</Callout>}
 
       {alerts.map((s) => (
         <div key={s.id} className="ht-banner" role="alert">

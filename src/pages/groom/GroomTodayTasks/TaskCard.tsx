@@ -1,5 +1,5 @@
 import React from 'react';
-import { CareTask, lateBy } from '../../../api/groomApi';
+import { CareTask, completeWindow, lateBy } from '../../../api/groomApi';
 import type { VetHorse } from '../../../api/vetApi';
 import { Icon } from '../../../components/ui/Icon';
 import { Badge, Callout } from '../../../components/ui/Ht';
@@ -11,6 +11,8 @@ const CHIP: Record<TaskState, [string, 'danger' | 'warning' | 'neutral' | 'succe
 export const TaskCard: React.FC<{ task: CareTask; horse?: VetHorse; onDone: (t: CareTask) => void }> = ({ task: t, horse, onDone }) => {
   const state = taskState(t);
   const upcoming = state === 'upcoming';
+  const slot = completeWindow(t);
+  const locked = t.status !== 'DONE' && !slot.open;
   const late = lateBy(t);
   const start = toMin(t.time), end = toMin(t.sla), nowM = toMin(DEMO_NOW.time);
   const pct = Math.min(100, Math.max(0, ((nowM - start) / (end - start)) * 100));
@@ -19,7 +21,7 @@ export const TaskCard: React.FC<{ task: CareTask; horse?: VetHorse; onDone: (t: 
     : t.diet;
   return (
     <article className="ht-task" data-state={state} data-testid={`task-${t.id}`}>
-      {upcoming
+      {locked
         ? <span className="ht-task__check" aria-hidden="true" style={{ opacity: 0.35, cursor: 'not-allowed' }} />
         : <button type="button" className="ht-task__check" role="checkbox" aria-checked={t.status === 'DONE'} aria-label={`Hoàn thành ${t.title} ${t.horse ?? ''}`} data-testid={`task-done-${t.id}`}
           onClick={() => t.status !== 'DONE' && onDone(t)}>{t.status === 'DONE' && <Icon name="check" size={14} />}</button>}
@@ -28,7 +30,9 @@ export const TaskCard: React.FC<{ task: CareTask; horse?: VetHorse; onDone: (t: 
         <div className="ht-task__meta">
           <span><Icon name="calendar" size={13} /> <span className="ht-mono">{t.time}</span></span>
           {upcoming
-            ? <span><Icon name="clock" size={13} /> Lịch ngày <span className="ht-mono">{t.date}</span> · chỉ xem trước, chưa hoàn thành được</span>
+            ? <span><Icon name="clock" size={13} /> Lịch ngày <span className="ht-mono">{t.date}</span> · chỉ xem trước, xác nhận được từ <span className="ht-mono">{slot.from}</span></span>
+            : locked
+            ? <span data-testid={`task-locked-${t.id}`}><Icon name="clock" size={13} /> Chưa tới giờ · xác nhận hoàn thành được từ <span className="ht-mono">{slot.from.slice(0, 5)}</span></span>
             : t.status === 'DONE'
             ? <span className={late ? 'is-late' : 'is-ok'}><Icon name="check" size={13} /> Hoàn thành lúc {t.doneAt}{late ? ` · trễ ${late} phút SLA` : ''}</span>
             : state === 'late' ? <span className="is-late"><Icon name="alarm" size={13} /> {late} phút quá hạn SLA ({t.sla})</span>

@@ -842,3 +842,9 @@ Swagger server giờ có 182 API; FE gọi 170.
 - `lateMinutes` (phút trễ so với giờ hẹn khi quá SLA): thẻ việc của Mã phu tính “trễ X phút SLA” từ trường này; bảng việc trễ và bảng “Việc chăm sóc đã giao” của QL CLB / HLV hiện “Trễ X phút”.
 - `GET /care-tasks/overdue?scope=today`: thẻ “Việc trễ SLA” trên trang chủ QL CLB hiện số việc trễ trong ngày (kể cả đã hoàn thành trễ) ở dòng “+N hôm nay”; danh sách vẫn là việc trễ đang mở.
 - Lập / sửa khẩu phần giờ gửi việc cho ăn cả hôm nay và ngày mai — Mã phu xem trước bằng ô chọn ngày.
+
+## 37. BE `ccb73e8` + `464963d`: khung giờ xác nhận hoàn thành việc (29/10/2026)
+
+- `CareTaskDTO` thêm `canComplete` và `completableFrom` (giờ hẹn − `CARE_EARLY_COMPLETE_MINUTES`, mặc định 30 phút). BE chặn `PUT /care-tasks/{id}/complete` trước thời điểm này, kể cả việc hôm nay.
+- FE: `groomApi.completeWindow` dùng `canComplete` / `completableFrom` của BE (dữ liệu mẫu tự tính giờ hẹn − 30 phút). Thẻ việc chưa tới giờ ẩn ô hoàn thành và ghi “Chưa tới giờ · xác nhận hoàn thành được từ HH:mm”; `completeTask` chặn trước khi gọi API.
+- `464963d` chỉ thêm chẩn đoán lỗi chữ ký VNPay ở BE và tài liệu `API_BY_ROLE.md` — FE không cần sửa. File `DATABASE_delete_all_horses.sql` xóa toàn bộ ngựa: không chạy trên dữ liệu thật.

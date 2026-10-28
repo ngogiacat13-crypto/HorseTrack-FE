@@ -5,6 +5,7 @@ export interface CareTask {
   horseId: string | null; horse: string | null; stall: string | null;
   time: string; sla: string; status: 'TODO' | 'DONE'; doneAt: string | null; note: string; photo: string | null;
   instructions: string[]; diet?: string; medicalDiet?: boolean; warning?: string; lateMinutes?: number;
+  canComplete?: boolean; completableFrom?: string;
 }
 
 export interface GroomInfo { id: string; name: string; zones: string[] }
