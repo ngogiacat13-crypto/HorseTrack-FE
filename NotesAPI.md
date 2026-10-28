@@ -797,3 +797,20 @@ BE `4125816` (đã chạy trên server, 167 API).
 - Nguyên nhân 1: BE đặt `VET_CONFIRMED` sau khi bác sĩ xác nhận, FE kho chờ `READY_FOR_DISPENSING` → phác đồ đã xác nhận không ở tab nào, không có form cấp phát. Sửa `beDomain.ts · mapProtocol`: `VET_CONFIRMED` → `READY_FOR_DISPENSING` (Chờ kho cấp phát). Trên server lúc sửa: PD-1020, 1023, 1027, 1028.
 - Nguyên nhân 2: `GET /inventory/protocols` mặc định chỉ trả WAITING_STOCK_CHECK, WAITING_RESTOCK, REQUIRES_VET_REVIEW, VET_CONFIRMED. FE kho lấy thêm `?state=` STOCK_AVAILABLE, STOCK_SHORTAGE, IN_TREATMENT, ON_HOLD_PAYMENT, COMPLETED, SUPERSEDED, CANCELLED. Tab “Đã cấp phát” gồm đang điều trị / tạm dừng chờ thanh toán / hoàn tất; dòng thuốc `status = ISSUED` hiện “Đã cấp”.
 - Gửi BE (không bắt buộc): trả thời điểm và người cấp phát trong `stockAnswer` (`issuedAt`, `issuedByName`) để kho có lịch sử cấp phát đầy đủ; cân nhắc thêm các trạng thái trên vào danh sách mặc định của `/inventory/protocols`.
+
+## 32. Đối chiếu toàn bộ API với Swagger server (28/10/2026)
+
+Swagger server (BE `9fca439`) có 181 API (đã gộp bản `/api/...` trùng với `/api/v1/...`). Code FE nhánh dev (`153a020`) gọi 159 (map 189 dòng vì một API có thể dùng ở nhiều vai trò). 22 API không gọi:
+
+- Chưa có màn hình trong đặc tả: `POST /tournaments`, `PUT /horses/{id}`.
+- FE dùng cách khác: `DELETE /nutrition-plans/{planId}` (dùng `/cancel`), `PUT /inventory/stock-counts/{id}` (tạo rồi chốt ngay), `PUT …/phases/{phaseNo}/finish-early` (dùng `…/complete`), `GET /audit-logs` (dùng `/paged`), `GET /auth/confirm-account` (FE gọi `POST`).
+- Xem chi tiết theo id, FE lấy từ API danh sách: race-proposals, purchase-orders, diet-requests, billing/invoices, nutrition-plans, horses, users, users/{id}/barn-zone; cùng `GET /users`, `GET /horses/{id}/registration-attachments`.
+- API cũ hoặc do VNPay gọi: `POST /veterinary/medical-records`, `PUT /manager/medical-records/{id}/approve`, `POST /owner/payments/medical-records/{id}/vnpay`, `GET /payments/vnpay/return`, `GET /payments/vnpay/ipn`.
+
+Có trong code nhưng giao diện chưa có nút gọi: `authApi.updateAvatar` (`POST /account/avatar`, nút bị bỏ ở `153a020`) và `managerApi.changeRole` (`PUT /users/{id}/role`).
+
+## 33. Dừng buổi tập kết thúc ngay (BE `2bca05b`, 28/10/2026)
+
+- `PUT /training-sessions/{id}/stop` giờ trả buổi `STOPPED` (không còn `WAITING_VET`), giáo án không tạm dừng. FE bỏ trạng thái “Chờ bác sĩ” của buổi tập; dữ liệu cũ `WAITING_VET` hiện là “Đã dừng”.
+- `PUT /training-sessions/{id}/evaluate` nhận cả `COMPLETED` và `STOPPED`: Lịch tập và trang chi tiết phiên có nút “Đánh giá” cho buổi đã dừng. Buổi `CANCELLED` (bác sĩ khóa huấn luyện) không có nút vì BE từ chối.
+- Khi ca khám từ buổi bị dừng còn mở, BE chặn Mã phu bắt đầu buổi mới của ngựa; FE hiện nguyên thông báo lỗi của BE.
