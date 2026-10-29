@@ -121,9 +121,6 @@ const loadOverdueTasks = async () => {
   return rows ? { open: rows.map(toLate), today: today ? today.length : rows.length } : null;
 };
 
-interface BeHorseLite { horseId: number; horseName: string; approvalStatus?: string | null; stallId?: number | null; createdAt?: string | null; assignedTrainerName?: string | null }
-interface BePlanLite { planId: number; planName: string; horseName: string; startDate: string; endDate: string; status: string }
-interface BePlanSessions { planId: number; planName: string; horseName: string; sessions?: { sessionId: number; sessionDate: string; activityType: string; status: string; notes?: string | null; assignedToName?: string | null }[] }
 type SessionTone = 'success' | 'danger' | 'info' | 'neutral' | 'warning';
 const SESSION_LABEL: Record<string, [string, SessionTone]> = {
   PENDING: ['Chờ Mã phu xác nhận', 'neutral'], CONFIRMED: ['Sắp diễn ra', 'info'], IN_PROGRESS: ['Đang tập', 'info'],
@@ -145,30 +142,27 @@ const vetCostByMonth = (protocols: ProtocolWatch[], months = 6) => {
   });
 };
 
+interface BeManagerToday {
+  horseCount: number;
+  newHorsesThisMonth: number;
+  sessions: { sessionId: number; sessionDate: string; horseName: string; planName: string; activityType: string; trainerName?: string | null; status: string; notes?: string | null }[];
+}
 const loadDashboardBe = async () => {
   const now = new Date();
   const today = localIso(now);
-  const [horsesPage, plansPage] = await Promise.all([
-    beData<{ horses: BeHorseLite[] }>(be.get('/horses', { params: { page: 0, size: 500 } })).catch(() => ({ horses: [] as BeHorseLite[] })),
-    beData<{ content: BePlanLite[] }>(be.get('/training-plans', { params: { page: 0, size: 500 } })).catch(() => ({ content: [] as BePlanLite[] })),
-  ]);
-  const managed = horsesPage.horses.filter((h) => (h.approvalStatus ? h.approvalStatus === 'APPROVED' : h.stallId != null));
-  const newThisMonth = managed.filter((h) => h.createdAt?.startsWith(today.slice(0, 7))).length;
-  const running = plansPage.content.filter((p) => p.startDate.slice(0, 10) <= today && p.endDate.slice(0, 10) >= today);
-  const details = await Promise.all(running.map((p) => beData<BePlanSessions>(be.get(`/training-plans/${p.planId}`)).catch(() => null)));
-  const trainerOf = (horse: string) => managed.find((h) => h.horseName === horse)?.assignedTrainerName ?? '—';
-  const todaySessions = details.flatMap((d) => (d?.sessions ?? [])
-    .filter((x) => x.sessionDate.startsWith(today))
-    .map((x) => {
-      const [status, tone] = SESSION_LABEL[x.status?.toUpperCase()] ?? [x.status, 'neutral' as SessionTone];
-      return { id: x.sessionId, time: x.sessionDate.slice(11, 16), horse: d!.horseName, plan: `${d!.planName} · ${x.activityType}`, trainer: trainerOf(d!.horseName), status, tone, raw: x.status?.toUpperCase(), note: x.notes ?? '' };
-    }))
-    .sort((a, b) => a.time.localeCompare(b.time));
+  const overview = await beData<BeManagerToday>(be.get('/training-plans/manager-today')).catch(() => ({ horseCount: 0, newHorsesThisMonth: 0, sessions: [] as BeManagerToday['sessions'] }));
+  const todaySessions = overview.sessions.map((x) => {
+    const [status, tone] = SESSION_LABEL[x.status?.toUpperCase()] ?? [x.status, 'neutral' as SessionTone];
+    return {
+      id: x.sessionId, time: String(x.sessionDate).slice(11, 16), horse: x.horseName, plan: `${x.planName} · ${x.activityType}`,
+      trainer: x.trainerName || '—', status, tone, raw: x.status?.toUpperCase(), note: x.notes ?? '',
+    };
+  }).sort((a, b) => a.time.localeCompare(b.time));
   return {
     greeting: { weekday: WEEKDAY[now.getDay()], date: `${today.slice(8, 10)}/${today.slice(5, 7)}/${today.slice(0, 4)}` },
     autoStop: null,
     stoppedToday: todaySessions.filter((x) => x.raw === 'WAITING_VET' || x.raw === 'STOPPED').map((x) => ({ session: `#${x.id}`, horse: x.horse, at: x.time, note: x.note.split(' | ').pop() ?? '' })),
-    kpi: { horses: managed.length, horsesTrend: newThisMonth ? `+${newThisMonth} tháng này` : '', lateTasks: 0, lateTasksToday: 0 },
+    kpi: { horses: overview.horseCount, horsesTrend: overview.newHorsesThisMonth ? `+${overview.newHorsesThisMonth} tháng này` : '', lateTasks: 0, lateTasksToday: 0 },
     sessions: todaySessions.map(({ time, horse, plan, trainer, status, tone, id }) => ({ id, time, horse, plan, trainer, status, tone })),
     lateTasks: [], moreLateTasks: 0, vetCost: [],
   };

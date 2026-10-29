@@ -109,18 +109,11 @@ export const mapProtocol = (p: BeProtocol): Row => {
   };
 };
 
-const WAREHOUSE_EXTRA_STATES = ['STOCK_AVAILABLE', 'STOCK_SHORTAGE', 'IN_TREATMENT', 'ON_HOLD_PAYMENT', 'COMPLETED', 'SUPERSEDED', 'CANCELLED'];
 export const loadProtocols = async (): Promise<Row[] | null> => {
   const role = me()?.role;
   const base = role === 'WarehouseManager' ? '/inventory/protocols' : role === 'Veterinarian' || role === 'ClubManager' ? '/medical-management/protocols' : null;
   if (!base) return null;
-  const closed = role === 'WarehouseManager'
-    ? (await Promise.all(WAREHOUSE_EXTRA_STATES.map((state) => beGet<BeProtocol[]>(`${base}?state=${state}`).catch(() => [] as BeProtocol[])))).flat()
-    : [];
-  const open = await beGet<BeProtocol[]>(base);
-  const list = [...open, ...closed.filter((c) => !open.some((o) => o.protocolId === c.protocolId))];
-  const full = await Promise.all(list.map((p) => beGet<BeProtocol>(`${base}/${p.protocolId}`).catch(() => p)));
-  return full.map(mapProtocol);
+  return (await beGet<BeProtocol[]>(base)).map(mapProtocol);
 };
 
 interface BePo {
@@ -178,8 +171,7 @@ interface BeCount { countId: number; countCode: string; countMonth: string; stat
 export const loadStockChecks = async (): Promise<Row[] | null> => {
   if (me()?.role !== 'WarehouseManager') return null;
   const list = await beGet<BeCount[]>('/inventory/stock-counts');
-  const full = await Promise.all(list.map((c) => beGet<BeCount>(`/inventory/stock-counts/${c.countId}`).catch(() => c)));
-  return full.map((c) => ({
+  return list.map((c) => ({
     id: c.countCode, beId: c.countId, month: `${c.countMonth.slice(5, 7)}/${c.countMonth.slice(0, 4)}`, at: dmyhm(c.countedAt), by: c.countedByName ?? '—',
     status: 'DONE', note: c.note ?? '',
     lines: (c.lines ?? []).map((l) => ({ itemId: l.itemCode, item: l.itemName, unit: l.unit, system: Number(l.systemQty) || 0, counted: Number(l.countedQty) || 0, reason: l.reason ?? '' })),
