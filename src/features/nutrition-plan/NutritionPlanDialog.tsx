@@ -26,7 +26,7 @@ export const NutritionPlanDialog: React.FC<{ horseId: number; horseName: string;
   const save = async () => {
     const ok = await run(
       () => (plan ? nutritionApi.update(plan.planId, horseId, draft) : nutritionApi.create(horseId, draft)),
-      plan ? `Đã cập nhật thực đơn của ${horseName}.` : `Đã lên thực đơn cho ${horseName}.`,
+      plan ? `Đã cập nhật thực đơn của ${horseName} — đã gửi kho, chờ kho cấp thức ăn.` : `Đã lên thực đơn cho ${horseName} — đã gửi kho, chờ kho cấp thức ăn.`,
     );
     if (ok) onDone();
   };
