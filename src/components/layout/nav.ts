@@ -89,6 +89,7 @@ export const NAV_BY_ROLE: Record<Role, NavGroup[]> = {
     { title: 'Yêu cầu', items: [
       { path: PATH.warehouse.medical, icon: 'heart', label: 'Thuốc theo phác đồ', count: 3, tone: 'danger' },
       { path: PATH.warehouse.requisitions, icon: 'send', label: 'Yêu cầu cấp vật tư / thuốc', count: 3 },
+      { path: PATH.warehouse.nutrition, icon: 'heart', label: 'Thực đơn dinh dưỡng' },
     ] },
     { title: 'Nhập hàng', items: [
       { path: PATH.warehouse.shipments, icon: 'truck', label: 'Đơn nhập hàng', count: 1, tone: 'danger' },

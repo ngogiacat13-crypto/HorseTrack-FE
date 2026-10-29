@@ -15,7 +15,7 @@ const toBody = (horseId: number, draft: PlanDraft) => ({
   details: draft.lines.map((l) => ({ inventoryItemId: Number(l.itemId), mealType: l.mealType, quantity: Number(l.quantity) })),
 });
 
-const changed = () => invalidate('feedRequests', 'horses');
+const changed = () => invalidate('feedRequests', 'horses', 'requisitions', 'inventory');
 
 export const nutritionApi = {
   feedItems: () => beData<FeedItem[]>(be.get('/nutrition-plans/feed-items')),
@@ -45,7 +45,9 @@ export const nutritionApi = {
   async sendFeedTasks(planId: number) {
     const res = await be.post<ApiResponse<number>>(`/nutrition-plans/${planId}/feed-tasks`);
     invalidate('tasks');
-    return res.data.message || `Đã gửi ${res.data.data} việc cho ăn cho Mã phu.`;
+    return res.data.message || (res.data.data
+      ? `Đã gửi ${res.data.data} việc cho ăn cho Mã phu.`
+      : 'Đã gửi kho, chờ kho cấp thức ăn.');
   },
 
   async cancel(planId: number) {

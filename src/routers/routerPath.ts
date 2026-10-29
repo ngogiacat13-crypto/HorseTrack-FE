@@ -67,6 +67,7 @@ export const PATH = {
     medical: '/warehouse/medical',
     medicalDetail: '/warehouse/medical/:id',
     requisitions: '/warehouse/requisitions',
+    nutrition: '/warehouse/nutrition',
     shipments: '/warehouse/shipments',
     check: '/warehouse/check',
     log: '/warehouse/log',

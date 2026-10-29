@@ -50,6 +50,7 @@ import { WarehouseMedical } from '../pages/warehouse/WarehouseMedical';
 import { WarehouseMedicalDetail } from '../pages/warehouse/WarehouseMedicalDetail';
 import { WarehouseShipments } from '../pages/warehouse/WarehouseShipments';
 import { WarehouseRequisitions } from '../pages/warehouse/WarehouseRequisitions';
+import { WarehouseNutrition } from '../pages/warehouse/WarehouseNutrition';
 import { WarehouseStockCheck } from '../pages/warehouse/WarehouseStockCheck';
 import { WarehouseLog } from '../pages/warehouse/WarehouseLog';
 
@@ -131,6 +132,7 @@ const ROLE_ROUTES: { role: Role; routes: [path: string, element: React.ReactElem
     [PATH.warehouse.medical, <WarehouseMedical />],
     [PATH.warehouse.medicalDetail, <WarehouseMedicalDetail />],
     [PATH.warehouse.requisitions, <WarehouseRequisitions />],
+    [PATH.warehouse.nutrition, <WarehouseNutrition />],
     [PATH.warehouse.shipments, <WarehouseShipments />],
     [PATH.warehouse.check, <WarehouseStockCheck />],
     [PATH.warehouse.log, <WarehouseLog />],

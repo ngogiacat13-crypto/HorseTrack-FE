@@ -19,14 +19,35 @@ export const phaseProgressOf = (p: Protocol): PhaseProgress[] => {
   }));
 };
 
-export const phaseBillingOf = (p: Protocol): PhaseBilling[] => p.phaseBilling?.length
-  ? p.phaseBilling
-  : p.phases.map((phase) => ({ phaseNo: phase.no, invoiceId: null, amount: phase.items.reduce((sum, item) => sum + item.qty * item.unitPrice, 0), status: 'UNPAID' }));
+const invoicePaid = (status?: string | null) => {
+  const s = (status ?? '').toUpperCase();
+  return s === 'PAID' || s === 'SETTLED' || s === 'ACTIVE';
+};
+
+/** BE không trả phaseBilling — dùng phases[].invoiceStatus (đã map ở beDomain). */
+export const phaseBillingOf = (p: Protocol): PhaseBilling[] => {
+  if (p.phaseBilling?.length) {
+    return p.phaseBilling.map((b) => {
+      const phase = p.phases.find((ph) => ph.no === b.phaseNo);
+      if (b.status === 'PAID' || !phase) return b;
+      return invoicePaid(phase.invoiceStatus) ? { ...b, status: 'PAID' as const } : b;
+    });
+  }
+  return p.phases.map((phase) => ({
+    phaseNo: phase.no,
+    invoiceId: null,
+    amount: phase.items.reduce((sum, item) => sum + item.qty * item.unitPrice, 0),
+    status: invoicePaid(phase.invoiceStatus) ? 'PAID' : 'UNPAID',
+  }));
+};
 
 export const currentPhaseOf = (p: Protocol) => phaseProgressOf(p).find((phase) => phase.status === 'IN_PROGRESS')
   ?? phaseProgressOf(p).find((phase) => !['COMPLETED', 'STOPPED'].includes(phase.status));
 
-export const phaseIsPaid = (p: Protocol, phaseNo: number) => phaseBillingOf(p).find((phase) => phase.phaseNo === phaseNo)?.status === 'PAID';
+export const phaseIsPaid = (p: Protocol, phaseNo: number) => {
+  if (phaseBillingOf(p).find((phase) => phase.phaseNo === phaseNo)?.status === 'PAID') return true;
+  return invoicePaid(p.phases.find((ph) => ph.no === phaseNo)?.invoiceStatus);
+};
 export const phaseIsDispensed = (p: Protocol, phaseNo: number) => {
   const phase = p.phases.find((item) => item.no === phaseNo);
   return !!phase && (phase.items.length === 0 || (p.dispensedPhases ?? []).includes(phaseNo));
