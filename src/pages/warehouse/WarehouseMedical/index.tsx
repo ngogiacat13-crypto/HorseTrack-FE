@@ -23,11 +23,18 @@ const NEXT: Partial<Record<Protocol['state'], string>> = {
   WAITING_RESTOCK: 'Chờ hàng về — theo dõi đơn nhập',
   REQUIRES_VET_REVIEW: 'Chờ bác sĩ đánh giá lại',
   IN_TREATMENT: 'Đã cấp phát · đang điều trị',
-  ON_HOLD_PAYMENT: 'Đã cấp phát · chờ thanh toán giai đoạn 1',
+  ON_HOLD_PAYMENT: 'Đã cấp phát · chờ thanh toán',
   COMPLETED: 'Đã cấp phát · điều trị hoàn tất',
 };
 const cancelReason = (p: Protocol) => p.note.match(/Hủy:s*(.+)$/)?.[1] ?? p.note;
-const nextStep = (p: Protocol) => p.state === 'SUPERSEDED' ? `Đã thay bằng ${p.supersededBy ?? 'phiên bản mới'} — không cấp theo bản này` : p.state === 'CANCELLED' ? `Bác sĩ hủy: ${cancelReason(p)}` : NEXT[p.state];
+const nextStep = (p: Protocol) => {
+  if (p.state === 'SUPERSEDED') return `Đã thay bằng ${p.supersededBy ?? 'phiên bản mới'} — không cấp theo bản này`;
+  if (p.state === 'CANCELLED') return `Bác sĩ hủy: ${cancelReason(p)}`;
+  if (p.state === 'ON_HOLD_PAYMENT' && !p.emergency) {
+    return `Đã cấp phát · chờ TT GĐ ${p.awaitingPaymentPhaseNo ?? '?'}${p.awaitingPaymentInvoiceCode ? ` · ${p.awaitingPaymentInvoiceCode}` : ''}`;
+  }
+  return NEXT[p.state];
+};
 
 export const WarehouseMedical: React.FC = () => {
   const navigate = useNavigate();

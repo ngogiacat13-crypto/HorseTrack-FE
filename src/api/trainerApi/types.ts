@@ -56,6 +56,9 @@ export interface RaceProposal {
 export interface Vaccination {
   id: string; horseId: string; horse: string; type: string; due: string; status: 'DUE_SOON' | 'SCHEDULED' | 'POSTPONED' | 'DONE'; note?: string;
   kind?: 'VACCINE' | 'DEWORM'; cycleMonths?: number; doneAt?: string; lot?: string; by?: string;
+  itemId?: number | null; itemName?: string | null; dosePerHorse?: number | null;
+  requisitionCode?: string | null; requisitionStatus?: string | null; requisitionRejectReason?: string | null;
+  canExecute?: boolean | null; executeBlockedReason?: string | null;
 }
 export interface Stall {
   id: string; zone: string; horseId: string | null; horse: string | null; status: 'CLEAN' | 'NEEDS_CLEANING' | 'MAINTENANCE'; groom: string;

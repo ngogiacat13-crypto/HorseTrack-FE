@@ -52,7 +52,7 @@ export const VetInbox: React.FC = () => {
           {sel && horse
             ? <CaseDetail vetCase={sel} horse={horse}
                 session={sel.sessionId ? data.sessions.find((s) => s.id === sel.sessionId) : undefined}
-                protocol={data.protocols.find((p) => p.horseId === sel.horseId && isOpenProtocol(p))}
+                protocol={data.protocols.find((p) => isOpenProtocol(p) && (p.caseId === sel.id || (!!sel.beId && p.caseId === String(sel.beId))))}
                 onExam={() => setExamFor(sel)} onClose={() => setCloseFor(sel)} onLock={() => setLockOpen(true)} />
             : <Panel><div className="ht-empty">Chọn một ca để xem chi tiết.</div></Panel>}
         </div>

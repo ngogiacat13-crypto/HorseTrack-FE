@@ -52,7 +52,7 @@ export const PayPanel: React.FC<{ invoice: OwnerInvoice; due: InvoiceDue; paymen
           </Callout>
         )}
         {i.status === 'REACTIVATION_PENDING' && <Callout tone="info" title="Đã tất toán — chờ kích hoạt lại">Quản lý CLB kiểm tra điều kiện và mở lại dịch vụ (BR_14). Thanh toán không tự động khôi phục dịch vụ.</Callout>}
-        <small style={{ color: 'var(--muted)' }}>Chỉ giao dịch được máy chủ xác minh đúng tham chiếu, nội dung và số tiền mới được ghi nhận. Trang kết quả của VNPay không phải xác nhận đã thanh toán.</small>
+        <small style={{ color: 'var(--muted)' }}>Chỉ giao dịch được máy chủ xác minh chữ ký và số tiền mới được ghi nhận.</small>
 
         {payments.length > 0 && (
           <div style={{ display: 'grid', gap: 8, borderTop: '1px solid var(--border)', paddingTop: 12 }}>

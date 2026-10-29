@@ -22,11 +22,12 @@ export const HorseCaseFields: React.FC<HorseCaseProps> = ({ horses, cases, locke
         </select>
       </div>
       <div className="ht-field">
-        <label className="ht-label" htmlFor="pc-case">Ca khám<span className="ht-req">*</span></label>
-        <select id="pc-case" className="ht-select" style={selectStyle} value={caseId} disabled={!horseId} onChange={(e) => onCase(e.target.value)}>
+        <label className="ht-label" htmlFor="pc-case">Ca khám<span className="ht-req">*</span>{emergency && <span className="ht-hint"> · bắt buộc khi cấp cứu</span>}</label>
+        <select id="pc-case" className="ht-select" style={selectStyle} value={caseId} disabled={!horseId} onChange={(e) => onCase(e.target.value)} required={emergency || undefined} aria-required>
           <option value="">{horseId ? '— Chọn ca —' : 'Chọn ngựa trước'}</option>
           {cases.map((c) => <option key={c.id} value={c.id} disabled={!c.exam}>#{c.id} · {c.type}{!c.exam ? ' — chưa khám' : ''}</option>)}
         </select>
+        {emergency && !caseId && <small className="ht-hint" style={{ color: 'var(--danger-ink)' }}>Phác đồ cấp cứu phải chọn ca khám.</small>}
       </div>
       <div className="ht-field">
         <label className="ht-label" htmlFor="pc-dx">Chẩn đoán<span className="ht-req">*</span></label>

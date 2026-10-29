@@ -57,7 +57,7 @@ export const CaseDetail: React.FC<Props> = ({ vetCase: c, horse, session, protoc
             <button type="button" className="ht-btn ht-btn--danger" disabled={horse.trainingLocked} onClick={onLock}
               title={horse.trainingLocked ? 'Ngựa đã bị khóa huấn luyện' : undefined}><Icon name="lock" />{horse.trainingLocked ? 'Đã khóa' : 'Khóa huấn luyện'}</button>
             {protocol && protocol.state !== 'CANCELLED'
-              ? <button data-testid="create-protocol-btn" type="button" className="ht-btn ht-btn--primary ht-btn--block" disabled title={`Ngựa đã có phác đồ ${protocol.id}; chỉ tạo lại sau khi hủy phác đồ.`}><Icon name="file" />Đã có phác đồ {protocol.id}</button>
+              ? <button data-testid="create-protocol-btn" type="button" className="ht-btn ht-btn--primary ht-btn--block" disabled title={`Ca này đã có phác đồ ${protocol.id}; chỉ tạo lại sau khi hủy phác đồ của ca.`}>{`Đã có phác đồ ${protocol.id}`}</button>
               : <Link className="ht-btn ht-btn--primary ht-btn--block" to={`/vet/protocols/new?horse=${horse.id}&case=${c.id}`} aria-disabled={!c.exam}
                   data-testid="create-protocol-btn"
                   onClick={(e) => { if (!c.exam) { e.preventDefault(); toast('Ghi nhận khám trước khi lập phác đồ.'); } }}><Icon name="file" />Tạo phác đồ điều trị</Link>}
