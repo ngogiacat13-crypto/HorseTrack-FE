@@ -848,3 +848,10 @@ Swagger server giờ có 182 API; FE gọi 170.
 - `CareTaskDTO` thêm `canComplete` và `completableFrom` (giờ hẹn − `CARE_EARLY_COMPLETE_MINUTES`, mặc định 30 phút). BE chặn `PUT /care-tasks/{id}/complete` trước thời điểm này, kể cả việc hôm nay.
 - FE: `groomApi.completeWindow` dùng `canComplete` / `completableFrom` của BE (dữ liệu mẫu tự tính giờ hẹn − 30 phút). Thẻ việc chưa tới giờ ẩn ô hoàn thành và ghi “Chưa tới giờ · xác nhận hoàn thành được từ HH:mm”; `completeTask` chặn trước khi gọi API.
 - `464963d` chỉ thêm chẩn đoán lỗi chữ ký VNPay ở BE và tài liệu `API_BY_ROLE.md` — FE không cần sửa. File `DATABASE_delete_all_horses.sql` xóa toàn bộ ngựa: không chạy trên dữ liệu thật.
+
+## 38. Đếm lại API và nối 2 API mới (30/10/2026)
+
+- Swagger server ghi 220 dòng nhưng chỉ có 191 API: 29 API khai báo cả `/api/...` và `/api/v1/...`. Bản đồ API (bản 12) có 217 dòng vai trò × API = 179 API khác nhau.
+- FE gọi 179/191. Nối thêm: `GET /vaccinations/items?kind=VACCINE|DEWORM` (hộp lên lịch tiêm phòng / tẩy giun lấy đúng danh mục kèm tồn khả dụng; dữ liệu mẫu vẫn lọc danh mục cũ) và `GET /inventory/stock-counts/{countId}` (Kho mở biên bản kiểm kê thì tải chi tiết qua `hybridAdapter · DETAILS.stockChecks`).
+- 12 API không gọi: 5 API cũ / do VNPay gọi; 5 thao tác FE làm bằng API khác (xóa thực đơn → `/cancel`, sửa phiếu kiểm kê nháp, kết thúc sớm giai đoạn → `/complete`, `GET /audit-logs` → `/paged`, `GET /auth/confirm-account` → `POST`); 2 màn hình không có trong đặc tả (`POST /tournaments`, `PUT /horses/{id}`).
+- Sửa bản đồ: dòng cũ `GET /inventory/stock-counts/{id}` thực ra là API danh sách, đã bỏ vì trùng dòng `GET /inventory/stock-counts`.

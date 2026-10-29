@@ -1,13 +1,25 @@
 import { http } from '../http';
-import { USE_BACKEND, be } from '../beClient';
+import { USE_BACKEND, be, beData } from '../beClient';
 import { invalidate } from '../hybridAdapter';
 import { type Actor, addAudit } from '../managerApi';
 import type { Horse, Vaccination } from '../trainerApi';
-import type { VetHorse } from './types';
+import type { InventoryItem, VetHorse } from './types';
 import { addMonths, isDate, daysFromToday } from './dates';
 import { get, nextId, min, addHistory } from './shared';
 
+interface BeVaccineItem { itemId: number; itemCode: string; itemName: string; category: string; itemGroup?: string | null; unit: string; unitPrice?: number | null; currentStock?: number | null; heldStock?: number | null; availableStock?: number | null; minSafetyStock?: number | null; route?: string | null; note?: string | null }
+
 export const vaccinationsApi = {
+  async getVaccinationItems(kind: 'VACCINE' | 'DEWORM'): Promise<InventoryItem[] | null> {
+    if (!USE_BACKEND) return null;
+    const rows = await beData<BeVaccineItem[]>(be.get('/vaccinations/items', { params: { kind } }));
+    return rows.map((r) => ({
+      id: r.itemCode, beId: r.itemId, name: r.itemName, category: r.category, group: r.itemGroup || r.category, unit: r.unit,
+      unitPrice: Number(r.unitPrice) || 0, onHand: Number(r.availableStock ?? r.currentStock) || 0, held: Number(r.heldStock) || 0,
+      safety: Number(r.minSafetyStock) || 0, route: r.route ?? '', note: r.note ?? undefined,
+    }) as InventoryItem);
+  },
+
   async getVaccinations() {
     const [vaccinations, horses] = await Promise.all([get<Vaccination[]>('/vaccinations'), get<VetHorse[]>('/horses')]);
     return { vaccinations, horses };
