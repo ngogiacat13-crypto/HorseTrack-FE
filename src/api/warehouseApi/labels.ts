@@ -10,8 +10,9 @@ export const REQ_LABEL: Record<ReqStatus, [string, Tone]> = {
   WAITING_RESTOCK: ['Chờ hàng về', 'warning'], REJECTED: ['Đã từ chối', 'danger'], ISSUED: ['Đã cấp phát', 'success'], CLOSED: ['Đã đóng', 'neutral'],
 };
 export const TX_LABEL: Record<TxType, [string, Tone]> = {
-  RECEIVE: ['Nhập kho', 'success'], ISSUE: ['Cấp phát / xuất', 'info'], ADJUST: ['Điều chỉnh', 'warning'], HOLD: ['Giữ tồn', 'neutral'], RELEASE: ['Trả giữ', 'neutral'],
+  RECEIVE: ['Nhập kho', 'success'], ISSUE: ['Cấp phát / xuất', 'info'], ADJUST: ['Điều chỉnh', 'warning'], HOLD: ['Giữ tồn', 'neutral'], RELEASE: ['Trả giữ', 'neutral'], RETURN: ['Trả hàng', 'neutral'],
 };
+export const txLabel = (type: string): [string, Tone] => TX_LABEL[type as TxType] ?? [type || 'Khác', 'neutral'];
 export const OPEN_SHIPMENT: ShipmentStatus[] = ['ORDERED', 'IN_TRANSIT', 'DELAYED'];
 
 export const available = (i: Pick<StockItem, 'onHand' | 'held'>) => Math.max(0, i.onHand - i.held);

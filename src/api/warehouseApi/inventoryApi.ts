@@ -46,6 +46,6 @@ export const inventoryApi = {
 
   async getLog() {
     const txs = await get<StockTx[]>('/stockTx');
-    return [...txs].sort((a, b) => b.id.localeCompare(a.id));
+    return [...txs].sort((a, b) => String(b.id ?? '').localeCompare(String(a.id ?? '')));
   },
 };

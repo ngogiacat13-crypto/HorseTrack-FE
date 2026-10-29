@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { StockTx, TX_LABEL, TxType, warehouseApi } from '../../../api/warehouseApi';
+import { StockTx, TX_LABEL, TxType, txLabel, warehouseApi } from '../../../api/warehouseApi';
 import { useFetch } from '../../../hooks/useFetch';
 import { Icon } from '../../../components/ui/Icon';
 import { Badge, DataTable, PageHeader, Panel, type Column } from '../../../components/ui/Ht';
@@ -11,7 +11,7 @@ const qtyColor = (t: StockTx) => (t.type === 'HOLD' || t.type === 'RELEASE' ? 'v
 const COLUMNS: Column<StockTx>[] = [
   { header: 'Mã', render: (t) => t.id, className: 'id' },
   { header: 'Thời điểm', render: (t) => t.at, className: 'mono' },
-  { header: 'Loại', render: (t) => <Badge tone={TX_LABEL[t.type][1]} plain>{TX_LABEL[t.type][0]}</Badge> },
+  { header: 'Loại', render: (t) => <Badge tone={txLabel(t.type)[1]} plain>{txLabel(t.type)[0]}</Badge> },
   { header: 'Vật tư', render: (t) => <><span className="strong">{t.item}</span>{t.lot && <span className="sub mono">lô {t.lot}</span>}</> },
   { header: 'Số lượng', headClassName: 'num', className: 'num', render: (t) => <span style={{ fontWeight: 600, color: qtyColor(t) }}>{t.qty > 0 && t.type !== 'HOLD' ? '+' : ''}{t.qty}</span> },
   { header: 'Tồn sau', headClassName: 'num', className: 'num', render: (t) => t.balance },
