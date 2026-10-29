@@ -3,7 +3,7 @@ import type { InventoryItem } from '../vetApi';
 export interface Lot { lot: string; expiry: string; qty: number }
 export type StockItem = InventoryItem & { lots?: Lot[] };
 
-export type TxType = 'RECEIVE' | 'ISSUE' | 'ADJUST' | 'HOLD' | 'RELEASE';
+export type TxType = 'RECEIVE' | 'ISSUE' | 'ADJUST' | 'HOLD' | 'RELEASE' | 'RETURN';
 export interface StockTx { id: string; at: string; type: TxType; itemId: string; item: string; qty: number; lot?: string; ref?: string; by: string; note: string; balance: number }
 
 export type ShipmentStatus = 'ORDERED' | 'IN_TRANSIT' | 'DELAYED' | 'RECEIVED' | 'CANCELLED';

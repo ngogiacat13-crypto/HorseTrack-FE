@@ -186,17 +186,25 @@ export const loadStockChecks = async (): Promise<Row[] | null> => {
   }));
 };
 
-interface BeTx { txCode: string; txType: string; itemCode: string; itemName: string; lotNo?: string | null; quantity: number; balanceAfter: number; refType?: string | null; refId?: number | null; performedByName?: string; performedAt: string; note?: string | null }
+interface BeTx { transactionId?: number | null; txCode?: string | null; txType?: string | null; itemCode?: string | null; itemName?: string | null; lotNo?: string | null; quantity?: number | null; balanceAfter?: number | null; refType?: string | null; refId?: number | null; performedByName?: string | null; performedAt?: string | null; note?: string | null }
 const REF: Record<string, string> = { PROTOCOL: 'PD-', PURCHASE_ORDER: 'SHIP-', REQUISITION: 'RQ-', STOCK_COUNT: 'KK#' };
+const KNOWN_TX = new Set(['RECEIVE', 'ISSUE', 'ADJUST', 'HOLD', 'RELEASE', 'RETURN']);
 export const loadStockTx = async (): Promise<Row[] | null> => {
   if (me()?.role !== 'WarehouseManager') return null;
-  const page = await beGet<{ content: BeTx[] }>('/inventory/transactions', { page: 0, size: 500 });
-  return page.content.map((t) => ({
-    id: t.txCode, at: dmhm(t.performedAt), type: t.txType === 'DISPOSE' ? 'ISSUE' : t.txType, itemId: t.itemCode, item: t.itemName,
-    qty: t.txType === 'ISSUE' || t.txType === 'DISPOSE' ? -Math.abs(Number(t.quantity)) : Number(t.quantity), lot: t.lotNo ?? undefined,
-    ref: t.refType && t.refType !== 'OTHER' ? `${REF[t.refType] ?? t.refType + ' '}${t.refId ?? ''}` : undefined,
-    by: t.performedByName ?? '—', note: t.note ?? '', balance: Number(t.balanceAfter) || 0,
-  }));
+  const page = (await be.get<ApiResponse<{ content?: BeTx[] | null }>>('/inventory/transactions', { params: { page: 0, size: 500 }, timeout: 60000 })).data.data;
+  return (page?.content ?? []).map((t, i) => {
+    const raw = t.txType ?? '';
+    const type = raw === 'DISPOSE' ? 'ISSUE' : KNOWN_TX.has(raw) ? raw : raw || 'ADJUST';
+    const qty = Number(t.quantity) || 0;
+    return {
+      id: t.txCode || (t.transactionId != null ? `TX-${t.transactionId}` : `TX-${i + 1}`),
+      at: dmhm(typeof t.performedAt === 'string' ? t.performedAt : null),
+      type, itemId: t.itemCode ?? '', item: t.itemName ?? '—',
+      qty: raw === 'ISSUE' || raw === 'DISPOSE' ? -Math.abs(qty) : qty, lot: t.lotNo ?? undefined,
+      ref: t.refType && t.refType !== 'OTHER' ? `${REF[t.refType] ?? t.refType + ' '}${t.refId ?? ''}` : undefined,
+      by: t.performedByName ?? '—', note: t.note ?? '', balance: Number(t.balanceAfter) || 0,
+    };
+  });
 };
 
 export interface BeUser {

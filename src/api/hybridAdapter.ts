@@ -706,7 +706,11 @@ const ov = (name: string) => {
 const load = (name: string) => {
   const hit = cache.get(name);
   if (hit && Date.now() - hit.at < 4000) return hit.rows;
-  const rows = LOADERS[name]().catch((): Row[] => []);
+  const rows = LOADERS[name]().catch((err: unknown) => {
+    cache.delete(name);
+    if (name === 'stockTx') throw err;
+    return [] as Row[];
+  });
   cache.set(name, { at: Date.now(), rows });
   return rows;
 };
