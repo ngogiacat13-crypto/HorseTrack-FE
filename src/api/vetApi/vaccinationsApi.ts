@@ -13,7 +13,10 @@ export const vaccinationsApi = {
     return { vaccinations, horses };
   },
 
-  async scheduleVaccination(input: { horseIds: string[]; kind: 'VACCINE' | 'DEWORM'; type: string; due: string; cycleMonths: number; note: string }, actor: Actor) {
+  async scheduleVaccination(input: {
+    horseIds: string[]; kind: 'VACCINE' | 'DEWORM'; type: string; due: string; cycleMonths: number; note: string;
+    itemId?: number | null; dosePerHorse?: number;
+  }, actor: Actor) {
     if (!input.horseIds.length) throw new Error('Chọn ít nhất 1 ngựa.');
     const type = min(input.type, 3, input.kind === 'DEWORM' ? 'Loại thuốc tẩy giun' : 'Loại vaccine');
     if (!isDate(input.due)) throw new Error('Ngày dự kiến theo dạng dd/mm/yyyy.');
@@ -21,7 +24,12 @@ export const vaccinationsApi = {
     if (input.kind === 'DEWORM' && (input.cycleMonths < 3 || input.cycleMonths > 6)) throw new Error('Chu kỳ tẩy giun từ 3 đến 6 tháng.');
     if (input.kind === 'VACCINE' && (input.cycleMonths < 1 || input.cycleMonths > 24)) throw new Error('Chu kỳ tiêm nhắc từ 1 đến 24 tháng.');
     if (USE_BACKEND) {
-      await be.post('/vaccinations/schedule', { horseIds: input.horseIds.map(Number), kind: input.kind, medicineName: type, scheduledDate: input.due, cycleMonths: input.cycleMonths, notes: input.note.trim() || undefined });
+      if (!input.itemId) throw new Error('Chọn thuốc / vaccine trong kho (itemId).');
+      const dose = input.dosePerHorse && input.dosePerHorse > 0 ? input.dosePerHorse : 1;
+      await be.post('/vaccinations/schedule', {
+        horseIds: input.horseIds.map(Number), kind: input.kind, medicineName: type, scheduledDate: input.due,
+        cycleMonths: input.cycleMonths, notes: input.note.trim() || undefined, itemId: input.itemId, dosePerHorse: dose,
+      });
       invalidate('vaccinations');
       await addAudit(actor, { action: input.kind === 'DEWORM' ? 'SCHEDULE_DEWORM' : 'SCHEDULE_VACCINE', label: input.kind === 'DEWORM' ? 'Tạo lịch tẩy giun' : 'Tạo lịch tiêm phòng', object: `${type} · ${input.horseIds.length} ngựa`, area: 'med', to: input.due });
       return (await get<Vaccination[]>('/vaccinations')).filter((v) => input.horseIds.includes(v.horseId) && v.type === type && v.status !== 'DONE');
@@ -36,7 +44,11 @@ export const vaccinationsApi = {
       if (!h) continue;
       const id = nextId(ids, 'VC-', 3);
       ids.push(id);
-      const row = { id, horseId: h.id, horse: h.name, type, kind: input.kind, cycleMonths: input.cycleMonths, due: input.due, status: daysFromToday(input.due) <= 7 ? 'DUE_SOON' : 'SCHEDULED', note: input.note.trim() || undefined } as Vaccination;
+      const row = {
+        id, horseId: h.id, horse: h.name, type, kind: input.kind, cycleMonths: input.cycleMonths, due: input.due,
+        status: daysFromToday(input.due) <= 7 ? 'DUE_SOON' : 'SCHEDULED', note: input.note.trim() || undefined,
+        itemId: input.itemId ?? null, dosePerHorse: input.dosePerHorse ?? 1, canExecute: true,
+      } as Vaccination;
       created.push((await http.post<Vaccination>('/vaccinations', row)).data);
     }
     await addAudit(actor, { action: input.kind === 'DEWORM' ? 'SCHEDULE_DEWORM' : 'SCHEDULE_VACCINE', label: input.kind === 'DEWORM' ? 'Tạo lịch tẩy giun' : 'Tạo lịch tiêm phòng', object: `${type} · ${created.map((c) => c.horse).join(', ')}`, area: 'med', to: `${input.due} · chu kỳ ${input.cycleMonths} tháng` });
@@ -45,6 +57,7 @@ export const vaccinationsApi = {
 
   async recordVaccination(v: Vaccination, input: { doneAt: string; by: string }, actor: Actor) {
     if (v.status === 'DONE') throw new Error('Mũi này đã được ghi nhận.');
+    if (USE_BACKEND && v.canExecute === false) throw new Error(v.executeBlockedReason || 'Chưa thể xác nhận tiêm.');
     if (!isDate(input.doneAt)) throw new Error('Ngày thực hiện theo dạng dd/mm/yyyy.');
     if (daysFromToday(input.doneAt) > 0) throw new Error('Ngày thực hiện không được sau hôm nay.');
     const by = min(input.by, 3, 'Người thực hiện');
@@ -69,4 +82,11 @@ export const vaccinationsApi = {
     return { done: data, next };
   },
 
+  async resendStockRequest(v: Vaccination, opts?: { itemId?: number; dose?: number }) {
+    if (!USE_BACKEND) throw new Error('Chỉ dùng khi kết nối backend.');
+    const itemId = opts?.itemId ?? v.itemId ?? undefined;
+    const dose = opts?.dose ?? v.dosePerHorse ?? undefined;
+    await be.post(`/vaccinations/${encodeURIComponent(v.id)}/stock-request`, null, { params: { itemId, dose } });
+    invalidate('vaccinations');
+  },
 };

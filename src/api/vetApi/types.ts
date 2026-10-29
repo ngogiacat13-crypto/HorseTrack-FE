@@ -7,6 +7,7 @@ export type Severity = 'HIGH' | 'MEDIUM' | 'LOW';
 export type CaseStatus = 'NEW' | 'MONITORING' | 'CLOSED';
 export interface CaseExam { symptoms: string; diagnosis: string; severity: Severity; plan: string; health: HealthStatus; by: string; at: string }
 export interface VetCase {
+  beId?: number;
   id: string; horseId: string; horse: string; source: CaseSource; sessionId?: string; type: string; severity: Severity;
   status: CaseStatus; sender: string; at: string; note: string;
   exam?: CaseExam | null; protocolId?: string | null; outcome?: string;
@@ -34,6 +35,7 @@ export interface Protocol {
   delayed: boolean;
   progress: { at: string; by: string; text: string }[];
   outcome: string | null; emergency?: boolean;
+  awaitingPaymentPhaseNo?: number | null; awaitingPaymentPhaseName?: string | null; awaitingPaymentInvoiceCode?: string | null;
   label: string; tone: 'danger' | 'info' | 'success' | 'neutral'; cost: number; trainingLocked?: boolean; open: boolean;
   alertState?: ProtocolState; materials: { item: string; status: string; tone: 'success' | 'danger' | 'neutral' }[]; note: string;
   log: { tone?: 'danger' | 'warning' | 'success'; who: string; text: string; at: string }[];

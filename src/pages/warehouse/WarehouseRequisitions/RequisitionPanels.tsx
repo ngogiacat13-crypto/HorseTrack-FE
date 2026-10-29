@@ -10,7 +10,7 @@ export const RequisitionTable: React.FC<{ rows: Requisition[]; items: StockItem[
   <Panel>
     <div style={{ overflowX: 'auto' }}>
       <table className="ht-table">
-        <thead><tr><th>Mã</th><th>Mã phu · khu</th><th>Vật tư</th><th className="num">SL</th><th className="num">Khả dụng</th><th>Cần trước</th><th>Trạng thái</th></tr></thead>
+        <thead><tr><th>Mã</th><th>Người yêu cầu · khu</th><th>Vật tư</th><th className="num">SL</th><th className="num">Khả dụng</th><th>Cần trước</th><th>Trạng thái</th></tr></thead>
         <tbody>
           {rows.map((r) => {
             const it = items.find((i) => i.id === r.itemId);
@@ -19,7 +19,7 @@ export const RequisitionTable: React.FC<{ rows: Requisition[]; items: StockItem[
               <tr key={r.id} className={selectedId === r.id ? 'is-selected' : undefined} style={{ cursor: 'pointer' }} tabIndex={0}
                 onClick={() => onSelect(r.id)} onKeyDown={(e) => { if (e.key === 'Enter') onSelect(r.id); }}>
                 <td className="id">{r.id}<span className="sub">{r.at}</span></td>
-                <td><span className="strong">{r.by}</span><span className="sub">{r.zone}</span></td>
+                <td><span className="strong">{r.by || '—'}</span><span className="sub">{r.zone}</span></td>
                 <td>{r.item}</td>
                 <td className="num">{r.qty} {r.unit}</td>
                 <td className="num" style={{ color: enough ? undefined : 'var(--danger-ink)' }}>{it ? available(it) : '—'}</td>

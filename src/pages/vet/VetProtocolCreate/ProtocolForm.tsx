@@ -62,7 +62,7 @@ export const ProtocolForm: React.FC<{ data: FormData; horseParam: string; casePa
   const submit = async () => {
     setErr('');
     if (!horse) { setErr('Chọn ngựa.'); return; }
-    if (!vetCase) { setErr('Chọn ca khám cho phác đồ.'); return; }
+    if (!vetCase) { setErr(emergency ? 'Phác đồ cấp cứu phải chọn ca khám.' : 'Chọn ca khám cho phác đồ.'); return; }
     setBusy('send');
     try {
       const p = await vetApi.createProtocol({ horseId, caseId, diagnosis, requiredBy, phases, emergency, replaces: r?.id ?? null }, true, actor);

@@ -39,11 +39,12 @@ export const VetHorseHealth: React.FC = () => {
           {horse.trainingLocked
             ? <button type="button" className="ht-btn ht-btn--secondary" onClick={() => setUnlockOpen(true)}><Icon name="unlock" />Mở khóa huấn luyện</button>
             : <button type="button" className="ht-btn ht-btn--danger" onClick={() => setLockOpen(true)}><Icon name="lock" />Khóa huấn luyện</button>}
-          {activeProto
-            ? <button data-testid="create-protocol-btn" type="button" className="ht-btn ht-btn--primary" disabled title={`Ngựa đã có phác đồ ${activeProto.id}; chỉ tạo lại sau khi hủy phác đồ.`}><Icon name="file" />Đã có phác đồ {activeProto.id}</button>
-            : examined
-              ? <Link data-testid="create-protocol-btn" className="ht-btn ht-btn--primary" to={`/vet/protocols/new?horse=${horse.id}&case=${examined.id}`}><Icon name="file" />Tạo phác đồ</Link>
-              : <button data-testid="create-protocol-btn" type="button" className="ht-btn ht-btn--primary" disabled title="Cần một ca khám đã ghi nhận"><Icon name="file" />Tạo phác đồ</button>}
+          {examined
+            ? <Link data-testid="create-protocol-btn" className="ht-btn ht-btn--primary" to={`/vet/protocols/new?horse=${horse.id}&case=${examined.id}`}><Icon name="file" />Tạo phác đồ</Link>
+            : <button data-testid="create-protocol-btn" type="button" className="ht-btn ht-btn--primary" disabled
+                title={openCases.some((c) => c.exam) ? 'Các ca đã khám đều đã có phác đồ mở' : 'Cần một ca khám đã ghi nhận'}>
+                <Icon name="file" />{openCases.some((c) => c.exam) && activeProto ? `Đã có phác đồ ${activeProto.id}` : 'Tạo phác đồ'}
+              </button>}
         </>}
       />
 

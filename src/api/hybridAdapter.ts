@@ -130,7 +130,13 @@ interface BePlanDetail { planId: number; planName: string; horseId: number | nul
 interface BeSchedule extends BeMonitor { sessionId: number; sessionDate: string; activityType: string; status: string; planName: string; horseName: string; stallZone: string; evaluationScore?: number | null; evaluationComment?: string | null; evaluatedBy?: string | null; evaluatedAt?: string | null }
 interface BeTask { taskId: number; taskCode?: string | null; taskType: string; title?: string | null; status: string; taskDate?: string | null; scheduledTime?: string | null; dueDate?: string | null; instructions?: string | null; completedAt?: string | null; horseName: string; stallCode?: string | null; stallZone: string; groomName?: string | null; warningNote?: string | null; dietNote?: string | null; overdue?: boolean | null; lateMinutes?: number | null; canComplete?: boolean | null; completableFrom?: string | null }
 interface BeCase { caseId: string; id?: number; horseId: number; horseName: string; source: string; issueType: string; severity: string; status: string; description: string; imageUrl?: string | null; reportedByName?: string | null; assignedVetName?: string | null; maxHeartRate: number; vetResult: string | null; createdAt: string; closedAt?: string | null }
-interface BeVacc { id: number; recordCode: string; horseId: number; horseName: string; kind?: string | null; typeName: string; category?: string | null; expectedDate: string; countdown?: string | null; cycleMonths?: number | null; statusCode?: string | null; status: string; doneAt?: string | null; doneByName?: string | null; lotNo?: string | null; itemName?: string | null; note?: string | null }
+interface BeVacc {
+  id: number; recordCode: string; horseId: number; horseName: string; kind?: string | null; typeName: string; category?: string | null;
+  expectedDate: string; countdown?: string | null; cycleMonths?: number | null; statusCode?: string | null; status: string;
+  doneAt?: string | null; doneByName?: string | null; lotNo?: string | null; itemId?: number | null; itemName?: string | null; note?: string | null;
+  requisitionCode?: string | null; requisitionStatus?: string | null; requisitionRejectReason?: string | null;
+  canExecute?: boolean | null; executeBlockedReason?: string | null;
+}
 const VACC_STATUS: Record<string, string> = { OVERDUE: 'DUE_SOON', DUE_SOON: 'DUE_SOON', SCHEDULED: 'SCHEDULED', POSTPONED: 'POSTPONED', SKIPPED: 'POSTPONED', DONE: 'DONE' };
 interface BeTournament { tournamentId: number; code: string; name: string; organizer?: string | null; location?: string | null; raceDate?: string | null; registrationDeadline?: string | null; distanceM?: number | null; entryFee?: number | null; entryConditions?: string | null; finished?: boolean | null; openForProposal?: boolean | null }
 interface BeProposal { proposalId: number; proposalCode?: string | null; status: string; horseId: number; horseName: string; ownerName?: string | null; tournament?: BeTournament | null; proposedByName?: string | null; proposedAt?: string | null; note?: string | null;
@@ -328,6 +334,9 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
       status: VACC_STATUS[(v.statusCode ?? '').toUpperCase()] ?? 'SCHEDULED', overdue: (v.statusCode ?? '').toUpperCase() === 'OVERDUE', countdown: v.countdown ?? undefined,
       kind: (v.kind ?? '').toUpperCase() === 'DEWORM' || /giun/i.test(v.category ?? '') ? 'DEWORM' : 'VACCINE', cycleMonths: v.cycleMonths ?? undefined,
       doneAt: v.doneAt ? ddmmyyyy(v.doneAt) : undefined, by: v.doneByName ?? undefined, lot: v.lotNo ?? undefined, note: v.note ?? undefined,
+      itemId: v.itemId ?? null, itemName: v.itemName ?? null,
+      requisitionCode: v.requisitionCode ?? null, requisitionStatus: v.requisitionStatus ?? null, requisitionRejectReason: v.requisitionRejectReason ?? null,
+      canExecute: v.canExecute ?? null, executeBlockedReason: v.executeBlockedReason ?? null,
     }));
   },
 

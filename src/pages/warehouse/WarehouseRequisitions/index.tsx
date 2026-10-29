@@ -34,7 +34,7 @@ export const WarehouseRequisitions: React.FC = () => {
 
   return (
     <div className="ht ht-page">
-      <PageHeader title="Yêu cầu vật tư từ Mã phu" sub="Móng, yên cương, dụng cụ, vật tư chuồng trại. Đủ thì cấp, thiếu thì chờ đơn nhập, từ chối phải có lý do." />
+      <PageHeader title="Yêu cầu cấp vật tư / thuốc" sub="Yêu cầu từ Mã phu hoặc Bác sĩ (tiêm phòng). Đủ thì cấp, thiếu thì chờ đơn nhập, từ chối phải có lý do." />
       <Tabs<Tab> value={tab} onChange={setTab} items={[
         { value: 'todo', label: 'Cần xử lý', count: count('todo') },
         { value: 'waiting', label: 'Chờ hàng về', count: count('waiting') },

@@ -20,7 +20,7 @@ const WAIT_TEXT: Record<string, string> = {
   WAITING_RESTOCK: 'Bác sĩ chọn chờ hàng. Khi nhận lô hàng ở trang Đơn nhập, hệ thống tự giữ hàng và báo bác sĩ rà soát lại.',
   REQUIRES_VET_REVIEW: 'Chờ bác sĩ đánh giá lại (hàng trễ hoặc hàng vừa về). Chưa được cấp phát.',
   IN_TREATMENT: 'Đã cấp phát — đang điều trị.',
-  ON_HOLD_PAYMENT: 'Đã cấp phát — chờ chủ ngựa thanh toán giai đoạn 1. Chưa chuyển sang điều trị.',
+  ON_HOLD_PAYMENT: 'Đã cấp phát — chờ chủ ngựa thanh toán. Chưa chuyển sang điều trị.',
   COMPLETED: 'Đã cấp phát — điều trị hoàn tất.',
 };
 
@@ -92,7 +92,11 @@ export const WarehouseMedicalDetail: React.FC = () => {
               ) : <div className="ht-empty">Không đổi thuốc / số lượng (chỉ đổi giai đoạn hoặc ngày).</div>}
             </Panel>
           )}
-          {WAIT_TEXT[p.state] && <Callout tone={['IN_TREATMENT', 'ON_HOLD_PAYMENT', 'COMPLETED'].includes(p.state) ? 'success' : 'info'} icon="info">{WAIT_TEXT[p.state]}</Callout>}
+          {WAIT_TEXT[p.state] && <Callout tone={['IN_TREATMENT', 'ON_HOLD_PAYMENT', 'COMPLETED'].includes(p.state) ? 'success' : 'info'} icon="info">
+            {p.state === 'ON_HOLD_PAYMENT' && !p.emergency
+              ? `Đã cấp phát — chờ chủ ngựa thanh toán giai đoạn ${p.awaitingPaymentPhaseNo ?? '?'}${p.awaitingPaymentPhaseName ? ` (${p.awaitingPaymentPhaseName})` : ''}${p.awaitingPaymentInvoiceCode ? ` · HĐ ${p.awaitingPaymentInvoiceCode}` : ''}. Chưa chuyển sang điều trị.`
+              : WAIT_TEXT[p.state]}
+          </Callout>}
           {p.state === 'IN_TREATMENT' && <SupplementReview protocol={p} onDone={reload} />}
 
           <DispensingHistory protocolBeId={(p as { beId?: number }).beId} />
