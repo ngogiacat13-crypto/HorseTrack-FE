@@ -120,7 +120,7 @@ const injuriesOf = async (horseId: string) => {
 };
 interface BeStall { stallId: number; stallCode: string; barnZone: string; cleanStatus: string; currentHorseId: number | null; horseName: string | null }
 interface BePhase { phaseNo: number; name: string; weeks: number; intensity: string; distanceM?: number | null; sessionsPerWeek?: number | null; maxHeartRate?: number | null; current?: boolean | null }
-interface BePlan { planId: number; planName: string; horseName: string; startDate: string; endDate: string; status: string; progress: number; type?: string | null; phases?: BePhase[] | null }
+interface BePlan { planId: number; planName: string; horseName: string; startDate: string; endDate: string; status: string; progress: number; type?: string | null; goal?: string | null; phases?: BePhase[] | null }
 const INTENSITY: Record<string, string> = { LOW: 'Nhẹ', LIGHT: 'Nhẹ', MEDIUM: 'Vừa', MODERATE: 'Vừa', HIGH: 'Cao', 'NHẸ': 'Nhẹ', 'VỪA': 'Vừa', CAO: 'Cao' };
 const toPhases = (phases: BePhase[] | null | undefined, weeks: number) => phases?.length
   ? phases.map((ph) => ({ no: ph.phaseNo, name: ph.name, weeks: ph.weeks, intensity: INTENSITY[(ph.intensity ?? '').toUpperCase()] ?? ph.intensity, distanceM: Number(ph.distanceM) || 0, sessionsPerWeek: ph.sessionsPerWeek ?? 0, hrLimit: ph.maxHeartRate ?? SERVER_DEFAULT_MAX_HR }))
@@ -241,12 +241,11 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
   async trainingPlans() {
     if (me()?.role === 'HorseOwner') return (await ownerProgress()).map(({ plan }) => plan);
     const [page, horses] = await Promise.all([data<{ content: BePlan[] }>('/training-plans', { page: 0, size: 500 }).catch(() => ({ content: [] })), LOADERS.horses()]);
-    const goals = await Promise.all(page.content.map((p) => data<{ goal?: string | null }>(`/training-plans/${p.planId}`).then((d) => d.goal ?? '').catch(() => '')));
-    return page.content.map((p, i) => {
+    return page.content.map((p) => {
       const weeks = Math.max(1, Math.round((new Date(p.endDate).getTime() - new Date(p.startDate).getTime()) / (7 * 864e5)));
       return {
         id: String(p.planId), horseId: (byName(horses, p.horseName)?.id as string) ?? '', horseName: p.horseName, name: p.planName,
-        ...planMeta(goals[i]), ...(p.type ? { type: p.type } : {}), startDate: ddmmyyyy(p.startDate), createdBy: '—',
+        ...planMeta(p.goal ?? ''), ...(p.type ? { type: p.type } : {}), startDate: ddmmyyyy(p.startDate), createdBy: '—',
         phases: toPhases(p.phases, weeks),
         currentPhase: currentPhaseOf(p.phases), week: Math.max(1, Math.round((p.progress ?? 0) * weeks / 100)), status: PLAN_STATUS[(p.status ?? '').toUpperCase()] ?? 'PAUSED',
       };
