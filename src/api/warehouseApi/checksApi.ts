@@ -9,6 +9,8 @@ export const checksApi = {
     return { checks: [...checks].sort((a, b) => b.id.localeCompare(a.id)), items };
   },
 
+  getCheck: (id: string) => get<StockCheck>(`/stockChecks/${encodeURIComponent(id)}`),
+
   async submitCheck(input: { note: string; lines: { itemId: string; counted: number; reason: string }[] }, actor: Actor) {
     if (!input.lines.length) throw new Error('Chưa có mặt hàng nào được đếm.');
     const [items, checks] = await Promise.all([get<StockItem[]>('/inventory'), get<StockCheck[]>('/stockChecks')]);

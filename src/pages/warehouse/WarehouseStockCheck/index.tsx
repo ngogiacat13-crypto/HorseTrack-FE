@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { warehouseApi } from '../../../api/warehouseApi';
+import { warehouseApi, type StockCheck } from '../../../api/warehouseApi';
 import { useFetch } from '../../../hooks/useFetch';
 import { Badge, PageHeader, Panel } from '../../../components/ui/Ht';
 import { LoadState } from '../../../components/trainer/TrainerParts';
@@ -8,6 +8,12 @@ import { CountSheet } from './CountSheet';
 export const WarehouseStockCheck: React.FC = () => {
   const { data, loading, error, reload } = useFetch(() => warehouseApi.getChecks());
   const [open, setOpen] = useState<string | null>(null);
+  const [detail, setDetail] = useState<Record<string, StockCheck>>({});
+  const toggle = (id: string) => {
+    const next = open === id ? null : id;
+    setOpen(next);
+    if (next && !detail[next]) warehouseApi.getCheck(next).then((d) => setDetail((x) => ({ ...x, [next]: d }))).catch(() => undefined);
+  };
   if (!data) return <LoadState loading={loading} error={error} onRetry={reload} />;
 
   return (
@@ -18,11 +24,12 @@ export const WarehouseStockCheck: React.FC = () => {
         <div>
           <Panel as="h3" title="Biên bản đã lưu">
             <div className="ht-panel__body" style={{ display: 'grid', gap: 10 }}>
-              {data.checks.map((c) => {
+              {data.checks.map((listed) => {
+                const c = detail[listed.id] ?? listed;
                 const diffs = c.lines.filter((l) => l.counted !== l.system);
                 return (
                   <div key={c.id} className="ht-quote">
-                    <button type="button" className="ht-more" onClick={() => setOpen(open === c.id ? null : c.id)} aria-expanded={open === c.id}>
+                    <button type="button" className="ht-more" onClick={() => toggle(c.id)} aria-expanded={open === c.id} data-testid={`stock-check-${c.id}`}>
                       <span className="ht-mono">{c.id}</span>
                     </button>
                     <span style={{ float: 'right' }}><Badge tone={diffs.length ? 'warning' : 'success'} plain>{diffs.length ? `${diffs.length} chênh lệch` : 'Khớp'}</Badge></span>

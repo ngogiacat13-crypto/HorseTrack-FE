@@ -2,7 +2,7 @@ import type { AxiosAdapter } from 'axios';
 import { be, type ApiResponse } from './beClient';
 import { loadInvoices, loadPayments, mapInvoice, type BeInvoice } from './beFinance';
 import { fail, queryRows, respond } from './mockServer';
-import { loadAuditLogs, loadInventory, loadProtocols, loadRequisitions, loadShipments, loadStockChecks, loadStockTx, loadUsers, mapPo, mapUser, type BeUser } from './beDomain';
+import { loadAuditLogs, loadInventory, loadProtocols, loadRequisitions, loadShipments, loadStockChecks, loadStockTx, loadUsers, mapCount, mapPo, mapUser, type BeCount, type BeUser } from './beDomain';
 
 
 type Row = Record<string, unknown>;
@@ -738,6 +738,7 @@ const DETAILS: Record<string, (row: Row) => Promise<Row> | null> = {
   shipments: (row) => (me()?.role === 'WarehouseManager' && row.beId ? data<Parameters<typeof mapPo>[0]>(`/inventory/purchase-orders/${row.beId}`).then(mapPo) : null),
   invoices: (row) => (me()?.role === 'ClubManager' && row.beId ? data<BeInvoice>(`/billing/invoices/${row.beId}`).then((i) => mapInvoice(i) as unknown as Row) : null),
   users: (row) => (me()?.role === 'ClubManager' && row.beId ? data<BeUser>(`/users/${row.beId}`).then(mapUser) : null),
+  stockChecks: (row) => (me()?.role === 'WarehouseManager' && row.beId ? data<BeCount>(`/inventory/stock-counts/${row.beId}`).then(mapCount) : null),
 };
 const freshRow = async (name: string, id: string, row: Row) => {
   const fresh = await (DETAILS[name]?.(row) ?? null)?.catch(() => null);

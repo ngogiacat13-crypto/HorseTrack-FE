@@ -40,7 +40,12 @@ export const VetVaccinations: React.FC = () => {
   const [busy, setBusy] = useState(false);
 
   const all = useMemo(() => data?.vaccinations ?? [], [data]);
-  const meds = useMemo(() => (medsFetch.data ?? []).filter((m) => m.category === 'Thuốc' || m.category === 'Vaccine' || /thuốc|vaccine|giun/i.test(m.name)), [medsFetch.data]);
+  const [kindItems, setKindItems] = useState<Partial<Record<Kind, InventoryItem[]>>>({});
+  const meds = useMemo(() => kindItems[plan.kind] ?? (medsFetch.data ?? []).filter((m) => m.category === 'Thuốc' || m.category === 'Vaccine' || /thuốc|vaccine|giun/i.test(m.name)), [kindItems, plan.kind, medsFetch.data]);
+  const loadKindItems = (kind: Kind) => {
+    if (kindItems[kind]) return;
+    vetApi.getVaccinationItems(kind).then((list) => { if (list) setKindItems((x) => ({ ...x, [kind]: list })); }).catch(() => undefined);
+  };
   const groups = useMemo(() => ({
     due7: all.filter(dueWithin7).sort(byDue),
     upcoming: all.filter((v) => v.status !== 'DONE' && !dueWithin7(v)).sort(byDue),
@@ -57,6 +62,7 @@ export const VetVaccinations: React.FC = () => {
   const openPlan = (kind: Kind) => {
     setPlan({ kind, type: kind === 'DEWORM' ? 'Tẩy giun định kỳ' : '', due: addDays(DEMO_NOW.date, 7), cycleMonths: kind === 'DEWORM' ? 3 : 6, note: '', horseIds: [], itemId: null, dosePerHorse: 1 });
     setErr(''); setPlanOpen(true);
+    loadKindItems(kind);
   };
   const toggleHorse = (id: string) => setPlan({ ...plan, horseIds: plan.horseIds.includes(id) ? plan.horseIds.filter((x) => x !== id) : [...plan.horseIds, id] });
   const pickMed = (id: string) => {
@@ -134,7 +140,7 @@ export const VetVaccinations: React.FC = () => {
         confirmLabel={`Tạo lịch cho ${plan.horseIds.length || ''} ngựa`} onConfirm={() => run(() => vetApi.scheduleVaccination(plan, actor), `Đã tạo lịch “${plan.type}” cho ${plan.horseIds.length} ngựa.`, () => setPlanOpen(false))}>
         {err && <Callout tone="danger" style={{ marginBottom: 14 }}>{err}</Callout>}
         <div style={{ display: 'grid', gap: 14 }}>
-          <Segmented<Kind> label="Loại lịch" value={plan.kind} onChange={(k) => setPlan({ ...plan, kind: k, cycleMonths: k === 'DEWORM' ? 3 : 6, type: k === 'DEWORM' ? 'Tẩy giun định kỳ' : '', itemId: null })}
+          <Segmented<Kind> label="Loại lịch" value={plan.kind} onChange={(k) => { setPlan({ ...plan, kind: k, cycleMonths: k === 'DEWORM' ? 3 : 6, type: k === 'DEWORM' ? 'Tẩy giun định kỳ' : '', itemId: null }); loadKindItems(k); }}
             items={[{ value: 'VACCINE', label: 'Tiêm phòng' }, { value: 'DEWORM', label: 'Tẩy giun' }]} />
           <div className="ht-grid-2">
             <div className="ht-field" style={{ margin: 0 }}>

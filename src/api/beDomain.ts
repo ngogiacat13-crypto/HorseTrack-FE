@@ -171,16 +171,17 @@ export const loadRequisitions = async (): Promise<Row[] | null> => {
   return null;
 };
 
-interface BeCount { countId: number; countCode: string; countMonth: string; status: string; countedByName?: string; countedAt?: string; note?: string | null; lines?: { itemCode: string; itemName: string; unit: string; systemQty: number; countedQty: number; reason?: string | null }[] | null }
+export interface BeCount { countId: number; countCode: string; countMonth: string; status: string; countedByName?: string; countedAt?: string; note?: string | null; lines?: { itemCode: string; itemName: string; unit: string; systemQty: number; countedQty: number; reason?: string | null }[] | null }
 export const loadStockChecks = async (): Promise<Row[] | null> => {
   if (me()?.role !== 'WarehouseManager') return null;
   const list = await beGet<BeCount[]>('/inventory/stock-counts');
-  return list.map((c) => ({
-    id: c.countCode, beId: c.countId, month: `${c.countMonth.slice(5, 7)}/${c.countMonth.slice(0, 4)}`, at: dmyhm(c.countedAt), by: c.countedByName ?? '—',
-    status: 'DONE', note: c.note ?? '',
-    lines: (c.lines ?? []).map((l) => ({ itemId: l.itemCode, item: l.itemName, unit: l.unit, system: Number(l.systemQty) || 0, counted: Number(l.countedQty) || 0, reason: l.reason ?? '' })),
-  }));
+  return list.map(mapCount);
 };
+export const mapCount = (c: BeCount): Row => ({
+  id: c.countCode, beId: c.countId, month: `${c.countMonth.slice(5, 7)}/${c.countMonth.slice(0, 4)}`, at: dmyhm(c.countedAt), by: c.countedByName ?? '—',
+  status: 'DONE', note: c.note ?? '',
+  lines: (c.lines ?? []).map((l) => ({ itemId: l.itemCode, item: l.itemName, unit: l.unit, system: Number(l.systemQty) || 0, counted: Number(l.countedQty) || 0, reason: l.reason ?? '' })),
+});
 
 interface BeTx { transactionId?: number | null; txCode?: string | null; txType?: string | null; itemCode?: string | null; itemName?: string | null; lotNo?: string | null; quantity?: number | null; balanceAfter?: number | null; refType?: string | null; refId?: number | null; performedByName?: string | null; performedAt?: string | null; note?: string | null }
 const REF: Record<string, string> = { PROTOCOL: 'PD-', PURCHASE_ORDER: 'SHIP-', REQUISITION: 'RQ-', STOCK_COUNT: 'KK#' };
