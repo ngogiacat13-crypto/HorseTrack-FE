@@ -9,20 +9,12 @@ export const ROLES: { icon: IconName; name: string; en: string; text: string; it
   { icon: 'user', name: 'Chủ ngựa', en: 'HorseOwner', text: 'Theo dõi ngựa của mình, xác nhận thi đấu và thanh toán.', items: ['Hồ sơ, sức khỏe, phong độ', 'Đồng ý / từ chối thi đấu', 'Hóa đơn & VNPay', 'Đăng ký ngựa mới'] },
 ];
 
-export const FLOWS: { title: string; who: string; steps: string[] }[] = [
-  { title: 'Đăng ký ngựa mới', who: 'Chủ ngựa → Quản lý CLB', steps: ['Nộp hồ sơ + giấy tờ', 'PENDING_REVIEW', 'Checklist 3 mục', 'APPROVED / REJECTED'] },
-  { title: 'Phiên tập vượt ngưỡng', who: 'Mã phu → HLV → Bác sĩ', steps: ['Nhập chỉ số', 'Tự tạm dừng (BR_02)', 'HLV quyết định', 'Tiếp tục / chuyển Bác sĩ'] },
-  { title: 'Phác đồ & thuốc', who: 'Bác sĩ ↔ Quản lý kho', steps: ['Lập phác đồ', 'Kho kiểm tồn', 'Giữ hàng / chờ ETA', 'Bác sĩ xác nhận → cấp thuốc'] },
-  { title: 'Thi đấu', who: 'HLV → Chủ ngựa → Bác sĩ', steps: ['Đề xuất', 'Chủ ngựa đồng ý', 'Khám sức khỏe', 'READY_TO_SUBMIT'] },
-  { title: 'Vật tư chuồng trại', who: 'Mã phu → Quản lý kho', steps: ['Gửi yêu cầu', 'Kiểm tồn', 'Cấp phát / chờ hàng', 'Mã phu xác nhận nhận'] },
-  { title: 'Hóa đơn quá hạn', who: 'Hệ thống → Chủ ngựa → Quản lý CLB', steps: ['Quá 10 ngày: phạt', 'Đạt 25 ngày: đình chỉ', 'Thanh toán VNPay + xác minh', 'Kích hoạt lại'] },
-];
-
-export const RULES: [string, string][] = [
-  ['BR_01', 'Chỉ Bác sĩ thú y khóa / mở khóa huấn luyện.'],
-  ['BR_02', 'Vượt ngưỡng nhịp tim hoặc tốc độ → phiên tự tạm dừng.'],
-  ['BR_04', 'Chủ ngựa chỉ xác nhận thi đấu sau kết quả khám ĐẠT.'],
-  ['BR_07', 'Bác sĩ quyết định phác đồ; kho chỉ kiểm tồn và cấp phát.'],
-  ['BR_09', 'Chủ ngựa chỉ xem dữ liệu ngựa mình sở hữu.'],
-  ['BR_12–14', 'Phí phạt, đình chỉ và kích hoạt lại theo cấu hình CLB.'],
+export const CORE_FEATURES: { id: string; icon: IconName; title: string; text: string; tone: string; highlights?: string[] }[] = [
+  { id: 'feature-tournaments', icon: 'trend', title: 'QUẢN LÝ GIẢI ĐẤU', text: 'Thiết lập điều lệ, thời gian đăng ký, tiêu chí và giải thưởng cho từng cuộc đua.', tone: 'green', highlights: ['Thiết lập giải', 'Mở đăng ký', 'Ghi nhận kết quả'] },
+  { id: 'feature-registration', icon: 'clip', title: 'ĐĂNG KÝ NGỰA DỰ THI', text: 'Chủ ngựa chọn ngựa đủ điều kiện, gửi đề xuất và theo dõi tiến độ hồ sơ.', tone: 'gold' },
+  { id: 'feature-race-checks', icon: 'heart', title: 'HLV & KHÁM THÚ Y', text: 'HLV xác nhận khả năng tham gia; bác sĩ hoàn tất khám trước thi đấu.', tone: 'teal' },
+  { id: 'feature-training', icon: 'calendar', title: 'LỊCH TẬP & GIÁO ÁN', text: 'Lập giáo án theo giai đoạn, xếp phiên tập và theo dõi trạng thái từng buổi.', tone: 'blue' },
+  { id: 'feature-health', icon: 'task', title: 'SỨC KHỎE & CHĂM SÓC NGỰA', text: 'Theo dõi hồ sơ sức khỏe, ca khám, tiêm phòng và công việc chăm sóc hằng ngày.', tone: 'purple' },
+  { id: 'feature-warehouse', icon: 'box', title: 'KHO & DINH DƯỠNG', text: 'Kiểm tồn, cấp thuốc theo phác đồ, quản lý yêu cầu vật tư và thực đơn.', tone: 'green' },
+  { id: 'feature-results', icon: 'chart', title: 'KẾT QUẢ & TIỀN THƯỞNG', text: 'Ghi nhận thứ hạng, thành tích và tiền thưởng để chủ ngựa theo dõi.', tone: 'gold', highlights: ['Thứ hạng', 'Thành tích', 'Tiền thưởng'] },
 ];
