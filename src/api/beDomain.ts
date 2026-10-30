@@ -69,6 +69,7 @@ interface BeProtocol {
   isDelayed?: boolean; trainingLocked?: boolean; waitEta?: string | null; waitNote?: string | null; note?: string | null; outcome?: string | null;
   createdAt?: string; totalCost?: number; emergency?: boolean | null; isEmergency?: boolean | null;
   awaitingPaymentPhaseNo?: number | null; awaitingPaymentPhaseName?: string | null; awaitingPaymentInvoiceCode?: string | null;
+  phaseProgress?: { phaseNo: number; status: string; canFinish?: boolean; canStart?: boolean; finishBlockedReason?: string | null }[] | null;
   phases?: { phaseNo: number; phaseName: string; startDate: string; durationDays: number; goal?: string | null; invoiceStatus?: string | null; items: { itemId: number; itemCode: string; itemName: string; unit: string; quantity: number; unitPrice: number; dosage?: string | null }[] }[] | null;
   stockAnswer?: { itemId: number; itemName: string; unit: string; qtyNeeded: number; qtyAvailable: number; qtyHeld: number; qtyShort: number; eta?: string | null; purchaseOrderId?: number | null; status?: string | null; checkedByName?: string; checkedAt?: string }[] | null;
   progressNotes?: { writtenByName: string; writtenAt: string; content: string }[] | null;
@@ -106,6 +107,7 @@ export const mapProtocol = (p: BeProtocol): Row => {
     awaitingPaymentPhaseNo: p.awaitingPaymentPhaseNo ?? null,
     awaitingPaymentPhaseName: p.awaitingPaymentPhaseName ?? null,
     awaitingPaymentInvoiceCode: p.awaitingPaymentInvoiceCode ?? null,
+    phaseProgress: p.phaseProgress ?? undefined,
     dispensedPhases: dispensedMarked.length ? [...new Set(dispensedMarked)] : answer.length > 0 && answer.every((a) => a.status === 'ISSUED') ? phases.map((ph) => ph.no) : [],
     label: PROTOCOL_LABEL[state][0], tone, cost: Number(p.totalCost) || 0, trainingLocked: !!p.trainingLocked,
     open: !CLOSED.includes(state), materials: answer.map((a) => ({ item: `${a.itemName} · ${a.qtyNeeded} ${a.unit}`, status: a.qtyShort > 0 ? `Thiếu ${a.qtyShort}` : 'Đủ', tone: a.qtyShort > 0 ? 'danger' : 'success' })),

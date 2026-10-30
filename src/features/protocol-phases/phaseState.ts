@@ -2,7 +2,7 @@ import type { Protocol } from '../../api/vetApi/types';
 
 export type PhaseProgressStatus = 'WAITING_PAYMENT' | 'READY_TO_START' | 'IN_PROGRESS' | 'COMPLETED' | 'STOPPED';
 export type PhasePaymentStatus = 'UNPAID' | 'PAID';
-export interface PhaseProgress { phaseNo: number; status: PhaseProgressStatus; reason?: string }
+export interface PhaseProgress { phaseNo: number; status: PhaseProgressStatus; reason?: string; canStart?: boolean; canFinish?: boolean; finishBlockedReason?: string | null }
 export interface PhaseBilling { phaseNo: number; invoiceId: string | null; amount: number; status: PhasePaymentStatus; notice?: string }
 
 const completedFromProgress = (p: Protocol) => new Set(p.progress.flatMap((entry) => {
