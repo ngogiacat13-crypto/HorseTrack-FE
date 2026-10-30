@@ -10,7 +10,7 @@ const stepOf = (s: ProposalStatus): { at: number; failed: boolean } => ({
   PROPOSED: { at: 0, failed: false }, WAITING_OWNER: { at: 1, failed: false }, OWNER_DECLINED: { at: 1, failed: true },
   WAITING_VET_EXAM: { at: 2, failed: false }, VET_FAILED: { at: 2, failed: true }, READY_TO_SUBMIT: { at: 3, failed: false },
   SUBMITTED: { at: 4, failed: false }, REJECTED_BY_ORGANIZER: { at: 3, failed: true }, RESULT_RECORDED: { at: 5, failed: false },
-}[s]);
+} as Partial<Record<ProposalStatus, { at: number; failed: boolean }>>)[s] ?? { at: 0, failed: false };
 
 const Stepper: React.FC<{ status: ProposalStatus }> = ({ status }) => {
   const st = stepOf(status);

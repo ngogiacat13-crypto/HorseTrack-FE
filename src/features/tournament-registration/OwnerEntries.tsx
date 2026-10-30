@@ -80,8 +80,8 @@ export const OwnerEntries: React.FC = () => {
                 {cur.result && <Callout tone="success" title={`Kết quả: hạng ${cur.result.rank} · ${cur.result.finishTime}`} testId="owner-entry-result">{cur.result.prize ? `Tiền thưởng ${money(cur.result.prize)}.` : 'Không có tiền thưởng cho thứ hạng này.'}</Callout>}
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                   {cur.status === 'WAITING_PAYMENT' && cur.invoiceId && <Link to={`/owner/invoices/${cur.invoiceId}`} className="ht-btn ht-btn--primary" data-testid="entry-pay-btn"><Icon name="card" size={16} />Nộp lệ phí {t ? money(t.entryFee) : ''}</Link>}
-                  {['REGISTERED', 'RESULTED'].includes(cur.status) && <button type="button" className="ht-btn ht-btn--secondary" data-testid="entry-dossier-btn" onClick={() => setDossierOf(cur)}><Icon name="file" size={16} />Xem hồ sơ đăng ký</button>}
-                  {cur.status === 'TRAINER_REJECTED' && !cur.complaint && <button type="button" className="ht-btn ht-btn--secondary" data-testid="entry-complain-btn" onClick={() => { act.setError(''); setReason(''); setComplaining(cur); }}><Icon name="alert" size={16} />Khiếu nại</button>}
+                  {['REGISTERED', 'RESULT_RECORDED'].includes(cur.status) && <button type="button" className="ht-btn ht-btn--secondary" data-testid="entry-dossier-btn" onClick={() => setDossierOf(cur)}><Icon name="file" size={16} />Xem hồ sơ đăng ký</button>}
+                  {cur.status === 'TRAINER_REJECTED' && !cur.complaint && cur.canComplain !== false && <button type="button" className="ht-btn ht-btn--secondary" data-testid="entry-complain-btn" onClick={() => { act.setError(''); setReason(''); setComplaining(cur); }}><Icon name="alert" size={16} />Khiếu nại</button>}
                   {CANCELLABLE.includes(cur.status) && <button type="button" className="ht-btn ht-btn--secondary" data-testid="entry-cancel-btn" onClick={() => { act.setError(''); setCancelling(cur); }}><Icon name="x" size={16} />Hủy đề xuất</button>}
                 </div>
                 {t && <TournamentFacts t={t} />}

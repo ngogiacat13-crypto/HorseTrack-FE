@@ -43,7 +43,9 @@ export interface Tournament {
 }
 export type ProposalStatus =
   | 'PROPOSED' | 'WAITING_VET_EXAM' | 'VET_FAILED' | 'WAITING_OWNER' | 'OWNER_DECLINED'
-  | 'READY_TO_SUBMIT' | 'SUBMITTED' | 'REJECTED_BY_ORGANIZER' | 'RESULT_RECORDED';
+  | 'READY_TO_SUBMIT' | 'SUBMITTED' | 'REJECTED_BY_ORGANIZER' | 'RESULT_RECORDED'
+  | 'WAITLISTED' | 'WAITING_TRAINER' | 'WAITING_PAYMENT' | 'REGISTERED' | 'TRAINER_REJECTED' | 'TRAINER_EXPIRED'
+  | 'VET_EXPIRED' | 'PAYMENT_EXPIRED' | 'CANCELLED' | 'INELIGIBLE' | 'NO_SLOT';
 export interface RaceProposal {
   id: string; beId?: number; horseId: string; horseName: string; owner: string; tournamentId: string; status: ProposalStatus;
   createdAt: string; createdBy: string; note?: string;

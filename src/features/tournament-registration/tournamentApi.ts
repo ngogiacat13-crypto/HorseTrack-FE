@@ -2,7 +2,7 @@ import { DEMO_NOW, http } from '../../api/http';
 import { USE_BACKEND, be, beData } from '../../api/beClient';
 import { addAudit, type Actor } from '../../api/managerApi';
 import {
-  ACTIVE, CANCELLABLE, HOLDING, eligibilityReasons, endOfDay, fmtDate, formScore, holdingCount, prizeFor, registrationOpen,
+  ACTIVE, CANCELLABLE, HOLDING, TRAINER_CONFIRMED, eligibilityReasons, endOfDay, fmtDate, formScore, holdingCount, prizeFor, registrationOpen,
   stageDeadline, sweepTournament, toIsoDay, toIsoMinute, validateTournament, waitlist, type HorseFacts,
 } from './logic';
 import type { Dossier, EntryHistory, EntryStatus, OwnerTournament, RaceEntry, RaceTournament, RejectCode, TournamentDraft } from './types';
@@ -15,12 +15,19 @@ interface ProtocolRow { horseId: string; state: string }
 interface SessionRow { horseId: string; evaluation?: { score: number } | null }
 interface InvoiceRow { id: string; status: string; paidAt?: string }
 interface UserRow { id: string; fullname?: string; role: string }
+interface BeDossier {
+  proposal: Record<string, unknown> & { proposalCode?: string; tournament?: Record<string, unknown> | null };
+  horse: { horseId: number; horseName: string; breed?: string | null; gender?: string | null; ageYears?: number | null; weightKg?: number | string | null };
+  owner?: { fullName?: string | null } | null; trainer?: { fullName?: string | null } | null;
+  vetExam?: { vetName?: string | null; passed?: boolean | null; checkedAt?: string | null; note?: string | null } | null;
+  payment?: { paidAt?: string | null } | null; generatedAt?: string | null;
+}
 
 const T = '/raceTournaments';
 const E = '/raceEntries';
 const get = async <R,>(url: string, params?: Record<string, unknown>) => (await http.get<R>(url, { params })).data;
 
-export const RACE_FLOW_V2 = !USE_BACKEND || import.meta.env.VITE_RACE_FLOW === 'v2';
+export const RACE_FLOW_V2 = import.meta.env.VITE_RACE_FLOW !== 'v1';
 
 export const clockNow = () => {
   if (USE_BACKEND) return new Date();
@@ -40,19 +47,56 @@ const mapBeTournament = (t: Record<string, unknown>): RaceTournament => ({
   distanceM: Number(t.distanceM ?? 0), entryFee: Number(t.entryFee ?? 0), slots: Number(t.slots ?? 0),
   minAgeYears: (t.minAgeYears as number | null) ?? null, maxAgeYears: (t.maxAgeYears as number | null) ?? null,
   minWeightKg: (t.minWeightKg as number | null) ?? null, maxWeightKg: (t.maxWeightKg as number | null) ?? null,
-  allowedBreeds: (t.allowedBreeds as string[] | null) ?? [], prizes: (t.prizes as RaceTournament['prizes'] | null) ?? [],
-  status: (t.status as RaceTournament['status']) ?? 'DRAFT', note: (t.note as string | undefined) ?? undefined,
+  allowedBreeds: (t.allowedBreeds as string[] | null) ?? [],
+  prizes: ((t.prizes as { rank: number; amount: number | string }[] | null) ?? []).map((p) => ({ rank: Number(p.rank), amount: Number(p.amount) })),
+  status: (t.status as RaceTournament['status']) ?? 'DRAFT', note: (t.entryConditions as string | null) ?? undefined,
 });
+
+const minute = (v: unknown) => (v ? String(v).slice(0, 16) : '');
+const raceTime = (seconds: unknown) => {
+  if (seconds == null) return '—';
+  const total = Number(seconds);
+  const m = Math.floor(total / 60);
+  return `${m}:${(total - m * 60).toFixed(2).padStart(5, '0')}`;
+};
+const COMPLAINT_STATUS: Record<string, 'OPEN' | 'ACCEPTED' | 'REJECTED'> = { PENDING: 'OPEN', ACCEPTED: 'ACCEPTED', REJECTED: 'REJECTED' };
+
+const beHistory = (p: Record<string, unknown>): EntryHistory[] => {
+  const rows: EntryHistory[] = [{ at: minute(p.proposedAt), who: String(p.ownerName ?? 'Chủ ngựa'), text: 'đề xuất tham gia' }];
+  if (p.slotHeldAt && p.slotHeldAt !== p.proposedAt) rows.push({ at: minute(p.slotHeldAt), who: 'Hệ thống', text: 'giữ suất · chờ HLV xác nhận', tone: 'info' });
+  if (p.trainerDecidedAt) rows.push({ at: minute(p.trainerDecidedAt), who: `HLV ${p.trainerName ?? ''}`.trim(), text: p.trainerApproved ? 'xác nhận ngựa sẵn sàng · chuyển bác sĩ khám' : `từ chối: ${p.trainerReasonLabel ?? ''}${p.trainerNote ? ` — ${p.trainerNote}` : ''}`, tone: p.trainerApproved ? 'success' : 'danger' });
+  if (p.complaintAt) rows.push({ at: minute(p.complaintAt), who: String(p.ownerName ?? 'Chủ ngựa'), text: `gửi khiếu nại: ${p.complaintNote ?? ''}`, tone: 'warning' });
+  if (p.complaintDecidedAt) rows.push({ at: minute(p.complaintDecidedAt), who: 'Quản lý CLB', text: `${p.complaintStatus === 'ACCEPTED' ? 'chấp nhận' : 'bác'} khiếu nại${p.complaintDecisionNote ? `: ${p.complaintDecisionNote}` : ''}`, tone: p.complaintStatus === 'ACCEPTED' ? 'success' : 'danger' });
+  if (p.vetCheckedAt) rows.push({ at: minute(p.vetCheckedAt), who: `BS ${p.vetName ?? ''}`.trim(), text: p.vetPassed ? `kết luận ĐẠT${p.invoiceCode ? ` · hóa đơn lệ phí ${p.invoiceCode}` : ''}` : `kết luận KHÔNG ĐẠT: ${p.vetNote ?? ''}`, tone: p.vetPassed ? 'success' : 'danger' });
+  if (p.paidAt) rows.push({ at: minute(p.paidAt), who: 'Hệ thống · VNPay', text: 'đã nộp lệ phí · đăng ký thành công', tone: 'success' });
+  if (p.rank != null) rows.push({ at: minute(p.closedAt), who: 'Quản lý CLB', text: `nhập kết quả: hạng ${p.rank} · ${raceTime(p.finishTimeSeconds)}`, tone: 'success' });
+  if (p.closedReason && p.rank == null) rows.push({ at: minute(p.closedAt), who: 'Hệ thống', text: String(p.closedReason), tone: 'danger' });
+  return rows.filter((r) => r.at).sort((a, b) => b.at.localeCompare(a.at));
+};
+
 const mapBeEntry = (p: Record<string, unknown>): RaceEntry => ({
   id: String(p.proposalCode ?? p.proposalId), beId: Number(p.proposalId), tournamentId: String(p.tournamentId ?? (p.tournament as { tournamentId?: number } | null)?.tournamentId ?? ''),
-  horseId: String(p.horseId), horseName: String(p.horseName ?? ''), owner: String(p.ownerName ?? ''), status: p.status as EntryStatus,
-  createdAt: String(p.createdAt ?? p.proposedAt ?? '').slice(0, 16), stageDeadline: p.stageDeadline ? String(p.stageDeadline).slice(0, 16) : null,
-  queuePosition: (p.queuePosition as number | null) ?? null, trainerDecision: (p.trainerDecision as RaceEntry['trainerDecision']) ?? null,
-  vetResult: p.vetPassed == null ? null : { pass: !!p.vetPassed, note: String(p.vetNote ?? ''), by: String(p.vetName ?? ''), at: String(p.vetCheckedAt ?? '').slice(0, 16) },
-  invoiceId: p.invoiceId == null ? null : String(p.invoiceId), complaint: (p.complaint as RaceEntry['complaint']) ?? null,
-  result: p.rank == null ? null : { rank: Number(p.rank), finishTime: String(p.finishTime ?? ''), prize: Number(p.prizeAmount ?? 0) },
-  history: (p.history as EntryHistory[] | null) ?? [],
+  horseId: String(p.horseId), horseName: String(p.horseName ?? ''), owner: String(p.ownerName ?? ''), trainerId: p.trainerId == null ? undefined : String(p.trainerId),
+  status: p.status as EntryStatus, createdAt: minute(p.proposedAt), stageDeadline: p.stageDeadline ? minute(p.stageDeadline) : null,
+  queuePosition: (p.queuePosition as number | null) ?? null,
+  trainerDecision: p.trainerDecidedAt ? { approve: !!p.trainerApproved, reasonCode: (p.trainerReasonCode as RejectCode | null) ?? undefined, note: (p.trainerNote as string | null) ?? undefined, by: String(p.trainerName ?? ''), at: minute(p.trainerDecidedAt) } : null,
+  vetResult: p.vetPassed == null ? null : { pass: !!p.vetPassed, note: String(p.vetNote ?? ''), by: String(p.vetName ?? ''), at: minute(p.vetCheckedAt) },
+  invoiceId: p.invoiceId == null ? null : String(p.invoiceCode ?? `INV-${p.invoiceId}`),
+  complaint: p.complaintStatus ? { reason: String(p.complaintNote ?? ''), at: minute(p.complaintAt), status: COMPLAINT_STATUS[String(p.complaintStatus)] ?? 'OPEN', decidedAt: minute(p.complaintDecidedAt) || undefined, decisionNote: (p.complaintDecisionNote as string | null) ?? undefined } : null,
+  canComplain: (p.canComplain as boolean | null) ?? undefined,
+  result: p.rank == null ? null : { rank: Number(p.rank), finishTime: raceTime(p.finishTimeSeconds), prize: Number(p.prizeAmount ?? 0) },
+  history: beHistory(p),
 });
+const tournamentsOf = (entries: RaceEntry[], raw: Record<string, unknown>[]) => {
+  const byId = new Map<string, RaceTournament>();
+  raw.forEach((p) => { const t = p.tournament as Record<string, unknown> | null; if (t) byId.set(String(t.tournamentId), mapBeTournament(t)); });
+  return entries.map((e) => byId.get(e.tournamentId)).filter((t): t is RaceTournament => !!t).filter((t, i, a) => a.findIndex((x) => x.id === t.id) === i);
+};
+const beProposals = async (params?: Record<string, unknown>) => {
+  const raw = await beData<Record<string, unknown>[]>(be.get('/race-proposals', { params }));
+  const entries = (raw ?? []).map(mapBeEntry);
+  return { entries, tournaments: tournamentsOf(entries, raw ?? []) };
+};
 const beList = async <R,>(url: string, map: (x: Record<string, unknown>) => R, params?: Record<string, unknown>) =>
   (await beData<Record<string, unknown>[] | { content: Record<string, unknown>[] }>(be.get(url, { params })).then((d) => (Array.isArray(d) ? d : d?.content ?? []))).map(map);
 
@@ -100,7 +144,7 @@ const resweep = async (tournamentId: string) => {
 export const tournamentApi = {
   async managerTournaments() {
     if (USE_BACKEND) {
-      const [tournaments, entries] = await Promise.all([beList('/tournaments', mapBeTournament), beList('/race-proposals', mapBeEntry)]);
+      const [tournaments, { entries }] = await Promise.all([beList('/tournaments', mapBeTournament), beProposals()]);
       return { tournaments, entries };
     }
     return syncMock();
@@ -108,8 +152,8 @@ export const tournamentApi = {
 
   async managerTournament(id: string) {
     if (USE_BACKEND) {
-      const [t, entries] = await Promise.all([beData<Record<string, unknown>>(be.get(`/tournaments/${id}`)).then(mapBeTournament), beList('/race-proposals', mapBeEntry, { tournamentId: id })]);
-      return { tournament: t, entries };
+      const [t, entries] = await Promise.all([beData<Record<string, unknown>>(be.get(`/tournaments/${id}`)).then(mapBeTournament), beProposals({ tournamentId: id })]);
+      return { tournament: t, entries: entries.entries };
     }
     const { tournaments, entries } = await syncMock();
     const tournament = tournaments.find((t) => t.id === id);
@@ -123,8 +167,10 @@ export const tournamentApi = {
     if (first) throw new Error(first);
     const body = { ...draft, name: draft.name.trim(), organizer: draft.organizer.trim(), location: draft.location.trim(), note: draft.note?.trim() || undefined };
     if (USE_BACKEND) {
-      if (existing) await be.put(`/tournaments/${ref(existing)}`, body);
-      else await be.post('/tournaments', body);
+      const { note, ...rest } = body;
+      const payload = { ...rest, entryConditions: note };
+      if (existing) await be.put(`/tournaments/${ref(existing)}`, payload);
+      else await be.post('/tournaments', payload);
       return;
     }
     if (existing) {
@@ -157,7 +203,7 @@ export const tournamentApi = {
     if (new Set(ranks).size !== ranks.length) throw new Error('Hai ngựa không cùng thứ hạng.');
     if (rows.some((r) => !/^\d{1,2}:\d{2}\.\d{2}$/.test(r.finishTime))) throw new Error('Thời gian theo dạng m:ss.cc, ví dụ 1:12.55.');
     if (USE_BACKEND) {
-      const entries = await beList('/race-proposals', mapBeEntry, { tournamentId: ref(t) });
+      const { entries } = await beProposals({ tournamentId: ref(t) });
       await be.put(`/tournaments/${ref(t)}/results`, rows.map((r) => ({ proposalId: entries.find((e) => e.id === r.entryId)?.beId ?? r.entryId, rank: r.rank, finishTime: r.finishTime })));
       return;
     }
@@ -166,7 +212,7 @@ export const tournamentApi = {
       const e = entries.find((x) => x.id === r.entryId);
       if (!e || e.status !== 'REGISTERED') throw new Error(`${r.entryId} không ở trạng thái đã đăng ký.`);
       const prize = prizeFor(r.rank, t.prizes);
-      await save(e, { status: 'RESULTED', result: { rank: r.rank, finishTime: r.finishTime, prize }, history: entry(e, actor.name, `nhập kết quả: hạng ${r.rank} · ${r.finishTime}${prize ? ` · thưởng ${prize.toLocaleString('vi-VN')} ₫` : ''}`, 'success') });
+      await save(e, { status: 'RESULT_RECORDED', result: { rank: r.rank, finishTime: r.finishTime, prize }, history: entry(e, actor.name, `nhập kết quả: hạng ${r.rank} · ${r.finishTime}${prize ? ` · thưởng ${prize.toLocaleString('vi-VN')} ₫` : ''}`, 'success') });
     }
     await http.patch(`${T}/${t.id}`, { status: 'FINISHED' });
     await addAudit(actor, { action: 'RECORD_TOURNAMENT_RESULTS', label: 'Nhập kết quả giải', object: `${t.id} · ${t.name}`, area: 'train', to: 'FINISHED' });
@@ -174,7 +220,7 @@ export const tournamentApi = {
 
   async complaints() {
     if (USE_BACKEND) {
-      const [tournaments, entries] = await Promise.all([beList('/tournaments', mapBeTournament), beList('/race-proposals', mapBeEntry, { hasComplaint: true })]);
+      const { tournaments, entries } = await beProposals();
       return { tournaments, entries: entries.filter((e) => e.complaint) };
     }
     const { tournaments, entries } = await syncMock();
@@ -206,8 +252,12 @@ export const tournamentApi = {
       const rows = await beData<Record<string, unknown>[]>(be.get('/owner/tournaments'));
       return rows.map((r) => ({
         tournament: mapBeTournament((r.tournament as Record<string, unknown>) ?? r), eligible: !!r.eligible,
-        horses: ((r.horses as Record<string, unknown>[]) ?? []).map((h) => ({ horseId: String(h.horseId), horseName: String(h.horseName ?? ''), eligible: !!h.eligible, reasons: (h.reasons as string[]) ?? [], formScore: Number(h.formScore ?? 0) })),
+        horses: ((r.horses as Record<string, unknown>[]) ?? []).map((h) => ({
+          horseId: String(h.horseId), horseName: String(h.horseName ?? ''), eligible: !!h.eligible, reasons: (h.reasons as string[]) ?? [],
+          formScore: h.formScore == null ? null : Number(h.formScore), formNote: (h.formNote as string | null) ?? undefined, recommended: !!h.recommended,
+        })),
         myProposal: r.myProposal ? mapBeEntry(r.myProposal as Record<string, unknown>) : null, slotsLeft: Number(r.slotsLeft ?? 0), queueLength: Number(r.queueLength ?? 0),
+        canPropose: (r.canPropose as boolean | null) ?? undefined, cannotProposeReason: (r.cannotProposeReason as string | null) ?? undefined,
       }));
     }
     const [{ tournaments, entries }, horses] = await Promise.all([syncMock(), facts()]);
@@ -217,7 +267,7 @@ export const tournamentApi = {
       const list = mine.map((h) => {
         const reasons = eligibilityReasons(h.facts, t, busyDatesFor(h.row.id, entries, tournaments, t.id));
         return { horseId: h.row.id, horseName: h.row.name, eligible: reasons.length === 0, reasons, formScore: h.form };
-      }).sort((a, b) => Number(b.eligible) - Number(a.eligible) || b.formScore - a.formScore);
+      }).sort((a, b) => Number(b.eligible) - Number(a.eligible) || (b.formScore ?? 0) - (a.formScore ?? 0));
       return {
         tournament: t, eligible: list.some((h) => h.eligible), horses: list,
         myProposal: own.filter((e) => e.owner === actor.name).sort((a, b) => b.createdAt.localeCompare(a.createdAt)).find((e) => ACTIVE.includes(e.status)) ?? null,
@@ -253,8 +303,8 @@ export const tournamentApi = {
 
   async myEntries(actor: Actor) {
     if (USE_BACKEND) {
-      const [tournaments, entries] = await Promise.all([beList('/tournaments', mapBeTournament), beList('/race-proposals', mapBeEntry)]);
-      return { tournaments, entries };
+      const { tournaments, entries } = await beProposals();
+      return { tournaments, entries: entries.sort((a, b) => b.createdAt.localeCompare(a.createdAt)) };
     }
     const { tournaments, entries } = await syncMock();
     return { tournaments, entries: entries.filter((e) => e.owner === actor.name).sort((a, b) => b.createdAt.localeCompare(a.createdAt)) };
@@ -264,7 +314,7 @@ export const tournamentApi = {
     if (!CANCELLABLE.includes(e.status)) throw new Error('Đề xuất này không hủy được nữa.');
     if (USE_BACKEND) { await be.put(`/race-proposals/${ref(e)}/cancel`); return; }
     if (e.owner !== actor.name) throw new Error('Chỉ hủy đề xuất của bạn.');
-    await save(e, { status: 'OWNER_CANCELLED', stageDeadline: null, queuePosition: null, history: entry(e, actor.name, 'chủ ngựa hủy đề xuất · trả suất', 'warning') });
+    await save(e, { status: 'CANCELLED', stageDeadline: null, queuePosition: null, history: entry(e, actor.name, 'chủ ngựa hủy đề xuất · trả suất', 'warning') });
     await resweep(e.tournamentId);
   },
 
@@ -272,13 +322,23 @@ export const tournamentApi = {
     if (e.status !== 'TRAINER_REJECTED') throw new Error('Chỉ khiếu nại khi HLV từ chối.');
     if (e.complaint) throw new Error('Đề xuất này đã có khiếu nại.');
     if (reason.trim().length < 10) throw new Error('Nội dung khiếu nại ít nhất 10 ký tự.');
-    if (USE_BACKEND) { await be.post(`/race-proposals/${ref(e)}/complaint`, { reason: reason.trim() }); return; }
+    if (USE_BACKEND) { await be.post(`/race-proposals/${ref(e)}/complaint`, { note: reason.trim() }); return; }
     await save(e, { complaint: { reason: reason.trim(), at: toIsoMinute(clockNow()), status: 'OPEN' }, history: entry(e, actor.name, `gửi khiếu nại tới Quản lý CLB: ${reason.trim()}`, 'warning') });
   },
 
   async dossier(e: RaceEntry): Promise<Dossier> {
-    if (USE_BACKEND) return beData<Dossier>(be.get(`/race-proposals/${ref(e)}/dossier`));
-    if (!['REGISTERED', 'RESULTED'].includes(e.status)) throw new Error('Hồ sơ chỉ có khi đã đăng ký thành công.');
+    if (USE_BACKEND) {
+      const d = await beData<BeDossier>(be.get(`/race-proposals/${ref(e)}/dossier`));
+      const t = d.proposal.tournament;
+      return {
+        entryId: String(d.proposal.proposalCode ?? e.id), tournament: t ? mapBeTournament(t) : (await tournamentApi.managerTournament(e.tournamentId)).tournament,
+        horse: { id: String(d.horse.horseId), name: d.horse.horseName, breed: d.horse.breed ?? '—', sex: d.horse.gender ?? undefined, age: d.horse.ageYears ?? 0, weightKg: d.horse.weightKg == null ? null : Number(d.horse.weightKg) },
+        owner: d.owner?.fullName ?? e.owner, trainer: d.trainer?.fullName ?? '—',
+        vetResult: d.vetExam?.passed == null ? e.vetResult : { pass: !!d.vetExam.passed, note: d.vetExam.note ?? '', by: d.vetExam.vetName ?? '', at: minute(d.vetExam.checkedAt) },
+        paidAt: d.payment?.paidAt ? fmtDate(minute(d.payment.paidAt)) : null, generatedAt: minute(d.generatedAt),
+      };
+    }
+    if (!['REGISTERED', 'RESULT_RECORDED'].includes(e.status)) throw new Error('Hồ sơ chỉ có khi đã đăng ký thành công.');
     const [t, h, users, invoice] = await Promise.all([
       get<RaceTournament>(`${T}/${e.tournamentId}`), get<HorseRow>(`/horses/${e.horseId}`), get<UserRow[]>('/users'),
       e.invoiceId ? get<InvoiceRow>(`/invoices/${e.invoiceId}`).catch(() => null) : Promise.resolve(null),
@@ -292,8 +352,7 @@ export const tournamentApi = {
 
   async trainerQueue(actor: Actor) {
     if (USE_BACKEND) {
-      const [tournaments, entries] = await Promise.all([beList('/tournaments', mapBeTournament), beList('/race-proposals', mapBeEntry)]);
-      return { tournaments, entries };
+      return beProposals();
     }
     const { tournaments, entries } = await syncMock();
     const horses = await get<HorseRow[]>('/horses', { trainerId: actor.id });
@@ -320,17 +379,16 @@ export const tournamentApi = {
 
   async raceDatesOf(horseId: string) {
     if (USE_BACKEND) {
-      const rows = await beList('/race-proposals', mapBeEntry, { horseId }).catch(() => [] as RaceEntry[]);
-      const tournaments = await beList('/tournaments', mapBeTournament).catch(() => [] as RaceTournament[]);
-      return rows.filter((e) => HOLDING.includes(e.status) && e.status !== 'RESULTED').map((e) => tournaments.find((t) => t.id === e.tournamentId)).filter((t): t is RaceTournament => !!t);
+      const { entries: rows, tournaments } = await beProposals().catch(() => ({ entries: [] as RaceEntry[], tournaments: [] as RaceTournament[] }));
+      return rows.filter((e) => e.horseId === horseId && TRAINER_CONFIRMED.includes(e.status)).map((e) => tournaments.find((t) => t.id === e.tournamentId)).filter((t): t is RaceTournament => !!t);
     }
     const [entries, tournaments] = await Promise.all([get<RaceEntry[]>(E, { horseId }), get<RaceTournament[]>(T)]);
-    return entries.filter((e) => HOLDING.includes(e.status) && e.status !== 'RESULTED').map((e) => tournaments.find((t) => t.id === e.tournamentId)).filter((t): t is RaceTournament => !!t);
+    return entries.filter((e) => TRAINER_CONFIRMED.includes(e.status)).map((e) => tournaments.find((t) => t.id === e.tournamentId)).filter((t): t is RaceTournament => !!t);
   },
 
   async vetQueue() {
     if (USE_BACKEND) {
-      const [tournaments, entries] = await Promise.all([beList('/tournaments', mapBeTournament), beList('/race-proposals', mapBeEntry)]);
+      const { tournaments, entries } = await beProposals();
       return { tournaments, entries: entries.filter((e) => e.status === 'WAITING_VET_EXAM' || e.vetResult) };
     }
     const { tournaments, entries } = await syncMock();
