@@ -18,7 +18,8 @@
     "typecheck": "tsc --noEmit -p . && tsc --noEmit -p tsconfig.scenarios.json",
     "scenarios": "playwright test",
     "check": "npm run lint && npm run typecheck && npm run scenarios",
-    "scenarios:live": "playwright test -c playwright.live.config.ts"
+    "scenarios:live": "playwright test -c playwright.live.config.ts",
+    "merge:main": "node scripts/merge-to-main.mjs"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.2.7",

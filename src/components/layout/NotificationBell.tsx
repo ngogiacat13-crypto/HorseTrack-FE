@@ -46,12 +46,10 @@ export const NotificationBell: React.FC = () => {
 
   const onItem = async (n: AppNotification) => {
     if (!n.read) {
-      try {
-        await notificationApi.markRead(n.id);
+      const marked = await notificationApi.markRead(n.id).then(() => true, () => false);
+      if (marked) {
         setItems((prev) => prev.map((x) => (x.id === n.id ? { ...x, read: true } : x)));
         setUnread((c) => Math.max(0, c - 1));
-      } catch {
-        /* ignore */
       }
     }
     setOpen(false);
@@ -64,7 +62,7 @@ export const NotificationBell: React.FC = () => {
       setItems((prev) => prev.map((x) => ({ ...x, read: true })));
       setUnread(0);
     } catch {
-      /* ignore */
+      return;
     }
   };
 

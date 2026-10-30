@@ -25,7 +25,6 @@ export interface NutritionStockRequest {
   horseName?: string | null;
   stallCode?: string | null;
   barnZone?: string | null;
-  /** yyyy-MM-dd */
   date: string;
   createdByName?: string | null;
   status: 'PENDING' | 'ISSUED' | 'CANCELLED' | string;
@@ -36,7 +35,6 @@ export interface NutritionStockRequest {
   lines: NutritionStockLine[];
 }
 
-/** BE LocalDate / LocalDateTime → chuỗi ISO ngày (yyyy-MM-dd) hoặc giữ nguyên. */
 const asDate = (v: unknown): string => {
   if (v == null) return '';
   if (typeof v === 'string') return v.length >= 10 ? v.slice(0, 10) : v;
@@ -90,7 +88,6 @@ const mapRow = (r: Record<string, unknown>): NutritionStockRequest => ({
 });
 
 export const nutritionStockApi = {
-  /** GET /api/v1/inventory/nutrition-requests?tab=&date= */
   async list(tab: NutritionStockTab = 'pending', date?: string): Promise<NutritionStockRequest[]> {
     if (!USE_BACKEND) return [];
     const rows = await beData(be.get<ApiResponse<Record<string, unknown>[]>>('/inventory/nutrition-requests', {
@@ -99,7 +96,6 @@ export const nutritionStockApi = {
     return (rows ?? []).map(mapRow);
   },
 
-  /** PUT /api/v1/inventory/nutrition-requests/{planId}/{date}/issue */
   async issue(planId: number, date: string): Promise<NutritionStockRequest | null> {
     if (!USE_BACKEND) throw new Error('Chỉ dùng khi kết nối backend.');
     const day = asDate(date);
