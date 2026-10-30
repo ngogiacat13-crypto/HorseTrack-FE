@@ -16,24 +16,36 @@
 .ht-landing__section { max-width: 1160px; margin: 0 auto; padding: 40px var(--space-8); }
 .ht-landing__section h2 { margin: 0; font: 700 28px/36px var(--font-sans); letter-spacing: -0.02em; }
 .ht-landing__lede { margin: 6px 0 24px; color: var(--muted); font-size: 15px; }
-.ht-landing__roles, .ht-landing__flows { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
-.ht-landing__role, .ht-landing__flow { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; display: grid; gap: 10px; align-content: start; }
-.ht-landing__role > div b { display: block; font-size: 16px; }
-.ht-landing__role small, .ht-landing__flow small { color: var(--muted); font-size: 12px; }
-.ht-landing__role p { margin: 0; font-size: 14px; color: var(--muted); }
-.ht-landing__role ul { margin: 0; padding-left: 18px; font-size: 13px; display: grid; gap: 4px; }
-.ht-landing__icon { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; background: var(--primary-soft); color: var(--primary); }
+.ht-landing__flows { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.ht-landing__flow { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; display: grid; gap: 10px; align-content: start; }
+.ht-landing__flow small { color: var(--muted); font-size: 12px; }
 .ht-landing__flow ol { margin: 4px 0 0; padding: 0; list-style: none; counter-reset: s; display: grid; gap: 8px; font-size: 13px; }
 .ht-landing__flow li { counter-increment: s; display: flex; gap: 10px; align-items: center; }
 .ht-landing__flow li::before { content: counter(s); width: 22px; height: 22px; border-radius: 50%; background: var(--primary-soft); color: var(--primary); font-weight: 700; font-size: 12px; display: grid; place-items: center; flex: none; }
 .ht-landing__rules { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 .ht-landing__rules > div { display: flex; gap: 12px; align-items: baseline; padding: 14px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); font-size: 14px; }
 .ht-landing__rules .ht-mono { color: var(--primary); font-weight: 700; font-size: 12px; flex: none; }
-.ht-landing__foot { max-width: 1160px; margin: 24px auto 0; padding: 24px var(--space-8) 40px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); }
+.ht-landing__foot { max-width: none; margin: 24px 0 0; padding: 72px max(32px, calc((100% - 1160px) / 2)) 64px; background: #14141e; display: grid; grid-template-columns: 1.2fr 1fr 1fr 1.2fr; gap: 48px; color: #aaaab5; }
+.ht-landing__foot-brand { max-width: 300px; }
+.ht-landing__foot-logo { display: inline-flex; align-items: center; gap: 14px; color: #d8d5d8; text-decoration: none; font: 700 24px/1 var(--font-serif); letter-spacing: .12em; }
+.ht-landing__foot-logo svg { width: 56px; height: 56px; }
+.ht-landing__foot-logo span span { color: #e11; }
+.ht-landing__foot-brand p { margin: 28px 0 0; font: 15px/24px var(--font-serif); }
+.ht-landing__foot-column { display: grid; align-content: start; gap: 16px; }
+.ht-landing__foot-column h3 { margin: 0 0 8px; color: #eee; font: 700 15px/20px var(--font-serif); letter-spacing: .15em; text-transform: uppercase; }
+.ht-landing__foot-column a { color: #aaaab5; font: 15px/20px var(--font-serif); text-decoration: none; }
+.ht-landing__foot-column a:hover { color: #fff; }
+.ht-landing__foot-social > div { display: flex; gap: 14px; }
+.ht-landing__foot-social > div a { width: 48px; height: 48px; display: grid; place-items: center; border: 1px solid #42424d; border-radius: 14px; color: #c2c2c9; font: 700 22px/1 var(--font-sans); }
+.ht-landing__foot-social > div a:hover { border-color: #e11; color: #fff; }
 @media (max-width: 900px) {
   .ht-landing__hero { grid-template-columns: 1fr; padding: 40px 16px; }
   .ht-landing__hero h1 { font-size: 32px; line-height: 40px; }
-  .ht-landing__roles, .ht-landing__flows, .ht-landing__rules { grid-template-columns: 1fr; }
+  .ht-landing__flows, .ht-landing__rules { grid-template-columns: 1fr; }
   .ht-landing__nav { display: none; }
-  .ht-landing__bar, .ht-landing__section, .ht-landing__foot { padding-left: 16px; padding-right: 16px; }
+  .ht-landing__bar, .ht-landing__section { padding-left: 16px; padding-right: 16px; }
+  .ht-landing__foot { grid-template-columns: 1fr 1fr; padding: 48px 16px; gap: 36px 24px; }
+}
+@media (max-width: 560px) {
+  .ht-landing__foot { grid-template-columns: 1fr; }
 }

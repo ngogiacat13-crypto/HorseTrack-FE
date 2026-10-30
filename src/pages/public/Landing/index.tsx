@@ -5,7 +5,7 @@ import { useAuth } from '../../../auth/AuthContext';
 import { PATH } from '../../../routers/routerPath';
 import { Icon } from '../../../components/ui/Icon';
 import { BrandMark, DemoClock } from '../../../components/ui/Ht';
-import { FLOWS, RULES, ROLES } from './content';
+import { FLOWS, RULES } from './content';
 
 export const Landing: React.FC = () => {
   const { user } = useAuth();
@@ -17,7 +17,7 @@ export const Landing: React.FC = () => {
           <DemoClock />
         </div>
         <nav className="ht-landing__nav">
-          <a href="#roles">Vai trò</a><a href="#flows">Luồng nghiệp vụ</a><a href="#rules">Quy tắc</a>
+          <a href="#flows">Luồng nghiệp vụ</a><a href="#rules">Quy tắc</a>
         </nav>
         <div style={{ display: 'flex', gap: 8 }}>
           {user ? <Link className="ht-btn ht-btn--primary" to={ROLE_HOME[user.role]}>Vào không gian làm việc <Icon name="arrow" size={16} /></Link> : <>
@@ -48,21 +48,6 @@ export const Landing: React.FC = () => {
         </div>
       </section>
 
-      <section id="roles" className="ht-landing__section">
-        <h2>6 vai trò trong hệ thống</h2>
-        <p className="ht-landing__lede">Đăng nhập một lần — hệ thống đưa bạn tới đúng màn hình theo vai trò.</p>
-        <div className="ht-landing__roles">
-          {ROLES.map((r) => (
-            <article key={r.en} className="ht-landing__role">
-              <span className="ht-landing__icon"><Icon name={r.icon} size={20} /></span>
-              <div><b>{r.name}</b><small className="ht-mono">{r.en}</small></div>
-              <p>{r.text}</p>
-              <ul>{r.items.map((i) => <li key={i}>{i}</li>)}</ul>
-            </article>
-          ))}
-        </div>
-      </section>
-
       <section id="flows" className="ht-landing__section">
         <h2>Các luồng nghiệp vụ chính</h2>
         <p className="ht-landing__lede">Mỗi luồng đi qua nhiều vai trò; trạng thái được lưu và ghi nhật ký kiểm toán (BR_10).</p>
@@ -84,8 +69,33 @@ export const Landing: React.FC = () => {
       </section>
 
       <footer className="ht-landing__foot">
-        <span>HorseTrack · Đồ án SWP · Dữ liệu trình diễn</span>
-        <Link to={PATH.login}>Đăng nhập <Icon name="arrow" size={14} /></Link>
+        <div className="ht-landing__foot-brand">
+          <Link className="ht-landing__foot-logo" to={PATH.landing}><BrandMark /><span>HORSE<span>TRACK</span></span></Link>
+          <p>Hệ thống quản lý toàn diện các giải đua ngựa chuyên nghiệp. Mang lại sự công bằng, minh bạch và trải nghiệm tuyệt vời cho mọi người chơi.</p>
+        </div>
+        <div className="ht-landing__foot-column">
+          <h3>Đường dẫn nhanh</h3>
+          <a href="#flows" data-testid="footer-flows-link">Danh sách giải đấu</a>
+          <a href="#flows" data-testid="footer-schedule-link">Lịch thi đấu đua ngựa</a>
+          <a href="#rules" data-testid="footer-rules-link">Bảng xếp hạng</a>
+          <a href="#rules" data-testid="footer-prediction-link">Dự đoán kết quả</a>
+        </div>
+        <div className="ht-landing__foot-column">
+          <h3>Hỗ trợ người dùng</h3>
+          <a href="#rules" data-testid="footer-support-link">Trung tâm hỗ trợ</a>
+          <a href="#flows" data-testid="footer-guide-link">Hướng dẫn sử dụng</a>
+          <a href="#rules" data-testid="footer-faq-link">Câu hỏi thường gặp</a>
+          <a href="mailto:support@horsetrack.local" data-testid="footer-contact-link">Liên hệ chúng tôi</a>
+        </div>
+        <div className="ht-landing__foot-column ht-landing__foot-social">
+          <h3>Mạng xã hội</h3>
+          <div>
+            <a href="https://facebook.com" aria-label="Facebook" data-testid="footer-facebook-link">f</a>
+            <a href="https://x.com" aria-label="X" data-testid="footer-x-link">𝕏</a>
+            <a href="https://instagram.com" aria-label="Instagram" data-testid="footer-instagram-link">◎</a>
+            <a href="https://youtube.com" aria-label="YouTube" data-testid="footer-youtube-link">▶</a>
+          </div>
+        </div>
       </footer>
     </div>
   );
