@@ -11,6 +11,15 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+      - name: Nhánh main không chứa tài liệu nội bộ
+        if: github.ref == 'refs/heads/main'
+        run: |
+          found=$(grep -v '^[[:space:]]*$' .github/main-exclude.txt | tr -d '\r' | xargs -r git ls-files --)
+          if [ -n "$found" ]; then
+            echo "::error::Các file nội bộ không được nằm trên main (gộp bằng npm run merge:main):"
+            echo "$found"
+            exit 1
+          fi
       - uses: actions/setup-node@v4
         with:
           node-version: 20

@@ -7,7 +7,7 @@ import prettier from 'eslint-config-prettier';
 import noComments from './lint-rules/no-comments.js';
 
 export default tseslint.config(
-  { ignores: ['dist', 'node_modules', 'test_mock.js', 'playwright-report', 'test-results'] },
+  { ignores: ['dist', 'node_modules', 'playwright-report', 'test-results'] },
   {
     files: ['**/*.{ts,tsx}'],
     extends: [js.configs.recommended, ...tseslint.configs.recommended, prettier],

@@ -1,0 +1,9 @@
+NotesAPI.md
+AGENTS.md
+CLAUDE.md
+feature-map.md
+RECOMMENDED_PACKAGES.md
+docs
+scenarios-live
+playwright.live.config.ts
+.env.server
