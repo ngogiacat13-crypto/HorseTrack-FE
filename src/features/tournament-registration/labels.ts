@@ -7,13 +7,14 @@ export const ENTRY_LABEL: Record<EntryStatus, [string, Tone]> = {
   WAITING_VET_EXAM: ['Chờ bác sĩ khám', 'info'],
   WAITING_PAYMENT: ['Chờ nộp lệ phí', 'brand'],
   REGISTERED: ['Đã đăng ký', 'success'],
-  RESULTED: ['Đã có kết quả', 'success'],
+  RESULT_RECORDED: ['Đã có kết quả', 'success'],
   TRAINER_REJECTED: ['HLV từ chối', 'danger'],
   TRAINER_EXPIRED: ['HLV quá hạn', 'danger'],
   VET_FAILED: ['Không đạt khám', 'danger'],
   VET_EXPIRED: ['Quá hạn khám', 'danger'],
   PAYMENT_EXPIRED: ['Quá hạn lệ phí', 'danger'],
-  OWNER_CANCELLED: ['Đã hủy', 'neutral'],
+  CANCELLED: ['Đã hủy', 'neutral'],
+  INELIGIBLE: ['Không đủ điều kiện', 'neutral'],
   NO_SLOT: ['Hết suất', 'neutral'],
 };
 
@@ -22,11 +23,12 @@ export const TOURNAMENT_LABEL: Record<TournamentStatus, [string, Tone]> = {
 };
 
 export const REJECT_CODE_LABEL: Record<RejectCode, string> = {
-  NOT_READY: 'Thể lực chưa đạt cho cự ly',
-  HEALTH_RISK: 'Rủi ro sức khỏe khi thi đấu',
-  SCHEDULE_CONFLICT: 'Trùng lịch huấn luyện quan trọng',
-  DISTANCE_MISMATCH: 'Cự ly không phù hợp với ngựa',
-  OTHER: 'Lý do khác',
+  NOT_FIT: 'Thể lực chưa đạt yêu cầu thi đấu',
+  INJURY_RISK: 'Nguy cơ chấn thương / cần theo dõi sức khỏe',
+  POOR_FORM: 'Phong độ gần đây chưa tốt',
+  TRAINING_PLAN: 'Không kịp hoặc xung đột giáo án huấn luyện',
+  DISTANCE_MISMATCH: 'Cự ly giải không phù hợp với ngựa',
+  OTHER: 'Lý do khác (ghi rõ trong ghi chú)',
 };
 
 export const STAGE_HINT: Partial<Record<EntryStatus, string>> = {

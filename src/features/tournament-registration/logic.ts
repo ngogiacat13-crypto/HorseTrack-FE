@@ -2,8 +2,9 @@ import type { EntryHistory, EntryStatus, Prize, RaceEntry, RaceTournament, Tourn
 
 export const HOLD_DAYS: Partial<Record<EntryStatus, number>> = { WAITING_TRAINER: 2, WAITING_VET_EXAM: 3, WAITING_PAYMENT: 2 };
 export const EXPIRED_STATUS: Partial<Record<EntryStatus, EntryStatus>> = { WAITING_TRAINER: 'TRAINER_EXPIRED', WAITING_VET_EXAM: 'VET_EXPIRED', WAITING_PAYMENT: 'PAYMENT_EXPIRED' };
-export const HOLDING: EntryStatus[] = ['WAITING_TRAINER', 'WAITING_VET_EXAM', 'WAITING_PAYMENT', 'REGISTERED', 'RESULTED'];
+export const HOLDING: EntryStatus[] = ['WAITING_TRAINER', 'WAITING_VET_EXAM', 'WAITING_PAYMENT', 'REGISTERED', 'RESULT_RECORDED'];
 export const ACTIVE: EntryStatus[] = ['WAITLISTED', ...HOLDING];
+export const TRAINER_CONFIRMED: EntryStatus[] = ['WAITING_VET_EXAM', 'WAITING_PAYMENT', 'REGISTERED'];
 export const CANCELLABLE: EntryStatus[] = ['WAITLISTED', 'WAITING_TRAINER', 'WAITING_VET_EXAM', 'WAITING_PAYMENT'];
 export const PRE_RACE_REST_DAYS = 7;
 

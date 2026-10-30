@@ -12,10 +12,10 @@ export interface RaceTournament {
 export type TournamentDraft = Omit<RaceTournament, 'id' | 'beId' | 'status'>;
 
 export type EntryStatus =
-  | 'WAITLISTED' | 'WAITING_TRAINER' | 'WAITING_VET_EXAM' | 'WAITING_PAYMENT' | 'REGISTERED' | 'RESULTED'
-  | 'TRAINER_REJECTED' | 'TRAINER_EXPIRED' | 'VET_FAILED' | 'VET_EXPIRED' | 'PAYMENT_EXPIRED' | 'OWNER_CANCELLED' | 'NO_SLOT';
+  | 'WAITLISTED' | 'WAITING_TRAINER' | 'WAITING_VET_EXAM' | 'WAITING_PAYMENT' | 'REGISTERED' | 'RESULT_RECORDED'
+  | 'TRAINER_REJECTED' | 'TRAINER_EXPIRED' | 'VET_FAILED' | 'VET_EXPIRED' | 'PAYMENT_EXPIRED' | 'CANCELLED' | 'INELIGIBLE' | 'NO_SLOT';
 
-export type RejectCode = 'NOT_READY' | 'HEALTH_RISK' | 'SCHEDULE_CONFLICT' | 'DISTANCE_MISMATCH' | 'OTHER';
+export type RejectCode = 'NOT_FIT' | 'INJURY_RISK' | 'POOR_FORM' | 'TRAINING_PLAN' | 'DISTANCE_MISMATCH' | 'OTHER';
 
 export interface EntryHistory { at: string; who: string; text: string; tone?: 'success' | 'danger' | 'warning' | 'info' }
 
@@ -31,15 +31,17 @@ export interface RaceEntry {
   vetResult: null | { pass: boolean; note: string; by: string; at: string };
   invoiceId: string | null;
   complaint: Complaint | null;
+  canComplain?: boolean;
   result: null | { rank: number; finishTime: string; prize: number };
   history: EntryHistory[];
 }
 
-export interface HorseEligibility { horseId: string; horseName: string; eligible: boolean; reasons: string[]; formScore: number }
+export interface HorseEligibility { horseId: string; horseName: string; eligible: boolean; reasons: string[]; formScore: number | null; formNote?: string; recommended?: boolean }
 
 export interface OwnerTournament {
   tournament: RaceTournament; eligible: boolean; horses: HorseEligibility[];
   myProposal: RaceEntry | null; slotsLeft: number; queueLength: number;
+  canPropose?: boolean; cannotProposeReason?: string;
 }
 
 export interface Dossier {

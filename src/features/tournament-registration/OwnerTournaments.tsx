@@ -16,10 +16,10 @@ type Filter = 'all' | 'fit';
 
 const TournamentCard: React.FC<{ item: OwnerTournament; onPropose: (item: OwnerTournament, horseId: string) => void }> = ({ item, onPropose }) => {
   const { tournament: t, horses, myProposal } = item;
-  const firstFit = horses.find((h) => h.eligible)?.horseId ?? '';
+  const firstFit = horses.find((h) => h.eligible && h.recommended)?.horseId ?? horses.find((h) => h.eligible)?.horseId ?? '';
   const [pick, setPick] = useState(firstFit);
   const open = registrationOpen(t, clockNow());
-  const locked = !!myProposal || !open || !item.eligible;
+  const locked = !!myProposal || !open || !item.eligible || item.canPropose === false;
   return (
     <Panel title={t.name} sub={`${fmtDate(t.raceDate)} · ${t.location} · ${t.distanceM} m · lệ phí ${t.entryFee ? money(t.entryFee) : 'miễn phí'}`}
       right={<span data-testid={`tournament-fit-${t.id}`}><Badge tone={item.eligible ? 'success' : 'neutral'}>{item.eligible ? 'Phù hợp' : 'Không phù hợp'}</Badge></span>}>
@@ -44,11 +44,15 @@ const TournamentCard: React.FC<{ item: OwnerTournament; onPropose: (item: OwnerT
                 <b>{h.horseName}</b>
                 {h.eligible ? <div style={{ fontSize: 12, color: 'var(--muted)' }}>Đủ điều kiện</div> : <div style={{ fontSize: 12, color: 'var(--danger-ink)' }} data-testid={`horse-reasons-${t.id}-${h.horseId}`}>{h.reasons.join(' · ')}</div>}
               </div>
-              <span title="Phong độ tính từ kết quả thi và đánh giá phiên tập gần đây"><Badge tone={h.formScore >= 70 ? 'success' : h.formScore >= 50 ? 'info' : 'neutral'} plain>Phong độ {h.formScore}</Badge></span>
+              <span title={h.formNote ?? 'Phong độ tính từ kết quả thi và đánh giá phiên tập gần đây'} style={{ display: 'inline-flex', gap: 6 }}>
+                {h.recommended && h.eligible && <Badge tone="brand" plain>Gợi ý</Badge>}
+                <Badge tone={h.formScore == null ? 'neutral' : h.formScore >= 70 ? 'success' : h.formScore >= 50 ? 'info' : 'neutral'} plain>{h.formScore == null ? 'Chưa có phong độ' : `Phong độ ${Math.round(h.formScore)}`}</Badge>
+              </span>
             </li>
           ))}
           {horses.length === 0 && <li className="ht-empty">Bạn chưa có ngựa trong CLB.</li>}
         </ul>
+        {!myProposal && open && item.canPropose === false && item.cannotProposeReason && <Callout tone="demo" testId={`tournament-cannot-${t.id}`}>{item.cannotProposeReason}</Callout>}
         <div>
           <button type="button" className="ht-btn ht-btn--primary" data-testid={`tournament-propose-${t.id}`} disabled={locked || !pick} onClick={() => onPropose(item, pick)}>
             <Icon name="send" size={16} />{item.slotsLeft > 0 ? 'Đề xuất tham gia' : 'Vào hàng chờ'}

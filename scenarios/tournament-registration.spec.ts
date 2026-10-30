@@ -23,7 +23,7 @@ test('trainer rejection needs a reason and frees the slot for the waitlist head'
   await page.getByTestId('trainer-reject-DK-0001').click();
   await page.getByTestId('trainer-decision-dialog').getByTestId('dialog-confirm').click();
   await expect(page.getByTestId('trainer-decision-dialog')).toContainText('Chọn lý do từ chối');
-  await page.getByTestId('trainer-reason-code').selectOption('SCHEDULE_CONFLICT');
+  await page.getByTestId('trainer-reason-code').selectOption('TRAINING_PLAN');
   await page.getByTestId('trainer-reason-note').fill('Trùng giai đoạn tăng tốc quan trọng của Flash.');
   await page.getByTestId('trainer-decision-dialog').getByTestId('dialog-confirm').click();
   await expect(page.getByTestId('trainer-approve-DK-0001')).toHaveCount(0);

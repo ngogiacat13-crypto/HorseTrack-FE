@@ -11,6 +11,10 @@ export const PROPOSAL_LABEL: Record<ProposalStatus, [string, 'success' | 'warnin
   PROPOSED: ['Mới tạo', 'neutral'], WAITING_VET_EXAM: ['Chờ BS khám', 'info'], VET_FAILED: ['Không đạt khám', 'danger'],
   WAITING_OWNER: ['Chờ chủ ngựa', 'warning'], OWNER_DECLINED: ['Chủ ngựa từ chối', 'danger'], READY_TO_SUBMIT: ['Sẵn sàng gửi BTC', 'brand'],
   SUBMITTED: ['Đã gửi BTC', 'info'], REJECTED_BY_ORGANIZER: ['BTC từ chối', 'danger'], RESULT_RECORDED: ['Đã có kết quả', 'success'],
+  WAITLISTED: ['Đang chờ suất', 'neutral'], WAITING_TRAINER: ['Chờ HLV xác nhận', 'warning'], WAITING_PAYMENT: ['Chờ nộp lệ phí', 'brand'],
+  REGISTERED: ['Đã đăng ký', 'success'], TRAINER_REJECTED: ['HLV từ chối', 'danger'], TRAINER_EXPIRED: ['HLV quá hạn', 'danger'],
+  VET_EXPIRED: ['Quá hạn khám', 'danger'], PAYMENT_EXPIRED: ['Quá hạn lệ phí', 'danger'], CANCELLED: ['Đã hủy', 'neutral'],
+  INELIGIBLE: ['Không đủ điều kiện', 'neutral'], NO_SLOT: ['Hết suất', 'neutral'],
 };
 export const PLAN_LABEL: Record<PlanStatus, [string, 'success' | 'warning' | 'neutral']> = {
   PLANNED: ['Chưa bắt đầu', 'neutral'], ACTIVE: ['Đang chạy', 'success'], PAUSED: ['Tạm dừng', 'warning'], COMPLETED: ['Hoàn tất', 'neutral'], REPLACED: ['Đã thay thế', 'neutral'], CANCELLED: ['Đã hủy', 'neutral'],
