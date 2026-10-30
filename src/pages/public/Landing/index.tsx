@@ -10,6 +10,7 @@ import { CONTENT, PHOTOS, type Lang } from './content';
 const LANG_KEY = 'horsetrack_landing_lang';
 const PROMISE_INTERVAL_MS = 7000;
 type ServerState = 'checking' | 'ok' | 'down' | 'demo';
+const GATEWAY_DOWN = [502, 503, 504];
 
 const readLang = (): Lang => {
   try {
@@ -26,8 +27,8 @@ const useServerState = (): ServerState => {
   useEffect(() => {
     if (!USE_BACKEND) return;
     let alive = true;
-    fetch('/api/v1/auth/login', { method: 'GET', cache: 'no-store' })
-      .then((r) => { if (alive) setState(r.status < 500 ? 'ok' : 'down'); }, () => { if (alive) setState('down'); });
+    fetch('/api/v1/tournaments', { method: 'GET', cache: 'no-store' })
+      .then((r) => { if (alive) setState(GATEWAY_DOWN.includes(r.status) ? 'down' : 'ok'); }, () => { if (alive) setState('down'); });
     return () => { alive = false; };
   }, []);
   return state;
