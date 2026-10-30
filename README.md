@@ -65,18 +65,29 @@ npm run build
 
 ## Cấu trúc thư mục
 
-```
-src/
-├── api/          Gọi API: theo từng vai trò, bộ chuyển đổi dữ liệu backend, dữ liệu mẫu
-├── auth/         Đăng nhập, phiên làm việc, phân quyền
-├── components/   Khung trang, menu, thành phần giao diện dùng chung
-├── features/     Tính năng độc lập (thực đơn dinh dưỡng, hóa đơn, giao việc chăm sóc…)
-├── pages/        Màn hình theo vai trò: manager, trainer, vet, groom, warehouse, owner
-├── routers/      Định tuyến và chặn truy cập theo vai trò
-└── store/        Redux store
-scenarios/        Kịch bản kiểm thử Playwright
-lint-rules/       Luật lint riêng của nhóm
-```
+### Mã nguồn (`src/`)
+
+| Thư mục | Nội dung |
+| --- | --- |
+| `pages/` | Màn hình theo vai trò: `manager` (Quản lý CLB), `trainer` (HLV), `vet` (Bác sĩ), `groom` (Mã phu), `warehouse` (Kho), `owner` (Chủ ngựa); cùng `auth` (đăng nhập, đăng ký, quên mật khẩu), `shared` và `public` |
+| `features/` | Tính năng đóng gói riêng: thực đơn dinh dưỡng, hóa đơn, giao việc chăm sóc, giai đoạn phác đồ, lịch sử cấp phát, nhật ký email, nhà cung cấp, giấy tờ đăng ký ngựa… |
+| `api/` | Gọi API theo từng vai trò (`managerApi`, `trainerApi`, `vetApi`, `groomApi`, `warehouseApi`, `ownerApi`); kết nối backend (`beClient`, `hybridAdapter`); dữ liệu mẫu cho chế độ demo |
+| `components/` | Khung trang và menu (`layout`), thành phần giao diện dùng chung (`ui`, `form`), thành phần riêng của HLV và Bác sĩ |
+| `routers/` | Định tuyến, chặn truy cập theo vai trò |
+| `auth/` | Đăng nhập, lưu phiên làm việc, thông tin người dùng hiện tại |
+| `store/` | Redux store |
+| `hooks/`, `utils/`, `styles/` | Hàm dùng chung, tiện ích, giao diện (CSS) |
+
+### Kiểm thử và công cụ
+
+| Thư mục / file | Nội dung |
+| --- | --- |
+| `scenarios/` | Kịch bản kiểm thử Playwright: đăng nhập 6 vai trò, mở mọi trang, kiểm tra luồng nghiệp vụ chính |
+| `lint-rules/` | Luật lint riêng của nhóm |
+| `scripts/` | Lệnh gộp nhánh `dev` vào `main` (`npm run merge:main`) |
+| `.github/workflows/` | CI chạy lint, kiểm tra kiểu và kịch bản mỗi lần đẩy code |
+| `db.json` | Dữ liệu mẫu cho chế độ chạy không cần backend |
+| `vercel.json` | Cấu hình deploy Vercel |
 
 ## Deploy
 
