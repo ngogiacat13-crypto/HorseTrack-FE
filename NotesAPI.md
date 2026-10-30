@@ -855,3 +855,8 @@ Swagger server giờ có 182 API; FE gọi 170.
 - FE gọi 179/191. Nối thêm: `GET /vaccinations/items?kind=VACCINE|DEWORM` (hộp lên lịch tiêm phòng / tẩy giun lấy đúng danh mục kèm tồn khả dụng; dữ liệu mẫu vẫn lọc danh mục cũ) và `GET /inventory/stock-counts/{countId}` (Kho mở biên bản kiểm kê thì tải chi tiết qua `hybridAdapter · DETAILS.stockChecks`).
 - 12 API không gọi: 5 API cũ / do VNPay gọi; 5 thao tác FE làm bằng API khác (xóa thực đơn → `/cancel`, sửa phiếu kiểm kê nháp, kết thúc sớm giai đoạn → `/complete`, `GET /audit-logs` → `/paged`, `GET /auth/confirm-account` → `POST`); 2 màn hình không có trong đặc tả (`POST /tournaments`, `PUT /horses/{id}`).
 - Sửa bản đồ: dòng cũ `GET /inventory/stock-counts/{id}` thực ra là API danh sách, đã bỏ vì trùng dòng `GET /inventory/stock-counts`.
+
+## 39. Trạng thái giai đoạn phác đồ lấy từ BE (`phaseProgress`, BE `40b15bf`, 30/10/2026)
+
+- `TreatmentProtocolDTO.phaseProgress[]`: `phaseNo`, `status` (`WAITING_PAYMENT` | `READY_TO_START` | `IN_PROGRESS` | `COMPLETED` | `STOPPED`), `canStart`, `canFinish`, `finishBlockedReason`. FE đọc trong `beDomain.ts · mapProtocol`; `phaseProgressOf` dùng trạng thái này cho mọi giai đoạn thay vì tự suy từ ghi chú tiến triển.
+- `DecisionPanel`: “Bắt đầu giai đoạn N” theo `canStart`; “Hoàn thành GĐ N” và “Kết thúc GĐ N và bắt đầu GĐ N+1” khóa khi `canFinish = false`, hiện `finishBlockedReason` (`protocol-phase-finish-blocked`); nút bắt đầu ngay GĐ sau chỉ hiện khi GĐ sau là `READY_TO_START`. Dữ liệu mẫu không có các cờ này thì FE vẫn tự tính như cũ.
