@@ -1,7 +1,7 @@
 import type { Invoice } from '../managerApi';
 import type { Horse } from '../trainerApi';
 
-export type LineKind = 'TRAIN' | 'STABLE' | 'MED' | 'PENALTY' | 'REACTIVATION';
+export type LineKind = 'TRAIN' | 'STABLE' | 'MED' | 'PENALTY' | 'REACTIVATION' | 'RACE';
 export interface InvoiceLine { label: string; kind: LineKind; period: string; amount: number; protocolId?: string; phaseNo?: number }
 
 export type OwnerInvoice = Invoice & { horseId: string | null; issuedAt: string; service: string; lines: InvoiceLine[] };

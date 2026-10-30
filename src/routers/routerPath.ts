@@ -20,6 +20,9 @@ export const PATH = {
     users: '/manager/users',
     auditLogs: '/manager/audit-logs',
     emailLogs: '/manager/email-logs',
+    tournaments: '/manager/tournaments',
+    tournament: '/manager/tournaments/:id',
+    raceComplaints: '/manager/race-complaints',
   },
   trainer: {
     home: '/trainer',
@@ -30,6 +33,7 @@ export const PATH = {
     session: '/trainer/sessions/:id',
     races: '/trainer/races',
     proposalCreate: '/trainer/races/new',
+    raceConfirmations: '/trainer/race-confirmations',
     stable: '/trainer/stable',
   },
   vet: {
@@ -55,6 +59,8 @@ export const PATH = {
     home: '/owner',
     horse: '/owner/horses/:id',
     races: '/owner/races',
+    tournaments: '/owner/tournaments',
+    raceEntries: '/owner/race-entries',
     invoices: '/owner/invoices',
     invoice: '/owner/invoices/:id',
     payments: '/owner/payments',

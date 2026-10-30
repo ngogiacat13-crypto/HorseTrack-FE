@@ -11,7 +11,7 @@ import { LoadState } from '../../../components/trainer/TrainerParts';
 import { PayPanel } from './PayPanel';
 import { USE_BACKEND } from '../../../api/beClient';
 
-const KIND: Record<string, string> = { TRAIN: 'Huấn luyện', STABLE: 'Lưu chuồng', MED: 'Y tế · thuốc', PENALTY: 'Phí phạt', REACTIVATION: 'Kích hoạt lại' };
+const KIND: Record<string, string> = { TRAIN: 'Huấn luyện', STABLE: 'Lưu chuồng', MED: 'Y tế · thuốc', PENALTY: 'Phí phạt', REACTIVATION: 'Kích hoạt lại', RACE: 'Lệ phí giải đấu' };
 
 export const OwnerInvoiceDetail: React.FC = () => {
   const { id = '' } = useParams();

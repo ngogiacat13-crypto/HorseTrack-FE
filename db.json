@@ -1812,6 +1812,27 @@
   ],
   "invoices": [
     {
+      "id": "INV-0055",
+      "horse": "Star",
+      "owner": "Vũ Thị Mai",
+      "period": "10/2026",
+      "dueDate": "04/10/2026",
+      "amount": 5000000,
+      "overdueDays": 0,
+      "status": "UNPAID",
+      "horseId": "h-star",
+      "issuedAt": "02/10/2026",
+      "service": "Lệ phí giải đấu",
+      "lines": [
+        {
+          "label": "Lệ phí Giải Mở rộng Bình Dương 2026 — Star",
+          "kind": "RACE",
+          "period": "10/2026",
+          "amount": 5000000
+        }
+      ]
+    },
+    {
       "id": "INV-0042",
       "horse": "Galaxy",
       "owner": "Hoàng Thị Lan",
@@ -2468,6 +2489,7 @@
       "breed": "Thoroughbred",
       "sex": "♂",
       "age": 4,
+      "weightKg": 485,
       "owner": "Hoàng Thị Lan",
       "stall": "A-01",
       "trainerId": "2",
@@ -2536,6 +2558,7 @@
       "breed": "Arabian",
       "sex": "♂",
       "age": 3,
+      "weightKg": 470,
       "owner": "Đỗ Minh Quân",
       "stall": "A-02",
       "trainerId": "11",
@@ -2629,6 +2652,7 @@
       "breed": "Quarter Horse",
       "sex": "♂",
       "age": 5,
+      "weightKg": 530,
       "owner": "Vũ Thị Mai",
       "stall": "A-03",
       "trainerId": "2",
@@ -2668,6 +2692,7 @@
       "breed": "Thoroughbred",
       "sex": "♂",
       "age": 4,
+      "weightKg": 500,
       "owner": "Hoàng Thị Lan",
       "stall": "B-01",
       "trainerId": "11",
@@ -2704,6 +2729,7 @@
       "breed": "Arabian",
       "sex": "♀",
       "age": 3,
+      "weightKg": 440,
       "owner": "Vũ Thị Mai",
       "stall": "A-05",
       "trainerId": "11",
@@ -2738,6 +2764,7 @@
       "breed": "Thoroughbred",
       "sex": "♀",
       "age": 4,
+      "weightKg": 495,
       "owner": "Đỗ Minh Quân",
       "stall": "B-02",
       "trainerId": "2",
@@ -2782,6 +2809,7 @@
       "breed": "Akhal-Teke",
       "sex": "♂",
       "age": 6,
+      "weightKg": 455,
       "owner": "Vũ Thị Mai",
       "stall": "B-03",
       "trainerId": "11",
@@ -2829,6 +2857,7 @@
       "breed": "Quarter Horse",
       "sex": "♀",
       "age": 5,
+      "weightKg": 520,
       "owner": "Hoàng Thị Lan",
       "stall": "B-04",
       "trainerId": "11",
@@ -2857,6 +2886,7 @@
       "breed": "Thoroughbred",
       "sex": "♂",
       "age": 3,
+      "weightKg": 410,
       "owner": "Đỗ Minh Quân",
       "stall": "B-05",
       "trainerId": "11",
@@ -2876,6 +2906,7 @@
       "breed": "Arabian",
       "sex": "♂",
       "age": 5,
+      "weightKg": 450,
       "owner": "Lý Gia Hân",
       "stall": "C-01",
       "trainerId": "2",
@@ -2912,6 +2943,7 @@
       "breed": "Quarter Horse",
       "sex": "♂",
       "age": 4,
+      "weightKg": 545,
       "owner": "Vũ Thị Mai",
       "stall": "C-02",
       "trainerId": "11",
@@ -2930,6 +2962,7 @@
       "breed": "Thoroughbred",
       "sex": "♀",
       "age": 3,
+      "weightKg": 475,
       "owner": "Lý Gia Hân",
       "stall": "C-03",
       "trainerId": "11",
@@ -3984,6 +4017,593 @@
       },
       "protocolId": "PD-0007",
       "outcome": "Lành hoàn toàn 18/09."
+    }
+  ],
+  "raceTournaments": [
+    {
+      "minAgeYears": 3,
+      "maxAgeYears": 6,
+      "minWeightKg": 420,
+      "maxWeightKg": 560,
+      "allowedBreeds": [
+        "Thoroughbred",
+        "Arabian"
+      ],
+      "prizes": [
+        {
+          "rank": 1,
+          "amount": 50000000
+        },
+        {
+          "rank": 2,
+          "amount": 30000000
+        },
+        {
+          "rank": 3,
+          "amount": 15000000
+        }
+      ],
+      "id": "GD-0001",
+      "name": "Giải Mở rộng Bình Dương 2026",
+      "organizer": "CLB Đua ngựa Bình Dương",
+      "location": "Trường đua Đại Nam",
+      "raceDate": "2026-10-25",
+      "registrationDeadline": "2026-10-18",
+      "distanceM": 1200,
+      "entryFee": 5000000,
+      "slots": 3,
+      "status": "PUBLISHED"
+    },
+    {
+      "minAgeYears": 3,
+      "maxAgeYears": 8,
+      "minWeightKg": null,
+      "maxWeightKg": null,
+      "allowedBreeds": [],
+      "prizes": [
+        {
+          "rank": 1,
+          "amount": 40000000
+        },
+        {
+          "rank": 2,
+          "amount": 20000000
+        }
+      ],
+      "id": "GD-0002",
+      "name": "Cúp Đại Nam mùa thu 2026",
+      "organizer": "Khu du lịch Đại Nam",
+      "location": "Trường đua Đại Nam",
+      "raceDate": "2026-10-08",
+      "registrationDeadline": "2026-10-04",
+      "distanceM": 1400,
+      "entryFee": 3000000,
+      "slots": 4,
+      "status": "PUBLISHED"
+    },
+    {
+      "minAgeYears": 4,
+      "maxAgeYears": 8,
+      "minWeightKg": 430,
+      "maxWeightKg": 600,
+      "allowedBreeds": [
+        "Quarter Horse",
+        "Akhal-Teke",
+        "Thoroughbred"
+      ],
+      "prizes": [
+        {
+          "rank": 1,
+          "amount": 60000000
+        },
+        {
+          "rank": 2,
+          "amount": 25000000
+        }
+      ],
+      "id": "GD-0003",
+      "name": "Giải Phú Thọ mở rộng 2026",
+      "organizer": "Trường đua Phú Thọ",
+      "location": "Trường đua Phú Thọ, TP.HCM",
+      "raceDate": "2026-11-15",
+      "registrationDeadline": "2026-11-05",
+      "distanceM": 1600,
+      "entryFee": 4000000,
+      "slots": 2,
+      "status": "PUBLISHED"
+    },
+    {
+      "minAgeYears": 3,
+      "maxAgeYears": 4,
+      "minWeightKg": null,
+      "maxWeightKg": null,
+      "allowedBreeds": [],
+      "prizes": [],
+      "id": "GD-0004",
+      "name": "Giải tân binh CLB 2026",
+      "organizer": "CLB HorseTrack",
+      "location": "Sân tập CLB",
+      "raceDate": "2026-12-06",
+      "registrationDeadline": "2026-11-25",
+      "distanceM": 1000,
+      "entryFee": 0,
+      "slots": 6,
+      "status": "DRAFT",
+      "note": "Chờ chốt nhà tài trợ trước khi công bố."
+    },
+    {
+      "minAgeYears": null,
+      "maxAgeYears": null,
+      "minWeightKg": null,
+      "maxWeightKg": null,
+      "allowedBreeds": [],
+      "prizes": [
+        {
+          "rank": 1,
+          "amount": 20000000
+        },
+        {
+          "rank": 2,
+          "amount": 10000000
+        },
+        {
+          "rank": 3,
+          "amount": 5000000
+        }
+      ],
+      "id": "GD-0005",
+      "name": "Giải giao hữu cuối hè 2026",
+      "organizer": "CLB HorseTrack",
+      "location": "Trường đua Đại Nam",
+      "raceDate": "2026-09-28",
+      "registrationDeadline": "2026-09-20",
+      "distanceM": 1200,
+      "entryFee": 2000000,
+      "slots": 4,
+      "status": "PUBLISHED"
+    }
+  ],
+  "raceEntries": [
+    {
+      "stageDeadline": "2026-10-04T09:00",
+      "queuePosition": null,
+      "trainerDecision": null,
+      "vetResult": null,
+      "invoiceId": null,
+      "complaint": null,
+      "result": null,
+      "id": "DK-0001",
+      "tournamentId": "GD-0001",
+      "horseId": "h-flash",
+      "horseName": "Flash",
+      "owner": "Đỗ Minh Quân",
+      "trainerId": "2",
+      "status": "WAITING_TRAINER",
+      "createdAt": "2026-10-02T09:00",
+      "history": [
+        {
+          "at": "2026-10-02T09:00",
+          "who": "Đỗ Minh Quân",
+          "text": "đề xuất tham gia · giữ suất, chờ HLV xác nhận"
+        }
+      ]
+    },
+    {
+      "stageDeadline": "2026-10-04T08:30",
+      "queuePosition": null,
+      "trainerDecision": {
+        "approve": true,
+        "by": "Lê Minh Tâm",
+        "at": "2026-10-01T08:30"
+      },
+      "vetResult": null,
+      "invoiceId": null,
+      "complaint": null,
+      "result": null,
+      "id": "DK-0002",
+      "tournamentId": "GD-0001",
+      "horseId": "h-thunder",
+      "horseName": "Thunder",
+      "owner": "Hoàng Thị Lan",
+      "trainerId": "11",
+      "status": "WAITING_VET_EXAM",
+      "createdAt": "2026-09-30T14:00",
+      "history": [
+        {
+          "at": "2026-10-01T08:30",
+          "who": "HLV Lê Minh Tâm",
+          "text": "xác nhận ngựa sẵn sàng · chuyển bác sĩ khám",
+          "tone": "success"
+        },
+        {
+          "at": "2026-09-30T14:00",
+          "who": "Hoàng Thị Lan",
+          "text": "đề xuất tham gia · giữ suất, chờ HLV xác nhận"
+        }
+      ]
+    },
+    {
+      "stageDeadline": "2026-10-04T15:00",
+      "queuePosition": null,
+      "trainerDecision": {
+        "approve": true,
+        "by": "Lê Minh Tâm",
+        "at": "2026-09-29T09:00"
+      },
+      "vetResult": {
+        "pass": true,
+        "note": "Tim phổi bình thường, dáng đi đều, đủ thể lực cho cự ly.",
+        "by": "Lê Thị Hương",
+        "at": "2026-10-02T15:00"
+      },
+      "invoiceId": "INV-0055",
+      "complaint": null,
+      "result": null,
+      "id": "DK-0003",
+      "tournamentId": "GD-0001",
+      "horseId": "h-star",
+      "horseName": "Star",
+      "owner": "Vũ Thị Mai",
+      "trainerId": "11",
+      "status": "WAITING_PAYMENT",
+      "createdAt": "2026-09-28T10:00",
+      "history": [
+        {
+          "at": "2026-10-02T15:00",
+          "who": "BS Lê Thị Hương",
+          "text": "kết luận ĐẠT · phát hành hóa đơn lệ phí INV-0055",
+          "tone": "success"
+        },
+        {
+          "at": "2026-09-29T09:00",
+          "who": "HLV Lê Minh Tâm",
+          "text": "xác nhận ngựa sẵn sàng · chuyển bác sĩ khám",
+          "tone": "success"
+        },
+        {
+          "at": "2026-09-28T10:00",
+          "who": "Vũ Thị Mai",
+          "text": "đề xuất tham gia · giữ suất, chờ HLV xác nhận"
+        }
+      ]
+    },
+    {
+      "stageDeadline": null,
+      "queuePosition": null,
+      "trainerDecision": null,
+      "vetResult": null,
+      "invoiceId": null,
+      "complaint": null,
+      "result": null,
+      "id": "DK-0004",
+      "tournamentId": "GD-0001",
+      "horseId": "h-comet",
+      "horseName": "Comet",
+      "owner": "Lý Gia Hân",
+      "trainerId": "2",
+      "status": "TRAINER_EXPIRED",
+      "createdAt": "2026-09-25T08:00",
+      "history": [
+        {
+          "at": "2026-09-27T08:00",
+          "who": "Hệ thống",
+          "text": "quá hạn giữ chỗ · mất suất",
+          "tone": "danger"
+        },
+        {
+          "at": "2026-09-25T08:00",
+          "who": "Lý Gia Hân",
+          "text": "đề xuất tham gia · giữ suất, chờ HLV xác nhận"
+        }
+      ]
+    },
+    {
+      "stageDeadline": null,
+      "queuePosition": 1,
+      "trainerDecision": null,
+      "vetResult": null,
+      "invoiceId": null,
+      "complaint": null,
+      "result": null,
+      "id": "DK-0005",
+      "tournamentId": "GD-0001",
+      "horseId": "h-blaze",
+      "horseName": "Blaze",
+      "owner": "Lý Gia Hân",
+      "trainerId": "11",
+      "status": "WAITLISTED",
+      "createdAt": "2026-10-02T16:20",
+      "history": [
+        {
+          "at": "2026-10-02T16:20",
+          "who": "Lý Gia Hân",
+          "text": "đề xuất tham gia · hết suất, vào hàng chờ"
+        }
+      ]
+    },
+    {
+      "stageDeadline": null,
+      "queuePosition": null,
+      "trainerDecision": {
+        "approve": true,
+        "by": "Trần Đức Hùng",
+        "at": "2026-09-23T08:00"
+      },
+      "vetResult": {
+        "pass": true,
+        "note": "Tim phổi bình thường, dáng đi đều, đủ thể lực cho cự ly.",
+        "by": "Lê Thị Hương",
+        "at": "2026-09-24T10:00"
+      },
+      "invoiceId": "INV-0053",
+      "complaint": null,
+      "result": null,
+      "id": "DK-0006",
+      "tournamentId": "GD-0002",
+      "horseId": "h-galaxy",
+      "horseName": "Galaxy",
+      "owner": "Hoàng Thị Lan",
+      "trainerId": "2",
+      "status": "REGISTERED",
+      "createdAt": "2026-09-22T09:00",
+      "history": [
+        {
+          "at": "2026-09-25T09:10",
+          "who": "Hệ thống · VNPay",
+          "text": "đã nộp lệ phí · đăng ký thành công",
+          "tone": "success"
+        },
+        {
+          "at": "2026-09-24T10:00",
+          "who": "BS Lê Thị Hương",
+          "text": "kết luận ĐẠT · phát hành hóa đơn lệ phí",
+          "tone": "success"
+        },
+        {
+          "at": "2026-09-23T08:00",
+          "who": "HLV Trần Đức Hùng",
+          "text": "xác nhận ngựa sẵn sàng · chuyển bác sĩ khám",
+          "tone": "success"
+        },
+        {
+          "at": "2026-09-22T09:00",
+          "who": "Hoàng Thị Lan",
+          "text": "đề xuất tham gia · giữ suất, chờ HLV xác nhận"
+        }
+      ]
+    },
+    {
+      "stageDeadline": null,
+      "queuePosition": null,
+      "trainerDecision": {
+        "approve": true,
+        "by": "Trần Đức Hùng",
+        "at": "2026-09-22T08:00"
+      },
+      "vetResult": {
+        "pass": true,
+        "note": "Tim phổi bình thường, dáng đi đều, đủ thể lực cho cự ly.",
+        "by": "Lê Thị Hương",
+        "at": "2026-09-23T09:30"
+      },
+      "invoiceId": null,
+      "complaint": null,
+      "result": null,
+      "id": "DK-0007",
+      "tournamentId": "GD-0002",
+      "horseId": "h-bolt",
+      "horseName": "Bolt",
+      "owner": "Vũ Thị Mai",
+      "trainerId": "2",
+      "status": "REGISTERED",
+      "createdAt": "2026-09-21T15:00",
+      "history": [
+        {
+          "at": "2026-09-24T11:00",
+          "who": "Hệ thống · VNPay",
+          "text": "đã nộp lệ phí · đăng ký thành công",
+          "tone": "success"
+        },
+        {
+          "at": "2026-09-21T15:00",
+          "who": "Vũ Thị Mai",
+          "text": "đề xuất tham gia · giữ suất, chờ HLV xác nhận"
+        }
+      ]
+    },
+    {
+      "stageDeadline": "2026-10-04T23:59",
+      "queuePosition": null,
+      "trainerDecision": {
+        "approve": true,
+        "by": "Lê Minh Tâm",
+        "at": "2026-10-02T09:00"
+      },
+      "vetResult": null,
+      "invoiceId": null,
+      "complaint": null,
+      "result": null,
+      "id": "DK-0008",
+      "tournamentId": "GD-0002",
+      "horseId": "h-arrow",
+      "horseName": "Arrow",
+      "owner": "Đỗ Minh Quân",
+      "trainerId": "11",
+      "status": "WAITING_VET_EXAM",
+      "createdAt": "2026-10-01T10:00",
+      "history": [
+        {
+          "at": "2026-10-02T09:00",
+          "who": "HLV Lê Minh Tâm",
+          "text": "xác nhận ngựa sẵn sàng · chuyển bác sĩ khám",
+          "tone": "success"
+        },
+        {
+          "at": "2026-10-01T10:00",
+          "who": "Đỗ Minh Quân",
+          "text": "đề xuất tham gia · giữ suất, chờ HLV xác nhận"
+        }
+      ]
+    },
+    {
+      "stageDeadline": null,
+      "queuePosition": null,
+      "trainerDecision": {
+        "approve": false,
+        "reasonCode": "NOT_READY",
+        "note": "Chưa chạy đủ giáo án sức bền cho cự ly 1600 m.",
+        "by": "Lê Minh Tâm",
+        "at": "2026-09-30T16:00"
+      },
+      "vetResult": null,
+      "invoiceId": null,
+      "complaint": {
+        "reason": "Lightning đã về nhì ở cự ly 1600 m tháng trước, đề nghị xem lại.",
+        "at": "2026-10-01T09:15",
+        "status": "OPEN"
+      },
+      "result": null,
+      "id": "DK-0009",
+      "tournamentId": "GD-0003",
+      "horseId": "h-lightning",
+      "horseName": "Lightning",
+      "owner": "Vũ Thị Mai",
+      "trainerId": "11",
+      "status": "TRAINER_REJECTED",
+      "createdAt": "2026-09-29T11:00",
+      "history": [
+        {
+          "at": "2026-10-01T09:15",
+          "who": "Vũ Thị Mai",
+          "text": "gửi khiếu nại tới Quản lý CLB",
+          "tone": "warning"
+        },
+        {
+          "at": "2026-09-30T16:00",
+          "who": "HLV Lê Minh Tâm",
+          "text": "từ chối: Chưa chạy đủ giáo án sức bền cho cự ly 1600 m.",
+          "tone": "danger"
+        },
+        {
+          "at": "2026-09-29T11:00",
+          "who": "Vũ Thị Mai",
+          "text": "đề xuất tham gia · giữ suất, chờ HLV xác nhận"
+        }
+      ]
+    },
+    {
+      "stageDeadline": "2026-10-05T08:00",
+      "queuePosition": null,
+      "trainerDecision": null,
+      "vetResult": null,
+      "invoiceId": null,
+      "complaint": null,
+      "result": null,
+      "id": "DK-0010",
+      "tournamentId": "GD-0003",
+      "horseId": "h-spirit",
+      "horseName": "Spirit",
+      "owner": "Hoàng Thị Lan",
+      "trainerId": "11",
+      "status": "WAITING_TRAINER",
+      "createdAt": "2026-10-03T08:00",
+      "history": [
+        {
+          "at": "2026-10-03T08:00",
+          "who": "Hoàng Thị Lan",
+          "text": "đề xuất tham gia · giữ suất, chờ HLV xác nhận"
+        }
+      ]
+    },
+    {
+      "stageDeadline": null,
+      "queuePosition": null,
+      "trainerDecision": null,
+      "vetResult": {
+        "pass": true,
+        "note": "Tim phổi bình thường, dáng đi đều, đủ thể lực cho cự ly.",
+        "by": "Lê Thị Hương",
+        "at": "2026-09-14T09:00"
+      },
+      "invoiceId": null,
+      "complaint": null,
+      "result": null,
+      "id": "DK-0011",
+      "tournamentId": "GD-0005",
+      "horseId": "h-thunder",
+      "horseName": "Thunder",
+      "owner": "Hoàng Thị Lan",
+      "trainerId": "11",
+      "status": "REGISTERED",
+      "createdAt": "2026-09-10T09:00",
+      "history": [
+        {
+          "at": "2026-09-15T10:00",
+          "who": "Hệ thống · VNPay",
+          "text": "đã nộp lệ phí · đăng ký thành công",
+          "tone": "success"
+        }
+      ]
+    },
+    {
+      "stageDeadline": null,
+      "queuePosition": null,
+      "trainerDecision": null,
+      "vetResult": {
+        "pass": true,
+        "note": "Tim phổi bình thường, dáng đi đều, đủ thể lực cho cự ly.",
+        "by": "Lê Thị Hương",
+        "at": "2026-09-14T10:00"
+      },
+      "invoiceId": null,
+      "complaint": null,
+      "result": null,
+      "id": "DK-0012",
+      "tournamentId": "GD-0005",
+      "horseId": "h-flash",
+      "horseName": "Flash",
+      "owner": "Đỗ Minh Quân",
+      "trainerId": "2",
+      "status": "REGISTERED",
+      "createdAt": "2026-09-11T09:00",
+      "history": [
+        {
+          "at": "2026-09-15T11:00",
+          "who": "Hệ thống · VNPay",
+          "text": "đã nộp lệ phí · đăng ký thành công",
+          "tone": "success"
+        }
+      ]
+    },
+    {
+      "stageDeadline": null,
+      "queuePosition": null,
+      "trainerDecision": null,
+      "vetResult": {
+        "pass": true,
+        "note": "Tim phổi bình thường, dáng đi đều, đủ thể lực cho cự ly.",
+        "by": "Lê Thị Hương",
+        "at": "2026-09-14T11:00"
+      },
+      "invoiceId": null,
+      "complaint": null,
+      "result": null,
+      "id": "DK-0013",
+      "tournamentId": "GD-0005",
+      "horseId": "h-comet",
+      "horseName": "Comet",
+      "owner": "Lý Gia Hân",
+      "trainerId": "2",
+      "status": "REGISTERED",
+      "createdAt": "2026-09-12T09:00",
+      "history": [
+        {
+          "at": "2026-09-16T08:00",
+          "who": "Hệ thống · VNPay",
+          "text": "đã nộp lệ phí · đăng ký thành công",
+          "tone": "success"
+        }
+      ]
     }
   ],
   "tournaments": [

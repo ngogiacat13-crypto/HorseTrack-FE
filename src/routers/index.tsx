@@ -24,6 +24,7 @@ import { ManagerFinanceReport } from '../pages/manager/ManagerFinanceReport';
 import { ManagerUsers } from '../pages/manager/ManagerUsers';
 import { ManagerAuditLogs } from '../pages/manager/ManagerAuditLogs';
 import { EmailLogs } from '../features/email-logs';
+import { ManagerComplaints, ManagerTournamentDetail, ManagerTournaments, OwnerEntries, OwnerTournaments, RACE_FLOW_V2, TrainerConfirmations, VetRaceEntryExams } from '../features/tournament-registration';
 
 import { TrainerHerdOverview } from '../pages/trainer/TrainerHerdOverview';
 import { StableMap } from '../pages/trainer/StableMap';
@@ -83,6 +84,9 @@ const ROLE_ROUTES: { role: Role; routes: [path: string, element: React.ReactElem
     [PATH.manager.users, <ManagerUsers />],
     [PATH.manager.auditLogs, <ManagerAuditLogs />],
     [PATH.manager.emailLogs, <EmailLogs />],
+    [PATH.manager.tournaments, <ManagerTournaments />],
+    [PATH.manager.tournament, <ManagerTournamentDetail />],
+    [PATH.manager.raceComplaints, <ManagerComplaints />],
   ] },
   { role: 'HeadTrainer', routes: [
     [PATH.trainer.home, <TrainerHerdOverview />],
@@ -93,6 +97,7 @@ const ROLE_ROUTES: { role: Role; routes: [path: string, element: React.ReactElem
     [PATH.trainer.session, <TrainerSessionDetail />],
     [PATH.trainer.races, <TrainerRaces />],
     [PATH.trainer.proposalCreate, <TrainerProposalCreate />],
+    [PATH.trainer.raceConfirmations, <TrainerConfirmations />],
     [PATH.trainer.stable, <StableMap />],
   ] },
   { role: 'Veterinarian', routes: [
@@ -104,7 +109,7 @@ const ROLE_ROUTES: { role: Role; routes: [path: string, element: React.ReactElem
     [PATH.vet.protocol, <VetProtocolDetail />],
     [PATH.vet.medicines, <VetMedicines />],
     [PATH.vet.vaccinations, <VetVaccinations />],
-    [PATH.vet.raceExams, <VetRaceExams />],
+    [PATH.vet.raceExams, RACE_FLOW_V2 ? <VetRaceEntryExams /> : <VetRaceExams />],
   ] },
   {
     role: 'Groom',
@@ -121,6 +126,8 @@ const ROLE_ROUTES: { role: Role; routes: [path: string, element: React.ReactElem
     [PATH.owner.home, <OwnerHorses />],
     [PATH.owner.horse, <OwnerHorseDetail />],
     [PATH.owner.races, <OwnerRaces />],
+    [PATH.owner.tournaments, <OwnerTournaments />],
+    [PATH.owner.raceEntries, <OwnerEntries />],
     [PATH.owner.invoices, <OwnerInvoices />],
     [PATH.owner.invoice, <OwnerInvoiceDetail />],
     [PATH.owner.payments, <OwnerPayments />],

@@ -1,6 +1,7 @@
 import type { Role } from '../../api/mockData';
 import type { IconName } from '../ui/Icon';
 import { PATH } from '../../routers/routerPath';
+import { RACE_FLOW_V2 } from '../../features/tournament-registration/tournamentApi';
 
 export const ROLE_LABEL: Record<Role, string> = {
   ClubManager: 'Quản lý CLB',
@@ -21,6 +22,10 @@ export const NAV_BY_ROLE: Record<Role, NavGroup[]> = {
       { path: PATH.manager.registrations, icon: 'clip', label: 'Đăng ký ngựa', count: 3 },
       { path: PATH.manager.medicalMonitoring, icon: 'heart', label: 'Theo dõi y tế', count: 2 },
     ] },
+    ...(RACE_FLOW_V2 ? [{ title: 'Thi đấu', items: [
+      { path: PATH.manager.tournaments, icon: 'trend' as const, label: 'Giải đấu' },
+      { path: PATH.manager.raceComplaints, icon: 'alert' as const, label: 'Khiếu nại thi đấu' },
+    ] }] : []),
     { title: 'Tài chính', items: [
       { path: PATH.manager.invoices, icon: 'receipt', label: 'Hóa đơn', count: 4, tone: 'danger' },
       { path: PATH.manager.reports, icon: 'chart', label: 'Báo cáo tài chính' },
@@ -41,7 +46,9 @@ export const NAV_BY_ROLE: Record<Role, NavGroup[]> = {
       { path: PATH.trainer.schedule, icon: 'pulse', label: 'Lịch tập', count: 1, tone: 'danger' },
     ] },
     { title: 'Thi đấu', items: [
-      { path: PATH.trainer.races, icon: 'trend', label: 'Giải đua & đề xuất', count: 1 },
+      RACE_FLOW_V2
+        ? { path: PATH.trainer.raceConfirmations, icon: 'trend', label: 'Xác nhận thi đấu' }
+        : { path: PATH.trainer.races, icon: 'trend', label: 'Giải đua & đề xuất', count: 1 },
     ] },
   ],
   Veterinarian: [
@@ -72,7 +79,9 @@ export const NAV_BY_ROLE: Record<Role, NavGroup[]> = {
   HorseOwner: [
     { title: 'Ngựa', items: [
       { path: PATH.owner.home, icon: 'stable', label: 'Ngựa của tôi', end: true },
-      { path: PATH.owner.races, icon: 'trend', label: 'Xác nhận thi đấu' },
+      ...(RACE_FLOW_V2
+        ? [{ path: PATH.owner.tournaments, icon: 'trend' as const, label: 'Giải đấu' }, { path: PATH.owner.raceEntries, icon: 'clip' as const, label: 'Đề xuất của tôi' }]
+        : [{ path: PATH.owner.races, icon: 'trend' as const, label: 'Xác nhận thi đấu' }]),
       { path: PATH.owner.registrations, icon: 'file', label: 'Đăng ký ngựa mới' },
     ] },
     { title: 'Tài chính', items: [
