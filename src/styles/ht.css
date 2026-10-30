@@ -505,24 +505,26 @@ a.ht-stat:hover { border-color: var(--border-strong); }
 .ht-menu__item--danger, .ht-menu__item--danger .ht-icon { color: var(--danger-ink); }
 .ht-search input { border: 0; outline: none; background: none; flex: 1; font: 400 13px/18px var(--font-sans); color: var(--foreground); min-width: 0; }
 .ht-search:focus-within { border-color: var(--primary-light); box-shadow: 0 0 0 3px var(--primary-soft); }
-.ht-loading { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 64px 0; color: var(--muted); }
+.ht-loading { display: flex; align-items: center; justify-content: center; min-height: 60vh; background: #ebebeb; border-radius: var(--radius-lg); }
 .ht-loading .ht-spinner { color: var(--primary-light); }
-.ht-loading__text { font: 600 13px/16px var(--font-mono); letter-spacing: .16em; color: var(--primary-light); }
-.ht-horse { width: 64px; height: 48px; shape-rendering: crispEdges; overflow: visible; animation: ht-horse-bob .36s steps(1) infinite; }
-.ht-horse__body { fill: var(--muted); }
-.ht-horse__mane { fill: var(--foreground); }
-.ht-horse__ear { fill: var(--foreground); }
-.ht-horse__eye { fill: var(--surface); }
-.ht-horse__hoof { fill: var(--foreground); }
-.ht-horse__legs--stride { animation: ht-horse-stride .36s steps(1) infinite; }
-.ht-horse__legs--gather { animation: ht-horse-gather .36s steps(1) infinite; }
-@keyframes ht-horse-bob { 0% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
-@keyframes ht-horse-stride { 0% { opacity: 1; } 50% { opacity: 0; } }
-@keyframes ht-horse-gather { 0% { opacity: 0; } 50% { opacity: 1; } }
+.ht-loading__box { width: 340px; max-width: calc(100% - 32px); display: flex; flex-direction: column; align-items: center; }
+.ht-loading__track { width: 100%; height: 90px; position: relative; overflow: hidden; }
+.ht-loading__runner { position: absolute; bottom: -41px; left: -130px; animation: ht-gallop-across 2.4s linear infinite; }
+.ht-loading__horse { display: block; width: 130px; height: 130px; object-fit: contain; image-rendering: pixelated; mix-blend-mode: darken; }
+.ht-loading__bar { width: 100%; height: 16px; background: #d4d4d4; border: 3px solid #2b1d28; box-shadow: 3px 3px 0 #2b1d28; overflow: hidden; margin-top: -4px; }
+.ht-loading__fill { height: 100%; background: #e5935a; animation: ht-loading-fill 2.4s linear infinite; }
+.ht-loading__text { margin-top: 16px; font: 700 28px/1 'VT323', 'Courier New', monospace; color: #2b1d28; letter-spacing: 2px; }
+.ht-loading__dot { opacity: 0; margin-left: 4px; animation: ht-loading-dot 1.5s infinite; }
+.ht-loading__dot:nth-of-type(1) { animation-delay: .2s; }
+.ht-loading__dot:nth-of-type(2) { animation-delay: .5s; }
+.ht-loading__dot:nth-of-type(3) { animation-delay: .8s; }
+@keyframes ht-gallop-across { 0% { left: -130px; } 100% { left: 100%; } }
+@keyframes ht-loading-fill { 0% { width: 0%; } 100% { width: 100%; } }
+@keyframes ht-loading-dot { 0%, 20% { opacity: 0; } 50%, 100% { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) {
-  .ht-horse { animation: none; }
-  .ht-horse__legs--stride { animation: none; }
-  .ht-horse__legs--gather { animation: none; opacity: 0; }
+  .ht-loading__runner { animation: none; left: calc(50% - 65px); }
+  .ht-loading__fill { animation: none; width: 60%; }
+  .ht-loading__dot { animation: none; opacity: 1; }
 }
 .ht h1, .ht h2, .ht h3 { color: inherit; }
 .ht dl, .ht ul, .ht ol { margin-bottom: 0; }
