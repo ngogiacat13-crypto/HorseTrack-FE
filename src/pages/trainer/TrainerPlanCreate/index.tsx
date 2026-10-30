@@ -11,6 +11,7 @@ import { HorseBadges, LoadState } from '../../../components/trainer/TrainerParts
 import { PhaseDraft, PlanType, TEMPLATES, TYPES, validPhase } from './templates';
 import { PhaseRow } from './PhaseRow';
 import { PlanSummary } from './PlanSummary';
+import { highIntensityBlock, useHorseRaces } from '../../../features/tournament-registration';
 
 const MIN_START = USE_BACKEND ? DEMO_NOW.date.split('/').reverse().join('-') : '2026-10-05';
 
@@ -38,16 +39,18 @@ export const TrainerPlanCreate: React.FC = () => {
     return all.filter((h) => ok.has(h.id));
   }, [data]);
   const horse = horses.find((h) => h.id === horseId);
+  const races = useHorseRaces(horseId);
   const running = data?.plans.find((p) => p.horseId === horseId && (p.status === 'PLANNED' || p.status === 'ACTIVE' || p.status === 'PAUSED'));
 
   if (!data) return <LoadState loading={loading} error={error} onRetry={reload} />;
 
   const block = horse ? trainingBlock(horse) : null;
+  const restBlock = phases.map((p) => highIntensityBlock(races, startDate, p.weeks, p.intensity)).find(Boolean) ?? '';
   const errors = {
     name: name.trim().length < 5 ? 'Tên giáo án ít nhất 5 ký tự' : name.trim().length > 80 ? 'Tên giáo án tối đa 80 ký tự' : '',
     horse: !horseId ? 'Chọn ngựa' : block ?? '',
     goal: goal.trim().length < 5 ? 'Mục tiêu ít nhất 5 ký tự' : '',
-    phases: phases.length !== 1 ? 'Mỗi giáo án chỉ có 1 giai đoạn' : phases.some((p) => !validPhase(p)) ? 'Kiểm tra lại giai đoạn: tuần 1–12, quãng đường 200–4000 m, 1–7 buổi/tuần, ngưỡng 120–200 bpm' : '',
+    phases: phases.length !== 1 ? 'Mỗi giáo án chỉ có 1 giai đoạn' : restBlock || (phases.some((p) => !validPhase(p)) ? 'Kiểm tra lại giai đoạn: tuần 1–12, quãng đường 200–4000 m, 1–7 buổi/tuần, ngưỡng 120–200 bpm' : ''),
   };
   const valid = !errors.name && !errors.horse && !errors.goal && !errors.phases;
 
@@ -109,6 +112,7 @@ export const TrainerPlanCreate: React.FC = () => {
                 </div>
               </div>
               {horse && <div style={{ margin: '-4px 0 16px' }}><HorseBadges horse={horse} /></div>}
+              {restBlock && <Callout tone="danger" icon="lock" testId="plan-race-rest-block" style={{ marginBottom: 16 }}>{restBlock}</Callout>}
               {running && !block && <Callout tone="demo" icon="warn" style={{ marginBottom: 16 }}>{horse?.name} đang có giáo án <b className="ht-mono">{running.id}</b> “{running.name}”. Lưu giáo án mới sẽ chuyển giáo án cũ sang “Đã thay thế”.</Callout>}
 
               <div className="ht-field">
