@@ -24,7 +24,6 @@ const invoicePaid = (status?: string | null) => {
   return s === 'PAID' || s === 'SETTLED' || s === 'ACTIVE';
 };
 
-/** BE không trả phaseBilling — dùng phases[].invoiceStatus (đã map ở beDomain). */
 export const phaseBillingOf = (p: Protocol): PhaseBilling[] => {
   if (p.phaseBilling?.length) {
     return p.phaseBilling.map((b) => {

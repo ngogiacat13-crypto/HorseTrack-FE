@@ -175,5 +175,4 @@ export const WarehouseNutrition: React.FC = () => {
   );
 };
 
-// Giữ type tab API để khớp BE (pending|issued|cancelled|all)
 export type { NutritionStockTab };
