@@ -104,7 +104,14 @@ const TASK_TYPE: Record<string, [string, string]> = {
 
 interface BeHorse { horseId: number; horseName: string; dob: string; gender: string; breed: string; pedigree?: string | null; weightKg: number; healthStatus: string; isLocked: boolean; ownerId: number; stallId: number | null; stallCode?: string | null; approvalStatus?: string | null; createdAt?: string | null;
   horseCode?: string | null; color?: string | null; heightCm?: number | null; ownerPhone?: string | null; heightHands?: number | null; passportNo?: string | null; healthCertIssuer?: string | null; healthCertExpiry?: string | null;
-  registrationCode?: string | null; rejectReason?: string | null; allowResubmit?: boolean | null; assignedTrainerId?: number | null; assignedTrainerName?: string | null; ownerName?: string | null }
+  registrationCode?: string | null; rejectReason?: string | null; allowResubmit?: boolean | null; assignedTrainerId?: number | null; assignedTrainerName?: string | null; ownerName?: string | null;
+  raceResults?: BeRaceResult[] | null; totalPrize?: number | null }
+interface BeRaceResult { proposalId?: number | null; tournamentName?: string | null; raceDate?: string | null; rank?: number | null; finishTimeSeconds?: number | null; prizeAmount?: number | null; distanceM?: number | null; fieldSize?: number | null }
+const toRaceResult = (r: BeRaceResult) => ({
+  date: ddmmyyyy(r.raceDate), race: r.tournamentName ?? '—', distance: r.distanceM ? `${Number(r.distanceM)} m` : '—',
+  rank: Number(r.rank ?? 0), field: Number(r.fieldSize ?? 1), time: r.finishTimeSeconds != null ? raceTime(r.finishTimeSeconds) : '—',
+  prize: r.prizeAmount != null ? Number(r.prizeAmount) : undefined,
+});
 interface BeRegCheck { checkKey: string; passed: boolean; detail?: string | null; checkedByName?: string | null; checkedAt?: string | null }
 interface BeAttachment { attachmentId: number; docType?: string | null; fileName: string; mimeType?: string | null; fileSizeKb?: number | null; uploadedAt?: string | null }
 const DOC_LABEL: Record<string, string> = { OWNERSHIP: 'Giấy tờ sở hữu', OTHER: 'Giấy chứng nhận sức khỏe / khác' };
@@ -192,7 +199,7 @@ const toHorse = (h: BeHorse, stalls: BeStall[], u: Me | null): Row => ({
   trainerId: h.assignedTrainerId ? String(h.assignedTrainerId) : u?.role === 'HeadTrainer' ? u.id : '', trainerName: h.assignedTrainerName ?? null,
   health: health(h.healthStatus), trainingLocked: !!h.isLocked, form: null, pendingCase: null,
   lock: h.isLocked ? { by: 'Bác sĩ thú y', at: '—', reason: 'Khóa từ hệ thống', review: '—' } : null,
-  injuries: [], medicalHistory: [], raceResults: [], medicalDiet: null,
+  injuries: [], medicalHistory: [], raceResults: (h.raceResults ?? []).map(toRaceResult), medicalDiet: null,
 });
 
 const isoToday = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
@@ -729,7 +736,7 @@ const rowsOf = async (name: string) => {
 const DETAILS: Record<string, (row: Row) => Promise<Row> | null> = {
   horses: (row) => (me()?.role === 'WarehouseManager' || !/^\d+$/.test(String(row.id)) ? null
     : Promise.all([data<BeHorse>(`/horses/${row.id}`), stallsRaw()]).then(([h, stalls]) => {
-      const { injuries: _injuries, medicalHistory: _history, raceResults: _results, ...fresh } = toHorse(h, stalls, me());
+      const { injuries: _injuries, medicalHistory: _history, ...fresh } = toHorse(h, stalls, me());
       return { ...fresh, trainerId: fresh.trainerId || row.trainerId };
     })),
   raceProposals: (row) => (row.beId ? data<BeProposal>(`/race-proposals/${row.beId}`).then(toProposal) : null),
