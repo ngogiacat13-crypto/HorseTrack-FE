@@ -185,7 +185,7 @@ export const tournamentApi = {
     const all = await get<RaceTournament[]>(T);
     const id = nextId(all.map((t) => t.id), 'GD-');
     await http.post(T, { ...body, id, status: 'DRAFT' });
-    await addAudit(actor, { action: 'CREATE_TOURNAMENT', label: 'Tạo giải đấu', object: `${id} · ${body.name}`, area: 'train', to: 'DRAFT' });
+    await addAudit(actor, { action: 'IMPORT_TOURNAMENT', label: 'Nhập giải đấu', object: `${id} · ${body.name}`, area: 'train', to: 'DRAFT' });
   },
 
   async publish(t: RaceTournament, actor: Actor) {

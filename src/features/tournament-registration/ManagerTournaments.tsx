@@ -32,8 +32,8 @@ export const ManagerTournaments: React.FC = () => {
 
   return (
     <div className="ht ht-page">
-      <PageHeader title="Giải đấu" sub="Quản lý CLB tạo giải với tiêu chí rõ ràng. Hệ thống tự lọc ngựa đủ điều kiện; ai đề xuất trước được giữ suất trước."
-        actions={<button type="button" className="ht-btn ht-btn--primary" data-testid="tournament-create-btn" onClick={() => setEditing('new')}><Icon name="check" size={16} />Tạo giải</button>} />
+      <PageHeader title="Giải đấu" sub="Quản lý CLB nhập các giải do ban tổ chức bên ngoài công bố để chủ ngựa biết và đề xuất tham gia. Hệ thống tự lọc ngựa đủ điều kiện; ai đề xuất trước được giữ suất trước."
+        actions={<button type="button" className="ht-btn ht-btn--primary" data-testid="tournament-create-btn" onClick={() => setEditing('new')}><Icon name="download" size={16} />Nhập giải đấu</button>} />
       <Tabs<TournamentStatus> value={tab} onChange={setTab} items={[
         { value: 'PUBLISHED', label: 'Đang mở', count: count('PUBLISHED') },
         { value: 'DRAFT', label: 'Bản nháp', count: count('DRAFT') },

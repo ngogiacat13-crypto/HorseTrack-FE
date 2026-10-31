@@ -74,19 +74,44 @@ test('manager records results with prize money and resolves a complaint', async 
   await expect(page.getByTestId('complaint-empty')).toBeVisible();
 });
 
-test('manager creates a draft tournament and publishes it', async ({ page }) => {
+test('manager imports an external tournament with complete data, VND fee and date rules, then publishes it', async ({ page }) => {
   await signIn(page, 'ClubManager');
   await page.getByTestId('nav-manager-tournaments').click();
   await page.getByTestId('tournament-create-btn').click();
-  await page.getByTestId('tournament-form-dialog').getByTestId('dialog-confirm').click();
-  await expect(page.getByTestId('tournament-form-dialog')).toContainText('Tên giải ít nhất 5 ký tự');
+  const dialog = page.getByTestId('tournament-form-dialog');
+  await expect(dialog).toContainText('Nhập giải đấu');
+  await dialog.getByTestId('dialog-confirm').click();
+  await expect(page.getByTestId('tournament-form-missing')).toBeVisible();
+  await expect(dialog).toContainText('Nhập tuổi tối thiểu');
+  await expect(dialog).toContainText('Nhập cân nặng tối đa');
+  await expect(dialog).toContainText('Chọn ít nhất một giống');
+
   await page.getByTestId('tournament-name').fill('Giải thử nghiệm mùa đông');
-  await page.getByTestId('tournament-organizer').fill('CLB HorseTrack');
-  await page.getByTestId('tournament-location').fill('Sân CLB');
+  await page.getByTestId('tournament-organizer').fill('CLB Đua ngựa HCM');
+  await page.getByTestId('tournament-location').fill('Trường đua Đại Nam');
+  await page.getByTestId('tournament-raceDate').fill('2026-10-06');
+  await expect(dialog).toContainText('Ngày thi đấu phải sau hôm nay ít nhất 5 ngày');
   await page.getByTestId('tournament-raceDate').fill('2026-12-20');
+  await page.getByTestId('tournament-registrationDeadline').fill('2026-12-18');
+  await expect(dialog).toContainText('Hạn đăng ký phải trước ngày thi đấu ít nhất 3 ngày');
   await page.getByTestId('tournament-registrationDeadline').fill('2026-12-10');
-  await page.getByTestId('tournament-form-dialog').getByTestId('dialog-confirm').click();
-  await expect(page.getByTestId('tournament-form-dialog')).toHaveCount(0);
+
+  const fee = page.getByTestId('tournament-entryFee');
+  await fee.fill('5.000.000');
+  await expect(fee).toHaveValue('5.000.000');
+  await fee.dblclick();
+  expect(await fee.evaluate((el: HTMLInputElement) => el.selectionEnd! - el.selectionStart!)).toBe('5.000.000'.length);
+
+  await page.getByTestId('tournament-minAgeYears').fill('3');
+  await page.getByTestId('tournament-maxAgeYears').fill('8');
+  await page.getByTestId('tournament-minWeightKg').fill('420');
+  await page.getByTestId('tournament-maxWeightKg').fill('560');
+  await page.getByTestId('tournament-breed-all').click();
+  await page.getByTestId('tournament-prize-amount-0').fill('50000000');
+  await expect(page.getByTestId('tournament-prize-amount-0')).toHaveValue('50.000.000');
+  await dialog.getByTestId('dialog-confirm').click();
+  await expect(dialog).toHaveCount(0);
+
   await page.getByRole('tab', { name: /Bản nháp/ }).click();
   await expect(page.getByTestId('tournament-row-GD-0006')).toContainText('Giải thử nghiệm mùa đông');
   await page.getByTestId('tournament-publish-GD-0006').click();
