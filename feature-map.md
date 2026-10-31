@@ -95,7 +95,7 @@ Quy ước `data-testid`: menu trái `nav-<đường dẫn bỏ / đầu, / đ�
 | File | Kiểm tra |
 | :--- | :--- |
 | `scenarios/sign-in.spec.ts` | Khách vào `/` → `/login`; sai mật khẩu báo lỗi; 6 vai trò đăng nhập đúng trang chủ và đăng xuất được |
-| `scenarios/landing-core-features.spec.ts` | Trang giới thiệu cho chủ ngựa ở 1440/768/390px: khối 3 ô, 5 dịch vụ (6/2/1 cột), 4 bước gửi ngựa, 6 câu hỏi đáp, 8 ảnh, không cuộn ngang, không link neo hỏng; tab đội ngũ, chấm cam kết, mở câu hỏi đổi nội dung; trạng thái “dữ liệu mẫu”; đổi VI/EN; nút “Đăng ký gửi ngựa” dẫn tới /register |
+| `scenarios/landing-core-features.spec.ts` | Trang giới thiệu cho chủ ngựa ở 1440/768/390px: khối 3 ô, 5 dịch vụ (6/2/1 cột), 4 bước gửi ngựa, 6 câu hỏi đáp, 8 ảnh, không cuộn ngang, không link neo hỏng; tab đội ngũ, chấm cam kết, mở câu hỏi đổi nội dung; trạng thái “dữ liệu mẫu”; đổi VI/EN; nút “Đăng Ký” dẫn tới /register |
 | `scenarios/menu-pages.spec.ts` | Mỗi vai trò bấm lần lượt mọi mục menu trái: trang mở được, không lỗi console |
 | `scenarios/trainer-horses.spec.ts` | QL CLB giao cho HLV ngựa ở nhiều khu (không chọn khu), có bàn giao ngựa của HLV khác |
 | `scenarios/groom-zone.spec.ts` | Tạo tài khoản Người chăm ngựa không có ô khu chuồng; Mã phu chỉ một khu; khu đã có Mã phu khác bị khóa |
