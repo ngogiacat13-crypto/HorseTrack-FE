@@ -120,25 +120,44 @@ export const criteriaText = (t: RaceTournament) => {
 
 export const prizeFor = (rank: number, prizes: Prize[]) => prizes.find((p) => p.rank === rank)?.amount ?? 0;
 
+export const MIN_DAYS_BEFORE_RACE = 5;
+export const MIN_DEADLINE_GAP_DAYS = 3;
+export const shiftDay = (isoDay: string, days: number) => toIsoDay(addDays(parseIso(isoDay), days));
+
+const missing = (v: number | null) => v == null || Number.isNaN(v);
+
 export const validateTournament = (d: TournamentDraft, todayIso: string) => {
   const errors: Partial<Record<keyof TournamentDraft, string>> = {};
+  const earliestRace = shiftDay(todayIso, MIN_DAYS_BEFORE_RACE);
   if (d.name.trim().length < 5) errors.name = 'Tên giải ít nhất 5 ký tự';
   if (d.organizer.trim().length < 2) errors.organizer = 'Nhập ban tổ chức';
   if (d.location.trim().length < 2) errors.location = 'Nhập địa điểm';
   if (!d.raceDate) errors.raceDate = 'Chọn ngày thi đấu';
-  else if (d.raceDate <= todayIso) errors.raceDate = 'Ngày thi đấu phải sau hôm nay';
+  else if (d.raceDate < earliestRace) errors.raceDate = `Ngày thi đấu phải sau hôm nay ít nhất ${MIN_DAYS_BEFORE_RACE} ngày (từ ${fmtDate(earliestRace)})`;
   if (!d.registrationDeadline) errors.registrationDeadline = 'Chọn hạn đăng ký';
   else if (d.registrationDeadline < todayIso) errors.registrationDeadline = 'Hạn đăng ký không ở quá khứ';
-  else if (d.raceDate && d.registrationDeadline >= d.raceDate) errors.registrationDeadline = 'Hạn đăng ký phải trước ngày thi đấu';
+  else if (d.raceDate && d.registrationDeadline > shiftDay(d.raceDate, -MIN_DEADLINE_GAP_DAYS)) errors.registrationDeadline = `Hạn đăng ký phải trước ngày thi đấu ít nhất ${MIN_DEADLINE_GAP_DAYS} ngày (chậm nhất ${fmtDate(shiftDay(d.raceDate, -MIN_DEADLINE_GAP_DAYS))})`;
   if (!(d.distanceM >= 200 && d.distanceM <= 5000)) errors.distanceM = 'Cự ly 200–5000 m';
-  if (!(d.entryFee >= 0)) errors.entryFee = 'Lệ phí không âm';
+  if (missing(d.entryFee) || d.entryFee < 0) errors.entryFee = 'Nhập lệ phí (VND), không âm';
   if (!(Number.isInteger(d.slots) && d.slots >= 1 && d.slots <= 50)) errors.slots = 'Số suất 1–50';
-  if (d.minAgeYears != null && d.maxAgeYears != null && d.minAgeYears > d.maxAgeYears) errors.maxAgeYears = 'Tuổi tối đa phải ≥ tối thiểu';
-  if (d.minWeightKg != null && d.maxWeightKg != null && d.minWeightKg > d.maxWeightKg) errors.maxWeightKg = 'Cân nặng tối đa phải ≥ tối thiểu';
+  if (missing(d.minAgeYears)) errors.minAgeYears = 'Nhập tuổi tối thiểu';
+  else if (!(Number.isInteger(d.minAgeYears) && (d.minAgeYears as number) >= 1 && (d.minAgeYears as number) <= 40)) errors.minAgeYears = 'Tuổi 1–40';
+  if (missing(d.maxAgeYears)) errors.maxAgeYears = 'Nhập tuổi tối đa';
+  else if (!(Number.isInteger(d.maxAgeYears) && (d.maxAgeYears as number) >= 1 && (d.maxAgeYears as number) <= 40)) errors.maxAgeYears = 'Tuổi 1–40';
+  else if (!missing(d.minAgeYears) && (d.minAgeYears as number) > (d.maxAgeYears as number)) errors.maxAgeYears = 'Tuổi tối đa phải ≥ tối thiểu';
+  if (missing(d.minWeightKg)) errors.minWeightKg = 'Nhập cân nặng tối thiểu';
+  else if (!((d.minWeightKg as number) > 0 && (d.minWeightKg as number) <= 1500)) errors.minWeightKg = 'Cân nặng 1–1500 kg';
+  if (missing(d.maxWeightKg)) errors.maxWeightKg = 'Nhập cân nặng tối đa';
+  else if (!((d.maxWeightKg as number) > 0 && (d.maxWeightKg as number) <= 1500)) errors.maxWeightKg = 'Cân nặng 1–1500 kg';
+  else if (!missing(d.minWeightKg) && (d.minWeightKg as number) > (d.maxWeightKg as number)) errors.maxWeightKg = 'Cân nặng tối đa phải ≥ tối thiểu';
+  if (d.allowedBreeds.length === 0) errors.allowedBreeds = 'Chọn ít nhất một giống được nhận';
   const ranks = d.prizes.map((p) => p.rank);
-  if (d.prizes.some((p) => !(p.rank >= 1) || !(p.amount >= 0)) || new Set(ranks).size !== ranks.length) errors.prizes = 'Hạng giải thưởng không trùng, tiền thưởng không âm';
+  if (d.prizes.length === 0) errors.prizes = 'Nhập ít nhất một hạng có tiền thưởng';
+  else if (d.prizes.some((p) => !(Number.isInteger(p.rank) && p.rank >= 1)) || new Set(ranks).size !== ranks.length) errors.prizes = 'Hạng là số nguyên ≥ 1, không trùng';
+  else if (d.prizes.some((p) => !(p.amount > 0))) errors.prizes = 'Nhập tiền thưởng (VND) cho mỗi hạng';
   return errors;
 };
+
 
 export const restWindowConflict = (startIso: string, endIso: string, raceDates: string[]) =>
   raceDates.find((race) => {
