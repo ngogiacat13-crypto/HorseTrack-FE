@@ -65,7 +65,7 @@ export const ManagerTournamentDetail: React.FC = () => {
       <PageHeader crumbs={<BackButton fallback="/manager/tournaments" />} title={t.name} badge={<TournamentBadge status={t.status} />}
         sub={`${t.id} · ${holdingCount(entries)}/${t.slots} suất đang giữ · ${queue.length} trong hàng chờ`}
         actions={<div style={{ display: 'flex', gap: 8 }}>
-          {t.status !== 'FINISHED' && todayIso() < t.raceDate && <button type="button" className="ht-btn ht-btn--secondary" data-testid="tournament-detail-edit" onClick={() => setEditing(true)}>Sửa giải</button>}
+          {t.status === 'DRAFT' && <button type="button" className="ht-btn ht-btn--secondary" data-testid="tournament-detail-edit" onClick={() => setEditing(true)}>Sửa giải</button>}
           {canResult && <button type="button" className="ht-btn ht-btn--primary" data-testid="tournament-results-btn" onClick={openResults}><Icon name="check" size={16} />Nhập kết quả</button>}
         </div>} />
       {t.status === 'PUBLISHED' && todayIso() >= t.raceDate && registered.length === 0 && <Callout tone="info" style={{ marginBottom: 16 }}>Giải đã diễn ra nhưng không có ngựa nào đã đăng ký để nhập kết quả.</Callout>}

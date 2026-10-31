@@ -74,6 +74,8 @@ export const OwnerHorseDetail: React.FC = () => {
               <div className="ht-panel__body">
                 <dl className="ht-kv">
                   <dt>Giống</dt><dd>{h.breed}</dd><dt>Giới tính</dt><dd>{h.sex === '♂' ? 'Đực' : 'Cái'}</dd><dt>Tuổi</dt><dd>{h.age}</dd>
+                  <dt>Chiều cao</dt><dd data-testid="owner-horse-height">{h.heightCm ? `${Number(h.heightCm).toLocaleString("vi-VN")} cm` : "—"}</dd>
+                  <dt>Cân nặng</dt><dd data-testid="owner-horse-weight">{h.weightKg ? `${Number(h.weightKg).toLocaleString("vi-VN")} kg` : "—"}</dd>
                   <dt>Chuồng</dt><dd>{h.stall}</dd><dt>Chủ sở hữu</dt><dd>{h.owner}</dd>
                 </dl>
               </div>

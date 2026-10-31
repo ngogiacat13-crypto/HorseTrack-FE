@@ -186,7 +186,7 @@ const toProposal = (p: BeProposal): Row => {
 };
 
 const toHorse = (h: BeHorse, stalls: BeStall[], u: Me | null): Row => ({
-  id: String(h.horseId), name: h.horseName, breed: h.breed, sex: sex(h.gender), age: age(h.dob), weightKg: h.weightKg,
+  id: String(h.horseId), name: h.horseName, breed: h.breed, sex: sex(h.gender), age: age(h.dob), weightKg: h.weightKg == null ? null : Number(h.weightKg), heightCm: h.heightCm == null ? null : Number(h.heightCm),
   owner: u?.role === 'HorseOwner' && String(h.ownerId) === u.id ? u.name : h.ownerName ?? `Chủ ngựa #${h.ownerId}`,
   stall: stalls.find((s) => s.stallId === h.stallId)?.stallCode ?? h.stallCode ?? '—',
   trainerId: h.assignedTrainerId ? String(h.assignedTrainerId) : u?.role === 'HeadTrainer' ? u.id : '', trainerName: h.assignedTrainerName ?? null,

@@ -4,19 +4,19 @@ import { useActor } from '../../auth/AuthContext';
 import { useAction } from '../../hooks/useAction';
 import { Callout, Dialog } from '../../components/ui/Ht';
 import { Icon } from '../../components/ui/Icon';
-import { MIN_DAYS_BEFORE_RACE, MIN_DEADLINE_GAP_DAYS, shiftDay, validateTournament } from './logic';
+import { MAX_PRIZE_RANKS, MIN_DAYS_BEFORE_RACE, MIN_DEADLINE_GAP_DAYS, MIN_PRIZE_RANKS, shiftDay, validateTournament, withPrizeRanks } from './logic';
 import { todayIso, tournamentApi } from './tournamentApi';
 import type { Prize, RaceTournament, TournamentDraft } from './types';
 
 const EMPTY: TournamentDraft = {
   name: '', organizer: '', location: '', raceDate: '', registrationDeadline: '', distanceM: 1200, entryFee: Number.NaN, slots: 8,
-  minAgeYears: null, maxAgeYears: null, minWeightKg: null, maxWeightKg: null, allowedBreeds: [], prizes: [{ rank: 1, amount: Number.NaN }], note: '',
+  minAgeYears: null, maxAgeYears: null, minWeightKg: null, maxWeightKg: null, allowedBreeds: [], prizes: withPrizeRanks([]), note: '',
 };
 
 const fromTournament = (t: RaceTournament): TournamentDraft => ({
   name: t.name, organizer: t.organizer, location: t.location, raceDate: t.raceDate, registrationDeadline: t.registrationDeadline,
   distanceM: t.distanceM, entryFee: t.entryFee, slots: t.slots, minAgeYears: t.minAgeYears, maxAgeYears: t.maxAgeYears,
-  minWeightKg: t.minWeightKg, maxWeightKg: t.maxWeightKg, allowedBreeds: [...t.allowedBreeds], prizes: t.prizes.map((p) => ({ ...p })), note: t.note ?? '',
+  minWeightKg: t.minWeightKg, maxWeightKg: t.maxWeightKg, allowedBreeds: [...t.allowedBreeds], prizes: withPrizeRanks(t.prizes), note: t.note ?? '',
 });
 
 const optionalNumber = (v: string) => (v.trim() === '' ? null : Number(v));
@@ -138,14 +138,20 @@ export const TournamentForm: React.FC<{ tournament?: RaceTournament; onClose: ()
         </div>
         <div className="ht-field">
           <span className="ht-label">Giải thưởng (VND)<span className="ht-req">*</span></span>
-          {d.prizes.map((p, i) => (
-            <div key={i} style={{ display: 'grid', gridTemplateColumns: '110px 1fr auto', gap: 8, marginBottom: 8 }}>
-              <input aria-label={`Hạng ${i + 1}`} data-testid={`tournament-prize-rank-${i}`} type="number" min={1} className="ht-input" value={Number.isFinite(p.rank) ? p.rank : ''} onChange={(e) => setPrize(i, { rank: e.target.value === '' ? Number.NaN : Number(e.target.value) })} onDoubleClick={selectAll} placeholder="Hạng" />
-              <MoneyInput testId={`tournament-prize-amount-${i}`} label={`Tiền thưởng hạng ${p.rank}`} value={p.amount} onChange={(n) => setPrize(i, { amount: n })} invalid={bad('prizes')} />
-              <button type="button" className="ht-btn ht-btn--secondary ht-btn--sm" aria-label={`Xóa hạng ${p.rank}`} data-testid={`tournament-prize-remove-${i}`} disabled={d.prizes.length === 1} onClick={() => set({ prizes: d.prizes.filter((_, k) => k !== i) })}><Icon name="x" /></button>
-            </div>
-          ))}
-          <button type="button" className="ht-btn ht-btn--secondary ht-btn--sm" data-testid="tournament-prize-add" onClick={() => set({ prizes: [...d.prizes, { rank: d.prizes.length + 1, amount: Number.NaN }] })}><Icon name="check" />Thêm hạng</button>
+          <span className="ht-hint" style={{ display: 'block', marginBottom: 8 }}>Mặc định hạng 1–{MIN_PRIZE_RANKS}; thêm được tới hạng {MAX_PRIZE_RANKS} nếu giải có.</span>
+          {d.prizes.map((p, i) => {
+            const removable = i === d.prizes.length - 1 && d.prizes.length > MIN_PRIZE_RANKS;
+            return (
+              <div key={p.rank} style={{ display: 'grid', gridTemplateColumns: '110px 1fr 40px', gap: 8, marginBottom: 8, alignItems: 'center' }}>
+                <span className="ht-input" style={{ display: 'flex', alignItems: 'center', fontWeight: 600 }} data-testid={`tournament-prize-rank-${i}`}>Hạng {p.rank}</span>
+                <MoneyInput testId={`tournament-prize-amount-${i}`} label={`Tiền thưởng hạng ${p.rank}`} value={p.amount} onChange={(n) => setPrize(i, { amount: n })} invalid={bad('prizes')} />
+                {removable && <button type="button" className="ht-btn ht-btn--secondary ht-btn--sm" aria-label={`Xóa hạng ${p.rank}`} data-testid={`tournament-prize-remove-${i}`} onClick={() => set({ prizes: d.prizes.slice(0, -1) })}><Icon name="x" /></button>}
+              </div>
+            );
+          })}
+          {d.prizes.length < MAX_PRIZE_RANKS && (
+            <button type="button" className="ht-btn ht-btn--secondary ht-btn--sm" data-testid="tournament-prize-add" onClick={() => set({ prizes: [...d.prizes, { rank: d.prizes.length + 1, amount: Number.NaN }] })}><Icon name="check" />Thêm hạng {d.prizes.length + 1}</button>
+          )}
           {err('prizes')}
         </div>
         <div className="ht-field" style={{ margin: 0 }}>

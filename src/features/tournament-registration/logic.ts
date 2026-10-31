@@ -128,6 +128,13 @@ export const shiftDay = (isoDay: string, days: number) => toIsoDay(addDays(parse
 
 const missing = (v: number | null) => v == null || Number.isNaN(v);
 
+export const MIN_PRIZE_RANKS = 3;
+export const MAX_PRIZE_RANKS = 5;
+export const withPrizeRanks = (prizes: Prize[]): Prize[] => {
+  const sorted = [...prizes].sort((a, b) => a.rank - b.rank).slice(0, MAX_PRIZE_RANKS);
+  const count = Math.max(MIN_PRIZE_RANKS, sorted.length);
+  return Array.from({ length: count }, (_, i) => ({ rank: i + 1, amount: sorted.find((p) => p.rank === i + 1)?.amount ?? Number.NaN }));
+};
 export const MIN_WEIGHT_KG = 50;
 export const MAX_WEIGHT_KG = 1500;
 
@@ -157,9 +164,8 @@ export const validateTournament = (d: TournamentDraft, todayIso: string, origina
   else if (!((d.maxWeightKg as number) >= MIN_WEIGHT_KG && (d.maxWeightKg as number) <= MAX_WEIGHT_KG)) errors.maxWeightKg = `Cân nặng ${MIN_WEIGHT_KG}–${MAX_WEIGHT_KG} kg`;
   else if (!missing(d.minWeightKg) && (d.minWeightKg as number) > (d.maxWeightKg as number)) errors.maxWeightKg = 'Cân nặng tối đa phải ≥ tối thiểu';
   if (d.allowedBreeds.length === 0) errors.allowedBreeds = 'Chọn ít nhất một giống được nhận';
-  const ranks = d.prizes.map((p) => p.rank);
-  if (d.prizes.length === 0) errors.prizes = 'Nhập ít nhất một hạng có tiền thưởng';
-  else if (d.prizes.some((p) => !(Number.isInteger(p.rank) && p.rank >= 1)) || new Set(ranks).size !== ranks.length) errors.prizes = 'Hạng là số nguyên ≥ 1, không trùng';
+  if (d.prizes.length < MIN_PRIZE_RANKS || d.prizes.length > MAX_PRIZE_RANKS) errors.prizes = `Giải thưởng gồm hạng 1–${MIN_PRIZE_RANKS}, tối đa đến hạng ${MAX_PRIZE_RANKS}`;
+  else if (d.prizes.some((p, i) => p.rank !== i + 1)) errors.prizes = 'Thứ hạng giải thưởng phải liên tiếp từ hạng 1';
   else if (d.prizes.some((p) => !(p.amount > 0))) errors.prizes = 'Nhập tiền thưởng (VND) cho mỗi hạng';
   return errors;
 };

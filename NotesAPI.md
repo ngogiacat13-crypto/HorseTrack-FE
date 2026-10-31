@@ -902,3 +902,9 @@ Swagger server giờ có 182 API; FE gọi 170.
 - Thông báo giải đấu có link theo vai trò: `/owner/race-entries`, `/trainer/race-confirmations`, `/vet/race-exams`, `/manager/race-complaints`; giải mới → `/owner/tournaments`; cần hoàn tiền → `/manager/invoices`. Job quét hạn ghi log lượt đầu khi khởi động.
 - Còn chờ BE: tài khoản test cho 5 vai trò (đang 401), tên miền HTTPS cho backend, việc bảo mật (secrets.example, trigger deploy.yml, secret URL VNPay / xác nhận nhân viên).
 
+## 44. Giải đã công bố không sửa; giải thưởng hạng 1–3 (tối đa 5); chiều cao / cân nặng ngựa (31/10/2026)
+
+- FE ẩn nút “Sửa” khi giải không còn ở bản nháp (`PUBLISHED`, `FINISHED`) và `saveTournament` chặn luôn. **Cần BE:** `PUT /tournaments/{id}` từ chối khi `tournament_status <> DRAFT` (hiện BE vẫn cho sửa giải đã công bố).
+- Giải thưởng: form luôn có hạng 1, 2, 3 (bắt buộc nhập tiền), thêm được hạng 4, 5; hạng liên tiếp từ 1. **Cần BE:** `prizes` 3–5 phần tử, `rank` 1..n liên tiếp, mỗi `amount` > 0.
+- Chủ ngựa · Chi tiết ngựa hiển thị Chiều cao (`heightCm` ← cột `height_cm`) và Cân nặng (`weightKg` ← `weight_kg`) từ `HorseResponseDTO`; `hybridAdapter.toHorse` đọc thêm `heightCm`.
+
