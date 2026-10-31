@@ -47,12 +47,12 @@ export interface LandingContent {
 }
 
 const vi: LandingContent = {
-  nav: { about: 'Giới thiệu', services: 'Dịch vụ', process: 'Gửi ngựa', team: 'Đội ngũ', faq: 'Hỏi đáp', login: 'Đăng nhập', register: 'Đăng ký gửi ngựa', langLabel: 'Ngôn ngữ' },
+  nav: { about: 'Giới thiệu', services: 'Dịch vụ', process: 'Gửi ngựa', team: 'Đội ngũ', faq: 'Hỏi đáp', login: 'Đăng nhập', register: 'Đăng Ký', langLabel: 'Ngôn ngữ' },
   hero: {
     kicker: '— Câu lạc bộ huấn luyện ngựa đua —', title: 'HorseTrack',
     tagline: ['Huấn luyện bài bản', 'Chăm sóc tận tâm', 'Sẵn sàng thi đấu'],
     lead: 'Gửi ngựa cho đội ngũ huấn luyện viên, bác sĩ thú y và người chăm ngựa của câu lạc bộ — và theo dõi ngựa của bạn mỗi ngày ngay trên điện thoại.',
-    primary: 'Đăng ký gửi ngựa', secondary: 'Xem dịch vụ', photoAlt: 'Ngựa đua và nài ngựa trên đường đua',
+    primary: 'Đăng Ký', secondary: 'Xem dịch vụ', photoAlt: 'Ngựa đua và nài ngựa trên đường đua',
   },
   about: {
     left: { title: 'Về câu lạc bộ', link: 'Dịch vụ của chúng tôi', alt: 'Ngựa nhìn ra từ cửa chuồng gỗ' },
@@ -122,12 +122,12 @@ const vi: LandingContent = {
 };
 
 const en: LandingContent = {
-  nav: { about: 'About', services: 'Services', process: 'Get started', team: 'Team', faq: 'FAQ', login: 'Sign in', register: 'Board your horse', langLabel: 'Language' },
+  nav: { about: 'About', services: 'Services', process: 'Get started', team: 'Team', faq: 'FAQ', login: 'Sign in', register: 'Sign Up', langLabel: 'Language' },
   hero: {
     kicker: '— Racehorse training club —', title: 'HorseTrack',
     tagline: ['Structured training', 'Dedicated care', 'Race ready'],
     lead: 'Board your horse with the club’s trainers, vets and grooms — and follow your horse every day from your phone.',
-    primary: 'Board your horse', secondary: 'Our services', photoAlt: 'Racehorses and jockeys on the track',
+    primary: 'Sign Up', secondary: 'Our services', photoAlt: 'Racehorses and jockeys on the track',
   },
   about: {
     left: { title: 'About the club', link: 'Our services', alt: 'Horse looking out of a wooden stable door' },

@@ -58,7 +58,7 @@
 .ht-landing__tile--accent { justify-content: center; gap: 22px; background: var(--farm-amber); color: var(--farm-ink-deep); text-align: center; }
 .ht-landing__tile--accent h2 { margin: 0; font: 400 40px/1.15 var(--font-display); letter-spacing: .05em; text-transform: uppercase; color: var(--farm-ink); }
 .ht-landing__tile--accent p { max-width: 300px; margin: 0; font: 400 15px/26px var(--font-body); }
-.ht-landing__stamp { position: absolute; top: 28px; right: 28px; display: grid; place-items: center; width: 116px; height: 116px; color: var(--farm-ink); }
+.ht-landing__stamp { position: relative; flex: none; display: grid; place-items: center; width: 116px; height: 116px; margin-bottom: 4px; color: var(--farm-ink); }
 .ht-landing__stamp > svg:first-child { position: absolute; inset: 0; width: 100%; height: 100%; animation: ht-landing-spin 24s linear infinite; }
 .ht-landing__stamp circle { fill: none; stroke: currentColor; stroke-width: 1.2; }
 .ht-landing__stamp text { fill: currentColor; font: 600 9.5px/1 var(--font-body); letter-spacing: .18em; text-transform: uppercase; }
@@ -213,8 +213,7 @@
   .ht-landing__hero { min-height: 560px; padding: 72px 16px; }
   .ht-landing__about { grid-template-columns: minmax(0, 1fr); padding-top: 40px; padding-bottom: 40px; }
   .ht-landing__tile { min-height: 420px; }
-  .ht-landing__tile--accent { grid-column: auto; padding-top: 150px; }
-  .ht-landing__stamp { left: 50%; right: auto; margin-left: -58px; }
+  .ht-landing__tile--accent { grid-column: auto; }
   .ht-landing__bento, .ht-landing__flow, .ht-landing__docs, .ht-landing__role-grid { grid-template-columns: minmax(0, 1fr); }
   .ht-landing__card--lg, .ht-landing__card--md, .ht-landing__card--sm { grid-column: auto; }
   .ht-landing__flow li { border-right: 0; }
