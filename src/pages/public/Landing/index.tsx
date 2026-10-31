@@ -210,9 +210,6 @@ export const Landing: React.FC = () => {
                 </li>
               ))}
             </ol>
-            <div className="ht-landing__center">
-              <Link className="ht-landing__btn ht-landing__btn--solid ht-landing__btn--lg" to={join} data-testid="landing-process-register">{c.process.cta}</Link>
-            </div>
           </div>
         </section>
 
@@ -294,19 +291,6 @@ export const Landing: React.FC = () => {
                   <p>{f.a}</p>
                 </details>
               ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="ht-landing__band">
-          <div className="ht-landing__inner ht-landing__band-inner">
-            <div>
-              <h2>{c.band.title}</h2>
-              <p>{c.band.text}</p>
-            </div>
-            <div className="ht-landing__hero-cta">
-              <Link className="ht-landing__btn ht-landing__btn--accent" to={join} data-testid="landing-band-register">{c.band.register}</Link>
-              <Link className="ht-landing__btn ht-landing__btn--ghost" to={home} data-testid="landing-band-login">{c.band.login}</Link>
             </div>
           </div>
         </section>
