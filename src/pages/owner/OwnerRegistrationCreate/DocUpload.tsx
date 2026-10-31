@@ -1,8 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { UploadedDoc } from '../../../api/ownerApi';
 import { Icon } from '../../../components/ui/Icon';
 
-const MAX_MB = 10;
+const MAX_UPLOAD_MB = 4;
+const MAX_PICK_MB = 25;
+const IMAGE_TARGET_BYTES = 3.5 * 1048576;
+const IMAGE_MAX_SIDE = 2400;
 const MIN_KB = 5;
 const SIGNATURES: { ext: RegExp; bytes: number[]; kind: string }[] = [
   { ext: /\.pdf$/i, bytes: [0x25, 0x50, 0x44, 0x46], kind: 'PDF' },
@@ -17,23 +20,60 @@ const contentMatches = async (f: File) => {
   return sig.bytes.every((b, i) => head[i] === b) ? sig.kind : null;
 };
 
+const loadImage = (f: File) => new Promise<HTMLImageElement>((resolve, reject) => {
+  const url = URL.createObjectURL(f);
+  const img = new Image();
+  img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+  img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('image')); };
+  img.src = url;
+});
+
+const shrinkImage = async (f: File) => {
+  const img = await loadImage(f);
+  const scale = Math.min(1, IMAGE_MAX_SIDE / Math.max(img.naturalWidth, img.naturalHeight));
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.round(img.naturalWidth * scale);
+  canvas.height = Math.round(img.naturalHeight * scale);
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return null;
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  for (const quality of [0.85, 0.75, 0.65, 0.55]) {
+    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/jpeg', quality));
+    if (blob && blob.size <= IMAGE_TARGET_BYTES) return new File([blob], f.name.replace(/\.(png|jpe?g)$/i, '.jpg'), { type: 'image/jpeg' });
+  }
+  return null;
+};
+
 export const DocUpload: React.FC<{ id: string; label: string; hint: string; required?: boolean; value: UploadedDoc | null; onChange: (d: UploadedDoc | null) => void; onError: (m: string) => void }> = ({ id, label, hint, required, value, onChange, onError }) => {
-  const pick = async (f?: File) => {
-    if (!f) return;
-    if (!/\.(pdf|jpe?g|png)$/i.test(f.name)) return onError(`${label}: chỉ nhận PDF, JPG hoặc PNG.`);
-    if (f.size > MAX_MB * 1048576) return onError(`${label}: tối đa ${MAX_MB} MB.`);
-    if (f.size < MIN_KB * 1024) return onError(`${label}: tệp quá nhỏ (dưới ${MIN_KB} KB) — có thể bị lỗi hoặc không đọc được, hãy chụp/quét lại và gửi lại.`);
-    if (!(await contentMatches(f))) return onError(`${label}: nội dung tệp không phải PDF/JPG/PNG thật (có thể đổi đuôi hoặc tệp hỏng) — hãy gửi lại giấy tờ hợp lệ.`);
+  const [busy, setBusy] = useState(false);
+  const pick = async (picked?: File) => {
+    if (!picked) return;
+    if (!/\.(pdf|jpe?g|png)$/i.test(picked.name)) return onError(`${label}: chỉ nhận PDF, JPG hoặc PNG.`);
+    if (picked.size > MAX_PICK_MB * 1048576) return onError(`${label}: tệp quá lớn (tối đa ${MAX_PICK_MB} MB trước khi nén).`);
+    if (picked.size < MIN_KB * 1024) return onError(`${label}: tệp quá nhỏ (dưới ${MIN_KB} KB) — có thể bị lỗi hoặc không đọc được, hãy chụp/quét lại và gửi lại.`);
+    const kind = await contentMatches(picked);
+    if (!kind) return onError(`${label}: nội dung tệp không phải PDF/JPG/PNG thật (có thể đổi đuôi hoặc tệp hỏng) — hãy gửi lại giấy tờ hợp lệ.`);
+    let f = picked;
+    if (f.size > MAX_UPLOAD_MB * 1048576) {
+      if (kind === 'PDF') return onError(`${label}: PDF tối đa ${MAX_UPLOAD_MB} MB — hãy nén PDF hoặc chụp giấy tờ thành ảnh JPG.`);
+      setBusy(true);
+      const small = await shrinkImage(f).catch(() => null);
+      setBusy(false);
+      if (!small) return onError(`${label}: không nén được ảnh xuống dưới ${MAX_UPLOAD_MB} MB — hãy chụp lại với độ phân giải thấp hơn.`);
+      f = small;
+    }
     onError('');
     onChange({ name: f.name, size: f.size, type: f.type, file: f });
   };
   return (
     <label className="ht-upload" htmlFor={id} data-ok={!!value} data-testid={`${id}-upload`}>
       <Icon name={value ? 'check' : 'file'} size={18} />
-      <div><b>{label}{required && <span className="ht-req">*</span>}</b><small title={value?.name}>{value ? `${value.name} · ${(value.size / 1048576).toFixed(1)} MB` : hint}</small></div>
+      <div><b>{label}{required && <span className="ht-req">*</span>}</b><small title={value?.name}>{busy ? 'Đang nén ảnh…' : value ? `${value.name} · ${(value.size / 1048576).toFixed(1)} MB` : hint}</small></div>
       <span className="ht-btn ht-btn--secondary ht-btn--sm">{value ? 'Đổi tệp' : 'Chọn tệp'}</span>
       {value && <button type="button" className="ht-btn ht-btn--ghost ht-btn--sm" onClick={(e) => { e.preventDefault(); onChange(null); }} aria-label={`Bỏ ${label}`}><Icon name="x" size={14} /></button>}
-      <input id={id} data-testid={`${id}-input`} type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={(e) => { void pick(e.target.files?.[0]); e.target.value = ''; }} />
+      <input id={id} data-testid={`${id}-input`} type="file" accept=".pdf,.jpg,.jpeg,.png" disabled={busy} onChange={(e) => { void pick(e.target.files?.[0]); e.target.value = ''; }} />
     </label>
   );
 };

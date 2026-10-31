@@ -12,6 +12,8 @@ const CHECKS: [ChecklistItem['key'], string][] = [
 ];
 const docMeta = (d: UploadedDoc) => `${(d.name.split('.').pop() ?? '').toUpperCase()} · ${(d.size / 1048576).toFixed(1).replace('.', ',')} MB · ${DEMO_NOW.date.slice(0, 5)}`;
 
+const UPLOAD_TIMEOUT_MS = 120000;
+
 const uploadDocs = async (horseId: number | undefined, files: NewRegistration['files']) => {
   if (!horseId) throw new Error('Đã gửi hồ sơ nhưng không lấy được mã ngựa để đính kèm giấy tờ — mở lại hồ sơ và tải giấy tờ lên.');
   const docs: [string, UploadedDoc | null][] = [['OWNERSHIP', files.ownership], ['OTHER', files.health]];
@@ -20,7 +22,7 @@ const uploadDocs = async (horseId: number | undefined, files: NewRegistration['f
     const form = new FormData();
     form.append('file', doc.file);
     form.append('docType', docType);
-    await be.post(`/horses/${horseId}/registration-attachments`, form, { headers: { 'Content-Type': 'multipart/form-data' } });
+    await be.post(`/horses/${horseId}/registration-attachments`, form, { headers: { 'Content-Type': 'multipart/form-data' }, timeout: UPLOAD_TIMEOUT_MS });
   }
   invalidate('registrations');
 };
