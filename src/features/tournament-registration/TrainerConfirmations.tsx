@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useActor } from '../../auth/AuthContext';
 import { useFetch } from '../../hooks/useFetch';
 import { useAction } from '../../hooks/useAction';
-import { Callout, Dialog, PageHeader, Panel, ReasonField, Segmented, Tabs } from '../../components/ui/Ht';
+import { Callout, Dialog, PageHeader, Panel, ReasonField, Tabs } from '../../components/ui/Ht';
 import { Icon } from '../../components/ui/Icon';
 import { LoadState } from '../../components/trainer/TrainerParts';
 import { REJECT_CODE_LABEL } from './labels';
@@ -70,12 +70,11 @@ export const TrainerConfirmations: React.FC = () => {
         </div>
       </Panel>
       <Dialog open={!!deciding} onClose={() => setDeciding(null)} busy={act.busy} icon={approve ? 'check' : 'x'} tone={approve ? 'brand' : 'danger'} testId="trainer-decision-dialog"
-        title={`${deciding?.horseName ?? ''} · ${decidingTour?.name ?? ''}`}
+        title={`${approve ? 'Xác nhận sẵn sàng' : 'Từ chối đề xuất'} · ${deciding?.horseName ?? ''} · ${decidingTour?.name ?? ''}`}
         sub={decidingTour ? `${fmtDate(decidingTour.raceDate)} · ${decidingTour.distanceM} m · ${criteriaText(decidingTour)}` : undefined}
         confirmLabel={approve ? 'Xác nhận sẵn sàng' : 'Xác nhận từ chối'} onConfirm={save}>
         {act.error && <Callout tone="danger" style={{ marginBottom: 14 }}>{act.error}</Callout>}
         <div style={{ display: 'grid', gap: 14 }}>
-          <Segmented<'ok' | 'no'> label="Quyết định" value={approve ? 'ok' : 'no'} onChange={(v) => setApprove(v === 'ok')} items={[{ value: 'ok', label: 'Sẵn sàng' }, { value: 'no', label: 'Từ chối' }]} />
           {!approve && (
             <>
               <div className="ht-field" style={{ margin: 0 }}>
