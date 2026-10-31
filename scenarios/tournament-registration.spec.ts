@@ -59,8 +59,6 @@ test('manager records results with prize money and resolves a complaint', async 
   await signIn(page, 'ClubManager');
   await page.goto('/manager/tournaments');
   await expect(page.getByTestId('tournament-row-GD-0005')).toContainText('Chờ nhập kết quả');
-  await page.goto('/manager/tournaments/GD-0002');
-  await expect(page.getByTestId('tournament-results-btn')).toHaveCount(0);
   await page.goto('/manager/tournaments/GD-0005');
   await page.getByTestId('tournament-results-btn').click();
   for (const [id, rank, time] of [['DK-0011', '2', '1:12.80'], ['DK-0012', '1', '1:12.10'], ['DK-0013', '3', '1:13.05']]) {
@@ -145,7 +143,6 @@ test('trainer cannot plan HIGH intensity within 7 days before a registered race'
 test('manager finishes a tournament: unfinished proposals close, registered horses wait for results', async ({ page }) => {
   await signIn(page, 'ClubManager');
   await page.goto('/manager/tournaments/GD-0002');
-  await expect(page.getByTestId('tournament-results-btn')).toHaveCount(0);
   await page.getByTestId('tournament-finish-btn').click();
   await expect(page.getByTestId('tournament-finish-summary')).toContainText('1 đề xuất chưa hoàn tất');
   await expect(page.getByTestId('tournament-finish-summary')).toContainText('2 ngựa đã đăng ký');
@@ -164,5 +161,21 @@ test('owner sees the latest closed proposal and may propose another horse', asyn
   await expect(last).toContainText('HLV từ chối');
   await expect(last).toContainText('Chưa chạy đủ giáo án sức bền');
   await expect(last).toContainText('có thể đề xuất ngựa khác');
+});
+
+test('manager records results before race day: the tournament ends and unfinished proposals are cancelled', async ({ page }) => {
+  await signIn(page, 'ClubManager');
+  await page.goto('/manager/tournaments/GD-0002');
+  await page.getByTestId('tournament-results-btn').click();
+  await expect(page.getByTestId('tournament-results-warning')).toContainText('Lưu kết quả sẽ kết thúc giải; 1 đề xuất chưa hoàn tất sẽ bị hủy');
+  await page.getByTestId('result-rank-DK-0006').fill('1');
+  await page.getByTestId('result-time-DK-0006').fill('1:24.10');
+  await page.getByTestId('result-rank-DK-0007').fill('2');
+  await page.getByTestId('result-time-DK-0007').fill('1:24.90');
+  await page.getByTestId('tournament-results-dialog').getByTestId('dialog-confirm').click();
+  await expect(page.getByTestId('entry-row-DK-0006')).toContainText('40.000.000 ₫');
+  await expect(page.getByTestId('entry-row-DK-0008')).toContainText('Hết suất');
+  await expect(page.getByTestId('tournament-results-btn')).toHaveCount(0);
+  await expect(page.getByTestId('tournament-finish-btn')).toHaveCount(0);
 });
 

@@ -917,3 +917,8 @@ Swagger server giờ có 182 API; FE gọi 170.
 - QL CLB · Chi tiết giải: nút “Kết thúc giải” khi `canFinish` → `PUT /tournaments/{id}/finish`. Hộp xác nhận nêu số đề xuất chưa hoàn tất sẽ bị đóng (`NO_SLOT`) và số ngựa đã đăng ký chờ nhập kết quả; không còn ngựa đăng ký thì giải chuyển `FINISHED`. Nhập kết quả theo `canRecordResults` (từ ngày thi hoặc sau khi kết thúc). Dữ liệu mẫu tự tính `raceEnded` / `canFinish` / `canRecordResults` từ `isFinished` và ngày thi.
 - Chủ ngựa · Giải đấu: đọc `OwnerTournamentDTO.lastProposal` khi không có đề xuất còn hiệu lực, hiện trạng thái + lý do đóng (`closedReason` / ghi chú HLV / kết luận bác sĩ) và nhắc được đề xuất ngựa khác khi giải còn mở. Ngựa đã khám rớt cho chính giải đó hiện lý do `NOT_VET_FAILED` từ BE.
 
+## 46. Nhập kết quả trực tiếp (BE `4e4e56b`, 31/10/2026)
+
+- BE: `canRecordResults` = giải đang công bố (kể cả trước ngày thi); `PUT /tournaments/{id}/results` lần đầu tự kết thúc giải như `/finish` (đề xuất chưa hoàn tất → `NO_SLOT`, hủy hóa đơn lệ phí chưa trả). Mọi đề xuất có kết quả thì giải `FINISHED`.
+- FE: bỏ chặn “Chỉ nhập kết quả sau ngày thi đấu”, dựa vào `canRecordResults` do BE trả; nút “Nhập kết quả” chỉ hiện khi có ngựa đã đăng ký. Hộp nhập kết quả có cảnh báo (`tournament-results-warning`) khi giải chưa kết thúc: “Lưu kết quả sẽ kết thúc giải; N đề xuất chưa hoàn tất sẽ bị hủy (hóa đơn lệ phí chưa trả cũng bị hủy)”. Dữ liệu mẫu làm y hệt (chưa mô phỏng việc hủy hóa đơn).
+
