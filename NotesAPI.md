@@ -888,3 +888,9 @@ Swagger server giờ có 182 API; FE gọi 170.
 - FE đã sửa: giấy tờ tối đa 4 MB, ảnh JPG/PNG lớn tự nén (cạnh dài ≤ 2400 px, ≤ 3,5 MB), PDF quá 4 MB bị chặn kèm hướng dẫn; gửi tệp chờ tới 2 phút; thông báo lỗi tách rõ “quá thời gian chờ”, “máy chủ trung gian không chuyển được” (502/503/504), bản build thật không còn hiện localhost. Thêm `npm run dev:remote` (`.env.remote`) để chạy FE ở máy với server nhóm.
 - Đề xuất BE / hạ tầng: cấp tên miền HTTPS cho backend và bật CORS cho domain Vercel để FE gọi thẳng (không qua đường chuyển tiếp giới hạn ~4,5 MB của Vercel); khi đó có thể nâng giới hạn giấy tờ trở lại 10 MB.
 
+## 42. Ngựa chưa duyệt trong danh sách đề xuất; thiếu thông báo duyệt hồ sơ (31/10/2026)
+
+- `GET /owner/tournaments` trả mọi ngựa của chủ ngựa, ngựa chưa duyệt có `checks[].code = APPROVED, passed = false`. FE (`tournamentApi.ownerTournaments`) chỉ hiển thị ngựa đã duyệt, đếm số ngựa bị ẩn (`tournament-hidden-<mã>`), tính lại `eligible` theo danh sách còn lại. Đề xuất BE: bỏ hẳn ngựa chưa duyệt khỏi `horses` cho gọn.
+- Tiêu chí giống: chọn đủ mọi giống thì hiển thị “Mọi giống” thay vì liệt kê.
+- **Cần BE:** `HorseServiceImpl.approveHorse` / `rejectHorse` hiện chỉ lưu trạng thái + nhật ký, không gửi gì cho chủ ngựa. Thêm `appNotifications.push(owner, "HORSE_REGISTRATION", tiêu đề, nội dung, "/owner/registrations")` (duyệt: tên ngựa + chuồng được cấp; từ chối: lý do + có được nộp lại không) và `emailService.sendAsync("HORSE_REGISTRATION", owner.email, …)` cùng nội dung. Chuông FE đọc `/notifications` nên tự hiện khi BE gửi; email ghi vào Nhật ký email của QL CLB.
+

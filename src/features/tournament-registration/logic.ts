@@ -1,3 +1,4 @@
+import { HORSE_BREEDS } from '../../api/ownerApi/labels';
 import type { EntryHistory, EntryStatus, Prize, RaceEntry, RaceTournament, TournamentDraft } from './types';
 
 export const HOLD_DAYS: Partial<Record<EntryStatus, number>> = { WAITING_TRAINER: 2, WAITING_VET_EXAM: 3, WAITING_PAYMENT: 2 };
@@ -114,7 +115,8 @@ export const criteriaText = (t: RaceTournament) => {
   const parts: string[] = [];
   if (t.minAgeYears != null || t.maxAgeYears != null) parts.push(`Tuổi ${t.minAgeYears ?? '…'}–${t.maxAgeYears ?? '…'}`);
   if (t.minWeightKg != null || t.maxWeightKg != null) parts.push(`Cân nặng ${t.minWeightKg ?? '…'}–${t.maxWeightKg ?? '…'} kg`);
-  parts.push(t.allowedBreeds.length ? `Giống: ${t.allowedBreeds.join(', ')}` : 'Mọi giống');
+  const everyBreed = t.allowedBreeds.length === 0 || HORSE_BREEDS.every((b) => t.allowedBreeds.includes(b));
+  parts.push(everyBreed ? 'Mọi giống' : `Giống: ${t.allowedBreeds.join(', ')}`);
   return parts.join(' · ');
 };
 
