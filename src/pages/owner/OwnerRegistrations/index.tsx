@@ -8,7 +8,7 @@ import { PATH } from '../../../routers/routerPath';
 import { Icon } from '../../../components/ui/Icon';
 import { Badge, Callout, PageHeader, Panel, Timeline } from '../../../components/ui/Ht';
 import { LoadState } from '../../../components/trainer/TrainerParts';
-import { OwnerAttachments } from '../../../features/registration-attachments/OwnerAttachments';
+import { OwnerAttachments } from '../../../features/registration-attachments';
 
 const STATUS: Record<Registration['status'], [string, 'warning' | 'success' | 'danger']> = { Pending: ['Chờ duyệt (PENDING_REVIEW)', 'warning'], Approved: ['Đã duyệt', 'success'], Rejected: ['Bị từ chối', 'danger'] };
 const canResubmit = (r: Registration) => r.status === 'Rejected' && r.decidedNote === 'Cho phép nộp lại';
