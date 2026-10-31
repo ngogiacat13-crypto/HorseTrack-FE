@@ -50,8 +50,9 @@ const TournamentCard: React.FC<{ item: OwnerTournament; onPropose: (item: OwnerT
               </span>
             </li>
           ))}
-          {horses.length === 0 && <li className="ht-empty">Bạn chưa có ngựa trong CLB.</li>}
+          {horses.length === 0 && <li className="ht-empty">{item.hiddenUnapproved ? 'Chưa có ngựa nào được duyệt hồ sơ.' : 'Bạn chưa có ngựa trong CLB.'}</li>}
         </ul>
+        {!!item.hiddenUnapproved && <div className="ht-hint" data-testid={`tournament-hidden-${t.id}`}>{item.hiddenUnapproved} ngựa chưa được duyệt hồ sơ nên chưa thể đề xuất thi đấu.</div>}
         {!myProposal && open && item.canPropose === false && item.cannotProposeReason && <Callout tone="demo" testId={`tournament-cannot-${t.id}`}>{item.cannotProposeReason}</Callout>}
         <div>
           <button type="button" className="ht-btn ht-btn--primary" data-testid={`tournament-propose-${t.id}`} disabled={locked || !pick} onClick={() => onPropose(item, pick)}>

@@ -97,6 +97,9 @@ const beProposals = async (params?: Record<string, unknown>) => {
   const entries = (raw ?? []).map(mapBeEntry);
   return { entries, tournaments: tournamentsOf(entries, raw ?? []) };
 };
+const isApprovedHorse = (h: Record<string, unknown>) =>
+  !((h.checks as { code?: string; passed?: boolean }[] | null) ?? []).some((c) => c.code === 'APPROVED' && c.passed === false);
+
 const beList = async <R,>(url: string, map: (x: Record<string, unknown>) => R, params?: Record<string, unknown>) =>
   (await beData<Record<string, unknown>[] | { content: Record<string, unknown>[] }>(be.get(url, { params })).then((d) => (Array.isArray(d) ? d : d?.content ?? []))).map(map);
 
@@ -250,15 +253,20 @@ export const tournamentApi = {
   async ownerTournaments(actor: Actor): Promise<OwnerTournament[]> {
     if (USE_BACKEND) {
       const rows = await beData<Record<string, unknown>[]>(be.get('/owner/tournaments'));
-      return rows.map((r) => ({
-        tournament: mapBeTournament((r.tournament as Record<string, unknown>) ?? r), eligible: !!r.eligible,
-        horses: ((r.horses as Record<string, unknown>[]) ?? []).map((h) => ({
+      return rows.map((r) => {
+        const all = (r.horses as Record<string, unknown>[]) ?? [];
+        const approved = all.filter(isApprovedHorse);
+        const horses = approved.map((h) => ({
           horseId: String(h.horseId), horseName: String(h.horseName ?? ''), eligible: !!h.eligible, reasons: (h.reasons as string[]) ?? [],
           formScore: h.formScore == null ? null : Number(h.formScore), formNote: (h.formNote as string | null) ?? undefined, recommended: !!h.recommended,
-        })),
-        myProposal: r.myProposal ? mapBeEntry(r.myProposal as Record<string, unknown>) : null, slotsLeft: Number(r.slotsLeft ?? 0), queueLength: Number(r.queueLength ?? 0),
-        canPropose: (r.canPropose as boolean | null) ?? undefined, cannotProposeReason: (r.cannotProposeReason as string | null) ?? undefined,
-      }));
+        }));
+        return {
+          tournament: mapBeTournament((r.tournament as Record<string, unknown>) ?? r), eligible: horses.some((h) => h.eligible), horses,
+          hiddenUnapproved: all.length - approved.length,
+          myProposal: r.myProposal ? mapBeEntry(r.myProposal as Record<string, unknown>) : null, slotsLeft: Number(r.slotsLeft ?? 0), queueLength: Number(r.queueLength ?? 0),
+          canPropose: (r.canPropose as boolean | null) ?? undefined, cannotProposeReason: (r.cannotProposeReason as string | null) ?? undefined,
+        };
+      });
     }
     const [{ tournaments, entries }, horses] = await Promise.all([syncMock(), facts()]);
     const mine = horses.filter((h) => h.row.owner === actor.name);

@@ -41,7 +41,7 @@ export interface HorseEligibility { horseId: string; horseName: string; eligible
 export interface OwnerTournament {
   tournament: RaceTournament; eligible: boolean; horses: HorseEligibility[];
   myProposal: RaceEntry | null; slotsLeft: number; queueLength: number;
-  canPropose?: boolean; cannotProposeReason?: string;
+  canPropose?: boolean; cannotProposeReason?: string; hiddenUnapproved?: number;
 }
 
 export interface Dossier {
