@@ -141,3 +141,28 @@ test('trainer cannot plan HIGH intensity within 7 days before a registered race'
   await page.locator('#i0').selectOption('Cao');
   await expect(page.getByTestId('plan-race-rest-block')).toContainText('08/10/2026');
 });
+
+test('manager finishes a tournament: unfinished proposals close, registered horses wait for results', async ({ page }) => {
+  await signIn(page, 'ClubManager');
+  await page.goto('/manager/tournaments/GD-0002');
+  await expect(page.getByTestId('tournament-results-btn')).toHaveCount(0);
+  await page.getByTestId('tournament-finish-btn').click();
+  await expect(page.getByTestId('tournament-finish-summary')).toContainText('1 đề xuất chưa hoàn tất');
+  await expect(page.getByTestId('tournament-finish-summary')).toContainText('2 ngựa đã đăng ký');
+  await page.getByTestId('tournament-finish-dialog').getByTestId('dialog-confirm').click();
+  await expect(page.getByTestId('tournament-finish-btn')).toHaveCount(0);
+  await expect(page.getByText('Chờ nhập kết quả').first()).toBeVisible();
+  await expect(page.getByTestId('entry-row-DK-0008')).toContainText('Hết suất');
+  await expect(page.getByTestId('tournament-results-btn')).toBeVisible();
+});
+
+test('owner sees the latest closed proposal and may propose another horse', async ({ page }) => {
+  await signIn(page, 'HorseOwner', 'Vũ Thị Mai');
+  await page.getByTestId('nav-owner-tournaments').click();
+  const last = page.getByTestId('tournament-last-entry-GD-0003');
+  await expect(last).toContainText('Lightning');
+  await expect(last).toContainText('HLV từ chối');
+  await expect(last).toContainText('Chưa chạy đủ giáo án sức bền');
+  await expect(last).toContainText('có thể đề xuất ngựa khác');
+});
+

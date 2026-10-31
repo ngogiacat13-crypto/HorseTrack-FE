@@ -7,7 +7,7 @@ export interface RaceTournament {
   raceDate: string; registrationDeadline: string; distanceM: number; entryFee: number; slots: number;
   minAgeYears: number | null; maxAgeYears: number | null; minWeightKg: number | null; maxWeightKg: number | null;
   allowedBreeds: string[]; prizes: Prize[]; status: TournamentStatus; note?: string;
-  canFinish?: boolean; canRecordResults?: boolean; raceEnded?: boolean;
+  canFinish?: boolean; canRecordResults?: boolean; raceEnded?: boolean; isFinished?: boolean;
 }
 
 export type TournamentDraft = Omit<RaceTournament, 'id' | 'beId' | 'status'>;
@@ -43,7 +43,7 @@ export interface HorseEligibility { horseId: string; horseName: string; eligible
 export interface OwnerTournament {
   tournament: RaceTournament; eligible: boolean; horses: HorseEligibility[];
   myProposal: RaceEntry | null; slotsLeft: number; queueLength: number;
-  canPropose?: boolean; cannotProposeReason?: string; hiddenUnapproved?: number;
+  canPropose?: boolean; cannotProposeReason?: string; hiddenUnapproved?: number; lastProposal?: RaceEntry | null;
 }
 
 export interface Dossier {

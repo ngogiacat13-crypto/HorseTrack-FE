@@ -128,8 +128,22 @@ const syncMock = async () => {
     rows = rows.map((e) => byId.get(e.id) ?? e);
   }
   await Promise.all(rows.filter((e, i) => changed.has(e.id) || e.queuePosition !== entries[i]?.queuePosition).map((e) => http.put(`${E}/${e.id}`, e)));
-  return { tournaments, entries: rows };
+  return { tournaments: tournaments.map(withMockFlags), entries: rows };
 };
+
+const withMockFlags = (t: RaceTournament): RaceTournament => {
+  const published = t.status === 'PUBLISHED';
+  const finished = t.isFinished === true || t.raceEnded === true;
+  return {
+    ...t,
+    raceEnded: published && finished,
+    canFinish: published && !finished,
+    canRecordResults: published && (finished || todayIso() >= t.raceDate),
+  };
+};
+
+const FINISH_OPEN: EntryStatus[] = ['WAITLISTED', 'WAITING_TRAINER', 'WAITING_VET_EXAM', 'WAITING_PAYMENT'];
+const FINISH_REASON = 'Quản lý CLB đã kết thúc giải khi đề xuất chưa hoàn tất đăng ký';
 
 const facts = async () => {
   const [horses, protocols, sessions] = await Promise.all([get<HorseRow[]>('/horses'), get<ProtocolRow[]>('/protocols'), get<SessionRow[]>('/trainingSessions')]);
@@ -205,6 +219,22 @@ export const tournamentApi = {
     await addAudit(actor, { action: 'PUBLISH_TOURNAMENT', label: 'Công bố giải đấu', object: `${t.id} · ${t.name}`, area: 'train', from: 'DRAFT', to: 'PUBLISHED' });
   },
 
+  async finish(t: RaceTournament, actor: Actor) {
+    if (t.status !== 'PUBLISHED') throw new Error('Chỉ kết thúc được giải đang công bố.');
+    if (t.raceEnded) throw new Error('Giải đã kết thúc, đang chờ nhập kết quả.');
+    if (USE_BACKEND) { await be.put(`/tournaments/${ref(t)}/finish`); return; }
+    const entries = await get<RaceEntry[]>(E, { tournamentId: t.id });
+    const open = entries.filter((e) => FINISH_OPEN.includes(e.status));
+    const at = toIsoMinute(clockNow());
+    await Promise.all(open.map((e) => save(e, {
+      status: 'NO_SLOT', stageDeadline: null, queuePosition: null, closedReason: FINISH_REASON, closedAt: at,
+      history: entry(e, actor.name, `kết thúc giải · ${FINISH_REASON.toLowerCase()}`, 'warning'),
+    })));
+    const registered = entries.filter((e) => e.status === 'REGISTERED').length;
+    await http.patch(`${T}/${t.id}`, { isFinished: true, ...(registered === 0 ? { status: 'FINISHED' } : {}) });
+    await addAudit(actor, { action: 'FINISH_TOURNAMENT', label: 'Kết thúc giải đấu', object: `${t.id} · ${t.name}`, area: 'train', from: 'PUBLISHED', to: registered ? 'Chờ nhập kết quả' : 'FINISHED', reason: `Đóng ${open.length} đề xuất chưa hoàn tất · ${registered} ngựa chờ nhập kết quả` });
+  },
+
   async recordResults(t: RaceTournament, rows: { entryId: string; rank: number; finishTime: string }[], actor: Actor) {
     if (todayIso() < t.raceDate) throw new Error('Chỉ nhập kết quả sau ngày thi đấu.');
     const ranks = rows.map((r) => r.rank);
@@ -269,7 +299,7 @@ export const tournamentApi = {
         return {
           tournament: mapBeTournament((r.tournament as Record<string, unknown>) ?? r), eligible: horses.some((h) => h.eligible), horses,
           hiddenUnapproved: all.length - approved.length,
-          myProposal: r.myProposal ? mapBeEntry(r.myProposal as Record<string, unknown>) : null, slotsLeft: Number(r.slotsLeft ?? 0), queueLength: Number(r.queueLength ?? 0),
+          myProposal: r.myProposal ? mapBeEntry(r.myProposal as Record<string, unknown>) : null, lastProposal: r.lastProposal ? mapBeEntry(r.lastProposal as Record<string, unknown>) : null, slotsLeft: Number(r.slotsLeft ?? 0), queueLength: Number(r.queueLength ?? 0),
           canPropose: (r.canPropose as boolean | null) ?? undefined, cannotProposeReason: (r.cannotProposeReason as string | null) ?? undefined,
         };
       });
@@ -278,13 +308,15 @@ export const tournamentApi = {
     const mine = horses.filter((h) => h.row.owner === actor.name);
     return tournaments.filter((t) => t.status !== 'DRAFT').sort((a, b) => Number(registrationOpen(b, clockNow())) - Number(registrationOpen(a, clockNow())) || a.raceDate.localeCompare(b.raceDate)).map((t) => {
       const own = entries.filter((e) => e.tournamentId === t.id);
+      const mineHere = own.filter((e) => e.owner === actor.name).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
       const list = mine.map((h) => {
         const reasons = eligibilityReasons(h.facts, t, busyDatesFor(h.row.id, entries, tournaments, t.id));
         return { horseId: h.row.id, horseName: h.row.name, eligible: reasons.length === 0, reasons, formScore: h.form };
       }).sort((a, b) => Number(b.eligible) - Number(a.eligible) || (b.formScore ?? 0) - (a.formScore ?? 0));
       return {
         tournament: t, eligible: list.some((h) => h.eligible), horses: list,
-        myProposal: own.filter((e) => e.owner === actor.name).sort((a, b) => b.createdAt.localeCompare(a.createdAt)).find((e) => ACTIVE.includes(e.status)) ?? null,
+        myProposal: mineHere.find((e) => ACTIVE.includes(e.status)) ?? null,
+        lastProposal: mineHere.some((e) => ACTIVE.includes(e.status)) ? null : mineHere[0] ?? null,
         slotsLeft: Math.max(0, t.slots - holdingCount(own)), queueLength: waitlist(own).length,
       };
     });

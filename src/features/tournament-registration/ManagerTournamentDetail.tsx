@@ -39,6 +39,7 @@ export const ManagerTournamentDetail: React.FC = () => {
   const { data, loading, error, reload } = useFetch(() => tournamentApi.managerTournament(id), [id]);
   const [editing, setEditing] = useState(false);
   const [resultsOpen, setResultsOpen] = useState(false);
+  const [finishOpen, setFinishOpen] = useState(false);
   const [results, setResults] = useState<Record<string, { rank: string; finishTime: string }>>({});
   const act = useAction();
   if (!data) return <LoadState loading={loading} error={error} onRetry={reload} />;
@@ -49,6 +50,10 @@ export const ManagerTournamentDetail: React.FC = () => {
   const closed = entries.filter((e) => !HOLDING.includes(e.status) && e.status !== 'WAITLISTED').sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   const registered = entries.filter((e) => e.status === 'REGISTERED');
   const canResult = t.canRecordResults === true;
+  const openCount = entries.filter((e) => ['WAITLISTED', 'WAITING_TRAINER', 'WAITING_VET_EXAM', 'WAITING_PAYMENT'].includes(e.status)).length;
+  const finish = async () => {
+    if (await act.run(() => tournamentApi.finish(t, actor), registered.length ? `Đã kết thúc ${t.name}. Hãy nhập kết quả cho ${registered.length} ngựa đã đăng ký.` : `Đã kết thúc ${t.name}.`)) { setFinishOpen(false); reload(); }
+  };
 
   const openResults = () => {
     act.setError('');
@@ -66,8 +71,18 @@ export const ManagerTournamentDetail: React.FC = () => {
         sub={`${t.id} · ${holdingCount(entries)}/${t.slots} suất đang giữ · ${queue.length} trong hàng chờ`}
         actions={<div style={{ display: 'flex', gap: 8 }}>
           {t.status === 'DRAFT' && <button type="button" className="ht-btn ht-btn--secondary" data-testid="tournament-detail-edit" onClick={() => setEditing(true)}>Sửa giải</button>}
+          {t.canFinish && <button type="button" className="ht-btn ht-btn--secondary" data-testid="tournament-finish-btn" onClick={() => { act.setError(''); setFinishOpen(true); }}><Icon name="ban" size={16} />Kết thúc giải</button>}
           {canResult && <button type="button" className="ht-btn ht-btn--primary" data-testid="tournament-results-btn" onClick={openResults}><Icon name="check" size={16} />Nhập kết quả</button>}
         </div>} />
+      <Dialog open={finishOpen} onClose={() => setFinishOpen(false)} busy={act.busy} icon="ban" tone="danger" danger testId="tournament-finish-dialog"
+        title={`Kết thúc giải · ${t.name}`} confirmLabel="Kết thúc giải" onConfirm={finish}>
+        {act.error && <Callout tone="danger" style={{ marginBottom: 14 }}>{act.error}</Callout>}
+        <div style={{ display: 'grid', gap: 8, fontSize: 14 }} data-testid="tournament-finish-summary">
+          <div>{openCount > 0 ? <><b>{openCount}</b> đề xuất chưa hoàn tất đăng ký (đang chờ suất, chờ HLV, chờ khám, chờ lệ phí) sẽ bị đóng.</> : 'Không có đề xuất nào đang dở.'}</div>
+          <div>{registered.length > 0 ? <><b>{registered.length}</b> ngựa đã đăng ký sẽ chờ bạn nhập kết quả.</> : 'Không có ngựa nào đã đăng ký — giải chuyển sang Đã kết thúc ngay.'}</div>
+          <div style={{ color: 'var(--muted)' }}>Sau khi kết thúc không nhận thêm đề xuất và không thể mở lại.</div>
+        </div>
+      </Dialog>
       {t.raceEnded && registered.length === 0 && <Callout tone="info" style={{ marginBottom: 16 }}>Giải đã diễn ra nhưng không có ngựa nào đã đăng ký để nhập kết quả.</Callout>}
       <div className="ht-cols" style={{ gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1.6fr)' }}>
         <Panel title="Thông tin giải"><div className="ht-panel__body"><TournamentFacts t={t} /></div></Panel>
