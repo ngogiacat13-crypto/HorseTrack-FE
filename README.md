@@ -43,11 +43,19 @@ Chạy với dữ liệu mẫu, không cần backend (dữ liệu lấy từ `db
 npm run dev
 ```
 
-Chạy với backend thật (mặc định backend ở cổng 8080, cấu hình trong `.env.backend`):
+Chạy với backend trên server của nhóm (không cần chạy Spring Boot ở máy, cấu hình trong `.env.remote`):
+
+```bash
+npm run dev:remote
+```
+
+Chạy với backend ở chính máy mình (Spring Boot chạy ở cổng 8080, cấu hình trong `.env.backend`):
 
 ```bash
 npm run dev:be
 ```
+
+Nếu `npm run dev:be` báo “Không kết nối được máy chủ backend (http://localhost:8080)” thì máy chưa chạy backend: dùng `npm run dev:remote`.
 
 Mở http://localhost:5173.
 

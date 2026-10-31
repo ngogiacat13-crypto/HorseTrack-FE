@@ -88,7 +88,7 @@ const RegistrationForm: React.FC<{ resubmit?: Registration }> = ({ resubmit }) =
               </div>
             </div>
           </Panel>
-          <Panel title="2. Giấy tờ" sub="PDF, JPG hoặc PNG · tối đa 10 MB mỗi tệp · hệ thống kiểm tra nội dung tệp">
+          <Panel title="2. Giấy tờ" sub="PDF, JPG hoặc PNG · tối đa 4 MB mỗi tệp (ảnh lớn hơn được tự nén) · hệ thống kiểm tra nội dung tệp">
             <div className="ht-panel__body" style={{ display: 'grid', gap: 10 }}>
               <DocUpload id="doc-own" label="Giấy tờ sở hữu" hint="Hợp đồng mua bán / giấy chứng nhận sở hữu" required value={f.files.ownership} onChange={setFile('ownership')} onError={setError} />
               <DocUpload id="doc-health" label="Giấy chứng nhận sức khỏe" hint="Còn hiệu lực, do cơ quan thú y cấp" required value={f.files.health} onChange={setFile('health')} onError={setError} />

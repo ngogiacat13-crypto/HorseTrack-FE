@@ -60,10 +60,20 @@ async function refreshAccessToken(): Promise<string> {
   return data.data.accessToken;
 }
 
+const GATEWAY_ERRORS = [502, 503, 504];
+
 function toError(error: AxiosError<ApiResponse<unknown>>): Error {
   if (!error.response) {
+    if (error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT') {
+      return new Error('Máy chủ phản hồi quá lâu nên yêu cầu bị dừng. Kiểm tra mạng rồi bấm Thử lại; nếu đang gửi tệp, hãy chọn tệp nhỏ hơn.');
+    }
+    if (!import.meta.env.DEV) return new Error('Không kết nối được máy chủ. Kiểm tra mạng rồi bấm Thử lại.');
     const target = import.meta.env.VITE_BACKEND_TARGET || 'http://localhost:8080';
-    return new Error(`Không kết nối được máy chủ backend (${target}). Kiểm tra máy chủ đang chạy và mạng, rồi bấm Thử lại.`);
+    const localHint = /localhost|127\.0\.0\.1/.test(target) ? ' Nếu máy bạn không chạy backend, dùng lệnh npm run dev:remote để gọi server của nhóm.' : '';
+    return new Error(`Không kết nối được máy chủ backend (${target}). Kiểm tra máy chủ đang chạy và mạng, rồi bấm Thử lại.${localHint}`);
+  }
+  if (GATEWAY_ERRORS.includes(error.response.status) && typeof error.response.data !== 'object') {
+    return new Error('Máy chủ trung gian không chuyển được yêu cầu (máy chủ đang bận hoặc tệp gửi lên quá lớn). Vui lòng thử lại sau ít phút.');
   }
   const body = error.response.data;
   if (body && typeof body === 'object') {

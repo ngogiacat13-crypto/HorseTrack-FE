@@ -63,7 +63,7 @@ Quy ước `data-testid`: menu trái `nav-<đường dẫn bỏ / đầu, / đ�
 | Chủ ngựa · Chi tiết hóa đơn | `src/pages/owner/OwnerInvoiceDetail/` | `/owner/invoices/:id` | `back-btn` |
 | Chủ ngựa · Lịch sử thanh toán | `src/pages/owner/OwnerPayments/` | `/owner/payments` | `nav-owner-payments` |
 | Chủ ngựa · Đăng ký ngựa mới | `src/pages/owner/OwnerRegistrations/` | `/owner/registrations` | `nav-owner-registrations` |
-| Chủ ngựa · Tạo hồ sơ ngựa | `src/pages/owner/OwnerRegistrationCreate/` | `/owner/registrations/new` | `back-btn`, `registration-form`, `rg-name-input`, `rg-breed-input` (danh sách `rg-breed-list`, mục `rg-breed-option`), `rg-age-input`, `rg-color-input`, `rg-height-input`, `rg-weight-input`, `rg-owner-phone`, `doc-own-input`, `doc-health-input`, `registration-submit` |
+| Chủ ngựa · Tạo hồ sơ ngựa | `src/pages/owner/OwnerRegistrationCreate/` | `/owner/registrations/new` · giấy tờ tối đa 4 MB (giới hạn đường chuyển tiếp Vercel): ảnh JPG/PNG lớn tự nén, PDF quá 4 MB bị chặn | `back-btn`, `registration-form`, `rg-name-input`, `rg-breed-input` (danh sách `rg-breed-list`, mục `rg-breed-option`), `rg-age-input`, `rg-color-input`, `rg-height-input`, `rg-weight-input`, `rg-owner-phone`, `doc-own-input`, `doc-health-input`, `registration-submit` |
 | Chủ ngựa · Thanh toán VNPay (mô phỏng) | `src/pages/owner/VNPayMock/` | `/payment/vnpay/:id` | — |
 | Kho · Tồn kho | `src/pages/warehouse/WarehouseInventory/` | `/warehouse` | `nav-warehouse` |
 | Kho · Phác đồ cần cấp | `src/pages/warehouse/WarehouseMedical/` | `/warehouse/medical` · tab “Bác sĩ đã đổi / hủy” | `nav-warehouse-medical`, `replaces-<mã>` |
@@ -108,6 +108,7 @@ Quy ước `data-testid`: menu trái `nav-<đường dẫn bỏ / đầu, / đ�
 | `scenarios/nutrition-start-date.spec.ts` | Thực đơn mới không bắt đầu ở ngày đã qua; sửa thực đơn đang chạy giữ được ngày bắt đầu cũ nhưng không lùi về quá khứ |
 | `scenarios/groom-task-day.spec.ts` | Mã phu chọn ngày mai xem trước việc (nhãn “NGÀY SAU”, không có nút hoàn thành), bấm “Hôm nay” quay lại việc hôm nay; việc chưa tới 30 phút trước giờ hẹn bị khóa xác nhận |
 | `scenarios/tournament-registration.spec.ts` | Chủ ngựa thấy lý do không đủ điều kiện, mỗi giải 1 ngựa, đề xuất giữ suất có hạn; HLV từ chối phải có lý do và người đầu hàng chờ được lên; bác sĩ khám ĐẠT phát hành hóa đơn lệ phí; QL CLB nhập kết quả + tiền thưởng, xử lý khiếu nại; nhập giải phải đủ thông tin, ngày thi ≥ hôm nay + 5 ngày, hạn đăng ký ≥ 3 ngày trước ngày thi, lệ phí VND có dấu chấm, bấm đúp chọn hết, rồi công bố; giáo án cường độ Cao bị chặn 7 ngày trước ngày thi |
+| `scenarios/doc-upload-size.spec.ts` | Hồ sơ ngựa: PDF 5 MB bị chặn kèm lời nhắc; ảnh PNG trên 4 MB được tự nén thành JPG dưới 4 MB |
 | `scenarios/staff-email.spec.ts` | QL CLB có menu Nhật ký email; link xác nhận thiếu mã báo lỗi; trang đăng nhập hiện kết quả xác nhận tài khoản |
 
 ## Kịch bản chạy với backend thật (`scenarios-live/`, lệnh `npm run scenarios:live`)
