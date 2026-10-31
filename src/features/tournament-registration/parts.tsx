@@ -5,8 +5,11 @@ import { countdown, criteriaText, fmtDate, fmtDateTime } from './logic';
 import { clockNow } from './tournamentApi';
 import type { EntryStatus, RaceEntry, RaceTournament, TournamentStatus } from './types';
 
-export const EntryBadge: React.FC<{ status: EntryStatus }> = ({ status }) => <Badge tone={ENTRY_LABEL[status][1]}>{ENTRY_LABEL[status][0]}</Badge>;
-export const TournamentBadge: React.FC<{ status: TournamentStatus }> = ({ status }) => <Badge tone={TOURNAMENT_LABEL[status][1]}>{TOURNAMENT_LABEL[status][0]}</Badge>;
+export const EntryBadge: React.FC<{ status: EntryStatus; statusLabel?: string }> = ({ status, statusLabel }) => <Badge tone={ENTRY_LABEL[status][1]}>{statusLabel || ENTRY_LABEL[status][0]}</Badge>;
+export const TournamentBadge: React.FC<{ status: TournamentStatus; raceEnded?: boolean }> = ({ status, raceEnded }) =>
+  status === 'PUBLISHED' && raceEnded
+    ? <Badge tone="info">Chờ nhập kết quả</Badge>
+    : <Badge tone={TOURNAMENT_LABEL[status][1]}>{TOURNAMENT_LABEL[status][0]}</Badge>;
 
 export const Deadline: React.FC<{ entry: RaceEntry; testId?: string }> = ({ entry, testId }) => {
   if (!entry.stageDeadline) return <span className="sub">—</span>;

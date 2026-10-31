@@ -136,6 +136,7 @@ const LockForm: React.FC<HorseDialogProps> = ({ horse, onClose, onDone }) => {
       title={`Khóa huấn luyện ${horse?.name ?? ''}`} sub="Chặn mọi lịch tập, giáo án, phiên tiếp tục và đề xuất thi đấu cho đến khi Bác sĩ mở khóa (BR_01)."
       confirmLabel="Khóa huấn luyện" onConfirm={save}>
       {err && <Callout tone="danger" style={{ marginBottom: 14 }}>{err}</Callout>}
+      <Callout tone="danger" testId="lock-race-refund-warning" style={{ marginBottom: 14 }}>Ngựa đang có đăng ký giải đấu sẽ bị hủy đăng ký và hoàn lệ phí.</Callout>
       <div style={{ display: 'grid', gap: 14 }}>
         <ReasonField id="lk-reason" label="Lý do khóa" value={reason} onChange={setReason} placeholder="VD: Chấn thương chân trước trái, cần nghỉ hoàn toàn." minHeight={64} />
         <ReasonField id="lk-review" label="Điều kiện đánh giá lại" value={review} onChange={setReview} placeholder="VD: Đánh giá lại sau GĐ 1 phác đồ (dự kiến 18/10)." minHeight={56} />

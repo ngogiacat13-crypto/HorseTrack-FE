@@ -9,7 +9,7 @@ import { DEMO_NOW } from '../../../api/http';
 
 const BADGE: Record<InvoiceStatus, [React.ComponentProps<typeof Badge>['tone'], string]> = {
   SUSPENDED: ['danger', 'Đình chỉ'], OVERDUE: ['warning', 'Quá hạn'], REACTIVATION_PENDING: ['info', 'Chờ kích hoạt lại'],
-  UNPAID: ['neutral', 'Chờ thanh toán'], PAID: ['success', 'Đã thanh toán'], ACTIVE: ['success', 'Đã kích hoạt lại'],
+  UNPAID: ['neutral', 'Chờ thanh toán'], PAID: ['success', 'Đã thanh toán'], ACTIVE: ['success', 'Đã kích hoạt lại'], REFUNDED: ['info', 'Đã hoàn tiền'],
 };
 
 interface Props { invoices: Invoice[]; q: string; onSearch: (q: string) => void; onSuspend: (i: Invoice) => void; onReactivate: (i: Invoice) => void; onCancel?: (i: Invoice) => void }
@@ -50,7 +50,7 @@ export const InvoiceTable: React.FC<Props> = ({ invoices, q, onSearch, onSuspend
           {invoices.map((i) => {
             const [tone, label] = BADGE[i.status];
             return (
-              <tr key={i.id} className={i.status === 'SUSPENDED' ? 'is-danger' : undefined}>
+              <tr key={i.id} data-testid={`manager-invoice-row-${i.id}`} className={i.status === 'SUSPENDED' ? 'is-danger' : undefined}>
                 <td className="id">{i.id}</td>
                 <td><span className="strong">{i.horse}</span><span className="sub">{i.owner}</span></td>
                 <td className="mono">{i.period}</td>

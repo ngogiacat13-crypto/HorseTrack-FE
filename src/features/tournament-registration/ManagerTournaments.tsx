@@ -10,7 +10,7 @@ import { criteriaText, fmtDate, holdingCount, waitlist } from './logic';
 import { TournamentBadge } from './parts';
 import { TOURNAMENT_DETAIL } from './labels';
 import { TournamentForm } from './TournamentForm';
-import { todayIso, tournamentApi } from './tournamentApi';
+import { tournamentApi } from './tournamentApi';
 import type { RaceTournament, TournamentStatus } from './types';
 
 
@@ -52,7 +52,7 @@ export const ManagerTournaments: React.FC = () => {
                     <td className="ht-mono">{fmtDate(t.raceDate)}<span className="sub">ĐK đến {fmtDate(t.registrationDeadline)}</span></td>
                     <td><span className="sub" style={{ marginTop: 0 }}>{criteriaText(t)}</span></td>
                     <td className="ht-mono">{holdingCount(own)}/{t.slots}<span className="sub">{waitlist(own).length} chờ</span></td>
-                    <td><TournamentBadge status={t.status} /></td>
+                    <td><TournamentBadge status={t.status} raceEnded={t.raceEnded} /></td>
                     <td className="num">
                       <div style={{ display: 'inline-flex', gap: 6 }}>
                         {t.status === 'DRAFT' && <button type="button" className="ht-btn ht-btn--secondary ht-btn--sm" data-testid={`tournament-edit-${t.id}`} onClick={() => setEditing(t)}>Sửa</button>}
