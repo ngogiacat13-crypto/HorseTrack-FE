@@ -11,7 +11,7 @@ Quy ước `data-testid`: menu trái `nav-<đường dẫn bỏ / đầu, / đ�
 
 | Tên màn hình / Tính năng | Đường dẫn mã nguồn | Phím tắt / Trigger | Thẻ DOM chính (`data-testid`) |
 | :--- | :--- | :--- | :--- |
-| Trang chủ / chuyển hướng | `src/routers/index.tsx` | `/` → `/login` hoặc trang chủ theo vai trò | — |
+| Trang chủ / chuyển hướng | `src/routers/index.tsx` | `/`: khách thấy trang giới thiệu (giống `/gioi-thieu`); đã đăng nhập thì chuyển tới trang chủ theo vai trò | — |
 | Giới thiệu (trang chủ cho khách hàng / chủ ngựa) | `src/pages/public/Landing/` (nội dung song ngữ + ảnh Unsplash ở `content.ts`, kiểu `src/styles/landing.css`, font Oswald + Be Vietnam Pro) | `/gioi-thieu` · ảnh lớn đầu trang, khối 3 ô (con dấu xoay), Dịch vụ (5 thẻ Bento), Gửi ngựa 4 bước, Đội ngũ (tab ←/→), Cam kết tự chuyển 7 giây, lưới ảnh, Hỏi đáp mở/đóng, footer có trạng thái máy chủ thật; đổi VI/EN (lưu trình duyệt) | `landing-logo`, `landing-nav-about`, `landing-nav-services`, `landing-nav-process`, `landing-nav-team`, `landing-nav-faq`, `landing-lang-vi`, `landing-lang-en`, `landing-login`, `landing-register`, `landing-hero-register`, `landing-hero-services`, `landing-about-services`, `landing-about-race`, `landing-about-team`, `landing-team-<trainer|vet|groom|manager>`, `landing-team-panel`, `landing-promise`, `landing-promise-prev`, `landing-promise-next`, `landing-promise-dot-<i>`, `landing-faq-<i>`, `landing-status`, `footer-link-<neo>`, `footer-login-link`, `footer-register-link`, `footer-forgot-link` |
 | Đăng nhập | `src/pages/auth/Login/` | `/login` (mặc định khi chưa đăng nhập) · tên đăng nhập, email hoặc số điện thoại | `login-form`, `username-input`, `password-input`, `login-submit`, `login-error`, `login-identifier-hint` |
 | Đăng ký chủ ngựa (2 bước OTP email) | `src/pages/auth/Register/` | `/register` | `<tên-trường>-input`, `register-otp-form`, `register-otp-input`, `register-otp-submit`, `register-otp-resend`, `register-otp-back`, `register-otp-error` |
@@ -94,7 +94,7 @@ Quy ước `data-testid`: menu trái `nav-<đường dẫn bỏ / đầu, / đ�
 
 | File | Kiểm tra |
 | :--- | :--- |
-| `scenarios/sign-in.spec.ts` | Khách vào `/` → `/login`; sai mật khẩu báo lỗi; 6 vai trò đăng nhập đúng trang chủ và đăng xuất được |
+| `scenarios/sign-in.spec.ts` | Khách vào `/` thấy trang giới thiệu, bấm Đăng nhập tới `/login`; sai mật khẩu báo lỗi; 6 vai trò đăng nhập đúng trang chủ và đăng xuất được |
 | `scenarios/landing-core-features.spec.ts` | Trang giới thiệu cho chủ ngựa ở 1440/768/390px: khối 3 ô, 5 dịch vụ (6/2/1 cột), 4 bước gửi ngựa, 6 câu hỏi đáp, 8 ảnh, không cuộn ngang, không link neo hỏng; tab đội ngũ, chấm cam kết, mở câu hỏi đổi nội dung; trạng thái “dữ liệu mẫu”; đổi VI/EN; nút “Đăng Ký” dẫn tới /register |
 | `scenarios/menu-pages.spec.ts` | Mỗi vai trò bấm lần lượt mọi mục menu trái: trang mở được, không lỗi console |
 | `scenarios/trainer-horses.spec.ts` | QL CLB giao cho HLV ngựa ở nhiều khu (không chọn khu), có bàn giao ngựa của HLV khác |
