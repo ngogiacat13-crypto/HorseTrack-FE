@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Invoice, managerApi } from '../../../api/managerApi';
 import { Icon } from '../../../components/ui/Icon';
-import { Loading, PageHeader, StatCard, Tabs, useToast } from '../../../components/ui/Ht';
+import { Loading, PageHeader, StatCard, useToast } from '../../../components/ui/Ht';
 import { InvoiceTable } from './InvoiceTable';
 import { ReactivateDialog, SuspendDialog } from './InvoiceDialogs';
 import { useDebounce } from '../../../hooks/useDebounce';
@@ -9,7 +9,7 @@ import { USE_BACKEND } from '../../../api/beClient';
 import { BillingActions, CancelInvoiceDialog } from '../../../features/invoice-billing';
 import { DEMO_NOW } from '../../../api/http';
 
-type Filter = 'all' | 'unpaid' | 'overdue' | 'suspended' | 'paid';
+type Filter = 'all' | 'unpaid' | 'overdue' | 'suspended' | 'paid' | 'refunded';
 const isOverdue = (i: Invoice) => i.status === 'OVERDUE' || i.status === 'SUSPENDED';
 
 const nextDue = (items: Invoice[]) => {
@@ -32,6 +32,7 @@ export const ManagerInvoices: React.FC = () => {
     const okF = filter === 'all'
       || (filter === 'suspended' && (i.status === 'SUSPENDED' || i.status === 'REACTIVATION_PENDING'))
       || (filter === 'paid' && (i.status === 'PAID' || i.status === 'ACTIVE'))
+      || (filter === 'refunded' && i.status === 'REFUNDED')
       || (filter === 'overdue' && i.status === 'OVERDUE')
       || (filter === 'unpaid' && i.status === 'UNPAID');
     return okF && (i.id + i.horse + i.owner).toLowerCase().includes(query.trim().toLowerCase());
@@ -54,13 +55,20 @@ export const ManagerInvoices: React.FC = () => {
         <StatCard icon="ban" tone="warning" value={new Set(items.filter((i) => i.status === 'SUSPENDED').map((i) => i.owner)).size} label="Chủ ngựa bị đình chỉ" meta={`${items.filter((i) => i.status === 'REACTIVATION_PENDING').length} chờ kích hoạt`} />
       </div>
 
-      <Tabs<Filter> value={filter} onChange={setFilter} items={[
-        { value: 'all', label: 'Tất cả', count: items.length },
-        { value: 'unpaid', label: 'Chờ thanh toán' },
-        { value: 'overdue', label: 'Quá hạn' },
-        { value: 'suspended', label: 'Đình chỉ' },
-        { value: 'paid', label: 'Đã thanh toán' },
-      ]} />
+      <div className="ht-tabs" role="tablist" aria-label="Lọc hóa đơn">
+        {[
+          { value: 'all' as const, label: 'Tất cả', count: items.length },
+          { value: 'unpaid' as const, label: 'Chờ thanh toán' },
+          { value: 'overdue' as const, label: 'Quá hạn' },
+          { value: 'suspended' as const, label: 'Đình chỉ' },
+          { value: 'paid' as const, label: 'Đã thanh toán' },
+          { value: 'refunded' as const, label: 'Đã hoàn tiền', count: items.filter((i) => i.status === 'REFUNDED').length },
+        ].map((item) => (
+          <button key={item.value} type="button" role="tab" className="ht-tab" aria-selected={filter === item.value} data-testid={`manager-invoice-filter-${item.value}`} onClick={() => setFilter(item.value)}>
+            {item.label}{item.count !== undefined && <span className="ht-tab__n">{item.count}</span>}
+          </button>
+        ))}
+      </div>
 
       <InvoiceTable invoices={list} q={q} onSearch={setQ} onSuspend={(inv) => setDlg({ kind: 'suspend', inv })} onReactivate={(inv) => setDlg({ kind: 'react', inv })} onCancel={USE_BACKEND ? (inv) => setDlg({ kind: 'cancel', inv }) : undefined} />
 

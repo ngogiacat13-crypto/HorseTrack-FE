@@ -1833,6 +1833,27 @@
       ]
     },
     {
+      "id": "INV-0056",
+      "horse": "Storm",
+      "owner": "Đỗ Minh Quân",
+      "period": "10/2026",
+      "dueDate": "03/10/2026",
+      "amount": 5000000,
+      "overdueDays": 0,
+      "status": "REFUNDED",
+      "horseId": "h-storm",
+      "issuedAt": "02/10/2026",
+      "service": "Lệ phí giải đấu",
+      "lines": [
+        {
+          "label": "Lệ phí giải Mở rộng Bình Dương 2026 — Storm",
+          "kind": "RACE",
+          "period": "10/2026",
+          "amount": 5000000
+        }
+      ]
+    },
+    {
       "id": "INV-0042",
       "horse": "Galaxy",
       "owner": "Hoàng Thị Lan",
@@ -4160,7 +4181,10 @@
       "distanceM": 1200,
       "entryFee": 2000000,
       "slots": 4,
-      "status": "PUBLISHED"
+      "status": "PUBLISHED",
+      "canFinish": false,
+      "canRecordResults": true,
+      "raceEnded": true
     }
   ],
   "raceEntries": [
@@ -4602,6 +4626,44 @@
           "who": "Hệ thống · VNPay",
           "text": "đã nộp lệ phí · đăng ký thành công",
           "tone": "success"
+        }
+      ]
+    },
+    {
+      "stageDeadline": null,
+      "queuePosition": null,
+      "trainerDecision": null,
+      "vetResult": {
+        "pass": true,
+        "note": "Đủ điều kiện trước khi bị khóa huấn luyện.",
+        "by": "Lê Thị Hương",
+        "at": "2026-10-01T09:00"
+      },
+      "invoiceId": "INV-0056",
+      "complaint": null,
+      "result": null,
+      "closedReason": "Ngựa bị khóa huấn luyện: Chấn thương chân trước trái.",
+      "closedAt": "2026-10-03T10:15",
+      "id": "DK-0015",
+      "tournamentId": "GD-0001",
+      "horseId": "h-storm",
+      "horseName": "Storm",
+      "owner": "Đỗ Minh Quân",
+      "trainerId": "11",
+      "status": "INELIGIBLE",
+      "statusLabel": "Ngựa không còn đủ điều kiện",
+      "createdAt": "2026-09-22T14:30",
+      "history": [
+        {
+          "at": "2026-09-22T14:30",
+          "who": "Đỗ Minh Quân",
+          "text": "đề xuất tham gia · giữ suất, chờ HLV xác nhận"
+        },
+        {
+          "at": "2026-10-03T10:15",
+          "who": "Hệ thống",
+          "text": "Ngựa bị khóa huấn luyện: Chấn thương chân trước trái.",
+          "tone": "danger"
         }
       ]
     }

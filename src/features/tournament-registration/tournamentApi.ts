@@ -50,6 +50,7 @@ const mapBeTournament = (t: Record<string, unknown>): RaceTournament => ({
   allowedBreeds: (t.allowedBreeds as string[] | null) ?? [],
   prizes: ((t.prizes as { rank: number; amount: number | string }[] | null) ?? []).map((p) => ({ rank: Number(p.rank), amount: Number(p.amount) })),
   status: (t.status as RaceTournament['status']) ?? 'DRAFT', note: (t.entryConditions as string | null) ?? undefined,
+  canFinish: t.canFinish === true, canRecordResults: t.canRecordResults === true, raceEnded: t.raceEnded === true,
 });
 
 const minute = (v: unknown) => (v ? String(v).slice(0, 16) : '');
@@ -77,8 +78,9 @@ const beHistory = (p: Record<string, unknown>): EntryHistory[] => {
 const mapBeEntry = (p: Record<string, unknown>): RaceEntry => ({
   id: String(p.proposalCode ?? p.proposalId), beId: Number(p.proposalId), tournamentId: String(p.tournamentId ?? (p.tournament as { tournamentId?: number } | null)?.tournamentId ?? ''),
   horseId: String(p.horseId), horseName: String(p.horseName ?? ''), owner: String(p.ownerName ?? ''), trainerId: p.trainerId == null ? undefined : String(p.trainerId),
-  status: p.status as EntryStatus, createdAt: minute(p.proposedAt), stageDeadline: p.stageDeadline ? minute(p.stageDeadline) : null,
+  status: p.status as EntryStatus, statusLabel: p.statusLabel == null ? undefined : String(p.statusLabel), createdAt: minute(p.proposedAt), stageDeadline: p.stageDeadline ? minute(p.stageDeadline) : null,
   queuePosition: (p.queuePosition as number | null) ?? null,
+  closedReason: p.closedReason == null ? undefined : String(p.closedReason), closedAt: p.closedAt ? minute(p.closedAt) : undefined,
   trainerDecision: p.trainerDecidedAt ? { approve: !!p.trainerApproved, reasonCode: (p.trainerReasonCode as RejectCode | null) ?? undefined, note: (p.trainerNote as string | null) ?? undefined, by: String(p.trainerName ?? ''), at: minute(p.trainerDecidedAt) } : null,
   vetResult: p.vetPassed == null ? null : { pass: !!p.vetPassed, note: String(p.vetNote ?? ''), by: String(p.vetName ?? ''), at: minute(p.vetCheckedAt) },
   invoiceId: p.invoiceId == null ? null : String(p.invoiceCode ?? `INV-${p.invoiceId}`),
@@ -214,7 +216,7 @@ export const tournamentApi = {
       const prize = prizeFor(r.rank, t.prizes);
       await save(e, { status: 'RESULT_RECORDED', result: { rank: r.rank, finishTime: r.finishTime, prize }, history: entry(e, actor.name, `nhập kết quả: hạng ${r.rank} · ${r.finishTime}${prize ? ` · thưởng ${prize.toLocaleString('vi-VN')} ₫` : ''}`, 'success') });
     }
-    await http.patch(`${T}/${t.id}`, { status: 'FINISHED' });
+    await http.patch(`${T}/${t.id}`, { status: 'FINISHED', canRecordResults: false });
     await addAudit(actor, { action: 'RECORD_TOURNAMENT_RESULTS', label: 'Nhập kết quả giải', object: `${t.id} · ${t.name}`, area: 'train', to: 'FINISHED' });
   },
 

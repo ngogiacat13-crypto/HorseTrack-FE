@@ -12,7 +12,7 @@ test('owner sees eligibility reasons, proposes one horse and holds a slot', asyn
   await page.getByTestId('propose-dialog').getByTestId('dialog-confirm').click();
   await expect(page.getByTestId('tournament-propose-GD-0003')).toBeDisabled();
   await page.getByTestId('tournament-my-entry-GD-0003').click();
-  await expect(page.getByTestId('owner-entry-DK-0014')).toContainText('Chờ HLV xác nhận');
+  await expect(page.getByTestId('owner-entry-DK-0016')).toContainText('Chờ HLV xác nhận');
   await expect(page.getByTestId('owner-entry-deadline')).toContainText('05/10/2026 10:31');
   await expect(page.getByTestId('entry-cancel-btn')).toBeVisible();
 });
@@ -57,6 +57,10 @@ test('vet pass issues the entry fee invoice for the owner', async ({ page }) => 
 
 test('manager records results with prize money and resolves a complaint', async ({ page }) => {
   await signIn(page, 'ClubManager');
+  await page.goto('/manager/tournaments');
+  await expect(page.getByTestId('tournament-row-GD-0005')).toContainText('Chờ nhập kết quả');
+  await page.goto('/manager/tournaments/GD-0002');
+  await expect(page.getByTestId('tournament-results-btn')).toHaveCount(0);
   await page.goto('/manager/tournaments/GD-0005');
   await page.getByTestId('tournament-results-btn').click();
   for (const [id, rank, time] of [['DK-0011', '2', '1:12.80'], ['DK-0012', '1', '1:12.10'], ['DK-0013', '3', '1:13.05']]) {

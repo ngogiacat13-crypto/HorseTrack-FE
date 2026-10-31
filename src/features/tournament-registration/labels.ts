@@ -14,7 +14,7 @@ export const ENTRY_LABEL: Record<EntryStatus, [string, Tone]> = {
   VET_EXPIRED: ['Quá hạn khám', 'danger'],
   PAYMENT_EXPIRED: ['Quá hạn lệ phí', 'danger'],
   CANCELLED: ['Đã hủy', 'neutral'],
-  INELIGIBLE: ['Không đủ điều kiện', 'neutral'],
+  INELIGIBLE: ['Ngựa không còn đủ điều kiện', 'danger'],
   NO_SLOT: ['Hết suất', 'neutral'],
 };
 
@@ -33,7 +33,7 @@ export const REJECT_CODE_LABEL: Record<RejectCode, string> = {
 
 export const STAGE_HINT: Partial<Record<EntryStatus, string>> = {
   WAITLISTED: 'Có suất trống thì tự động chuyển sang chờ HLV xác nhận.',
-  WAITING_TRAINER: 'HLV xác nhận trong 2 ngày, quá hạn thì mất suất.',
+  WAITING_TRAINER: 'Suất đang được giữ trong khi HLV xác nhận trong 2 ngày; quá hạn thì mất suất.',
   WAITING_VET_EXAM: 'Bác sĩ khám trong 3 ngày sau khi HLV xác nhận.',
   WAITING_PAYMENT: 'Nộp lệ phí trong 2 ngày sau khi khám đạt.',
   REGISTERED: 'CLB gửi hồ sơ cho ban tổ chức ngoài hệ thống.',

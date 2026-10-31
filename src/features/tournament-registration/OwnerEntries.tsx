@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { ownerApi, type OwnerInvoice } from '../../api/ownerApi';
 import { useActor } from '../../auth/AuthContext';
 import { useFetch } from '../../hooks/useFetch';
 import { useAction } from '../../hooks/useAction';
@@ -16,7 +17,10 @@ import type { RaceEntry } from './types';
 
 export const OwnerEntries: React.FC = () => {
   const actor = useActor();
-  const { data, loading, error, reload } = useFetch(() => tournamentApi.myEntries(actor), [actor]);
+  const { data, loading, error, reload } = useFetch(async () => {
+    const [entries, invoices] = await Promise.all([tournamentApi.myEntries(actor), ownerApi.getMyInvoices(actor)]);
+    return { ...entries, invoices: invoices.invoices.map((item) => item.invoice) };
+  }, [actor]);
   const [sel, setSel] = useState<string | null>(null);
   const [cancelling, setCancelling] = useState<RaceEntry | null>(null);
   const [complaining, setComplaining] = useState<RaceEntry | null>(null);
@@ -28,6 +32,8 @@ export const OwnerEntries: React.FC = () => {
   const tour = (id: string) => data.tournaments.find((t) => t.id === id);
   const cur = data.entries.find((e) => e.id === sel) ?? data.entries[0];
   const t = cur ? tour(cur.tournamentId) : undefined;
+  const invoiceById = new Map<string, OwnerInvoice>(data.invoices.map((invoice) => [invoice.id, invoice]));
+  const entryInvoice = cur?.invoiceId ? invoiceById.get(cur.invoiceId) : undefined;
   const doCancel = async () => {
     if (!cancelling) return;
     if (await act.run(() => tournamentApi.cancel(cancelling, actor), `Đã hủy đề xuất ${cancelling.id} và trả suất.`)) { setCancelling(null); reload(); }
@@ -50,7 +56,11 @@ export const OwnerEntries: React.FC = () => {
                   <tr key={e.id} data-testid={`owner-entry-${e.id}`} onClick={() => setSel(e.id)} style={{ cursor: 'pointer', background: e.id === cur?.id ? 'var(--primary-soft)' : undefined }}>
                     <td className="id">{e.id}</td>
                     <td className="strong">{e.horseName}<span className="sub">{tour(e.tournamentId)?.name} · {fmtDate(tour(e.tournamentId)?.raceDate)}</span></td>
-                    <td><EntryBadge status={e.status} />{e.queuePosition && <span className="sub">Vị trí chờ #{e.queuePosition}</span>}</td>
+                    <td>
+                      <EntryBadge status={e.status} statusLabel={e.statusLabel} />
+                      {e.status === 'WAITLISTED' && e.queuePosition && <span className="sub">Vị trí chờ #{e.queuePosition}</span>}
+                      {e.status === 'WAITING_TRAINER' && e.stageDeadline && <span className="sub">Giữ suất · hạn HLV <Deadline entry={e} testId={`owner-entry-deadline-${e.id}`} /></span>}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -60,7 +70,7 @@ export const OwnerEntries: React.FC = () => {
         </Panel>
         {cur && (
           <div>
-            <Panel title={<>{cur.horseName} · <span className="ht-mono">{cur.id}</span></>} right={<EntryBadge status={cur.status} />} sub={`Đề xuất lúc ${fmtDateTime(cur.createdAt)}`}>
+            <Panel title={<>{cur.horseName} · <span className="ht-mono">{cur.id}</span></>} right={<EntryBadge status={cur.status} statusLabel={cur.statusLabel} />} sub={`Đề xuất lúc ${fmtDateTime(cur.createdAt)}`}>
               <div className="ht-panel__body" style={{ display: 'grid', gap: 14 }} data-testid="owner-entry-detail">
                 {cur.stageDeadline && (
                   <Callout tone="demo" icon="clock" title="Hạn bước hiện tại">
@@ -68,6 +78,13 @@ export const OwnerEntries: React.FC = () => {
                     {STAGE_HINT[cur.status] && <div style={{ marginTop: 4 }}>{STAGE_HINT[cur.status]}</div>}
                   </Callout>
                 )}
+                {cur.status === 'INELIGIBLE' && <Callout tone="danger" title="Ngựa không còn đủ điều kiện" testId="owner-entry-ineligible">
+                  {cur.closedReason && <div>{cur.closedReason}</div>}
+                  {cur.closedAt && <small>Đã đóng lúc {fmtDateTime(cur.closedAt)}</small>}
+                </Callout>}
+                {entryInvoice?.status === 'REFUNDED' && <Callout tone="info" title="Đã hoàn lệ phí" testId="owner-entry-refund">
+                  Hóa đơn <span className="ht-mono">{entryInvoice.id}</span> · {money(entryInvoice.amount)}
+                </Callout>}
                 {cur.status === 'WAITLISTED' && <Callout tone="info" testId="owner-entry-queue">Bạn đang ở vị trí <b>#{cur.queuePosition}</b> trong hàng chờ. {STAGE_HINT.WAITLISTED}</Callout>}
                 {cur.status === 'TRAINER_REJECTED' && (
                   <Callout tone="danger" title={`HLV từ chối: ${cur.trainerDecision?.reasonCode ? REJECT_CODE_LABEL[cur.trainerDecision.reasonCode] : ''}`}>

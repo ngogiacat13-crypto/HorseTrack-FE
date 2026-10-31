@@ -9,7 +9,7 @@ import { LoadState } from '../../components/trainer/TrainerParts';
 import { HOLDING, fmtDateTime, holdingCount, prizeFor, waitlist } from './logic';
 import { Deadline, EntryBadge, TournamentBadge, TournamentFacts } from './parts';
 import { TournamentForm } from './TournamentForm';
-import { todayIso, tournamentApi } from './tournamentApi';
+import { tournamentApi } from './tournamentApi';
 import type { RaceEntry } from './types';
 
 const EntryRows: React.FC<{ rows: RaceEntry[]; queue?: boolean; empty: string; testId: string }> = ({ rows, queue, empty, testId }) => (
@@ -48,7 +48,7 @@ export const ManagerTournamentDetail: React.FC = () => {
   const queue = waitlist(entries);
   const closed = entries.filter((e) => !HOLDING.includes(e.status) && e.status !== 'WAITLISTED').sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   const registered = entries.filter((e) => e.status === 'REGISTERED');
-  const canResult = t.status === 'PUBLISHED' && todayIso() >= t.raceDate && registered.length > 0;
+  const canResult = t.canRecordResults === true;
 
   const openResults = () => {
     act.setError('');
@@ -62,13 +62,13 @@ export const ManagerTournamentDetail: React.FC = () => {
 
   return (
     <div className="ht ht-page">
-      <PageHeader crumbs={<BackButton fallback="/manager/tournaments" />} title={t.name} badge={<TournamentBadge status={t.status} />}
+      <PageHeader crumbs={<BackButton fallback="/manager/tournaments" />} title={t.name} badge={<TournamentBadge status={t.status} raceEnded={t.raceEnded} />}
         sub={`${t.id} · ${holdingCount(entries)}/${t.slots} suất đang giữ · ${queue.length} trong hàng chờ`}
         actions={<div style={{ display: 'flex', gap: 8 }}>
           {t.status === 'DRAFT' && <button type="button" className="ht-btn ht-btn--secondary" data-testid="tournament-detail-edit" onClick={() => setEditing(true)}>Sửa giải</button>}
           {canResult && <button type="button" className="ht-btn ht-btn--primary" data-testid="tournament-results-btn" onClick={openResults}><Icon name="check" size={16} />Nhập kết quả</button>}
         </div>} />
-      {t.status === 'PUBLISHED' && todayIso() >= t.raceDate && registered.length === 0 && <Callout tone="info" style={{ marginBottom: 16 }}>Giải đã diễn ra nhưng không có ngựa nào đã đăng ký để nhập kết quả.</Callout>}
+      {t.raceEnded && registered.length === 0 && <Callout tone="info" style={{ marginBottom: 16 }}>Giải đã diễn ra nhưng không có ngựa nào đã đăng ký để nhập kết quả.</Callout>}
       <div className="ht-cols" style={{ gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1.6fr)' }}>
         <Panel title="Thông tin giải"><div className="ht-panel__body"><TournamentFacts t={t} /></div></Panel>
         <div>

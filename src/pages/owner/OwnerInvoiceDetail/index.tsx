@@ -45,7 +45,7 @@ export const OwnerInvoiceDetail: React.FC = () => {
 
       <div className="ht-status-cards">
         <div className="ht-status-card"><span>Trạng thái hóa đơn</span><Badge tone={tone}>{label}</Badge>
-          <span>{due.overdueDays > 0 ? `Quá hạn ${due.overdueDays} ngày (từ ${addDays(i.dueDate, 1)}).` : due.group === 'PAID' ? `Đã tất toán · ${i.paidRef ?? ''}` : `Hạn thanh toán ${i.dueDate}.`}</span></div>
+          <span>{due.group === 'REFUNDED' ? `Đã hoàn ${money(i.amount)} cho hóa đơn này.` : due.overdueDays > 0 ? `Quá hạn ${due.overdueDays} ngày (từ ${addDays(i.dueDate, 1)}).` : due.group === 'PAID' ? `Đã tất toán · ${i.paidRef ?? ''}` : `Hạn thanh toán ${i.dueDate}.`}</span></div>
         <div className="ht-status-card"><span>Trạng thái giao dịch</span>
           {last ? <Badge tone={PAYMENT_LABEL[last.status][1]}>{PAYMENT_LABEL[last.status][0]}</Badge> : <Badge tone="warning">Chưa thanh toán</Badge>}
           <span>{last ? `${last.id} · ${last.createdAt}` : 'Chưa có giao dịch cho hóa đơn này.'}</span></div>
@@ -79,7 +79,7 @@ export const OwnerInvoiceDetail: React.FC = () => {
             <div className="ht-panel__body">
               <div className="ht-milestones">
                 {milestones.map((m) => (
-                  <div key={m.title} className="ht-milestone" data-on={due.group !== 'PAID' ? passed(m.date) : m.tone === 'brand'} data-tone={m.tone}>
+                  <div key={m.title} className="ht-milestone" data-on={due.group !== 'PAID' && due.group !== 'REFUNDED' ? passed(m.date) : m.tone === 'brand'} data-tone={m.tone}>
                     <b>{m.title}</b><span className="ht-mono">{m.date}</span><span>{m.note}</span>
                   </div>
                 ))}

@@ -7,6 +7,7 @@ export interface RaceTournament {
   raceDate: string; registrationDeadline: string; distanceM: number; entryFee: number; slots: number;
   minAgeYears: number | null; maxAgeYears: number | null; minWeightKg: number | null; maxWeightKg: number | null;
   allowedBreeds: string[]; prizes: Prize[]; status: TournamentStatus; note?: string;
+  canFinish?: boolean; canRecordResults?: boolean; raceEnded?: boolean;
 }
 
 export type TournamentDraft = Omit<RaceTournament, 'id' | 'beId' | 'status'>;
@@ -26,7 +27,8 @@ export interface Complaint {
 
 export interface RaceEntry {
   id: string; beId?: number; tournamentId: string; horseId: string; horseName: string; owner: string; trainerId?: string;
-  status: EntryStatus; createdAt: string; stageDeadline: string | null; queuePosition: number | null;
+  status: EntryStatus; statusLabel?: string; createdAt: string; stageDeadline: string | null; queuePosition: number | null;
+  closedReason?: string | null; closedAt?: string | null;
   trainerDecision: null | { approve: boolean; reasonCode?: RejectCode; note?: string; by: string; at: string };
   vetResult: null | { pass: boolean; note: string; by: string; at: string };
   invoiceId: string | null;
