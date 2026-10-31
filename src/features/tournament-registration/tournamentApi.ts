@@ -165,7 +165,7 @@ export const tournamentApi = {
   },
 
   async saveTournament(draft: TournamentDraft, actor: Actor, existing?: RaceTournament) {
-    const errors = validateTournament(draft, todayIso());
+    const errors = validateTournament(draft, todayIso(), existing);
     const first = Object.values(errors)[0];
     if (first) throw new Error(first);
     const body = { ...draft, name: draft.name.trim(), organizer: draft.organizer.trim(), location: draft.location.trim(), note: draft.note?.trim() || undefined };

@@ -128,17 +128,21 @@ export const shiftDay = (isoDay: string, days: number) => toIsoDay(addDays(parse
 
 const missing = (v: number | null) => v == null || Number.isNaN(v);
 
-export const validateTournament = (d: TournamentDraft, todayIso: string) => {
+export const MIN_WEIGHT_KG = 50;
+export const MAX_WEIGHT_KG = 1500;
+
+export const validateTournament = (d: TournamentDraft, todayIso: string, original?: Pick<TournamentDraft, 'raceDate' | 'registrationDeadline'>) => {
   const errors: Partial<Record<keyof TournamentDraft, string>> = {};
   const earliestRace = shiftDay(todayIso, MIN_DAYS_BEFORE_RACE);
+  const datesUnchanged = !!original && original.raceDate === d.raceDate && original.registrationDeadline === d.registrationDeadline;
   if (d.name.trim().length < 5) errors.name = 'Tên giải ít nhất 5 ký tự';
   if (d.organizer.trim().length < 2) errors.organizer = 'Nhập ban tổ chức';
   if (d.location.trim().length < 2) errors.location = 'Nhập địa điểm';
   if (!d.raceDate) errors.raceDate = 'Chọn ngày thi đấu';
-  else if (d.raceDate < earliestRace) errors.raceDate = `Ngày thi đấu phải sau hôm nay ít nhất ${MIN_DAYS_BEFORE_RACE} ngày (từ ${fmtDate(earliestRace)})`;
+  else if (!datesUnchanged && d.raceDate < earliestRace) errors.raceDate = `Ngày thi đấu phải sau hôm nay ít nhất ${MIN_DAYS_BEFORE_RACE} ngày (từ ${fmtDate(earliestRace)})`;
   if (!d.registrationDeadline) errors.registrationDeadline = 'Chọn hạn đăng ký';
-  else if (d.registrationDeadline < todayIso) errors.registrationDeadline = 'Hạn đăng ký không ở quá khứ';
-  else if (d.raceDate && d.registrationDeadline > shiftDay(d.raceDate, -MIN_DEADLINE_GAP_DAYS)) errors.registrationDeadline = `Hạn đăng ký phải trước ngày thi đấu ít nhất ${MIN_DEADLINE_GAP_DAYS} ngày (chậm nhất ${fmtDate(shiftDay(d.raceDate, -MIN_DEADLINE_GAP_DAYS))})`;
+  else if (!datesUnchanged && d.registrationDeadline < todayIso) errors.registrationDeadline = 'Hạn đăng ký không ở quá khứ';
+  else if (!datesUnchanged && d.raceDate && d.registrationDeadline > shiftDay(d.raceDate, -MIN_DEADLINE_GAP_DAYS)) errors.registrationDeadline = `Hạn đăng ký phải trước ngày thi đấu ít nhất ${MIN_DEADLINE_GAP_DAYS} ngày (chậm nhất ${fmtDate(shiftDay(d.raceDate, -MIN_DEADLINE_GAP_DAYS))})`;
   if (!(d.distanceM >= 200 && d.distanceM <= 5000)) errors.distanceM = 'Cự ly 200–5000 m';
   if (missing(d.entryFee) || d.entryFee < 0) errors.entryFee = 'Nhập lệ phí (VND), không âm';
   if (!(Number.isInteger(d.slots) && d.slots >= 1 && d.slots <= 50)) errors.slots = 'Số suất 1–50';
@@ -148,9 +152,9 @@ export const validateTournament = (d: TournamentDraft, todayIso: string) => {
   else if (!(Number.isInteger(d.maxAgeYears) && (d.maxAgeYears as number) >= 1 && (d.maxAgeYears as number) <= 40)) errors.maxAgeYears = 'Tuổi 1–40';
   else if (!missing(d.minAgeYears) && (d.minAgeYears as number) > (d.maxAgeYears as number)) errors.maxAgeYears = 'Tuổi tối đa phải ≥ tối thiểu';
   if (missing(d.minWeightKg)) errors.minWeightKg = 'Nhập cân nặng tối thiểu';
-  else if (!((d.minWeightKg as number) > 0 && (d.minWeightKg as number) <= 1500)) errors.minWeightKg = 'Cân nặng 1–1500 kg';
+  else if (!((d.minWeightKg as number) >= MIN_WEIGHT_KG && (d.minWeightKg as number) <= MAX_WEIGHT_KG)) errors.minWeightKg = `Cân nặng ${MIN_WEIGHT_KG}–${MAX_WEIGHT_KG} kg`;
   if (missing(d.maxWeightKg)) errors.maxWeightKg = 'Nhập cân nặng tối đa';
-  else if (!((d.maxWeightKg as number) > 0 && (d.maxWeightKg as number) <= 1500)) errors.maxWeightKg = 'Cân nặng 1–1500 kg';
+  else if (!((d.maxWeightKg as number) >= MIN_WEIGHT_KG && (d.maxWeightKg as number) <= MAX_WEIGHT_KG)) errors.maxWeightKg = `Cân nặng ${MIN_WEIGHT_KG}–${MAX_WEIGHT_KG} kg`;
   else if (!missing(d.minWeightKg) && (d.minWeightKg as number) > (d.maxWeightKg as number)) errors.maxWeightKg = 'Cân nặng tối đa phải ≥ tối thiểu';
   if (d.allowedBreeds.length === 0) errors.allowedBreeds = 'Chọn ít nhất một giống được nhận';
   const ranks = d.prizes.map((p) => p.rank);

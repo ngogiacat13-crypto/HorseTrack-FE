@@ -41,7 +41,7 @@ export const TournamentForm: React.FC<{ tournament?: RaceTournament; onClose: ()
   const [d, setD] = useState<TournamentDraft>(tournament ? fromTournament(tournament) : EMPTY);
   const [tried, setTried] = useState(false);
   const today = todayIso();
-  const errors = validateTournament(d, today);
+  const errors = validateTournament(d, today, tournament);
   const set = (patch: Partial<TournamentDraft>) => setD((x) => ({ ...x, ...patch }));
   const setPrize = (i: number, patch: Partial<Prize>) => set({ prizes: d.prizes.map((p, k) => (k === i ? { ...p, ...patch } : p)) });
   const toggleBreed = (b: string) => set({ allowedBreeds: d.allowedBreeds.includes(b) ? d.allowedBreeds.filter((x) => x !== b) : [...d.allowedBreeds, b] });

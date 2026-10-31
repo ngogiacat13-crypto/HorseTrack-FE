@@ -894,3 +894,11 @@ Swagger server giờ có 182 API; FE gọi 170.
 - Tiêu chí giống: chọn đủ mọi giống thì hiển thị “Mọi giống” thay vì liệt kê.
 - **Cần BE:** `HorseServiceImpl.approveHorse` / `rejectHorse` hiện chỉ lưu trạng thái + nhật ký, không gửi gì cho chủ ngựa. Thêm `appNotifications.push(owner, "HORSE_REGISTRATION", tiêu đề, nội dung, "/owner/registrations")` (duyệt: tên ngựa + chuồng được cấp; từ chối: lý do + có được nộp lại không) và `emailService.sendAsync("HORSE_REGISTRATION", owner.email, …)` cùng nội dung. Chuông FE đọc `/notifications` nên tự hiện khi BE gửi; email ghi vào Nhật ký email của QL CLB.
 
+## 43. BE `8469ed6` (nhánh deploy, 31/10/2026)
+
+- Duyệt / từ chối hồ sơ ngựa gửi chuông (`HORSE_REGISTRATION`, link `/owner/registrations`) và email cho chủ ngựa (duyệt: chuồng được cấp; từ chối: lý do + được nộp lại hay không). FE không cần sửa: chuông đọc `/notifications`.
+- `TournamentCreateDTO` bắt buộc tuổi / cân nặng (50–1500 kg) / lệ phí / ít nhất 1 giống / bảng thưởng; `TournamentService`: ngày thi ≥ hôm nay + 5, hạn đăng ký ≤ ngày thi − 3; khi sửa giải mà không đổi ngày thì không bắt lại luật ngày. FE chỉnh cho khớp: cân nặng 50–1500 kg, sửa giải giữ nguyên ngày thì bỏ qua luật ngày. Swagger server đã có danh sách trường bắt buộc mới (đã deploy).
+- `GET /owner/tournaments` chỉ trả ngựa đã duyệt + có chuồng; hết ngựa thì `cannotProposeReason = "Bạn chưa có ngựa nào được duyệt hồ sơ"`. Bộ lọc FE vẫn giữ (vô hại).
+- Thông báo giải đấu có link theo vai trò: `/owner/race-entries`, `/trainer/race-confirmations`, `/vet/race-exams`, `/manager/race-complaints`; giải mới → `/owner/tournaments`; cần hoàn tiền → `/manager/invoices`. Job quét hạn ghi log lượt đầu khi khởi động.
+- Còn chờ BE: tài khoản test cho 5 vai trò (đang 401), tên miền HTTPS cho backend, việc bảo mật (secrets.example, trigger deploy.yml, secret URL VNPay / xác nhận nhân viên).
+
