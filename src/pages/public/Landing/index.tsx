@@ -63,12 +63,14 @@ const HeartRateVisual: React.FC<{ label: string }> = ({ label }) => {
   );
 };
 
+const STAMP_TEXT_LENGTH = 274;
+
 const Stamp: React.FC<{ text: string }> = ({ text }) => (
   <span className="ht-landing__stamp" aria-hidden="true">
     <svg viewBox="0 0 120 120">
       <defs><path id="landing-stamp-path" d="M60,60 m-44,0 a44,44 0 1,1 88,0 a44,44 0 1,1 -88,0" /></defs>
       <circle cx="60" cy="60" r="56" />
-      <text><textPath href="#landing-stamp-path">{text.repeat(2)}</textPath></text>
+      <text><textPath href="#landing-stamp-path" textLength={STAMP_TEXT_LENGTH} lengthAdjust="spacing">{text}</textPath></text>
     </svg>
     <Icon name="shield" size={22} />
   </span>
