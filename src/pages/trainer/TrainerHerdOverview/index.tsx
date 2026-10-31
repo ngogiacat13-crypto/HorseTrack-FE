@@ -76,8 +76,8 @@ export const TrainerHerdOverview: React.FC = () => {
       <div className="ht-cols">
         <div>
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
-            <select className="ht-select" value={lockF} onChange={(e) => setLockF(e.target.value as typeof lockF)} aria-label="Lọc khóa tập">
-              <option value="all">Khóa tập: Tất cả</option><option value="locked">Đang khóa</option><option value="free">Được tập</option>
+            <select className="ht-select" value={lockF} onChange={(e) => setLockF(e.target.value as typeof lockF)} aria-label="Lọc trạng thái">
+              <option value="all">Trạng thái: Tất cả</option><option value="locked">Đang khóa</option><option value="free">Được tập</option>
             </select>
             <select className="ht-select" value={breed} onChange={(e) => setBreed(e.target.value)} aria-label="Lọc giống">
               <option value="">Giống: Tất cả</option>{breeds.map((b) => <option key={b}>{b}</option>)}
