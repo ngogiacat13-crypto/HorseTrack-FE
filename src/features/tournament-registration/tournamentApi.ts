@@ -99,6 +99,13 @@ const beProposals = async (params?: Record<string, unknown>) => {
   const entries = (raw ?? []).map(mapBeEntry);
   return { entries, tournaments: tournamentsOf(entries, raw ?? []) };
 };
+const CHECK_LABEL: Record<string, string> = { NOT_LOCKED: 'Trạng thái' };
+const reasonsOf = (h: Record<string, unknown>) => {
+  const checks = (h.checks as { code?: string; label?: string; passed?: boolean; detail?: string }[] | null) ?? [];
+  if (!checks.length) return (h.reasons as string[] | null) ?? [];
+  return checks.filter((c) => c.passed === false).map((c) => `${CHECK_LABEL[c.code ?? ''] ?? c.label ?? ''}: ${c.detail ?? ''}`);
+};
+
 const isApprovedHorse = (h: Record<string, unknown>) =>
   !((h.checks as { code?: string; passed?: boolean }[] | null) ?? []).some((c) => c.code === 'APPROVED' && c.passed === false);
 
@@ -256,7 +263,7 @@ export const tournamentApi = {
         const all = (r.horses as Record<string, unknown>[]) ?? [];
         const approved = all.filter(isApprovedHorse);
         const horses = approved.map((h) => ({
-          horseId: String(h.horseId), horseName: String(h.horseName ?? ''), eligible: !!h.eligible, reasons: (h.reasons as string[]) ?? [],
+          horseId: String(h.horseId), horseName: String(h.horseName ?? ''), eligible: !!h.eligible, reasons: reasonsOf(h),
           formScore: h.formScore == null ? null : Number(h.formScore), formNote: (h.formNote as string | null) ?? undefined, recommended: !!h.recommended,
         }));
         return {

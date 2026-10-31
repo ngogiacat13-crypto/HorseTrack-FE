@@ -55,7 +55,7 @@ export const eligibilityReasons = (h: HorseFacts, t: RaceTournament, busyDates: 
   if (h.weightKg != null && t.minWeightKg != null && h.weightKg < t.minWeightKg) reasons.push(`Cân nặng ${h.weightKg} kg dưới mức ${t.minWeightKg} kg`);
   if (h.weightKg != null && t.maxWeightKg != null && h.weightKg > t.maxWeightKg) reasons.push(`Cân nặng ${h.weightKg} kg vượt mức ${t.maxWeightKg} kg`);
   if (t.allowedBreeds.length > 0 && !t.allowedBreeds.includes(h.breed)) reasons.push(`Giống ${h.breed} không thuộc danh sách giải nhận`);
-  if (h.trainingLocked) reasons.push('Đang bị bác sĩ khóa y tế');
+  if (h.trainingLocked) reasons.push('Trạng thái: Ngựa đang bị khóa y tế (VetLock)');
   if (h.health === 'INJURED' || h.health === 'QUARANTINE') reasons.push(h.health === 'INJURED' ? 'Đang chấn thương' : 'Đang cách ly');
   if (h.inTreatment) reasons.push('Đang trong phác đồ điều trị');
   if (h.approved === false) reasons.push('Hồ sơ ngựa chưa được duyệt');
