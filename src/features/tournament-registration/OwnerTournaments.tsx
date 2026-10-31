@@ -92,7 +92,6 @@ export const OwnerTournaments: React.FC = () => {
       </div>
       <Dialog open={!!confirm} onClose={() => setConfirm(null)} busy={act.busy} icon="send" tone="brand" testId="propose-dialog"
         title={`Đề xuất ${horseName} · ${confirm?.item.tournament.name ?? ''}`}
-        sub={confirm?.item.slotsLeft ? 'Giữ suất ngay. HLV xác nhận trong 2 ngày → bác sĩ khám trong 3 ngày → bạn nộp lệ phí trong 2 ngày. Quá hạn bước nào thì mất suất.' : 'Giải đã hết suất — bạn vào cuối hàng chờ, có người mất suất thì tự động được lên.'}
         confirmLabel="Xác nhận đề xuất" onConfirm={propose}>
         {act.error && <Callout tone="danger">{act.error}</Callout>}
       </Dialog>

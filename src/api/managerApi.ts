@@ -101,6 +101,12 @@ const beUserAction = async (url: string, body: Record<string, string>): Promise<
 const beUserStatus = async (id: string) => (await beData<{ status?: string | null; isActive?: boolean }>(be.get(`/users/${id}`)));
 const toManaged = ({ password: _pw, fullname, ...u }: UserRecord): ManagedUser => ({ ...u, fullName: fullname });
 
+const ensureStaffConfirmed = async (userId: number | string, fullName: string) => {
+  const fresh = await beData<{ emailConfirmed?: boolean | null; isActive?: boolean | null }>(be.get(`/users/${userId}`));
+  if (fresh.isActive === false) throw new Error(`Tài khoản ${fullName} đang bị khóa — mở khóa trước khi phân công.`);
+  if (fresh.emailConfirmed === false) throw new Error(`${fullName} chưa xác nhận email nên chưa nhận việc được. Bấm “Gửi lại mail” để gửi lại liên kết xác nhận; nhân viên xác nhận xong mới phân công được.`);
+};
+
 interface BeOverdueTask { taskCode?: string | null; title?: string | null; taskType: string; horseName?: string | null; groomName?: string | null; taskDate?: string | null; scheduledTime?: string | null; status?: string | null; completedAt?: string | null; lateMinutes?: number | null }
 const lateBy = (task: BeOverdueTask) => {
   if (task.lateMinutes == null && (!task.taskDate || !task.scheduledTime)) return '—';
@@ -408,6 +414,7 @@ export const managerApi = {
     const target = assignments.grooms.find((g) => g.id === user.id || g.name === user.fullName);
     if (!target) throw new Error('Không tìm thấy hồ sơ phân công của người chăm ngựa.');
     if (USE_BACKEND) {
+      if (zones.length) await ensureStaffConfirmed(target.id, user.fullName);
       const current = await beData<{ barnZone?: string | null }>(be.get(`/users/${target.id}/barn-zone`));
       const currentZones = current.barnZone ? [current.barnZone.replace(/^Zone\s+/i, 'Khu ')] : [];
       const same = currentZones.length === zones.length && zones.every((z) => currentZones.includes(z));
@@ -435,7 +442,10 @@ export const managerApi = {
     const added = assignments.horses.filter((h) => selected.has(h.id) && h.trainerId !== user.id);
     if (USE_BACKEND) {
       if (!added.length && !dropped.length) throw new Error('Không có thay đổi phân công.');
-      for (const h of added) await be.put(`/horses/${h.id}/assign-trainer`, { trainerId: Number(user.id) });
+      const trainerId = Number(user.beId ?? user.id);
+      if (!Number.isInteger(trainerId)) throw new Error('Không xác định được tài khoản HLV. Tải lại trang rồi thử lại.');
+      if (added.length) await ensureStaffConfirmed(trainerId, user.fullName);
+      for (const h of added) await be.put(`/horses/${h.id}/assign-trainer`, { trainerId });
       for (const h of dropped) await be.delete(`/horses/${h.id}/assign-trainer`);
       invalidate('horses', 'auditLogs');
       return { horseIds };

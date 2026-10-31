@@ -39,8 +39,7 @@ export const OwnerEntries: React.FC = () => {
 
   return (
     <div className="ht ht-page">
-      <PageHeader title="Đề xuất của tôi" sub="Theo dõi từng bước giữ suất: HLV xác nhận (2 ngày) → bác sĩ khám (3 ngày) → nộp lệ phí (2 ngày). Hồ sơ gửi ban tổ chức và thi đấu diễn ra ngoài hệ thống."
-        actions={<Link to={PATH.owner.tournaments} className="ht-btn ht-btn--secondary" data-testid="entries-go-tournaments">Xem giải đấu</Link>} />
+      <PageHeader title="Đề xuất của tôi" sub="Theo dõi từng bước giữ suất: HLV xác nhận (2 ngày) → bác sĩ khám (3 ngày) → nộp lệ phí (2 ngày). Hồ sơ gửi ban tổ chức và thi đấu diễn ra ngoài hệ thống." />
       <div className="ht-cols" style={{ gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1.2fr)' }}>
         <Panel title="Đề xuất" sub={`${data.entries.length} đề xuất`}>
           <div style={{ overflowX: 'auto' }}>
