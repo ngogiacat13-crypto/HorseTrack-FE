@@ -34,12 +34,11 @@ export interface LandingContent {
     right: { title: string; link: string; alt: string };
   };
   services: { kicker: string; title: string; lead: string; items: Service[]; chart: string };
-  process: { kicker: string; title: string; lead: string; steps: Step[]; cta: string };
+  process: { kicker: string; title: string; lead: string; steps: Step[] };
   team: { kicker: string; title: string; lead: string; tabs: TeamTab[]; forYouLabel: string };
   promises: { kicker: string; title: string; items: { quote: string; by: string }[]; prev: string; next: string };
   gallery: { kicker: string; title: string; captions: string[] };
   faq: { kicker: string; title: string; items: Faq[] };
-  band: { title: string; text: string; register: string; login: string };
   footer: {
     details: string; detailLines: string[]; links: string; account: string;
     linkItems: { href: string; label: string }[]; login: string; register: string; forgot: string;
@@ -80,7 +79,6 @@ const vi: LandingContent = {
       { title: 'Câu lạc bộ duyệt', text: 'Quản lý câu lạc bộ xem xét hồ sơ, xếp chuồng và giao huấn luyện viên phụ trách.' },
       { title: 'Theo dõi mỗi ngày', text: 'Xem buổi tập, sức khỏe, hóa đơn và đăng ký thi đấu ngay trên tài khoản của bạn.' },
     ],
-    cta: 'Đăng ký ngay',
   },
   team: {
     kicker: 'Đội ngũ', title: 'Những người chăm lo cho ngựa của bạn', lead: 'Mỗi con ngựa có huấn luyện viên, bác sĩ và người chăm ngựa phụ trách rõ ràng.',
@@ -113,7 +111,6 @@ const vi: LandingContent = {
       { q: 'Tôi theo dõi ngựa của mình bằng cách nào?', a: 'Đăng nhập tài khoản chủ ngựa trên máy tính hoặc điện thoại để xem sức khỏe, lịch tập, kết quả thi và hóa đơn.' },
     ],
   },
-  band: { title: 'Sẵn sàng gửi ngựa?', text: 'Tạo tài khoản và gửi hồ sơ ngựa — câu lạc bộ sẽ liên hệ khi hồ sơ được duyệt.', register: 'Đăng ký gửi ngựa', login: 'Đã có tài khoản' },
   footer: {
     details: 'Câu lạc bộ', detailLines: ['Câu lạc bộ huấn luyện ngựa đua HorseTrack', 'Huấn luyện · Chăm sóc · Thú y · Thi đấu', 'Hỗ trợ: liên hệ Quản lý câu lạc bộ'],
     links: 'Khám phá', account: 'Tài khoản',
@@ -157,7 +154,6 @@ const en: LandingContent = {
       { title: 'Club approval', text: 'The club manager reviews, assigns a stall and a responsible trainer.' },
       { title: 'Follow every day', text: 'See sessions, health, invoices and race entries in your account.' },
     ],
-    cta: 'Sign up now',
   },
   team: {
     kicker: 'Team', title: 'The people caring for your horse', lead: 'Every horse has a named trainer, vet and groom.',
@@ -190,7 +186,6 @@ const en: LandingContent = {
       { q: 'How do I follow my horse?', a: 'Sign in to your owner account on a computer or phone to see health, training, race results and invoices.' },
     ],
   },
-  band: { title: 'Ready to board your horse?', text: 'Create an account and submit your horse — the club will contact you once it is approved.', register: 'Board your horse', login: 'I have an account' },
   footer: {
     details: 'The club', detailLines: ['HorseTrack racehorse training club', 'Training · Care · Veterinary · Racing', 'Help: contact the club manager'],
     links: 'Explore', account: 'Account',
