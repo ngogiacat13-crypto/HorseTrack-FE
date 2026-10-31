@@ -8,6 +8,7 @@ export interface Horse {
   injuries: Injury[];
   medicalHistory: { date: string; title: string; tone: 'danger' | 'warning' | 'success' }[];
   raceResults?: { date: string; race: string; distance: string; rank: number; field: number; time: string }[];
+  weightKg?: number | null; heightCm?: number | null;
 }
 
 export type Intensity = 'Nhẹ' | 'Vừa' | 'Cao';

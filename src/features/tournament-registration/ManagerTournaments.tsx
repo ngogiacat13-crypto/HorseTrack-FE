@@ -55,7 +55,7 @@ export const ManagerTournaments: React.FC = () => {
                     <td><TournamentBadge status={t.status} /></td>
                     <td className="num">
                       <div style={{ display: 'inline-flex', gap: 6 }}>
-                        {t.status !== 'FINISHED' && todayIso() < t.raceDate && <button type="button" className="ht-btn ht-btn--secondary ht-btn--sm" data-testid={`tournament-edit-${t.id}`} onClick={() => setEditing(t)}>Sửa</button>}
+                        {t.status === 'DRAFT' && <button type="button" className="ht-btn ht-btn--secondary ht-btn--sm" data-testid={`tournament-edit-${t.id}`} onClick={() => setEditing(t)}>Sửa</button>}
                         {t.status === 'DRAFT' && <button type="button" className="ht-btn ht-btn--primary ht-btn--sm" data-testid={`tournament-publish-${t.id}`} onClick={() => { publish.setError(''); setPublishing(t); }}>Công bố</button>}
                       </div>
                     </td>

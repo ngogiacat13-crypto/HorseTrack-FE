@@ -77,6 +77,8 @@ test('manager records results with prize money and resolves a complaint', async 
 test('manager imports an external tournament with complete data, VND fee and date rules, then publishes it', async ({ page }) => {
   await signIn(page, 'ClubManager');
   await page.getByTestId('nav-manager-tournaments').click();
+  await expect(page.getByTestId('tournament-row-GD-0001')).toBeVisible();
+  await expect(page.getByTestId('tournament-edit-GD-0001')).toHaveCount(0);
   await page.getByTestId('tournament-create-btn').click();
   const dialog = page.getByTestId('tournament-form-dialog');
   await expect(dialog).toContainText('Nhập giải đấu');
@@ -109,6 +111,15 @@ test('manager imports an external tournament with complete data, VND fee and dat
   await page.getByTestId('tournament-breed-all').click();
   await page.getByTestId('tournament-prize-amount-0').fill('50000000');
   await expect(page.getByTestId('tournament-prize-amount-0')).toHaveValue('50.000.000');
+  await expect(page.getByTestId('tournament-prize-rank-2')).toHaveText('Hạng 3');
+  await page.getByTestId('tournament-prize-amount-1').fill('30000000');
+  await page.getByTestId('tournament-prize-amount-2').fill('10000000');
+  await page.getByTestId('tournament-prize-add').click();
+  await page.getByTestId('tournament-prize-add').click();
+  await expect(page.getByTestId('tournament-prize-add')).toHaveCount(0);
+  await page.getByTestId('tournament-prize-remove-4').click();
+  await page.getByTestId('tournament-prize-amount-3').fill('5000000');
+  await expect(page.getByTestId('tournament-prize-remove-2')).toHaveCount(0);
   await dialog.getByTestId('dialog-confirm').click();
   await expect(dialog).toHaveCount(0);
 

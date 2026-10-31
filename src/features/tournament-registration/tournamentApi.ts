@@ -165,6 +165,7 @@ export const tournamentApi = {
   },
 
   async saveTournament(draft: TournamentDraft, actor: Actor, existing?: RaceTournament) {
+    if (existing && existing.status !== 'DRAFT') throw new Error('Giải đã công bố, không sửa được nữa.');
     const errors = validateTournament(draft, todayIso(), existing);
     const first = Object.values(errors)[0];
     if (first) throw new Error(first);
@@ -177,12 +178,8 @@ export const tournamentApi = {
       return;
     }
     if (existing) {
-      if (existing.status === 'FINISHED') throw new Error('Giải đã kết thúc, không sửa được.');
-      const held = holdingCount(await get<RaceEntry[]>(E, { tournamentId: existing.id }));
-      if (existing.status === 'PUBLISHED' && draft.slots < held) throw new Error(`Đã có ${held} suất đang giữ, không giảm số suất dưới mức này.`);
       await http.patch(`${T}/${existing.id}`, body);
       await addAudit(actor, { action: 'UPDATE_TOURNAMENT', label: 'Sửa giải đấu', object: `${existing.id} · ${body.name}`, area: 'train' });
-      if (existing.status === 'PUBLISHED') await resweep(existing.id);
       return;
     }
     const all = await get<RaceTournament[]>(T);
