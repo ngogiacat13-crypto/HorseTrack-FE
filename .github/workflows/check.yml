@@ -20,6 +20,18 @@ jobs:
             echo "$found"
             exit 1
           fi
+      - name: Nhánh dev giữ đủ tài liệu nội bộ (không gộp main vào dev)
+        if: github.ref == 'refs/heads/dev' || github.base_ref == 'dev'
+        run: |
+          missing=""
+          for f in $(grep -v '^[[:space:]]*$' .github/main-exclude.txt | tr -d '\r'); do
+            [ -n "$(git ls-files -- "$f")" ] || missing="$missing $f"
+          done
+          if [ -n "$missing" ]; then
+            echo "::error::Dev bị mất file nội bộ (thường do gộp main vào dev):$missing"
+            echo "Khôi phục: git checkout <commit-trước-khi-gộp> -- <file>. Chiều gộp đúng là dev -> main bằng npm run merge:main."
+            exit 1
+          fi
       - uses: actions/setup-node@v4
         with:
           node-version: 20
