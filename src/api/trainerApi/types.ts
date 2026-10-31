@@ -7,7 +7,7 @@ export interface Horse {
   lock: { by: string; at: string; reason: string; review: string } | null;
   injuries: Injury[];
   medicalHistory: { date: string; title: string; tone: 'danger' | 'warning' | 'success' }[];
-  raceResults?: { date: string; race: string; distance: string; rank: number; field: number; time: string }[];
+  raceResults?: { date: string; race: string; distance: string; rank: number; field: number; time: string; prize?: number }[];
   weightKg?: number | null; heightCm?: number | null;
 }
 

@@ -922,3 +922,8 @@ Swagger server giờ có 182 API; FE gọi 170.
 - BE: `canRecordResults` = giải đang công bố (kể cả trước ngày thi); `PUT /tournaments/{id}/results` lần đầu tự kết thúc giải như `/finish` (đề xuất chưa hoàn tất → `NO_SLOT`, hủy hóa đơn lệ phí chưa trả). Mọi đề xuất có kết quả thì giải `FINISHED`.
 - FE: bỏ chặn “Chỉ nhập kết quả sau ngày thi đấu”, dựa vào `canRecordResults` do BE trả; nút “Nhập kết quả” chỉ hiện khi có ngựa đã đăng ký. Hộp nhập kết quả có cảnh báo (`tournament-results-warning`) khi giải chưa kết thúc: “Lưu kết quả sẽ kết thúc giải; N đề xuất chưa hoàn tất sẽ bị hủy (hóa đơn lệ phí chưa trả cũng bị hủy)”. Dữ liệu mẫu làm y hệt (chưa mô phỏng việc hủy hóa đơn).
 
+## 47. Thành tích thi đấu của ngựa từ BE (31/10/2026)
+
+- `GET /horses/{id}` trả `raceResults[]` (`tournamentName`, `raceDate`, `distanceM`, `rank`, `fieldSize`, `finishTimeSeconds`, `prizeAmount`), `raceCount`, `raceWins`, `totalPrize`. FE `hybridAdapter.toHorse` map sang `{ date dd/MM/yyyy, race, distance "1200 m" | "—", rank, field (mặc định 1), time m:ss.cc, prize }`; `DETAILS.horses` không còn bỏ `raceResults` khi tải chi tiết. Các thẻ Số lần thi đấu / Về nhất / Top 3 / Thứ hạng tốt nhất tự tính đúng; thêm cột Tiền thưởng và thẻ Tổng tiền thưởng; `fieldSize` ≤ 1 hiện “Hạng N” thay vì “N/1”. Đã đối chiếu server: ngựa O Long có 1 kết quả (Bình Định mở rộng · 1200 m · hạng 1 · 1:22.55 · 1.111.111 ₫).
+- Link “Mở trang đề xuất” trong tab này trỏ `/owner/race-entries` (trang mới) thay cho `/owner/races` cũ.
+

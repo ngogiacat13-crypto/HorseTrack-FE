@@ -57,7 +57,7 @@ Quy ước `data-testid`: menu trái `nav-<đường dẫn bỏ / đầu, / đ�
 | Mã phu · Báo sự cố | `src/pages/groom/GroomIncidents/` | `/groom/incidents` | `nav-groom-incidents` |
 | Mã phu · Yêu cầu vật tư | `src/pages/groom/GroomRequests/` | `/groom/requests` | `nav-groom-requests`, `cancel-requisition-btn` |
 | Chủ ngựa · Ngựa của tôi | `src/pages/owner/OwnerHorses/` | `/owner` | `nav-owner` |
-| Chủ ngựa · Chi tiết ngựa | `src/pages/owner/OwnerHorseDetail/` | `/owner/horses/:id` · lịch sử phiên tập và ghi chú trễ; thông báo và hóa đơn theo từng giai đoạn | `back-btn`, `plan-delay`, `session-late`, `phase-payment-notice`, `owner-horse-height`, `owner-horse-weight` |
+| Chủ ngựa · Chi tiết ngựa | `src/pages/owner/OwnerHorseDetail/` | `/owner/horses/:id` · lịch sử phiên tập và ghi chú trễ; thông báo và hóa đơn theo từng giai đoạn | `back-btn`, `plan-delay`, `session-late`, `phase-payment-notice`, `owner-horse-height`, `owner-horse-weight`, `owner-race-results` (tab Phong độ & thi đấu: lịch sử thi từ BE, tiền thưởng, tổng tiền thưởng) |
 | Chủ ngựa · Xác nhận thi đấu | `src/pages/owner/OwnerRaces/` | `/owner/races` | `nav-owner-races` |
 | Chủ ngựa · Hóa đơn | `src/pages/owner/OwnerInvoices/` | `/owner/invoices` (VNPay quay về `?status=`) · hóa đơn REFUNDED hiện mã, số tiền đã hoàn, không cho thanh toán và không cộng vào công nợ | `nav-owner-invoices`, `vnpay-result`, `owner-refunded-invoice-<mã>`, `owner-invoice-refunded` |
 | Chủ ngựa · Chi tiết hóa đơn | `src/pages/owner/OwnerInvoiceDetail/` | `/owner/invoices/:id` | `back-btn` |
