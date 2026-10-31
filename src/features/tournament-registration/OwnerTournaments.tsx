@@ -20,6 +20,8 @@ const TournamentCard: React.FC<{ item: OwnerTournament; onPropose: (item: OwnerT
   const [pick, setPick] = useState(firstFit);
   const open = registrationOpen(t, clockNow());
   const locked = !!myProposal || !open || !item.eligible || item.canPropose === false;
+  const last = item.lastProposal ?? null;
+  const lastReason = last ? last.closedReason ?? (last.trainerDecision && !last.trainerDecision.approve ? last.trainerDecision.note : undefined) ?? (last.vetResult && !last.vetResult.pass ? last.vetResult.note : undefined) : undefined;
   return (
     <Panel title={t.name} sub={`${fmtDate(t.raceDate)} · ${t.location} · ${t.distanceM} m · lệ phí ${t.entryFee ? money(t.entryFee) : 'miễn phí'}`}
       right={<span data-testid={`tournament-fit-${t.id}`}><Badge tone={item.eligible ? 'success' : 'neutral'}>{item.eligible ? 'Phù hợp' : 'Không phù hợp'}</Badge></span>}>
@@ -34,6 +36,13 @@ const TournamentCard: React.FC<{ item: OwnerTournament; onPropose: (item: OwnerT
           <Callout tone="info" icon="info">
             Bạn đã đề xuất <b>{myProposal.horseName}</b> ({myProposal.id}) — <EntryBadge status={myProposal.status} />. Mỗi chủ ngựa chỉ một suất cho mỗi giải.{' '}
             <Link to={PATH.owner.raceEntries} data-testid={`tournament-my-entry-${t.id}`}>Xem đề xuất</Link>
+          </Callout>
+        )}
+        {!myProposal && last && (
+          <Callout tone="demo" icon="clock" testId={`tournament-last-entry-${t.id}`} title={<>Đề xuất gần nhất: {last.horseName} ({last.id}) — <EntryBadge status={last.status} statusLabel={last.statusLabel} /></>}>
+            {lastReason && <div>{lastReason}</div>}
+            {open && <div style={{ marginTop: 4 }}>Đề xuất này đã đóng — bạn có thể đề xuất ngựa khác đủ điều kiện.</div>}
+            <Link to={PATH.owner.raceEntries} data-testid={`tournament-last-entry-link-${t.id}`}>Xem chi tiết</Link>
           </Callout>
         )}
         <ul className="ht-checks" data-testid={`tournament-horses-${t.id}`}>

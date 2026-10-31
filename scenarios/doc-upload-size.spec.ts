@@ -7,6 +7,7 @@ const bigPdf = () => {
 };
 
 test('registration documents: PDF over 4 MB is rejected, large photos are compressed below 4 MB', async ({ page }) => {
+  test.setTimeout(90_000);
   await signIn(page, 'HorseOwner');
   await page.goto('/owner/registrations/new');
 

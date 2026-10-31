@@ -911,3 +911,9 @@ Swagger server giờ có 182 API; FE gọi 170.
 
 - Khi Bác sĩ khóa ngựa, các đề xuất còn hiệu lực chuyển `INELIGIBLE` kèm `statusLabel`, `closedReason`, `closedAt`; hóa đơn lệ phí đã thanh toán chuyển `REFUNDED`; người đầu hàng chờ được đôn lên `WAITING_TRAINER` kèm `stageDeadline` nếu còn hạn đăng ký. FE đọc hóa đơn từ API hiện có `/owner/invoices?includeClosed=true` và không tự lặp các chuyển trạng thái này.
 - Thông báo nghiệp vụ giải dùng `purpose=RACE_PROPOSAL`: chủ ngựa tới `/owner/race-entries`, HLV tới `/trainer/race-confirmations`, Quản lý CLB tới `/manager/invoices`. FE điều hướng theo `link` hiện có; các route đã có trong router.
+
+## 45. Kết thúc giải và đề xuất gần nhất (BE `1d21c8f`, `c4ce9c6`, 31/10/2026)
+
+- QL CLB · Chi tiết giải: nút “Kết thúc giải” khi `canFinish` → `PUT /tournaments/{id}/finish`. Hộp xác nhận nêu số đề xuất chưa hoàn tất sẽ bị đóng (`NO_SLOT`) và số ngựa đã đăng ký chờ nhập kết quả; không còn ngựa đăng ký thì giải chuyển `FINISHED`. Nhập kết quả theo `canRecordResults` (từ ngày thi hoặc sau khi kết thúc). Dữ liệu mẫu tự tính `raceEnded` / `canFinish` / `canRecordResults` từ `isFinished` và ngày thi.
+- Chủ ngựa · Giải đấu: đọc `OwnerTournamentDTO.lastProposal` khi không có đề xuất còn hiệu lực, hiện trạng thái + lý do đóng (`closedReason` / ghi chú HLV / kết luận bác sĩ) và nhắc được đề xuất ngựa khác khi giải còn mở. Ngựa đã khám rớt cho chính giải đó hiện lý do `NOT_VET_FAILED` từ BE.
+
