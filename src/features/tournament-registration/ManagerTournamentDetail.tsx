@@ -49,7 +49,7 @@ export const ManagerTournamentDetail: React.FC = () => {
   const queue = waitlist(entries);
   const closed = entries.filter((e) => !HOLDING.includes(e.status) && e.status !== 'WAITLISTED').sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   const registered = entries.filter((e) => e.status === 'REGISTERED');
-  const canResult = t.canRecordResults === true;
+  const canResult = t.canRecordResults === true && registered.length > 0;
   const openCount = entries.filter((e) => ['WAITLISTED', 'WAITING_TRAINER', 'WAITING_VET_EXAM', 'WAITING_PAYMENT'].includes(e.status)).length;
   const finish = async () => {
     if (await act.run(() => tournamentApi.finish(t, actor), registered.length ? `Đã kết thúc ${t.name}. Hãy nhập kết quả cho ${registered.length} ngựa đã đăng ký.` : `Đã kết thúc ${t.name}.`)) { setFinishOpen(false); reload(); }
@@ -102,6 +102,11 @@ export const ManagerTournamentDetail: React.FC = () => {
       <Dialog open={resultsOpen} onClose={() => setResultsOpen(false)} busy={act.busy} icon="trend" tone="brand" width={640} testId="tournament-results-dialog"
         title={`Nhập kết quả · ${t.name}`} sub="Tiền thưởng tính theo bảng giải thưởng của giải. Lưu xong giải chuyển sang Đã kết thúc." confirmLabel="Lưu kết quả" onConfirm={saveResults}>
         {act.error && <Callout tone="danger" style={{ marginBottom: 14 }}>{act.error}</Callout>}
+        {!t.raceEnded && (
+          <Callout tone="demo" icon="warn" testId="tournament-results-warning" style={{ marginBottom: 14 }}>
+            Lưu kết quả sẽ kết thúc giải{openCount > 0 ? `; ${openCount} đề xuất chưa hoàn tất sẽ bị hủy (hóa đơn lệ phí chưa trả cũng bị hủy)` : ''}. Giải không nhận thêm đề xuất sau khi lưu.
+          </Callout>
+        )}
         <table className="ht-table">
           <thead><tr><th>Ngựa</th><th>Hạng</th><th>Thời gian (m:ss.cc)</th><th>Thưởng</th></tr></thead>
           <tbody>

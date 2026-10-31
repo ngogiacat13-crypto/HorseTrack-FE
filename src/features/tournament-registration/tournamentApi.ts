@@ -138,12 +138,23 @@ const withMockFlags = (t: RaceTournament): RaceTournament => {
     ...t,
     raceEnded: published && finished,
     canFinish: published && !finished,
-    canRecordResults: published && (finished || todayIso() >= t.raceDate),
+    canRecordResults: published,
   };
 };
 
 const FINISH_OPEN: EntryStatus[] = ['WAITLISTED', 'WAITING_TRAINER', 'WAITING_VET_EXAM', 'WAITING_PAYMENT'];
 const FINISH_REASON = 'Quản lý CLB đã kết thúc giải khi đề xuất chưa hoàn tất đăng ký';
+const RESULTS_REASON = 'Quản lý CLB đã nhập kết quả giải khi đề xuất chưa hoàn tất đăng ký';
+
+const closeOpenEntries = async (entries: RaceEntry[], reason: string, actor: Actor) => {
+  const open = entries.filter((e) => FINISH_OPEN.includes(e.status));
+  const at = toIsoMinute(clockNow());
+  await Promise.all(open.map((e) => http.patch(`${E}/${e.id}`, {
+    status: 'NO_SLOT', stageDeadline: null, queuePosition: null, closedReason: reason, closedAt: at,
+    history: entry(e, actor.name, `kết thúc giải · ${reason.toLowerCase()}`, 'warning'),
+  })));
+  return open;
+};
 
 const facts = async () => {
   const [horses, protocols, sessions] = await Promise.all([get<HorseRow[]>('/horses'), get<ProtocolRow[]>('/protocols'), get<SessionRow[]>('/trainingSessions')]);
@@ -224,19 +235,14 @@ export const tournamentApi = {
     if (t.raceEnded) throw new Error('Giải đã kết thúc, đang chờ nhập kết quả.');
     if (USE_BACKEND) { await be.put(`/tournaments/${ref(t)}/finish`); return; }
     const entries = await get<RaceEntry[]>(E, { tournamentId: t.id });
-    const open = entries.filter((e) => FINISH_OPEN.includes(e.status));
-    const at = toIsoMinute(clockNow());
-    await Promise.all(open.map((e) => save(e, {
-      status: 'NO_SLOT', stageDeadline: null, queuePosition: null, closedReason: FINISH_REASON, closedAt: at,
-      history: entry(e, actor.name, `kết thúc giải · ${FINISH_REASON.toLowerCase()}`, 'warning'),
-    })));
+    const open = await closeOpenEntries(entries, FINISH_REASON, actor);
     const registered = entries.filter((e) => e.status === 'REGISTERED').length;
     await http.patch(`${T}/${t.id}`, { isFinished: true, ...(registered === 0 ? { status: 'FINISHED' } : {}) });
     await addAudit(actor, { action: 'FINISH_TOURNAMENT', label: 'Kết thúc giải đấu', object: `${t.id} · ${t.name}`, area: 'train', from: 'PUBLISHED', to: registered ? 'Chờ nhập kết quả' : 'FINISHED', reason: `Đóng ${open.length} đề xuất chưa hoàn tất · ${registered} ngựa chờ nhập kết quả` });
   },
 
   async recordResults(t: RaceTournament, rows: { entryId: string; rank: number; finishTime: string }[], actor: Actor) {
-    if (todayIso() < t.raceDate) throw new Error('Chỉ nhập kết quả sau ngày thi đấu.');
+    if (t.status !== 'PUBLISHED' || t.canRecordResults === false) throw new Error('Giải này không còn nhập kết quả được.');
     const ranks = rows.map((r) => r.rank);
     if (rows.some((r) => !Number.isInteger(r.rank) || r.rank < 1)) throw new Error('Thứ hạng là số nguyên ≥ 1.');
     if (new Set(ranks).size !== ranks.length) throw new Error('Hai ngựa không cùng thứ hạng.');
@@ -247,6 +253,10 @@ export const tournamentApi = {
       return;
     }
     const entries = await get<RaceEntry[]>(E, { tournamentId: t.id });
+    if (!t.raceEnded) {
+      await closeOpenEntries(entries, RESULTS_REASON, actor);
+      await http.patch(`${T}/${t.id}`, { isFinished: true });
+    }
     for (const r of rows) {
       const e = entries.find((x) => x.id === r.entryId);
       if (!e || e.status !== 'REGISTERED') throw new Error(`${r.entryId} không ở trạng thái đã đăng ký.`);
