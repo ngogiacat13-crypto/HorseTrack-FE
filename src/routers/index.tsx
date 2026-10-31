@@ -153,7 +153,7 @@ export const AppRoutes: React.FC = () => {
 
   return (
     <Routes>
-      <Route path={PATH.root} element={<Navigate to={user ? home : PATH.login} replace />} />
+      <Route path={PATH.root} element={user ? <Navigate to={home} replace /> : <Landing />} />
 
       <Route path={PATH.landing} element={<Landing />} />
       <Route path={PATH.login} element={publicOnly(<Login />)} />

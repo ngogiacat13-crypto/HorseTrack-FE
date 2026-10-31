@@ -1,8 +1,11 @@
 import { expect, test } from '@playwright/test';
 import { ROLE_HOME, ROLES, accountFor, signIn, watchPageErrors } from './support';
 
-test('the login form is the first screen for a guest', async ({ page }) => {
+test('a guest opening the site sees the introduction page first, then can go to login', async ({ page }) => {
   await page.goto('/');
+  await expect(page).toHaveURL(/\/$/);
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('HorseTrack');
+  await page.getByTestId('landing-login').click();
   await expect(page).toHaveURL(/\/login$/);
   await expect(page.getByTestId('login-form')).toBeVisible();
   await expect(page.getByTestId('login-identifier-hint')).toContainText('tên đăng nhập, email hoặc số điện thoại');
