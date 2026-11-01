@@ -11,7 +11,6 @@ export const ROLE_LABEL: Record<Role, string> = {
   HorseOwner: 'Chủ ngựa',
   WarehouseManager: 'Quản lý kho',
 };
-
 export interface NavItem { path: string; icon: IconName; label: string; count?: number; tone?: 'danger'; end?: boolean }
 export interface NavGroup { title: string; items: NavItem[] }
 
@@ -104,13 +103,4 @@ export const NAV_BY_ROLE: Record<Role, NavGroup[]> = {
       { path: PATH.warehouse.shipments, icon: 'truck', label: 'Đơn nhập hàng', count: 1, tone: 'danger' },
     ] },
   ],
-};
-
-export const SEARCH_HINT: Partial<Record<Role, string>> = {
-  ClubManager: 'Tìm ngựa, hồ sơ, hóa đơn…',
-  HeadTrainer: 'Tìm ngựa, giáo án, lịch tập…',
-  Veterinarian: 'Tìm ngựa, ca khám, phác đồ…',
-  Groom: 'Tìm công việc, ngựa, chuồng…',
-  HorseOwner: 'Tìm ngựa của tôi, hóa đơn…',
-  WarehouseManager: 'Tìm vật tư, lô hàng, yêu cầu nhập…',
 };
