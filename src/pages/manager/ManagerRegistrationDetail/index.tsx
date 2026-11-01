@@ -159,11 +159,11 @@ export const ManagerRegistrationDetail: React.FC = () => {
           reg={d}
           checks={checks}
           onClose={() => setDlg(null)}
-          onDone={(reason, resubmit) =>
+          onDone={(reason) =>
             finish(
               'Rejected',
               <>
-                <b>{actor.name}</b> từ chối{resubmit ? ' · cho phép nộp lại' : ''}: “{reason}”
+                <b>{actor.name}</b> từ chối · cho phép nộp lại: “{reason}”
               </>
             )
           }

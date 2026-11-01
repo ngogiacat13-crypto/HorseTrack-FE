@@ -25,8 +25,8 @@ export const approveRegistration = createAsyncThunk(
 
 export const rejectRegistration = createAsyncThunk(
   'registrations/reject',
-  (a: { reg: Registration; checklist: ChecklistItem[]; reason: string; allowResubmit: boolean; actor: Actor }) =>
-    managerApi.rejectRegistration(a.reg, a.checklist, a.reason, a.allowResubmit, a.actor),
+  (a: { reg: Registration; checklist: ChecklistItem[]; reason: string; actor: Actor }) =>
+    managerApi.rejectRegistration(a.reg, a.checklist, a.reason, a.actor),
 );
 
 const replace = (state: RegistrationsState, reg: Registration) => {
