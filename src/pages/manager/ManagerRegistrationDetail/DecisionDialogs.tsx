@@ -45,22 +45,21 @@ export const ApproveDialog: React.FC<{ reg: Registration; checks: Check[]; onClo
   );
 };
 
-export const RejectDialog: React.FC<{ reg: Registration; checks: Check[]; onClose: () => void; onDone: (reason: string, allowResubmit: boolean) => void }> = ({ reg, checks, onClose, onDone }) => {
+export const RejectDialog: React.FC<{ reg: Registration; checks: Check[]; onClose: () => void; onDone: (reason: string) => void }> = ({ reg, checks, onClose, onDone }) => {
   const actor = useActor();
   const { busy, error, run } = useAction();
   const [reason, setReason] = useState('');
   const [reasonErr, setReasonErr] = useState('');
-  const [allowResubmit, setAllowResubmit] = useState(true);
   const failed = checks.filter((c) => !c.passed);
 
   const confirm = async () => {
     if (reason.trim().length < 10) { setReasonErr('Lý do từ chối phải có ít nhất 10 ký tự.'); return; }
-    if (await run(() => managerApi.rejectRegistration(reg, checks, reason.trim(), allowResubmit, actor), `Đã từ chối ${reg.id} và gửi lý do cho chủ ngựa.`)) onDone(reason.trim(), allowResubmit);
+    if (await run(() => managerApi.rejectRegistration(reg, checks, reason.trim(), actor), `Đã từ chối ${reg.id} và gửi lý do cho chủ ngựa.`)) onDone(reason.trim());
   };
   const update = (v: string) => { setReason(v); if (v.trim().length >= 10) setReasonErr(''); };
 
   return (
-    <Dialog open testId="reject-registration-dialog" onClose={onClose} icon="x" tone="danger" danger title={`Từ chối hồ sơ ${reg.id}`} sub={`Lý do được gửi nguyên văn cho ${reg.owner.fullName} và lưu vào nhật ký.`}
+    <Dialog open testId="reject-registration-dialog" onClose={onClose} icon="x" tone="danger" danger title={`Từ chối hồ sơ ${reg.id}`} sub={`Lý do được gửi nguyên văn cho ${reg.owner.fullName} và lưu vào nhật ký. Chủ ngựa có thể chỉnh sửa và nộp lại hồ sơ.`}
       confirmLabel="Xác nhận từ chối" onConfirm={confirm} busy={busy}>
       {error && <Callout tone="danger" style={{ marginBottom: 14 }}>{error}</Callout>}
       <ReasonField id="rj-reason" label="Lý do từ chối" value={reason} placeholder="Tối thiểu 10 ký tự" error={reasonErr} onChange={update} />
@@ -74,9 +73,6 @@ export const RejectDialog: React.FC<{ reg: Registration; checks: Check[]; onClos
           ))}
         </div>
       )}
-      <label className="ht-check" style={{ marginTop: 14 }}>
-        <input type="checkbox" checked={allowResubmit} onChange={(e) => setAllowResubmit(e.target.checked)} /> Cho phép chủ ngựa sửa và nộp lại
-      </label>
     </Dialog>
   );
 };

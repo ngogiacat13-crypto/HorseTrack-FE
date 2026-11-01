@@ -263,16 +263,16 @@ export const managerApi = {
     return data;
   },
 
-  async rejectRegistration(reg: Registration, checklist: ChecklistItem[], reason: string, allowResubmit: boolean, actor: Actor) {
+  async rejectRegistration(reg: Registration, checklist: ChecklistItem[], reason: string, actor: Actor) {
     if (reason.trim().length < 10) throw new Error('Lý do từ chối phải có ít nhất 10 ký tự.');
     const history: HistoryItem[] = [
-      { tone: 'danger', who: actor.name, text: `từ chối${allowResubmit ? ' · cho phép nộp lại' : ''}: “${reason.trim()}”`, at: DEMO_NOW.short },
+      { tone: 'danger', who: actor.name, text: `từ chối · cho phép nộp lại: “${reason.trim()}”`, at: DEMO_NOW.short },
       ...reg.history,
     ];
     const { data } = await http.patch<Registration>(`/registrations/${reg.id}`, {
-      status: 'Rejected', decidedNote: allowResubmit ? 'Cho phép nộp lại' : 'Không cho nộp lại', checklist, history, reason: reason.trim(), allowResubmit,
+      status: 'Rejected', decidedNote: 'Cho phép nộp lại', checklist, history, reason: reason.trim(), allowResubmit: true,
     });
-    await addAudit(actor, { action: 'REJECT_REGISTRATION', label: 'Từ chối hồ sơ ngựa', object: `${reg.id} · ${reg.horse.name}`, area: 'reg', from: 'PENDING_REVIEW', to: allowResubmit ? 'REJECTED · cho phép nộp lại' : 'REJECTED', reason: reason.trim() });
+    await addAudit(actor, { action: 'REJECT_REGISTRATION', label: 'Từ chối hồ sơ ngựa', object: `${reg.id} · ${reg.horse.name}`, area: 'reg', from: 'PENDING_REVIEW', to: 'REJECTED · cho phép nộp lại', reason: reason.trim() });
     return data;
   },
 

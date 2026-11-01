@@ -566,7 +566,7 @@ const WRITES: Record<string, Partial<Record<'post' | 'patch' | 'put', Write>>> =
         return true;
       }
       if (body.status === 'Rejected') {
-        await be.put(`/horses/${current?.beId}/reject`, { reason: body.reason, allowResubmit: !!body.allowResubmit, checks: regChecks(body.checklist) });
+        await be.put(`/horses/${current?.beId}/reject`, { reason: body.reason, allowResubmit: true, checks: regChecks(body.checklist) });
         return true;
       }
       return false;
