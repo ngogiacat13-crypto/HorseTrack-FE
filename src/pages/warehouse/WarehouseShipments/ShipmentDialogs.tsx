@@ -10,6 +10,7 @@ import { suppliersApi } from '../../../features/suppliers/suppliersApi';
 import { Icon } from '../../../components/ui/Icon';
 import { Callout, Dialog, ReasonField } from '../../../components/ui/Ht';
 import { MedicinePicker } from '../../../components/vet/MedicinePicker';
+import './shipment-dialogs.css';
 
 const DEMO_SUPPLIERS = ['Công ty Dược thú y Sài Gòn', 'Công ty Vật tư Thú y Phương Nam', 'Cửa hàng Yên cương Phú Thọ', 'Đại lý Thức ăn Chăn nuôi Bình Dương'];
 
@@ -24,6 +25,7 @@ export const CreateShipmentDialog: React.FC<{ items: StockItem[]; needs: Need[];
   const [eta, setEta] = useState(addDays(DEMO_NOW.date, 5));
   const [lines, setLines] = useState<{ itemId: string; qty: string }[]>(first.map((n) => ({ itemId: n.itemId, qty: String(n.qty) })));
   const [adding, setAdding] = useState('');
+  const [addingQty, setAddingQty] = useState('1');
   const { data: liveSuppliers } = useFetch(() => (USE_BACKEND ? suppliersApi.list(true) : Promise.resolve(null)), []);
   const supplierNames = liveSuppliers ? liveSuppliers.map((s) => s.name) : DEMO_SUPPLIERS;
   const inv = Object.fromEntries(items.map((i) => [i.id, i]));
@@ -34,7 +36,13 @@ export const CreateShipmentDialog: React.FC<{ items: StockItem[]; needs: Need[];
     const ns = needs.filter((n) => n.ref === ref);
     if (ns.length) setLines(ns.map((n) => ({ itemId: n.itemId, qty: String(n.qty) })));
   };
-  const add = () => { if (adding && !lines.some((l) => l.itemId === adding)) setLines([...lines, { itemId: adding, qty: '1' }]); setAdding(''); };
+  const add = () => {
+    if (adding && Number.isInteger(Number(addingQty)) && Number(addingQty) > 0 && !lines.some((l) => l.itemId === adding)) {
+      setLines([...lines, { itemId: adding, qty: addingQty }]);
+      setAdding('');
+      setAddingQty('1');
+    }
+  };
   const save = async () => {
     let created: ShipmentOrder | null = null;
     const ok = await run(async () => {
@@ -44,7 +52,7 @@ export const CreateShipmentDialog: React.FC<{ items: StockItem[]; needs: Need[];
   };
 
   return (
-    <Dialog open onClose={onClose} icon="truck" tone="brand" width={680} busy={busy} busyLabel="Đang tạo…" title="Tạo đơn nhập hàng"
+    <Dialog open onClose={onClose} icon="truck" tone="brand" width={680} busy={busy} busyLabel="Đang tạo…" title="Tạo đơn nhập hàng" testId="shipment-create-dialog"
       sub="Hàng chỉ được cộng vào tồn khi bạn xác nhận đã nhận thực tế." confirmLabel="Tạo đơn" onConfirm={save}>
       {error && <Callout tone="danger" style={{ marginBottom: 14 }}>{error}</Callout>}
       <div style={{ display: 'grid', gap: 14 }}>
@@ -63,23 +71,25 @@ export const CreateShipmentDialog: React.FC<{ items: StockItem[]; needs: Need[];
           <div className="ht-field" style={{ margin: 0 }}><label className="ht-label" htmlFor="sh-eta">Ngày dự kiến về<span className="ht-req">*</span></label>
             <input id="sh-eta" className="ht-input ht-mono" value={eta} onChange={(e) => setEta(e.target.value)} placeholder="dd/mm/yyyy" /></div>
         </div>
-        <table className="ht-proto-items">
-          <thead><tr><th>Mặt hàng</th><th className="num">Số lượng</th><th /></tr></thead>
+        <table className="ht-proto-items shipment-create-items">
+          <colgroup><col /><col /><col /></colgroup>
+          <thead><tr><th>Mặt hàng</th><th className="num">Số lượng</th><th className="num">Thao tác</th></tr></thead>
           <tbody>
             {lines.map((l, i) => (
               <tr key={l.itemId}>
                 <td><b>{inv[l.itemId]?.name}</b> <span style={{ color: 'var(--muted)', fontSize: 12 }}>{inv[l.itemId]?.id}</span></td>
                 <td className="num"><input className="ht-input" type="number" min={1} value={l.qty} aria-label={`Số lượng ${inv[l.itemId]?.name}`}
                   onChange={(e) => setLines(lines.map((x, k) => (k === i ? { ...x, qty: e.target.value } : x)))} /> {inv[l.itemId]?.unit}</td>
-                <td className="num"><button type="button" className="ht-btn ht-btn--ghost ht-btn--sm" aria-label="Bỏ dòng" onClick={() => setLines(lines.filter((_, k) => k !== i))}><Icon name="x" /></button></td>
+                <td className="num"><button type="button" className="ht-btn ht-btn--ghost ht-btn--sm" data-testid={`shipment-remove-line-${l.itemId}`} aria-label={`Bỏ ${inv[l.itemId]?.name}`} onClick={() => setLines(lines.filter((_, k) => k !== i))}><Icon name="x" /></button></td>
               </tr>
             ))}
+            <tr className="shipment-create-add-row">
+              <td><MedicinePicker items={items} value={adding} onChange={setAdding} label="Chọn mặt hàng" testId="shipment-add-item-select" /></td>
+              <td className="num"><input className="ht-input shipment-create-add-qty" data-testid="shipment-add-qty-input" type="number" min={1} step={1} value={addingQty} aria-label="Số lượng mặt hàng cần thêm" onChange={(e) => setAddingQty(e.target.value)} /></td>
+              <td className="num"><button type="button" className="ht-btn ht-btn--secondary ht-btn--sm shipment-create-add-button" data-testid="shipment-add-item-btn" onClick={add} disabled={!adding || !Number.isInteger(Number(addingQty)) || Number(addingQty) < 1 || lines.some((l) => l.itemId === adding)}><Icon name="check" />Thêm</button></td>
+            </tr>
           </tbody>
         </table>
-        <div className="ht-proto-add">
-          <MedicinePicker items={items} value={adding} onChange={setAdding} label="Chọn mặt hàng" />
-          <button type="button" className="ht-btn ht-btn--secondary ht-btn--sm" onClick={add} disabled={!adding}><Icon name="check" />Thêm</button>
-        </div>
       </div>
     </Dialog>
   );
