@@ -75,7 +75,7 @@ export const shipmentsApi = {
   async updateEta(s: ShipmentOrder, eta: string, reason: string, actor: Actor) {
     if (!OPEN_SHIPMENT.includes(s.status)) throw new Error('Lô hàng đã đóng.');
     if (!isDate(eta)) throw new Error('ETA mới theo dạng dd/mm/yyyy.');
-    const why = min(reason, 10, 'Lý do');
+    const why = reason.trim();
     const delayed = dateKey(eta) > dateKey(s.eta);
     const history = push(s, { at: now(), who: actor.name, text: `cập nhật ETA ${s.eta.slice(0, 5)} → ${eta.slice(0, 5)}: ${why}`, tone: delayed ? 'warning' : 'info' });
     const { data } = await http.patch<ShipmentOrder>(`/shipments/${s.id}`, { eta, etaOld: s.eta, status: delayed ? 'DELAYED' : s.status, history });
@@ -98,7 +98,7 @@ export const shipmentsApi = {
 
   async cancelShipment(s: ShipmentOrder, reason: string, actor: Actor) {
     if (!OPEN_SHIPMENT.includes(s.status)) throw new Error('Lô hàng đã đóng.');
-    const why = min(reason, 10, 'Lý do hủy');
+    const why = reason.trim();
     const { data } = await http.patch<ShipmentOrder>(`/shipments/${s.id}`, { status: 'CANCELLED', cancelReason: why, history: push(s, { at: now(), who: actor.name, text: `hủy đơn: ${why}`, tone: 'danger' }) });
     await addAudit(actor, { action: 'CANCEL_SHIPMENT', label: 'Hủy đơn nhập', object: s.id, area: 'med', from: s.status, to: 'CANCELLED', reason: why });
     return data;

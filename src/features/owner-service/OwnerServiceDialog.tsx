@@ -21,7 +21,6 @@ export const OwnerServiceDialog: React.FC<{ ownerId: number; ownerName: string; 
     const ok = suspended
       ? await run(async () => { await financeBe.reactivateOwner(ownerId); }, `Đã mở lại dịch vụ cho ${ownerName}.`)
       : await run(async () => {
-        if (reason.trim().length < 10) throw new Error('Lý do tạm ngưng ít nhất 10 ký tự.');
         await financeBe.suspendOwner(ownerId, reason.trim());
       }, `Đã tạm ngưng dịch vụ của ${ownerName}.`);
     if (ok) { invalidate('invoices'); setReason(''); reload(); }
@@ -44,7 +43,7 @@ export const OwnerServiceDialog: React.FC<{ ownerId: number; ownerName: string; 
               Tạm ngưng từ {data.suspendedSince ? dmy(data.suspendedSince) : '—'}{data.suspensionReason ? ` · Lý do: ${data.suspensionReason}` : ''}
             </Callout>
           )}
-          {!suspended && <ReasonField id="owner-service-reason" label="Lý do tạm ngưng" min={10} value={reason} onChange={setReason} placeholder="VD: Hóa đơn tháng 08 quá hạn 30 ngày" minHeight={56} />}
+          {!suspended && <ReasonField id="owner-service-reason" label="Lý do tạm ngưng" value={reason} onChange={setReason} placeholder="VD: Hóa đơn tháng 08 quá hạn 30 ngày" minHeight={56} />}
         </div>
       )}
     </Dialog>

@@ -278,7 +278,6 @@ export const tournamentApi = {
 
   async decideComplaint(e: RaceEntry, accept: boolean, note: string, actor: Actor) {
     if (e.complaint?.status !== 'OPEN') throw new Error('Khiếu nại đã được xử lý.');
-    if (note.trim().length < 10) throw new Error('Ghi chú quyết định ít nhất 10 ký tự.');
     if (USE_BACKEND) { await be.put(`/race-proposals/${ref(e)}/complaint-decision`, { accept, note: note.trim() }); return; }
     const t = await get<RaceTournament>(`${T}/${e.tournamentId}`);
     const complaint = { ...e.complaint, status: accept ? 'ACCEPTED' as const : 'REJECTED' as const, decidedBy: actor.name, decidedAt: toIsoMinute(clockNow()), decisionNote: note.trim() };
@@ -377,7 +376,6 @@ export const tournamentApi = {
   async complain(e: RaceEntry, reason: string, actor: Actor) {
     if (e.status !== 'TRAINER_REJECTED') throw new Error('Chỉ khiếu nại khi HLV từ chối.');
     if (e.complaint) throw new Error('Đề xuất này đã có khiếu nại.');
-    if (reason.trim().length < 10) throw new Error('Nội dung khiếu nại ít nhất 10 ký tự.');
     if (USE_BACKEND) { await be.post(`/race-proposals/${ref(e)}/complaint`, { note: reason.trim() }); return; }
     await save(e, { complaint: { reason: reason.trim(), at: toIsoMinute(clockNow()), status: 'OPEN' }, history: entry(e, actor.name, `gửi khiếu nại tới Quản lý CLB: ${reason.trim()}`, 'warning') });
   },
@@ -419,7 +417,6 @@ export const tournamentApi = {
   async trainerDecide(e: RaceEntry, approve: boolean, reasonCode: RejectCode | '', note: string, actor: Actor) {
     if (e.status !== 'WAITING_TRAINER') throw new Error('Đề xuất không chờ HLV xác nhận.');
     if (!approve && !reasonCode) throw new Error('Chọn lý do từ chối.');
-    if (!approve && note.trim().length < 10) throw new Error('Giải thích lý do ít nhất 10 ký tự.');
     if (USE_BACKEND) { await be.put(`/race-proposals/${ref(e)}/trainer-decision`, { approve, reasonCode: reasonCode || undefined, note: note.trim() || undefined }); return; }
     const t = await get<RaceTournament>(`${T}/${e.tournamentId}`);
     const now = clockNow();
@@ -453,7 +450,6 @@ export const tournamentApi = {
 
   async vetExam(e: RaceEntry, pass: boolean, note: string, actor: Actor) {
     if (e.status !== 'WAITING_VET_EXAM') throw new Error('Đề xuất không chờ khám.');
-    if (note.trim().length < 10) throw new Error(pass ? 'Nhận xét khám ít nhất 10 ký tự.' : 'Lý do không đạt ít nhất 10 ký tự.');
     if (USE_BACKEND) { await be.post(`/prerace-exams/${encodeURIComponent(e.id)}/examine`, { isPassed: pass, vetNotes: note.trim() }); return; }
     const now = clockNow();
     const horse = await get<HorseRow>(`/horses/${e.horseId}`);

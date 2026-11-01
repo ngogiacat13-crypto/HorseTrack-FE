@@ -1,6 +1,6 @@
 import { addAudit, type Actor } from '../managerApi';
 import { available, OPEN_SHIPMENT, tracksLots } from './labels';
-import { get, min, moveStock, posInt } from './shared';
+import { get, moveStock, posInt } from './shared';
 import type { ShipmentOrder, StockItem, StockTx } from './types';
 import { http } from '../http';
 import { USE_BACKEND, be, beData } from '../beClient';
@@ -21,7 +21,7 @@ export const inventoryApi = {
   },
 
   async moveStock(item: StockItem, input: { kind: MoveKind; qty: number; lot: string; expiry: string; note: string }, actor: Actor) {
-    const note = input.kind === 'RECEIVE' ? input.note.trim() : min(input.note, 10, 'Lý do');
+    const note = input.note.trim();
     let qty = input.qty;
     if (input.kind === 'ADJUST') {
       if (!Number.isInteger(qty) || qty === 0) throw new Error('Số lượng điều chỉnh phải là số nguyên khác 0 (âm = giảm).');

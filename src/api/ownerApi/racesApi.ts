@@ -1,7 +1,7 @@
 import { DEMO_NOW, http } from '../http';
 import { addAudit, type Actor } from '../managerApi';
 import type { RaceProposal, Tournament } from '../trainerApi';
-import { get, min, now, DENIED } from './shared';
+import { get, now, DENIED } from './shared';
 import { USE_BACKEND, be } from '../beClient';
 import { invalidate } from '../hybridAdapter';
 
@@ -17,7 +17,7 @@ export const racesApi = {
   async respondProposal(p: RaceProposal, agree: boolean, note: string, actor: Actor) {
     if (p.owner !== actor.name) throw new Error(DENIED);
     if (p.status !== 'WAITING_OWNER') throw new Error('Đề xuất không ở bước chờ chủ ngựa xác nhận.');
-    const reason = agree ? note.trim() : min(note, 10, 'Lý do từ chối');
+    const reason = note.trim();
     if (USE_BACKEND) {
       await be.put(`/race-proposals/${p.beId ?? p.id}/owner-response`, { agree, note: reason || undefined });
       invalidate('raceProposals');

@@ -62,7 +62,6 @@ export const racesApi = {
   async markOrganizerRejected(p: RaceProposal, reason: string, actor: Actor) {
     await getMyHorse(p.horseId, actor);
     if (p.status !== 'SUBMITTED') throw new Error('Chỉ cập nhật khi hồ sơ đã gửi ban tổ chức.');
-    if (reason.trim().length < 10) throw new Error('Lý do ít nhất 10 ký tự.');
     if (USE_BACKEND) {
       await be.put(`/race-proposals/${proposalRef(p)}/organizer-rejected`, { reason: reason.trim() });
       return refreshed(p.id);
