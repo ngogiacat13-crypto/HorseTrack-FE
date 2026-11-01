@@ -544,14 +544,6 @@ body {
   white-space: nowrap;
 }
 
-.topbar-search {
-  min-width: 100px;
-  height: 34px;
-  border-color: #e3e8eb;
-  background: #fafbfc;
-  font-size: .75rem;
-}
-
 .notification-button {
   position: relative;
   border: 0;
@@ -926,10 +918,6 @@ h5 {
 
   .user-meta {
     display: none;
-  }
-
-  .topbar-search {
-    font-size: .68rem;
   }
 
   .app-content {

@@ -72,25 +72,6 @@
 }
 .topbar-time-btn:hover { background: #14352a; }
 
-.topbar-search {
-  flex: 1;
-  max-width: 500px;
-  background: #f7f9f8;
-  border: 1px solid #e0e9e3;
-  border-radius: 8px;
-  padding: 8px 14px;
-  font-size: 13px;
-  outline: none;
-  transition: all 0.15s;
-  font-family: inherit;
-}
-.topbar-search:focus {
-  border-color: #2d6a4f;
-  background: #fff;
-  box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.1);
-}
-.topbar-search::placeholder { color: #9ca3af; }
-
 .topbar-right {
   display: flex;
   align-items: center;

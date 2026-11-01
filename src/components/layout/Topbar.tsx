@@ -5,7 +5,7 @@ import { useClickOutside } from '../../hooks/useClickOutside';
 import { ROLE_HOME } from '../../api/mockData';
 import { Icon } from '../ui/Icon';
 import { Avatar, BrandMark, DemoClock } from '../ui/Ht';
-import { ROLE_LABEL, SEARCH_HINT } from './nav';
+import { ROLE_LABEL } from './nav';
 import { NotificationBell } from './NotificationBell';
 
 export const Topbar: React.FC = () => {
@@ -22,10 +22,6 @@ export const Topbar: React.FC = () => {
     <header className="ht-app__bar">
       <Link className="ht-brand" to={ROLE_HOME[user.role]}><BrandMark />HorseTrack</Link>
       <DemoClock />
-      <label className="ht-search">
-        <Icon name="search" />
-        <input type="search" placeholder={SEARCH_HINT[user.role] ?? 'Tìm kiếm…'} aria-label="Tìm kiếm" />
-      </label>
 
       <div className="ht-user">
         <NotificationBell />
