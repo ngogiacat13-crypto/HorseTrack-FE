@@ -38,7 +38,7 @@ Quy ước `data-testid`: menu trái `nav-<đường dẫn bỏ / đầu, / đ�
 | HLV · Tạo giáo án | `src/pages/trainer/TrainerPlanCreate/` | `/trainer/plans/new` · đúng 1 giai đoạn, không thêm giai đoạn thứ hai | `back-btn`, `plan-single-phase` |
 | HLV · Lịch tập + phân công phiên | `src/pages/trainer/TrainerSchedule/` | `/trainer/schedule` · nút “Phân công phiên tập” | `nav-trainer-schedule`, `assign-session-dialog`, `assign-zone-select`, `assign-horse-select`, `assign-date-input`, `assign-time-input`, `assign-groom-select`, `assign-track-input`, `evaluate-session-<mã>` (phiên hoàn thành hoặc đã dừng) |
 | HLV · Chi tiết phiên tập | `src/pages/trainer/TrainerSessionDetail/` | `/trainer/sessions/:id` · phiên dừng giữa chừng kết thúc ngay (STOPPED), HLV đánh giá được | `back-btn`, `session-sent-vet` (đã gửi ca bác sĩ), `session-evaluate-btn` |
-| HLV · Giải đua & đề xuất | `src/pages/trainer/TrainerRaces/` | `/trainer/races` | `nav-trainer-races` |
+| HLV · Giải đua & đề xuất | `src/pages/trainer/TrainerRaces/` | `/trainer/races` · thanh trạng thái theo luồng mới: Chủ ngựa đề xuất → HLV xác nhận → Khám trước giải → Đóng lệ phí → Kết quả & giải thưởng; bước bị dừng tô đỏ kèm giải thích (HLV từ chối → khiếu nại, Bác sĩ không đạt → hồ sơ dừng) | `nav-trainer-races`, `races-go-confirm`, `race-entry-stepper`, `race-entry-step-<1..5>`, `race-entry-note`, `race-entry-go-confirm` |
 | HLV · Tạo đề xuất thi đấu | `src/pages/trainer/TrainerProposalCreate/` | `/trainer/races/new` | `back-btn` |
 | HLV · Sơ đồ chuồng | `src/pages/trainer/StableMap/` | `/trainer/stable` | `nav-trainer-stable` |
 | Bác sĩ · Đàn ngựa | `src/pages/vet/VetHerd/` | `/vet` | `nav-vet` |
@@ -112,6 +112,7 @@ Quy ước `data-testid`: menu trái `nav-<đường dẫn bỏ / đầu, / đ�
 | `scenarios/doc-upload-size.spec.ts` | Hồ sơ ngựa: PDF 5 MB bị chặn kèm lời nhắc; ảnh PNG trên 4 MB được tự nén thành JPG dưới 4 MB |
 | `scenarios/tournament-injury-refund.spec.ts` | Cảnh báo khóa ngựa; trạng thái INELIGIBLE / hóa đơn REFUNDED không có thao tác thanh toán; chủ ngựa chờ HLV thấy hạn giữ suất; các đích thông báo giải mở được |
 | `scenarios/user-actions-alignment.spec.ts` | Trang Người dùng của QL CLB: nút Khóa cùng cột và cùng độ rộng, nút Phân khu / Phân công ngựa / Dịch vụ bắt đầu cùng một vạch |
+| `scenarios/race-entry-stepper.spec.ts` | Trang Giải đua & đề xuất của HLV hiện 5 bước luồng mới (không còn “Gửi ban tổ chức”), nút sang Xác nhận thi đấu |
 | `scenarios/staff-email.spec.ts` | QL CLB có menu Nhật ký email; link xác nhận thiếu mã báo lỗi; trang đăng nhập hiện kết quả xác nhận tài khoản |
 
 ## Kịch bản chạy với backend thật (`scenarios-live/`, lệnh `npm run scenarios:live`)

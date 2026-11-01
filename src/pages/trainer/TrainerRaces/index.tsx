@@ -7,9 +7,9 @@ import { Icon } from '../../../components/ui/Icon';
 import { Callout, PageHeader, StatCard, Tabs } from '../../../components/ui/Ht';
 import { LoadState } from '../../../components/trainer/TrainerParts';
 import { ProposalTable } from './ProposalTable';
-import { ProposalDetail, ProposalDialog } from './ProposalDetail';
-import { OrganizerDialog } from './OrganizerDialogs';
+import { ProposalDetail } from './ProposalDetail';
 import { TournamentTable } from './TournamentTable';
+import { PATH } from '../../../routers/routerPath';
 
 type Tab = 'proposals' | 'tournaments';
 
@@ -19,7 +19,6 @@ export const TrainerRaces: React.FC = () => {
   const { data, loading, error, reload } = useFetch(() => trainerApi.getRaces(actor), [actor]);
   const [tab, setTab] = useState<Tab>('proposals');
   const [sel, setSel] = useState<string | null>(params.get('p'));
-  const [dlg, setDlg] = useState<ProposalDialog | null>(null);
 
   const proposals = useMemo(() => [...(data?.proposals ?? [])].sort((a, b) => b.id.localeCompare(a.id)), [data]);
   if (!data) return <LoadState loading={loading} error={error} onRetry={reload} />;
@@ -31,13 +30,13 @@ export const TrainerRaces: React.FC = () => {
 
   return (
     <div className="ht ht-page">
-      <PageHeader title="Giải đua & đề xuất thi đấu" sub="HLV đề xuất → Chủ ngựa đồng ý → Bác sĩ khám sức khỏe → gửi hồ sơ cho ban tổ chức (BR_04)."
-        actions={<Link className="ht-btn ht-btn--primary" to="/trainer/races/new"><Icon name="send" />Tạo đề xuất</Link>} />
+      <PageHeader title="Giải đua & đề xuất thi đấu" sub="Chủ ngựa đề xuất → HLV xác nhận → Bác sĩ khám trước giải → Chủ ngựa đóng lệ phí → Quản lý CLB nhập kết quả."
+        actions={<Link className="ht-btn ht-btn--primary" to={PATH.trainer.raceConfirmations} data-testid="races-go-confirm"><Icon name="check" />Xác nhận thi đấu</Link>} />
 
       <div className="ht-stats">
+        <StatCard icon="users" tone="warning" value={n('WAITING_TRAINER')} label="Chờ HLV xác nhận" />
         <StatCard icon="heart" tone="info" value={n('WAITING_VET_EXAM')} label="Chờ Bác sĩ khám" />
-        <StatCard icon="users" tone="warning" value={n('WAITING_OWNER')} label="Chờ chủ ngựa xác nhận" />
-        <StatCard icon="send" tone="brand" value={n('READY_TO_SUBMIT', 'SUBMITTED')} label="Sẵn sàng / đã gửi BTC" />
+        <StatCard icon="card" tone="brand" value={n('WAITING_PAYMENT', 'REGISTERED')} label="Chờ lệ phí / đã đăng ký" />
         <StatCard icon="trend" tone="gold" value={results.length} label="Kết quả đã ghi nhận" meta={results[0] ? `Hạng ${results[0].result?.rank} · ${results[0].horseName}` : undefined} />
       </div>
 
@@ -49,17 +48,15 @@ export const TrainerRaces: React.FC = () => {
       {tab === 'proposals' ? (
         <div className="ht-cols" style={{ gridTemplateColumns: 'minmax(0,1fr) 400px' }}>
           <div><ProposalTable proposals={proposals} tournaments={data.tournaments} selectedId={p?.id} onSelect={setSel} /></div>
-          {p && <div><ProposalDetail proposal={p} tournament={tournament} onOpen={setDlg} /></div>}
+          {p && <div><ProposalDetail proposal={p} tournament={tournament} /></div>}
         </div>
       ) : <TournamentTable tournaments={data.tournaments} />}
 
       <div style={{ marginTop: 24 }}>
-        <Callout tone="demo" title="Gửi hồ sơ chính thức nằm ngoài hệ thống">
-          CLB chưa tích hợp với ban tổ chức. “Đã gửi BTC”, “BTC từ chối” và kết quả thi đấu do HLV cập nhật thủ công sau khi làm việc với ban tổ chức (BR_04).
+        <Callout tone="demo" title="Nhánh dừng của đề xuất">
+          HLV từ chối → chủ ngựa có thể khiếu nại; Quản lý CLB chấp nhận thì đề xuất sang Bác sĩ khám. Bác sĩ đánh giá không đạt → hồ sơ dừng, chủ ngựa chọn ngựa khác để thi đấu.
         </Callout>
       </div>
-
-      {p && dlg && <OrganizerDialog kind={dlg} proposal={p} tournament={tournament} onClose={() => setDlg(null)} onDone={() => { setDlg(null); reload(); }} />}
     </div>
   );
 };
