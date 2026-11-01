@@ -264,7 +264,6 @@ export const managerApi = {
   },
 
   async rejectRegistration(reg: Registration, checklist: ChecklistItem[], reason: string, actor: Actor) {
-    if (reason.trim().length < 10) throw new Error('Lý do từ chối phải có ít nhất 10 ký tự.');
     const history: HistoryItem[] = [
       { tone: 'danger', who: actor.name, text: `từ chối · cho phép nộp lại: “${reason.trim()}”`, at: DEMO_NOW.short },
       ...reg.history,

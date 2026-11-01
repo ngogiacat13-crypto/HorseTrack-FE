@@ -56,9 +56,6 @@ test('vet cancels a protocol waiting for stock check, giving a reason', async ({
   await page.getByTestId('cancel-protocol-btn').click();
   await page.locator('#pd-text').fill('ngắn');
   await page.getByTestId('dialog-confirm').click();
-  await expect(page.getByText('Lý do hủy phác đồ ít nhất 10 ký tự.')).toBeVisible();
-  await page.locator('#pd-text').fill('Khám lại thấy cần đổi hướng điều trị');
-  await page.getByTestId('dialog-confirm').click();
   await expect(page.getByTestId('cancel-protocol-btn')).toHaveCount(0);
   await expect(page.getByText('Phác đồ đã đóng.')).toBeVisible();
 });

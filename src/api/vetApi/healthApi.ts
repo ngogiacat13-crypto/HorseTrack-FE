@@ -71,8 +71,8 @@ export const healthApi = {
 
   async lockTraining(horse: Horse, input: { reason: string; review: string }, actor: Actor) {
     if (horse.trainingLocked) throw new Error(`${horse.name} đang bị khóa huấn luyện.`);
-    const reason = min(input.reason, 10, 'Lý do khóa');
-    const review = min(input.review, 10, 'Điều kiện đánh giá lại');
+    const reason = input.reason.trim();
+    const review = input.review.trim();
     const lock = { by: actor.name, at: DEMO_NOW.date, reason, review };
     const plans = await get<TrainingPlan[]>('/trainingPlans', { horseId: horse.id, status: 'ACTIVE' });
     await Promise.all(plans.map((p) => http.patch(`/trainingPlans/${p.id}`, { status: 'PAUSED', pausedReason: `Tạm dừng do BS ${actor.name} khóa huấn luyện — ${reason}` })));
@@ -106,7 +106,6 @@ export const healthApi = {
 
   async decideFeed(req: FeedRequest, approve: boolean, note: string, actor: Actor) {
     if (req.status !== 'PENDING') throw new Error('Yêu cầu đã được xử lý.');
-    if (!approve) min(note, 10, 'Lý do từ chối');
     const { data } = await http.patch<FeedRequest>(`/feedRequests/${req.id}`, { status: approve ? 'APPROVED' : 'REJECTED', vetNote: note.trim() || undefined, decidedBy: actor.name, decidedAt: now() });
     if (approve) {
       const horse = await get<VetHorse>(`/horses/${req.horseId}`);

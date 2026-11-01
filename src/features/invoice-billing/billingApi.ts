@@ -22,7 +22,7 @@ export const billingApi = {
 
   async cancelInvoice(invoiceBeId: number, reason: string) {
     const text = reason.trim();
-    if (text.length < 10 || text.length > 255) throw new Error('Lý do hủy từ 10 đến 255 ký tự.');
+    if (text.length > 255) throw new Error('Lý do hủy tối đa 255 ký tự.');
     const latest = await beData<{ status: string; transactions?: { status?: string | null }[] | null }>(be.get(`/billing/invoices/${invoiceBeId}`));
     if (['PAID', 'CANCELLED', 'REFUNDED'].includes(String(latest.status).toUpperCase())) throw new Error('Hóa đơn đã được thanh toán hoặc đã hủy, tải lại trang để xem.');
     if ((latest.transactions ?? []).some((t) => t.status === 'VERIFIED' || t.status === 'PENDING_VERIFICATION')) throw new Error('Hóa đơn đã có giao dịch thanh toán, không thể hủy.');

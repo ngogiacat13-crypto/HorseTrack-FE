@@ -124,7 +124,7 @@ export const protocolsApi = {
       return data;
     }
     if (!ITEM_ADDABLE.includes(p.state)) throw new Error('Chỉ hủy được phác đồ chưa cấp thuốc.');
-    const why = min(reason, 10, 'Lý do hủy phác đồ');
+    const why = reason.trim();
     await releaseHeld(p);
     const data = await saveProtocol(p, { ...goTo(p, 'CANCELLED'), note: `Hủy: ${why}` }, { who: `BS ${actor.name}`, text: `hủy phác đồ: ${why}`, at: now() });
     await addAudit(actor, { action: 'CANCEL_PROTOCOL', label: 'Hủy phác đồ', object: `${p.id} · ${p.horse}`, area: 'med', from: p.state, to: 'CANCELLED', reason: why });
@@ -190,7 +190,7 @@ export const protocolsApi = {
     if (!current || current.phaseNo !== phaseNo) throw new Error('Chỉ được kết thúc giai đoạn đang điều trị.');
     if (p.state !== 'IN_TREATMENT' && !(p.dispensedPhases ?? []).includes(phaseNo)) throw new Error(`Giai đoạn ${phaseNo} chưa được kho cấp thuốc.`);
     if (p.state !== 'IN_TREATMENT' && !p.emergency && !phaseIsPaid(p, phaseNo)) throw new Error(`Giai đoạn ${phaseNo} chưa được chủ ngựa thanh toán.`);
-    const why = min(reason, 10, 'Lý do quyết định giai đoạn');
+    const why = reason.trim();
     const phaseProgress: PhaseProgress[] = progress.map((item) => item.phaseNo === phaseNo ? { ...item, status: decision === 'CONTINUE' ? 'COMPLETED' : 'STOPPED', reason: why } : item);
     const next = p.phases.find((item) => item.no > phaseNo && !phaseProgress.some((state) => state.phaseNo === item.no && ['COMPLETED', 'STOPPED'].includes(state.status)));
     const startNextNow = decision === 'CONTINUE' && startNext && !!next && phaseReadyToStart(p, next.no);

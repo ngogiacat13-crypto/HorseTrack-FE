@@ -9,10 +9,7 @@ import { TrainerHorsesDialog } from './TrainerHorsesDialog';
 
 const useReason = () => {
   const [reason, setReason] = useState('');
-  const [err, setErr] = useState('');
-  const check = () => { if (reason.trim().length < 10) { setErr('Lý do phải có ít nhất 10 ký tự.'); return false; } return true; };
-  const onChange = (v: string) => { setReason(v); if (v.trim().length >= 10) setErr(''); };
-  return { reason, err, check, onChange };
+  return { reason, onChange: setReason };
 };
 
 export const AssignmentDialog: React.FC<{ user: ManagedUser; data: { grooms: GroomAssignment[]; stalls: AssignedStall[]; horses: AssignedHorse[] }; onClose: () => void; onDone: () => void }> = ({ user, data, onClose, onDone }) => (
@@ -55,7 +52,6 @@ export const LockUserDialog: React.FC<{ user: ManagedUser; lock: boolean; onClos
   const { busy, error, run } = useAction();
   const r = useReason();
   const confirm = async () => {
-    if (!r.check()) return;
     const ok = lock
       ? await run(() => managerApi.lockUser(user, r.reason, actor), `Đã khóa tài khoản ${user.username}.`)
       : await run(() => managerApi.unlockUser(user, r.reason, actor), `Đã mở khóa tài khoản ${user.username}.`);
@@ -68,7 +64,7 @@ export const LockUserDialog: React.FC<{ user: ManagedUser; lock: boolean; onClos
       confirmLabel={lock ? 'Khóa tài khoản' : 'Mở khóa'} onConfirm={confirm}>
       {error && <Callout tone="danger" style={{ marginBottom: 14 }}>{error}</Callout>}
       {lock && user.openTasks ? <Callout tone="demo" style={{ marginBottom: 14 }}>{user.openTasks} công việc đang mở của người này cần được giao lại.</Callout> : null}
-      <ReasonField id="lock-reason" label={lock ? 'Lý do khóa' : 'Lý do mở khóa'} value={r.reason} error={r.err} minHeight={72}
+      <ReasonField id="lock-reason" label={lock ? 'Lý do khóa' : 'Lý do mở khóa'} value={r.reason} minHeight={72}
         placeholder={lock ? 'VD: Nghỉ việc từ 05/10/2026.' : ''} onChange={r.onChange} />
     </Dialog>
   );

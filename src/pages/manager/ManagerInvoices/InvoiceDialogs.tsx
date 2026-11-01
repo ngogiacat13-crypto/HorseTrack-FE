@@ -12,7 +12,7 @@ export const SuspendDialog: React.FC<{ invoice: Invoice; onClose: () => void; on
   return (
     <Dialog open onClose={onClose} icon="ban" tone="danger" danger busy={busy} title={`Đình chỉ dịch vụ của ${inv.owner}?`}
       sub={`${inv.id} · ${inv.horse} · ${money(inv.amount)} · quá hạn ${inv.overdueDays} ngày.`}
-      confirmLabel="Xác nhận đình chỉ" onConfirm={confirm} disabled={reason.trim().length < 10}>
+      confirmLabel="Xác nhận đình chỉ" onConfirm={confirm}>
       {error && <Callout tone="danger" style={{ marginBottom: 14 }}>{error}</Callout>}
       <Rules style={{ marginBottom: 14 }} items={[
         { ok: inv.overdueDays >= SUSPEND_AT, label: `Quá hạn ≥ ${SUSPEND_AT} ngày (BR_13)` },

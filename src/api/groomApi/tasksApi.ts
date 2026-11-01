@@ -90,7 +90,7 @@ export const tasksApi = {
 
   async requestFeed(horse: VetHorse, input: { item: string; reason: string }, actor: Actor) {
     const item = min(input.item, 3, 'Thức ăn / phụ gia');
-    const reason = min(input.reason, 10, 'Lý do');
+    const reason = input.reason.trim();
     const all = await get<FeedRequest[]>('/feedRequests');
     const req: FeedRequest = { id: nextId(all.map((f) => f.id), 'FR-'), horseId: horse.id, horse: horse.name, item, reason, by: actor.name, at: now(), status: 'PENDING' };
     const { data } = await http.post<FeedRequest>('/feedRequests', req);

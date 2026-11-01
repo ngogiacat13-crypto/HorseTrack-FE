@@ -49,25 +49,22 @@ export const RejectDialog: React.FC<{ reg: Registration; checks: Check[]; onClos
   const actor = useActor();
   const { busy, error, run } = useAction();
   const [reason, setReason] = useState('');
-  const [reasonErr, setReasonErr] = useState('');
   const failed = checks.filter((c) => !c.passed);
 
   const confirm = async () => {
-    if (reason.trim().length < 10) { setReasonErr('Lý do từ chối phải có ít nhất 10 ký tự.'); return; }
     if (await run(() => managerApi.rejectRegistration(reg, checks, reason.trim(), actor), `Đã từ chối ${reg.id} và gửi lý do cho chủ ngựa.`)) onDone(reason.trim());
   };
-  const update = (v: string) => { setReason(v); if (v.trim().length >= 10) setReasonErr(''); };
 
   return (
     <Dialog open testId="reject-registration-dialog" onClose={onClose} icon="x" tone="danger" danger title={`Từ chối hồ sơ ${reg.id}`} sub={`Lý do được gửi nguyên văn cho ${reg.owner.fullName} và lưu vào nhật ký. Chủ ngựa có thể chỉnh sửa và nộp lại hồ sơ.`}
       confirmLabel="Xác nhận từ chối" onConfirm={confirm} busy={busy}>
       {error && <Callout tone="danger" style={{ marginBottom: 14 }}>{error}</Callout>}
-      <ReasonField id="rj-reason" label="Lý do từ chối" value={reason} placeholder="Tối thiểu 10 ký tự" error={reasonErr} onChange={update} />
+      <ReasonField id="rj-reason" label="Lý do từ chối" value={reason} placeholder="Nhập lý do từ chối" onChange={setReason} />
       {failed.length > 0 && (
         <div style={{ marginTop: 10, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
           {failed.map((c) => (
             <button key={c.key} type="button" className="ht-badge ht-badge--neutral ht-badge--plain" style={{ cursor: 'pointer', height: 26 }}
-              onClick={() => update((reason ? reason + '\n' : '') + `${c.label}: ${c.detail}`)}>
+              onClick={() => setReason((reason ? reason + '\n' : '') + `${c.label}: ${c.detail}`)}>
               + {c.label}
             </button>
           ))}

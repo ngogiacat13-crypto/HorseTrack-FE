@@ -4,7 +4,7 @@ import { mapMedicine } from '../beDomain';
 import { type Actor, addAudit } from '../managerApi';
 import type { Horse, RaceProposal, Tournament } from '../trainerApi';
 import type { InventoryItem, Protocol, VetHorse } from './types';
-import { get, now, min } from './shared';
+import { get, now } from './shared';
 
 export const raceExamsApi = {
   async getRaceExams() {
@@ -34,7 +34,7 @@ export const raceExamsApi = {
     const horse = await get<Horse>(`/horses/${p.horseId}`);
     if (input.pass && horse.trainingLocked) throw new Error(`${horse.name} đang bị khóa huấn luyện — không thể kết luận ĐẠT (BR_01).`);
     if (input.pass && (horse.health === 'INJURED' || horse.health === 'QUARANTINE')) throw new Error(`${horse.name} đang ${horse.health === 'INJURED' ? 'chấn thương' : 'cách ly'} — không thể kết luận ĐẠT.`);
-    const note = input.pass ? input.note.trim() : min(input.note, 10, 'Lý do không đạt');
+    const note = input.note.trim();
     const vetResult = { pass: input.pass, by: actor.name, at: now(), note, conditions: input.conditions.trim() || undefined };
     const status = input.pass ? 'READY_TO_SUBMIT' : 'VET_FAILED';
     const history = [

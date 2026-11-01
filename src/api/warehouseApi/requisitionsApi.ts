@@ -46,7 +46,7 @@ export const requisitionsApi = {
 
   async reject(r: Requisition, reason: string, actor: Actor) {
     if (['ISSUED', 'REJECTED', 'CLOSED'].includes(r.status)) throw new Error('Yêu cầu đã được xử lý.');
-    const why = min(reason, 10, 'Lý do từ chối');
+    const why = reason.trim();
     const data = await step(r, { status: 'REJECTED', rejectReason: why }, { at: now(), who: actor.name, text: `từ chối: ${why}`, tone: 'danger' });
     await addAudit(actor, { action: 'REJECT_REQUISITION', label: 'Từ chối yêu cầu vật tư', object: `${r.id} · ${r.item}`, area: 'med', from: r.status, to: 'REJECTED', reason: why });
     return data;

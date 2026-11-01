@@ -53,7 +53,7 @@ export const reportsApi = {
     const g = await me(actor);
     const item = await get<StockItem>(`/inventory/${input.itemId}`).catch(() => { throw new Error('Chọn vật tư.'); });
     if (!Number.isInteger(input.qty) || input.qty < 1) throw new Error('Số lượng phải là số nguyên ≥ 1.');
-    const reason = min(input.reason, 10, 'Lý do');
+    const reason = input.reason.trim();
     if (!/^\d{2}\/\d{2}\/\d{4}$/.test(input.neededBy)) throw new Error('Ngày cần theo dạng dd/mm/yyyy.');
     const all = await get<Requisition[]>('/requisitions');
     const r: Requisition = {

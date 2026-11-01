@@ -65,7 +65,6 @@ export const vetProtocolBe = {
   },
   async cancelDraft(p: Protocol, _actor: Actor, reason = '') {
     const why = reason.trim() || (p.state === 'DRAFT' ? 'Hủy bản nháp' : '');
-    if (why.length < 10 && p.state !== 'DRAFT') throw new Error('Lý do hủy phác đồ ít nhất 10 ký tự.');
     const r = await beData<Parameters<typeof mapProtocol>[0]>(be.put(`/medical-management/protocols/${beId(p)}/cancel`, { content: why }));
     after('protocols');
     return mapProtocol(r) as unknown as Protocol;
@@ -107,7 +106,6 @@ export const vetProtocolBe = {
   },
   async completePhase(p: Protocol, phaseNo: number, decision: 'CONTINUE' | 'STOP', reason: string) {
     const note = reason.trim();
-    if (decision === 'STOP' && note.length < 10) throw new Error('Lý do quyết định giai đoạn ít nhất 10 ký tự.');
     const r = await beData<Parameters<typeof mapProtocol>[0]>(be.put(`/medical-management/protocols/${beId(p)}/phases/${phaseNo}/complete`, { note, continueTreatment: decision === 'CONTINUE' }));
     after('protocols');
     return mapProtocol(r) as unknown as Protocol;
@@ -119,7 +117,6 @@ const MOVE: Record<MoveKind, string> = { RECEIVE: 'RECEIVE', ISSUE: 'ISSUE', ADJ
 export const warehouseBe = {
   async moveStock(item: StockItem, input: { kind: MoveKind; qty: number; lot: string; expiry: string; note: string }, actor: Actor) {
     if (!input.qty) throw new Error('Nhập số lượng.');
-    if (input.kind !== 'RECEIVE' && input.note.trim().length < 10) throw new Error('Lý do ít nhất 10 ký tự.');
     const r = await beData<{ item: Parameters<typeof mapItem>[0]; lowStockWarning?: string | null }>(be.post('/inventory/stock-movements', {
       itemId: beId(item), movementType: MOVE[input.kind], quantity: input.qty, lotNo: input.lot.trim() || undefined,
       expiryDate: expiryIso(input.expiry.trim()), note: input.note.trim(),
@@ -228,7 +225,6 @@ export const warehouseBe = {
     return mapReq(x) as unknown as Requisition;
   },
   async reject(r: Requisition, reason: string) {
-    if (reason.trim().length < 10) throw new Error('Lý do từ chối ít nhất 10 ký tự.');
     const x = await beData<Parameters<typeof mapReq>[0]>(be.put(`/inventory/supply-requests/${beId(r)}/reject`, { reason: reason.trim() }));
     after('requisitions');
     return mapReq(x) as unknown as Requisition;
@@ -259,7 +255,6 @@ export const groomSupplyBe = {
 
   async createRequisition(input: { itemId: string; qty: number; reason: string; neededBy: string }) {
     if (!Number.isInteger(input.qty) || input.qty < 1) throw new Error('Số lượng phải là số nguyên ≥ 1.');
-    if (input.reason.trim().length < 10) throw new Error('Lý do ít nhất 10 ký tự.');
     const ids = await itemIds();
     const x = await beData<Parameters<typeof mapReq>[0]>(be.post('/supply-requests', {
       itemId: ids.get(input.itemId) ?? numOrUndef(input.itemId), quantity: input.qty, reason: input.reason.trim(), neededBy: iso(input.neededBy),
