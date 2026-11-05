@@ -14,7 +14,7 @@ export const PURPOSE_LABEL: Record<string, string> = {
   OTP: 'Mã OTP', STAFF_ACCOUNT: 'Tài khoản nhân viên', INVOICE: 'Hóa đơn', BILLING: 'Thanh toán / dịch vụ',
   TRAINER_ASSIGNMENT: 'Phân công HLV', GROOM_ZONE: 'Phân khu Mã phu', CARE_TASK_OVERDUE: 'Việc chăm sóc quá hạn',
   NUTRITION: 'Dinh dưỡng', RACE_PROPOSAL: 'Đề xuất thi đấu', TRAINING_INCIDENT: 'Sự cố buổi tập', TRAINING_PAUSE: 'Tạm dừng buổi tập',
-  VET_LOCK: 'Khóa huấn luyện', GENERAL: 'Khác',
+  VET_LOCK: 'Khóa huấn luyện', EMAIL_BOUNCE: 'Thư trả về', HORSE_REGISTRATION: 'Duyệt hồ sơ ngựa', GENERAL: 'Khác',
 };
 export const STATUS_LABEL: Record<EmailStatus, [string, 'success' | 'danger' | 'neutral']> = {
   SENT: ['Đã gửi', 'success'], FAILED: ['Gửi lỗi', 'danger'], SKIPPED: ['Chưa gửi (chế độ dev)', 'neutral'],

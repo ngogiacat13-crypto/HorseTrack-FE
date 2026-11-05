@@ -16,3 +16,23 @@ test('a head trainer can be given horses from several zones without picking a zo
   await page.getByTestId('dialog-confirm').click();
   await expect(page.getByTestId('toast')).toContainText('Đã phân công 5 ngựa cho Trần Đức Hùng');
 });
+
+test('a trainer holds at most five horses, and a horse with an open plan cannot change trainer', async ({ page }) => {
+  await signIn(page, 'ClubManager');
+  await page.goto('/manager/users');
+  await page.getByTestId('assign-duchung').click();
+  const count = page.getByTestId('trainer-horses-count');
+  await expect(count).toHaveText('Đã chọn 4/5');
+  await expect(page.getByTestId('trainer-open-plan-h-storm')).toBeVisible();
+  await expect(page.getByTestId('trainer-horse-h-storm')).toBeDisabled();
+  await expect(page.getByTestId('trainer-horse-h-galaxy')).toBeDisabled();
+  await expect(page.getByTestId('trainer-horses-dialog')).toContainText('Phác đồ điều trị và thực đơn dinh dưỡng vẫn theo ngựa');
+  await expect(page.getByTestId('trainer-horses-dialog')).not.toContainText('bàn giao cùng giáo án');
+
+  await page.getByTestId('trainer-horse-h-blaze').check();
+  await expect(count).toHaveText('Đã chọn 5/5');
+  await page.getByTestId('trainer-horse-h-wind').click();
+  await expect(page.getByTestId('trainer-horse-h-wind')).not.toBeChecked();
+  await expect(count).toHaveText('Đã chọn 5/5');
+  await expect(page.getByTestId('trainer-horses-limit')).toContainText('tối đa 5 ngựa');
+});

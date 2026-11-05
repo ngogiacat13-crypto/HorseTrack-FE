@@ -62,7 +62,7 @@ export const VetRaceExams: React.FC = () => {
       <Panel>
         <div style={{ overflowX: 'auto' }}>
           <table className="ht-table">
-            <thead><tr><th>Đề xuất</th><th>Ngựa</th><th>Giải · ngày · cự ly</th><th>HLV đề xuất</th><th>{tab === 'waiting' ? 'Tình trạng' : 'Kết quả'}</th><th /></tr></thead>
+            <thead><tr><th>Đề xuất</th><th>Ngựa</th><th>Giải · ngày · cự ly</th><th>HLV đề xuất</th><th>{tab === 'waiting' ? 'Tình trạng · hạn khám' : 'Kết quả'}</th><th /></tr></thead>
             <tbody>
               {list.map((p) => {
                 const t = tour(p.tournamentId);
@@ -74,7 +74,7 @@ export const VetRaceExams: React.FC = () => {
                     <td>{t?.name}<span className="sub mono">{t?.date} · {t?.distance} · {t?.venue}</span></td>
                     <td>{p.createdBy}</td>
                     <td>{tab === 'waiting'
-                      ? <>{h && <HorseBadges horse={h} compact />}{risky(p).length > 0 && <span className="sub"><Badge tone="warning" plain>Còn thuốc trong thời gian phát hiện</Badge></span>}</>
+                      ? <>{h && <HorseBadges horse={h} compact />}{risky(p).length > 0 && <span className="sub"><Badge tone="warning" plain>Còn thuốc trong thời gian phát hiện</Badge></span>}{p.examDeadline && <span className="sub" data-testid={`exam-deadline-${p.id}`}>Hạn khám: <b className="ht-mono">{p.examDeadline}</b></span>}</>
                       : <><b style={{ color: p.vetResult?.pass ? 'var(--success-ink)' : 'var(--danger-ink)' }}>{p.vetResult?.pass ? 'ĐẠT' : 'KHÔNG ĐẠT'}</b><span className="sub">{p.vetResult?.note}</span><span className="sub"><Badge tone={PROPOSAL_LABEL[p.status][1]} plain>{PROPOSAL_LABEL[p.status][0]}</Badge></span></>}</td>
                     <td className="num">{tab === 'waiting' && <button type="button" className="ht-btn ht-btn--primary ht-btn--sm" onClick={() => open(p)}><Icon name="clip" />Ghi kết quả khám</button>}</td>
                   </tr>

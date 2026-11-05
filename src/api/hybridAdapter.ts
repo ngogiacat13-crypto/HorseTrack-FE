@@ -1,3 +1,4 @@
+import { trackLabel } from './trainerApi/labels';
 import type { AxiosAdapter } from 'axios';
 import { be, type ApiResponse } from './beClient';
 import { loadInvoices, loadPayments, mapInvoice, type BeInvoice } from './beFinance';
@@ -126,15 +127,17 @@ const injuriesOf = async (horseId: string) => {
   }));
 };
 interface BeStall { stallId: number; stallCode: string; barnZone: string; cleanStatus: string; currentHorseId: number | null; horseName: string | null }
-interface BePhase { phaseNo: number; name: string; weeks: number; intensity: string; distanceM?: number | null; sessionsPerWeek?: number | null; maxHeartRate?: number | null; current?: boolean | null }
-interface BePlan { planId: number; planName: string; horseName: string; startDate: string; endDate: string; status: string; progress: number; type?: string | null; goal?: string | null; phases?: BePhase[] | null }
+interface BePhase { phaseNo: number; name: string; weeks: number; intensity: string; trackType?: string | null; distanceM?: number | null; sessionsPerWeek?: number | null; maxHeartRate?: number | null; current?: boolean | null }
+interface BePlan { planId: number; planName: string; horseName: string; startDate: string; endDate: string; status: string; progress: number; type?: string | null; goal?: string | null; phases?: BePhase[] | null; staffGuide?: { summary: string; steps: string[] } | null }
 const INTENSITY: Record<string, string> = { LOW: 'Nhẹ', LIGHT: 'Nhẹ', MEDIUM: 'Vừa', MODERATE: 'Vừa', HIGH: 'Cao', 'NHẸ': 'Nhẹ', 'VỪA': 'Vừa', CAO: 'Cao' };
 const toPhases = (phases: BePhase[] | null | undefined, weeks: number) => phases?.length
-  ? phases.map((ph) => ({ no: ph.phaseNo, name: ph.name, weeks: ph.weeks, intensity: INTENSITY[(ph.intensity ?? '').toUpperCase()] ?? ph.intensity, distanceM: Number(ph.distanceM) || 0, sessionsPerWeek: ph.sessionsPerWeek ?? 0, hrLimit: ph.maxHeartRate ?? SERVER_DEFAULT_MAX_HR }))
+  ? phases.map((ph) => ({ no: ph.phaseNo, name: ph.name, weeks: ph.weeks, intensity: INTENSITY[(ph.intensity ?? '').toUpperCase()] ?? ph.intensity, trackType: ph.trackType ?? null, distanceM: Number(ph.distanceM) || undefined, sessionsPerWeek: ph.sessionsPerWeek ?? 0, hrLimit: ph.maxHeartRate ?? SERVER_DEFAULT_MAX_HR }))
   : [unknownPhase(weeks)];
 const currentPhaseOf = (phases: BePhase[] | null | undefined) => phases?.find((ph) => ph.current)?.phaseNo ?? 1;
-interface BePlanDetail { planId: number; planName: string; horseId: number | null; horseName: string; startDate: string; endDate: string; status: string; sessions: (BeMonitor & { sessionId: number; phaseNo?: number | null; sessionDate: string; activityType: string; status: string; notes: string | null; assignedToId: number | null; assignedToName: string | null; evaluationScore?: number | null; evaluationComment?: string | null; evaluatedBy?: string | null; evaluatedAt?: string | null })[] }
-interface BeSchedule extends BeMonitor { sessionId: number; sessionDate: string; activityType: string; status: string; planName: string; horseName: string; stallZone: string; evaluationScore?: number | null; evaluationComment?: string | null; evaluatedBy?: string | null; evaluatedAt?: string | null }
+const phaseTrack = (phases?: BePhase[] | null) => (phases?.find((ph) => ph.current) ?? phases?.[0])?.trackType ?? null;
+const noteTrack = (notes?: string | null) => (notes ?? '').split(' · Ghi nhận:')[0];
+interface BePlanDetail { planId: number; planName: string; horseId: number | null; horseName: string; startDate: string; endDate: string; status: string; type?: string | null; phases?: BePhase[] | null; staffGuide?: { summary: string; steps: string[] } | null; sessions: (BeMonitor & { sessionId: number; phaseNo?: number | null; sessionDate: string; activityType: string; status: string; notes: string | null; assignedToId: number | null; assignedToName: string | null; evaluationScore?: number | null; evaluationComment?: string | null; evaluatedBy?: string | null; evaluatedAt?: string | null })[] }
+interface BeSchedule extends BeMonitor { sessionId: number; sessionDate: string; activityType: string; status: string; planName: string; planType?: string | null; trackType?: string | null; staffGuide?: string | null; steps?: string[] | null; notes?: string | null; horseName: string; stallZone: string; evaluationScore?: number | null; evaluationComment?: string | null; evaluatedBy?: string | null; evaluatedAt?: string | null }
 interface BeTask { taskId: number; taskCode?: string | null; taskType: string; title?: string | null; status: string; taskDate?: string | null; scheduledTime?: string | null; dueDate?: string | null; instructions?: string | null; completedAt?: string | null; horseName: string; stallCode?: string | null; stallZone: string; groomName?: string | null; warningNote?: string | null; dietNote?: string | null; overdue?: boolean | null; lateMinutes?: number | null; canComplete?: boolean | null; completableFrom?: string | null }
 interface BeCase { caseId: string; id?: number; horseId: number; horseName: string; source: string; issueType: string; severity: string; status: string; description: string; imageUrl?: string | null; reportedByName?: string | null; assignedVetName?: string | null; maxHeartRate: number; vetResult: string | null; createdAt: string; closedAt?: string | null }
 interface BeVacc {
@@ -258,7 +261,7 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
       const weeks = Math.max(1, Math.round((new Date(p.endDate).getTime() - new Date(p.startDate).getTime()) / (7 * 864e5)));
       return {
         id: String(p.planId), horseId: (byName(horses, p.horseName)?.id as string) ?? '', horseName: p.horseName, name: p.planName,
-        ...planMeta(p.goal ?? ''), ...(p.type ? { type: p.type } : {}), startDate: ddmmyyyy(p.startDate), createdBy: '—',
+        ...planMeta(p.goal ?? ''), ...(p.type ? { type: p.type } : {}), startDate: ddmmyyyy(p.startDate), createdBy: '—', staffGuide: p.staffGuide ?? null,
         phases: toPhases(p.phases, weeks),
         currentPhase: currentPhaseOf(p.phases), week: Math.max(1, Math.round((p.progress ?? 0) * weeks / 100)), status: PLAN_STATUS[(p.status ?? '').toUpperCase()] ?? 'PAUSED',
       };
@@ -275,7 +278,8 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
       return details.flatMap((d, i) => (d?.sessions ?? []).map((s) => ({
         id: String(s.sessionId), horseId: plans[i].horseId, horseName: d!.horseName, planId: String(d!.planId), phaseNo: s.phaseNo ?? 1, label: s.activityType,
         date: ddmmyyyy(s.sessionDate), time: hhmm(s.sessionDate), groom: s.assignedToName ?? '—', groomId: s.assignedToId ? String(s.assignedToId) : null,
-        track: (s.notes ?? '').split(' · Ghi nhận:')[0] || '—', metrics: (s.notes ?? '').split(' · Ghi nhận:')[1]?.split(',').map((m) => m.trim()).filter(Boolean),
+        planType: d!.type ?? null, trackType: phaseTrack(d!.phases), staffGuide: d!.staffGuide ?? null,
+        track: trackLabel(phaseTrack(d!.phases)) || noteTrack(s.notes) || '—', metrics: (s.notes ?? '').split(' · Ghi nhận:')[1]?.split(',').map((m) => m.trim()).filter(Boolean),
         status: SESSION[s.status?.toUpperCase()] ?? 'SCHEDULED', confirmed: s.status?.toUpperCase() === 'CONFIRMED', cancelled: s.status?.toUpperCase() === 'CANCELLED', ...monitor(s), decision: decisionFrom(s),
         evaluation: s.evaluationScore ? { score: s.evaluationScore, comment: s.evaluationComment ?? '', by: s.evaluatedBy ?? 'HLV', at: s.evaluatedAt ?? '' } : null,
       })));
@@ -286,7 +290,9 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
     return rows.map((s) => ({
       id: String(s.sessionId), horseId: (byName(horses, s.horseName)?.id as string) ?? '', horseName: s.horseName,
       planId: (plans.find((p) => p.name === s.planName)?.id as string) ?? '', phaseNo: 1, label: s.activityType,
-      date: ddmmyyyy(s.sessionDate), time: hhmm(s.sessionDate), groom: u.role === 'Groom' ? u.name : '—', track: zone(s.stallZone),
+      date: ddmmyyyy(s.sessionDate), time: hhmm(s.sessionDate), groom: u.role === 'Groom' ? u.name : '—',
+      planType: s.planType ?? null, trackType: s.trackType ?? null, staffGuide: s.staffGuide || s.steps?.length ? { summary: s.staffGuide ?? '', steps: s.steps ?? [] } : null,
+      track: trackLabel(s.trackType) || noteTrack(s.notes) || '—',
       status: SESSION[s.status?.toUpperCase()] ?? 'SCHEDULED', confirmed: s.status?.toUpperCase() === 'CONFIRMED', cancelled: s.status?.toUpperCase() === 'CANCELLED', ...monitor(s), decision: decisionFrom(s),
       evaluation: s.evaluationScore ? { score: s.evaluationScore, comment: s.evaluationComment ?? '', by: s.evaluatedBy ?? 'HLV', at: s.evaluatedAt ?? '' } : null,
     }));

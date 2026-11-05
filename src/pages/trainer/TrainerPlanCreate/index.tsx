@@ -1,61 +1,84 @@
 import React, { useMemo, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { trainerApi, trainingBlock } from '../../../api/trainerApi';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { guideOf, planAdjustable, trainerApi, trainingBlock, type TrackType, type TrainingPlan } from '../../../api/trainerApi';
 import { DEMO_NOW, type ApiError } from '../../../api/http';
 import { USE_BACKEND } from '../../../api/beClient';
 import { useActor } from '../../../auth/AuthContext';
 import { useFetch } from '../../../hooks/useFetch';
 import { Icon } from '../../../components/ui/Icon';
 import { BackButton, Callout, PageHeader, Panel, useToast } from '../../../components/ui/Ht';
-import { HorseBadges, LoadState } from '../../../components/trainer/TrainerParts';
-import { PhaseDraft, PlanType, TEMPLATES, TYPES, validPhase } from './templates';
+import { HorseBadges, LoadState, StaffGuidePanel } from '../../../components/trainer/TrainerParts';
+import { PhaseDraft, PlanType, TEMPLATES, TYPES, draftOf, validPhase } from './templates';
 import { PhaseRow } from './PhaseRow';
 import { PlanSummary } from './PlanSummary';
 import { highIntensityBlock, useHorseRaces } from '../../../features/tournament-registration';
 
 const MIN_START = USE_BACKEND ? DEMO_NOW.date.split('/').reverse().join('-') : '2026-10-05';
 
+type PlansData = Awaited<ReturnType<typeof trainerApi.getPlans>>;
+
 export const TrainerPlanCreate: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const actor = useActor();
+  const { data, loading, error, reload } = useFetch(() => trainerApi.getPlans(actor), [actor]);
+  if (!data) return <LoadState loading={loading} error={error} onRetry={reload} />;
+  if (!id) return <PlanForm data={data} />;
+
+  const plan = data.plans.find((p) => p.id === id);
+  const why = !plan ? `Không tìm thấy giáo án ${id}.` : !planAdjustable(plan, data.sessions) ? 'Chỉ điều chỉnh được giáo án chưa bắt đầu và chưa có buổi nào được Mã phu xác nhận.' : '';
+  if (!plan || why) {
+    return (
+      <div className="ht ht-page">
+        <PageHeader crumbs={<BackButton fallback="/trainer/plans" />} title="Điều chỉnh giáo án" />
+        <Callout tone="danger" testId="plan-edit-blocked" style={{ marginBottom: 16 }}>{why}</Callout>
+        <Link className="ht-btn ht-btn--secondary" to="/trainer/plans">Về danh sách giáo án</Link>
+      </div>
+    );
+  }
+  return <PlanForm key={plan.id} data={data} plan={plan} />;
+};
+
+const PlanForm: React.FC<{ data: PlansData; plan?: TrainingPlan }> = ({ data, plan }) => {
   const navigate = useNavigate();
   const toast = useToast();
   const actor = useActor();
   const [params] = useSearchParams();
-  const { data, loading, error, reload } = useFetch(() => trainerApi.getPlans(actor), [actor]);
+  const editing = !!plan;
 
-  const [horseId, setHorseId] = useState(params.get('horse') ?? '');
-  const [name, setName] = useState('');
-  const [type, setType] = useState<PlanType>('Sức bền');
-  const [goal, setGoal] = useState('');
-  const [startDate, setStartDate] = useState(MIN_START);
-  const [phases, setPhases] = useState<PhaseDraft[]>(TEMPLATES['Sức bền'].map((p) => ({ ...p })));
+  const [horseId, setHorseId] = useState(plan?.horseId ?? params.get('horse') ?? '');
+  const [name, setName] = useState(plan?.name ?? '');
+  const [type, setType] = useState<PlanType | ''>(plan ? (TYPES.find((t) => t === plan.type) ?? '') : 'Sức bền');
+  const [goal, setGoal] = useState(plan?.goal ?? '');
+  const [startDate, setStartDate] = useState(plan ? plan.startDate.split('/').reverse().join('-') : MIN_START);
+  const [phases, setPhases] = useState<PhaseDraft[]>(plan ? [draftOf(plan)] : TEMPLATES['Sức bền'].map((p) => ({ ...p })));
   const [tried, setTried] = useState(false);
   const [busy, setBusy] = useState(false);
   const [serverError, setServerError] = useState('');
 
   const horses = useMemo(() => {
-    const all = data?.horses ?? [];
-    if (!data?.availableIds) return all;
+    if (plan) return data.horses.filter((h) => h.id === plan.horseId);
+    if (!data.availableIds) return data.horses;
     const ok = new Set(data.availableIds);
-    return all.filter((h) => ok.has(h.id));
-  }, [data]);
+    return data.horses.filter((h) => ok.has(h.id));
+  }, [data, plan]);
   const horse = horses.find((h) => h.id === horseId);
   const races = useHorseRaces(horseId);
-  const running = data?.plans.find((p) => p.horseId === horseId && (p.status === 'PLANNED' || p.status === 'ACTIVE' || p.status === 'PAUSED'));
-
-  if (!data) return <LoadState loading={loading} error={error} onRetry={reload} />;
+  const running = plan ? undefined : data.plans.find((p) => p.horseId === horseId && (p.status === 'PLANNED' || p.status === 'ACTIVE' || p.status === 'PAUSED'));
 
   const block = horse ? trainingBlock(horse) : null;
   const restBlock = phases.map((p) => highIntensityBlock(races, startDate, p.weeks, p.intensity)).find(Boolean) ?? '';
   const errors = {
     name: name.trim().length < 5 ? 'Tên giáo án ít nhất 5 ký tự' : name.trim().length > 80 ? 'Tên giáo án tối đa 80 ký tự' : '',
     horse: !horseId ? 'Chọn ngựa' : block ?? '',
+    start: editing && startDate < MIN_START ? 'Ngày bắt đầu đã qua. Chọn từ hôm nay trở đi.' : '',
+    type: type ? '' : 'Chọn loại giáo án',
     goal: goal.trim().length < 5 ? 'Mục tiêu ít nhất 5 ký tự' : '',
-    phases: phases.length !== 1 ? 'Mỗi giáo án chỉ có 1 giai đoạn' : restBlock || (phases.some((p) => !validPhase(p)) ? 'Kiểm tra lại giai đoạn: tuần 1–12, quãng đường 200–4000 m, 1–7 buổi/tuần, ngưỡng 120–200 bpm' : ''),
+    phases: phases.length !== 1 ? 'Mỗi giáo án chỉ có 1 giai đoạn' : restBlock || (!phases[0].trackType ? 'Chọn loại đường tập' : !validPhase(phases[0]) ? 'Kiểm tra lại giai đoạn: tuần 1–12, 1–7 buổi/tuần, ngưỡng 120–200 bpm' : ''),
   };
-  const valid = !errors.name && !errors.horse && !errors.goal && !errors.phases;
+  const valid = !errors.name && !errors.horse && !errors.start && !errors.type && !errors.goal && !errors.phases;
 
   const setPhase = (i: number, patch: Partial<PhaseDraft>) => setPhases((ps) => ps.map((p, k) => (k === i ? { ...p, ...patch } : p)));
-  const applyTemplate = (t: PlanType) => { setType(t); setPhases(TEMPLATES[t].map((p) => ({ ...p }))); };
+  const applyTemplate = (t: PlanType) => { setType(t); setPhases((ps) => TEMPLATES[t].map((p) => ({ ...p, trackType: ps[0]?.trackType ?? '' }))); };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,12 +87,21 @@ export const TrainerPlanCreate: React.FC = () => {
     if (!valid) return;
     setBusy(true);
     try {
-      const d = startDate.split('-').reverse().join('/');
-      const plan = await trainerApi.createPlan({ horseId, name: name.trim(), type, goal: goal.trim(), startDate: d, phases: phases.map((p, i) => ({ ...p, name: p.name.trim(), no: i + 1 })) }, actor);
-      toast(`Đã tạo giáo án ${plan.id} “${plan.name}” cho ${plan.horseName}.`);
+      const input = {
+        name: name.trim(), type, goal: goal.trim(), startDate: startDate.split('-').reverse().join('/'),
+        phases: phases.map((p, i) => ({ ...p, name: p.name.trim(), no: i + 1, trackType: p.trackType as TrackType })),
+      };
+      if (plan) {
+        await trainerApi.updatePlan(plan, input, actor);
+        toast(`Đã điều chỉnh giáo án ${plan.id} “${input.name}”.`);
+      } else {
+        const created = await trainerApi.createPlan({ ...input, horseId }, actor);
+        toast(`Đã tạo giáo án ${created.id} “${created.name}” cho ${created.horseName}.`);
+      }
       navigate('/trainer/plans');
     } catch (err) {
-      setServerError((err as ApiError).message ?? 'Tạo giáo án thất bại.');
+      setServerError((err as ApiError).message ?? (plan ? 'Điều chỉnh giáo án thất bại.' : 'Tạo giáo án thất bại.'));
+      window.scrollTo({ top: 0 });
     } finally {
       setBusy(false);
     }
@@ -80,10 +112,13 @@ export const TrainerPlanCreate: React.FC = () => {
     <form className="ht ht-page" onSubmit={submit} noValidate>
       <PageHeader
         crumbs={<BackButton fallback="/trainer/plans" />}
-        title="Tạo giáo án huấn luyện"
-        sub="Mỗi lần lập giáo án chỉ một giai đoạn. Hết giai đoạn thì kết thúc giáo án, rồi lập giáo án mới cho giai đoạn tiếp theo. Ngựa đang bị khóa y tế không thể lập giáo án (BR_01)."
+        title={plan ? `Điều chỉnh giáo án ${plan.id}` : 'Tạo giáo án huấn luyện'}
+        sub={plan
+          ? 'Sửa được khi giáo án chưa bắt đầu và chưa có buổi nào được Mã phu xác nhận. Không đổi được ngựa.'
+          : 'Mỗi lần lập giáo án chỉ một giai đoạn. Hết giai đoạn thì kết thúc giáo án, rồi lập giáo án mới cho giai đoạn tiếp theo. Ngựa đang bị khóa y tế không thể lập giáo án (BR_01).'}
       />
-      {serverError && <Callout tone="danger" style={{ marginBottom: 16 }}>{serverError}</Callout>}
+      {serverError && <Callout tone="danger" testId="plan-server-error" style={{ marginBottom: 16 }}>{serverError}</Callout>}
+      {plan && plan.phases.length > 1 && <Callout tone="demo" icon="warn" style={{ marginBottom: 16 }}>Giáo án cũ này có {plan.phases.length} giai đoạn. Lưu điều chỉnh sẽ chỉ giữ giai đoạn đầu tiên.</Callout>}
 
       <div className="ht-cols">
         <div>
@@ -100,7 +135,7 @@ export const TrainerPlanCreate: React.FC = () => {
               <div className="ht-grid-2">
                 <div className="ht-field">
                   <label className="ht-label" htmlFor="horse">Ngựa<span className="ht-req">*</span></label>
-                  <select id="horse" className="ht-select" style={{ height: 44 }} value={horseId} onChange={(e) => setHorseId(e.target.value)} aria-invalid={(tried && !!errors.horse) || undefined}>
+                  <select id="horse" className="ht-select" style={{ height: 44 }} value={horseId} disabled={editing} onChange={(e) => setHorseId(e.target.value)} aria-invalid={(tried && !!errors.horse) || undefined}>
                     <option value="">— Chọn ngựa —</option>
                     {horses.map((h) => <option key={h.id} value={h.id} disabled={h.trainingLocked}>{h.name} · {h.breed}{h.trainingLocked ? ' — đang khóa tập' : ''}</option>)}
                   </select>
@@ -109,18 +144,20 @@ export const TrainerPlanCreate: React.FC = () => {
                 <div className="ht-field">
                   <label className="ht-label" htmlFor="start">Ngày bắt đầu<span className="ht-req">*</span></label>
                   <input id="start" type="date" className="ht-input" value={startDate} min={MIN_START} onChange={(e) => setStartDate(e.target.value)} />
+                  {fieldError(errors.start)}
                 </div>
               </div>
               {horse && <div style={{ margin: '-4px 0 16px' }}><HorseBadges horse={horse} /></div>}
               {restBlock && <Callout tone="danger" icon="lock" testId="plan-race-rest-block" style={{ marginBottom: 16 }}>{restBlock}</Callout>}
-              {running && !block && <Callout tone="demo" icon="warn" style={{ marginBottom: 16 }}>{horse?.name} đang có giáo án <b className="ht-mono">{running.id}</b> “{running.name}”. Lưu giáo án mới sẽ chuyển giáo án cũ sang “Đã thay thế”.</Callout>}
+              {running && !block && <Callout tone="demo" icon="warn" style={{ marginBottom: 16 }}>{horse?.name} đang có giáo án <b className="ht-mono">{running.id}</b> “{running.name}”. {USE_BACKEND ? 'Hãy hoàn thành hoặc hủy giáo án đó trước khi lập giáo án mới.' : 'Lưu giáo án mới sẽ chuyển giáo án cũ sang “Đã thay thế”.'}</Callout>}
 
               <div className="ht-field">
-                <span className="ht-label">Loại giáo án</span>
+                <span className="ht-label">Loại giáo án<span className="ht-req">*</span></span>
                 <div className="ht-seg" role="group" aria-label="Loại giáo án">
                   {TYPES.map((t) => <button key={t} type="button" aria-pressed={type === t} onClick={() => applyTemplate(t)}>{t}</button>)}
                 </div>
-                <span className="ht-hint">Đổi loại sẽ nạp giai đoạn mẫu — bạn vẫn sửa được giai đoạn bên dưới.</span>
+                <span className="ht-hint">Đổi loại sẽ nạp giai đoạn mẫu và hướng dẫn cho Mã phu — bạn vẫn sửa được giai đoạn bên dưới.</span>
+                {fieldError(errors.type)}
               </div>
               <div className="ht-field" style={{ marginBottom: 0 }}>
                 <label className="ht-label" htmlFor="goal">Mục tiêu<span className="ht-req">*</span></label>
@@ -130,7 +167,7 @@ export const TrainerPlanCreate: React.FC = () => {
             </div>
           </Panel>
 
-          <Panel title="Giai đoạn" sub="Một giai đoạn: số tuần, cường độ, quãng đường mỗi buổi, số buổi/tuần và ngưỡng nhịp tim (BR_02).">
+          <Panel title="Giai đoạn" sub="Một giai đoạn: số tuần, cường độ, loại đường tập, số buổi/tuần và ngưỡng nhịp tim (BR_02). Mỗi loại đường chỉ một ngựa trong khoảng ngày trùng nhau.">
             <div className="ht-panel__body" data-testid="plan-single-phase" style={{ display: 'grid', gap: 12 }}>
               {phases.slice(0, 1).map((p, i) => (
                 <PhaseRow key={i} phase={p} index={i} invalid={tried && !validPhase(p)} canRemove={false}
@@ -139,9 +176,11 @@ export const TrainerPlanCreate: React.FC = () => {
               {fieldError(errors.phases)}
             </div>
           </Panel>
+
+          <StaffGuidePanel title="Xem trước hướng dẫn cho Mã phu" type={type} guide={guideOf(type)} testId="plan-guide-preview" />
         </div>
 
-        <div><PlanSummary name={name.trim()} horse={horse} type={type} startDate={startDate} phases={phases} busy={busy} disabled={tried && !valid} block={block} /></div>
+        <div><PlanSummary name={name.trim()} horse={horse} type={type} startDate={startDate} phases={phases} busy={busy} disabled={tried && !valid} block={block} editing={editing} /></div>
       </div>
     </form>
   );

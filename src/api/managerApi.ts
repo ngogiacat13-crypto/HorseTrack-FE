@@ -1,6 +1,8 @@
 import { DEMO_NOW, http } from './http';
 import { EMAIL_TIMEOUT, USE_BACKEND, be, beData, type ApiResponse } from './beClient';
 import { invalidate } from './hybridAdapter';
+import { OPEN_PLAN } from './trainerApi/labels';
+import type { PlanStatus } from './trainerApi/types';
 import { assignmentApi, assignmentText } from './assignmentApi';
 import { financeBe } from './beFinance';
 
@@ -63,7 +65,8 @@ export interface StaffInput {
 }
 export const BE_STAFF_ROLE: Partial<Record<StaffRole, string>> = { HeadTrainer: 'Trainer', Veterinarian: 'Veterinarian', Groom: 'Groom', WarehouseManager: 'Warehouse Manager' };
 export interface AssignedStall { id: string; zone: string; horseId: string | null; horse: string | null; status: string; groom: string }
-export interface AssignedHorse { id: string; name: string; owner: string; stall: string; health: string; trainerId?: string; trainerName?: string | null; pendingNote?: string }
+export const MAX_TRAINER_HORSES = 5;
+export interface AssignedHorse { id: string; name: string; owner: string; stall: string; health: string; trainerId?: string; trainerName?: string | null; pendingNote?: string; pendingTrainerId?: string; pendingRelease?: boolean; openPlan?: string | null }
 export interface RoleCheck { level: 'pass' | 'warn' | 'fail'; text: string }
 
 export type AuditArea = 'reg' | 'med' | 'train' | 'fin' | 'acct';
@@ -378,11 +381,15 @@ export const managerApi = {
   },
 
   async getGroomAssignments() {
-    const [grooms, users, stalls, allHorses] = await Promise.all([
+    const [grooms, users, stalls, allHorses, plans] = await Promise.all([
       get<GroomAssignment[]>('/grooms'), get<UserRecord[]>('/users'), get<AssignedStall[]>('/stalls'), get<AssignedHorse[]>('/horses'),
+      get<{ horseId: string; name: string; status: PlanStatus }[]>('/trainingPlans').catch(() => []),
     ]);
     const horses = allHorses.filter((h) => h.stall && h.stall !== '—' && h.stall !== 'Chưa cấp chuồng')
-      .map((h) => ({ ...h, trainerName: h.trainerName ?? users.find((u) => u.id === h.trainerId)?.fullname ?? null }));
+      .map((h) => ({
+        ...h, trainerName: h.trainerName ?? users.find((u) => u.id === h.trainerId)?.fullname ?? null,
+        openPlan: plans.find((p) => p.horseId === h.id && OPEN_PLAN.includes(p.status))?.name ?? null,
+      }));
     const zonesOfTrainer = (id: string) => [...new Set(horses.filter((h) => h.trainerId === id).map((h) => stalls.find((s) => s.horseId === h.id)?.zone).filter((z): z is string => !!z))];
     const staffZones = users
       .filter((u) => u.role === 'HeadTrainer' || u.role === 'Groom')
@@ -391,7 +398,8 @@ export const managerApi = {
       const pending = await assignmentApi.pending();
       const horsesPending = horses.map((h) => {
         const req = pending.find((r) => r.horseId === Number(h.id) && (r.requestType === 'TRAINER_HORSE' || r.requestType === 'TRAINER_RELEASE'));
-        return req ? { ...h, pendingNote: `Chờ xác nhận: ${assignmentText(req)}` } : h;
+        if (!req) return h;
+        return { ...h, pendingNote: `Chờ xác nhận: ${assignmentText(req)}`, pendingTrainerId: req.requestType === 'TRAINER_HORSE' ? String(req.targetUserId) : undefined, pendingRelease: req.requestType === 'TRAINER_RELEASE' };
       });
       const groomsPending = staffZones.map((s) => {
         const req = pending.find((r) => r.requestType === 'GROOM_ZONE' && String(r.targetUserId) === s.id);
@@ -437,16 +445,31 @@ export const managerApi = {
     if (user.role !== 'HeadTrainer') throw new Error('Chỉ có thể phân công cho HLV trưởng.');
     const assignments = await managerApi.getGroomAssignments();
     const selected = new Set(horseIds);
-    const dropped = assignments.horses.filter((h) => h.trainerId === user.id && !selected.has(h.id));
-    const added = assignments.horses.filter((h) => selected.has(h.id) && h.trainerId !== user.id);
+    const dropped = assignments.horses.filter((h) => h.trainerId === user.id && !selected.has(h.id) && !h.pendingRelease);
+    const added = assignments.horses.filter((h) => selected.has(h.id) && h.trainerId !== user.id && h.pendingTrainerId !== user.id);
+    if (added.length && horseIds.length > MAX_TRAINER_HORSES) throw new Error(`Mỗi HLV chỉ phụ trách tối đa ${MAX_TRAINER_HORSES} ngựa.`);
     if (USE_BACKEND) {
       if (!added.length && !dropped.length) throw new Error('Không có thay đổi phân công.');
       const trainerId = Number(user.beId ?? user.id);
       if (!Number.isInteger(trainerId)) throw new Error('Không xác định được tài khoản HLV. Tải lại trang rồi thử lại.');
       if (added.length) await ensureStaffConfirmed(trainerId, user.fullName);
-      for (const h of added) await be.put(`/horses/${h.id}/assign-trainer`, { trainerId });
-      for (const h of dropped) await be.delete(`/horses/${h.id}/assign-trainer`);
-      invalidate('horses', 'auditLogs');
+      const queue = [
+        ...dropped.map((h) => ({ name: h.name, send: () => be.delete(`/horses/${h.id}/assign-trainer`) })),
+        ...added.map((h) => ({ name: h.name, send: () => be.put(`/horses/${h.id}/assign-trainer`, { trainerId }) })),
+      ];
+      const sent: string[] = [];
+      try {
+        for (const item of queue) {
+          await item.send();
+          sent.push(item.name);
+        }
+      } catch (e) {
+        const reason = (e as Error).message;
+        const unsent = queue.slice(sent.length).map((x) => x.name);
+        throw new Error(sent.length ? `Đã gửi yêu cầu cho: ${sent.join(', ')}. Chưa gửi: ${unsent.join(', ')}. Lý do: ${reason}` : reason);
+      } finally {
+        invalidate('horses', 'auditLogs');
+      }
       return { horseIds };
     }
     await Promise.all([
