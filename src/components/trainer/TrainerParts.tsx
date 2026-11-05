@@ -1,9 +1,29 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { HEALTH_LABEL, Horse, PlanPhase, Reading } from '../../api/trainerApi';
-import { Badge, Callout, Loading } from '../ui/Ht';
+import { HEALTH_LABEL, Horse, PlanPhase, Reading, type StaffGuide } from '../../api/trainerApi';
+import { Badge, Callout, Loading, Panel } from '../ui/Ht';
 import { Icon } from '../ui/Icon';
 
+
+export const StaffGuidePanel: React.FC<{ title?: string; type?: string | null; track?: string; guide?: StaffGuide | null; testId?: string }> = ({ title = 'Hướng dẫn cho Mã phu', type, track, guide, testId }) => {
+  if (!guide) return null;
+  return (
+    <Panel as="h3" title={title}>
+      <div className="ht-panel__body" data-testid={testId} style={{ display: 'grid', gap: 10 }}>
+        {(type || track) && (
+          <dl className="ht-kv">
+            {type && <><dt>Loại giáo án</dt><dd>{type}</dd></>}
+            {track && <><dt>Đường tập</dt><dd data-testid={testId ? `${testId}-track` : undefined}>{track}</dd></>}
+          </dl>
+        )}
+        {guide.summary && <p style={{ margin: 0 }}>{guide.summary}</p>}
+        <ol style={{ margin: 0, paddingLeft: 20, display: 'grid', gap: 6 }}>
+          {guide.steps.map((step) => <li key={step}>{step}</li>)}
+        </ol>
+      </div>
+    </Panel>
+  );
+};
 
 export const HorseBadges: React.FC<{ horse: Horse; compact?: boolean }> = ({ horse, compact }) => {
   const [label, tone] = HEALTH_LABEL[horse.health];

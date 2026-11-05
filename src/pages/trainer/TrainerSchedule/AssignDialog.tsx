@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { trainerApi, trainingBlock, type Groom, TrainingSession } from '../../../api/trainerApi';
+import { planTrack, TRACK_LABEL, TRACK_TYPES, trackLabel, trainerApi, trainingBlock, type Groom, TrainingSession } from '../../../api/trainerApi';
 import { USE_BACKEND } from '../../../api/beClient';
 import { useActor } from '../../../auth/AuthContext';
 import { useAction } from '../../../hooks/useAction';
@@ -13,8 +13,10 @@ const selectStyle: React.CSSProperties = { height: 44 };
 export const AssignDialog: React.FC<{ data: Schedule; onClose: () => void; onDone: (s: TrainingSession) => void }> = ({ data, onClose, onDone }) => {
   const actor = useActor();
   const { busy, error, setError, run } = useAction();
-  const [form, setForm] = useState({ zone: '', horseId: '', date: TODAY, time: '09:00', groom: '', groomId: '', track: 'đường cát 1200 m', metrics: [METRICS[0], METRICS[1]] });
+  const [form, setForm] = useState({ zone: '', horseId: '', date: TODAY, time: '09:00', groom: '', groomId: '', track: '', metrics: [METRICS[0], METRICS[1]] });
   const runningPlans = data.plans.filter((p) => p.status === 'PLANNED' || p.status === 'ACTIVE');
+  const horseTrack = (horseId: string) => trackLabel(planTrack(runningPlans.find((p) => p.horseId === horseId)));
+  const planHasTrack = !!form.horseId && !!horseTrack(form.horseId);
   const activePlanHorses = new Set(runningPlans.map((p) => p.horseId));
   const zoneHorses = form.zone ? data.horses.filter((h) => data.zoneOf(h) === form.zone) : [];
   const [beGrooms, setBeGrooms] = useState<{ planId: string; list: Groom[] | null; error: string }>({ planId: '', list: null, error: '' });
@@ -23,13 +25,13 @@ export const AssignDialog: React.FC<{ data: Schedule; onClose: () => void; onDon
 
   const pickZone = (zone: string) => {
     const grooms = data.grooms.filter((g) => g.zones.includes(zone));
-    setForm({ ...form, zone, horseId: '', ...pickGroom(!USE_BACKEND && grooms.length === 1 ? grooms[0] : undefined) });
+    setForm({ ...form, zone, horseId: '', track: '', ...pickGroom(!USE_BACKEND && grooms.length === 1 ? grooms[0] : undefined) });
     setBeGrooms({ planId: '', list: null, error: '' });
     setError('');
   };
 
   const pickHorse = async (horseId: string) => {
-    setForm((f) => ({ ...f, horseId, ...pickGroom() }));
+    setForm((f) => ({ ...f, horseId, track: horseTrack(horseId), ...(USE_BACKEND ? pickGroom() : {}) }));
     if (!USE_BACKEND) return;
     const planId = runningPlans.find((p) => p.horseId === horseId)?.id ?? '';
     setBeGrooms({ planId, list: null, error: '' });
@@ -55,6 +57,7 @@ export const AssignDialog: React.FC<{ data: Schedule; onClose: () => void; onDon
     if (!/^\d{2}:\d{2}$/.test(form.time)) { setError('Giờ theo dạng HH:mm.'); return; }
     if (form.date === TODAY && form.time <= DEMO_NOW.time) { setError(`Hôm nay đã qua ${DEMO_NOW.time} — chọn giờ muộn hơn hoặc ngày khác.`); return; }
     if (!form.groom) { setError('Chọn Mã phu thực hiện.'); return; }
+    if (!form.track) { setError('Chọn đường tập.'); return; }
     if (form.metrics.length === 0) { setError('Chọn ít nhất 1 chỉ số cần ghi nhận.'); return; }
     let created: TrainingSession | null = null;
     const ok = await run(async () => { created = await trainerApi.assignSession(form, actor); });
@@ -107,8 +110,15 @@ export const AssignDialog: React.FC<{ data: Schedule; onClose: () => void; onDon
           {USE_BACKEND && beGrooms.error && <div className="ht-error" role="alert">{beGrooms.error}</div>}
         </div>
         <div className="ht-field">
-          <label className="ht-label" htmlFor="as-track">Đường tập</label>
-          <input id="as-track" data-testid="assign-track-input" className="ht-input" value={form.track} onChange={(e) => setForm({ ...form, track: e.target.value })} />
+          <label className="ht-label" htmlFor="as-track">Đường tập<span className="ht-req">*</span></label>
+          {!form.horseId || planHasTrack
+            ? <input id="as-track" data-testid="assign-track-readonly" className="ht-input" style={selectStyle} readOnly value={form.track} placeholder="Theo giáo án của ngựa" />
+            : (
+              <select id="as-track" data-testid="assign-track-select" className="ht-select" style={selectStyle} value={form.track} onChange={(e) => setForm({ ...form, track: e.target.value })}>
+                <option value="">— Giáo án chưa có đường, hãy chọn —</option>
+                {TRACK_TYPES.map((t) => <option key={t} value={TRACK_LABEL[t]}>{TRACK_LABEL[t]}</option>)}
+              </select>
+            )}
         </div>
       </div>
       <fieldset className="ht-field" style={{ border: 0, padding: 0, margin: 0 }}>

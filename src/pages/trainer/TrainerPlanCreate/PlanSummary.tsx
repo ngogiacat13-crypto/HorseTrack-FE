@@ -1,10 +1,10 @@
 import React from 'react';
-import type { Horse } from '../../../api/trainerApi';
+import { trackLabel, type Horse } from '../../../api/trainerApi';
 import { Icon } from '../../../components/ui/Icon';
 import { Badge, Busy, Callout, Panel } from '../../../components/ui/Ht';
-import type { PhaseDraft, PlanType } from './templates';
+import type { PhaseDraft } from './templates';
 
-export const PlanSummary: React.FC<{ name: string; horse?: Horse; type: PlanType; startDate: string; phases: PhaseDraft[]; busy: boolean; disabled: boolean; block: string | null }> = ({ name, horse, type, startDate, phases, busy, disabled, block }) => {
+export const PlanSummary: React.FC<{ name: string; horse?: Horse; type: string; startDate: string; phases: PhaseDraft[]; busy: boolean; disabled: boolean; block: string | null; editing?: boolean }> = ({ name, horse, type, startDate, phases, busy, disabled, block, editing }) => {
   const totalWeeks = phases.reduce((s, p) => s + (p.weeks || 0), 0);
   const totalSessions = phases.reduce((s, p) => s + (p.weeks || 0) * (p.sessionsPerWeek || 0), 0);
   return (
@@ -14,7 +14,8 @@ export const PlanSummary: React.FC<{ name: string; horse?: Horse; type: PlanType
           <dl className="ht-kv">
             <dt>Tên giáo án</dt><dd>{name || <i style={{ color: 'var(--muted)', fontWeight: 400 }}>chưa đặt tên</i>}</dd>
             <dt>Ngựa</dt><dd>{horse ? horse.name : '—'}</dd>
-            <dt>Loại</dt><dd>{type}</dd>
+            <dt>Loại</dt><dd>{type || <i style={{ color: 'var(--muted)', fontWeight: 400 }}>chưa chọn</i>}</dd>
+            <dt>Đường tập</dt><dd data-testid="plan-summary-track">{trackLabel(phases[0]?.trackType) || <i style={{ color: 'var(--muted)', fontWeight: 400 }}>chưa chọn</i>}</dd>
             <dt>Bắt đầu</dt><dd className="ht-mono">{startDate.split('-').reverse().join('/')}</dd>
             <dt>Số giai đoạn</dt><dd>{phases.length}</dd>
             <dt>Tổng thời gian</dt><dd>{totalWeeks} tuần</dd>
@@ -27,13 +28,17 @@ export const PlanSummary: React.FC<{ name: string; horse?: Horse; type: PlanType
               <Badge tone={p.intensity === 'Cao' ? 'danger' : p.intensity === 'Vừa' ? 'warning' : 'success'} plain>{p.intensity}</Badge>
             </div>
           ))}
-          <button type="submit" className="ht-btn ht-btn--primary ht-btn--block" style={{ marginTop: 16 }} disabled={busy || disabled} aria-busy={busy || undefined}>
-            <Busy busy={busy} label="Đang lưu…"><Icon name="check" />Lưu giáo án</Busy>
+          <button type="submit" className="ht-btn ht-btn--primary ht-btn--block" data-testid="plan-save" style={{ marginTop: 16 }} disabled={busy || disabled} aria-busy={busy || undefined}>
+            <Busy busy={busy} label="Đang lưu…"><Icon name="check" />{editing ? 'Lưu điều chỉnh' : 'Lưu giáo án'}</Busy>
           </button>
           {block && <p className="ht-error" style={{ marginTop: 10 }}><Icon name="lock" /><span>{block}</span></p>}
         </div>
       </Panel>
-      <Callout tone="info">Giáo án này chỉ có một giai đoạn. Khi giai đoạn kết thúc, lập giáo án mới cho giai đoạn tiếp theo. Sau khi lưu, vào <b>Lịch tập</b> để phân công phiên cho Mã phu.</Callout>
+      <Callout tone="info">
+        {editing
+          ? 'Mã phu có buổi của giáo án này sẽ nhận thông báo điều chỉnh. Buổi đã xếp phải nằm trong khoảng ngày mới.'
+          : <>Giáo án này chỉ có một giai đoạn. Khi giai đoạn kết thúc, lập giáo án mới cho giai đoạn tiếp theo. Sau khi lưu, vào <b>Lịch tập</b> để phân công phiên cho Mã phu.</>}
+      </Callout>
     </>
   );
 };

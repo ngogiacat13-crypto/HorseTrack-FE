@@ -3,14 +3,14 @@ import { Link, useParams } from 'react-router-dom';
 import { DEMO_NOW } from '../../../api/http';
 import { USE_BACKEND } from '../../../api/beClient';
 import { groomApi } from '../../../api/groomApi';
-import { SESSION_LABEL } from '../../../api/trainerApi';
+import { guideOf, planTrack, SESSION_LABEL, trackLabel } from '../../../api/trainerApi';
 import { useActor } from '../../../auth/AuthContext';
 import { useAction } from '../../../hooks/useAction';
 import { useFetch } from '../../../hooks/useFetch';
 import { PATH } from '../../../routers/routerPath';
 import { Icon } from '../../../components/ui/Icon';
 import { BackButton, Badge, Callout, PageHeader, Panel } from '../../../components/ui/Ht';
-import { HorseBadges, HrChart, LoadState } from '../../../components/trainer/TrainerParts';
+import { HorseBadges, HrChart, LoadState, StaffGuidePanel } from '../../../components/trainer/TrainerParts';
 import { ReadingForm } from './ReadingForm';
 
 export const GroomSessionRun: React.FC = () => {
@@ -26,12 +26,14 @@ export const GroomSessionRun: React.FC = () => {
   const last = s.readings[s.readings.length - 1];
   const d = s.decision;
   const over = (r: { hr: number; speed: number }) => r.hr > s.thresholds.hr || r.speed > s.thresholds.speed;
+  const planType = s.planType ?? plan.type;
+  const track = trackLabel(s.trackType ?? planTrack(plan)) || s.track;
 
   return (
     <div className="ht ht-page">
       <PageHeader crumbs={<BackButton fallback={PATH.groom.sessions} />}
         title={<>Phiên <span className="ht-mono">#{s.id}</span> · {s.horseName}</>}
-        sub={<>{s.label} · <span className="ht-mono">{s.date}</span> {s.time} · {s.track}{plan.name ? <> · giáo án “{plan.name}”</> : null}</>}
+        sub={<>{s.label} · <span className="ht-mono">{s.date}</span> {s.time} · {track}{plan.name ? <> · giáo án “{plan.name}”</> : null}</>}
         badge={<Badge tone={SESSION_LABEL[s.status][1]}>{SESSION_LABEL[s.status][0]}</Badge>} />
 
       {act.error && <Callout tone="danger" style={{ marginBottom: 16 }}>{act.error}</Callout>}
@@ -108,6 +110,7 @@ export const GroomSessionRun: React.FC = () => {
               {horse.trainingLocked && <Callout tone="danger" icon="lock">Đang bị khóa huấn luyện bởi BS {horse.lock?.by} (BR_01).</Callout>}
             </div>
           </Panel>
+          <StaffGuidePanel title="Hướng dẫn buổi tập" type={planType} track={track} guide={s.staffGuide ?? plan.staffGuide ?? guideOf(planType)} testId="session-guide" />
           <Panel as="h3" title="Thao tác">
             <div className="ht-panel__body" style={{ display: 'grid', gap: 10 }}>
               {s.status === 'SCHEDULED' && USE_BACKEND && !s.confirmed && (

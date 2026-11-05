@@ -12,13 +12,16 @@ export interface Horse {
 }
 
 export type Intensity = 'Nhẹ' | 'Vừa' | 'Cao';
-export interface PlanPhase { no: number; name: string; weeks: number; intensity: Intensity; distanceM: number; sessionsPerWeek: number; hrLimit: number; estimated?: boolean }
+export type TrackType = 'SYNTHETIC' | 'DIRT' | 'TURF';
+export interface StaffGuide { summary: string; steps: string[] }
+export interface PlanPhase { no: number; name: string; weeks: number; intensity: Intensity; trackType?: TrackType | null; distanceM?: number; sessionsPerWeek: number; hrLimit: number; estimated?: boolean }
 export type PlanStatus = 'PLANNED' | 'ACTIVE' | 'PAUSED' | 'COMPLETED' | 'REPLACED' | 'CANCELLED';
 export interface TrainingPlan {
   id: string; horseId: string; horseName: string;
   name: string;
   type: string; goal: string; phases: PlanPhase[];
   currentPhase: number; week: number; status: PlanStatus; startDate: string; createdBy: string; pausedReason?: string;
+  staffGuide?: StaffGuide | null;
 }
 
 export type SessionStatus = 'SCHEDULED' | 'IN_PROGRESS' | 'PAUSED_PENDING_TRAINER' | 'RESUMED' | 'STOPPED' | 'COMPLETED';
@@ -26,6 +29,7 @@ export interface Reading { t: string; hr: number; speed: number }
 export interface TrainingSession {
   id: string; horseId: string; horseName: string; planId: string; phaseNo: number; label: string;
   date: string; time: string; groom: string; track: string; status: SessionStatus; confirmed?: boolean; cancelled?: boolean;
+  planType?: string | null; trackType?: TrackType | null; staffGuide?: StaffGuide | null;
   thresholds: { hr: number; speed: number };
   readings: Reading[]; recovery?: Reading[];
   pausedAt?: string; pausedReason?: string;
@@ -48,7 +52,7 @@ export type ProposalStatus =
   | 'WAITLISTED' | 'WAITING_TRAINER' | 'WAITING_PAYMENT' | 'REGISTERED' | 'TRAINER_REJECTED' | 'TRAINER_EXPIRED'
   | 'VET_EXPIRED' | 'PAYMENT_EXPIRED' | 'CANCELLED' | 'INELIGIBLE' | 'NO_SLOT';
 export interface RaceProposal {
-  id: string; beId?: number; horseId: string; horseName: string; owner: string; tournamentId: string; status: ProposalStatus;
+  id: string; beId?: number; horseId: string; horseName: string; owner: string; tournamentId: string; status: ProposalStatus; examDeadline?: string | null;
   createdAt: string; createdBy: string; note?: string;
   history: { at: string; who: string; text: string; tone?: 'success' | 'danger' | 'warning' | 'info' }[];
   vetResult: null | { pass: boolean; by: string; at: string; note: string; conditions?: string };

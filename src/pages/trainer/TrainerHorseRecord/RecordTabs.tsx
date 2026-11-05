@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Horse, PLAN_LABEL, PROPOSAL_LABEL, phaseHr, phaseLoad, RaceProposal, Tournament, TrainingPlan, TrainingSession, Vaccination } from '../../../api/trainerApi';
+import { guideOf, Horse, PLAN_LABEL, planTrack, PROPOSAL_LABEL, phaseHr, phaseLoad, RaceProposal, trackLabel, Tournament, TrainingPlan, TrainingSession, Vaccination } from '../../../api/trainerApi';
 import type { FeedRequest } from '../../../api/vetApi';
 import { Icon } from '../../../components/ui/Icon';
 import { Badge, Callout, Panel, Timeline } from '../../../components/ui/Ht';
-import { HorseBadges, PhaseBar } from '../../../components/trainer/TrainerParts';
+import { HorseBadges, PhaseBar, StaffGuidePanel } from '../../../components/trainer/TrainerParts';
 import { InjuryMap } from '../../../components/vet/InjuryMap';
 import { SessionTable } from './SessionTable';
 import { USE_BACKEND } from '../../../api/beClient';
@@ -14,12 +14,12 @@ import { FeedRequestList } from '../../vet/VetHorseHealth/FeedRequestList';
 const muted: React.CSSProperties = { margin: 0, color: 'var(--muted)', fontSize: 13 };
 
 
-export const OverviewTab: React.FC<{ horse: Horse; plan?: TrainingPlan; recent: TrainingSession[]; avg: string; vaccinations: Vaccination[]; block: string | null; feedRequests?: FeedRequest[]; onChanged?: () => void }> = ({ horse, plan, recent, avg, vaccinations, block, feedRequests = [], onChanged }) => {
+export const OverviewTab: React.FC<{ horse: Horse; plan?: TrainingPlan; recent: TrainingSession[]; avg: string; vaccinations: Vaccination[]; block: string | null; adjustable?: boolean; feedRequests?: FeedRequest[]; onChanged?: () => void }> = ({ horse, plan, recent, avg, vaccinations, block, adjustable, feedRequests = [], onChanged }) => {
   const phase = plan?.phases.find((p) => p.no === plan.currentPhase);
   return (
     <div className="ht-cols">
       <div>
-        <Panel title="Giáo án hiện tại" right={plan && <Badge tone={PLAN_LABEL[plan.status][1]}>{PLAN_LABEL[plan.status][0]}</Badge>}>
+        <Panel title="Giáo án hiện tại" right={plan && <span style={{ display: 'inline-flex', gap: 8, alignItems: 'center' }}>{adjustable && <Link className="ht-btn ht-btn--secondary ht-btn--sm" data-testid={`edit-plan-${plan.id}`} to={`/trainer/plans/${plan.id}/edit`}><Icon name="calendar" size={14} />Điều chỉnh</Link>}<Badge tone={PLAN_LABEL[plan.status][1]}>{PLAN_LABEL[plan.status][0]}</Badge></span>}>
           <div className="ht-panel__body">
             {plan && phase ? (
               <div style={{ display: 'grid', gap: 12 }}>
@@ -38,6 +38,7 @@ export const OverviewTab: React.FC<{ horse: Horse; plan?: TrainingPlan; recent: 
             ) : <p style={{ margin: 0, color: 'var(--muted)' }}>Chưa có giáo án. {block ?? 'Bấm “Tạo giáo án” để lập một giai đoạn.'}</p>}
           </div>
         </Panel>
+        {plan && <StaffGuidePanel type={plan.type} track={trackLabel(planTrack(plan))} guide={plan.staffGuide ?? guideOf(plan.type)} testId="horse-plan-guide" />}
         <Panel title="Phiên tập gần đây" right={<span style={{ fontSize: 13, color: 'var(--muted)' }}>Điểm TB <span className="ht-score-chip">{avg}</span></span>}>
           <SessionTable sessions={recent} />
         </Panel>

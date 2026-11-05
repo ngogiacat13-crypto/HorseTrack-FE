@@ -10,12 +10,13 @@ export const raceExamsApi = {
   async getRaceExams() {
     const [loaded, tournaments, horses, protocols, inventory, waiting, done] = await Promise.all([
       get<RaceProposal[]>('/raceProposals'), get<Tournament[]>('/tournaments'), get<VetHorse[]>('/horses'), get<Protocol[]>('/protocols'), get<InventoryItem[]>('/inventory'),
-      USE_BACKEND ? beData<{ proposalCode: string }[]>(be.get('/prerace-exams', { params: { tab: 'CHO_KHAM' } })).catch(() => []) : Promise.resolve([]),
+      USE_BACKEND ? beData<{ proposalCode: string; examDeadline?: string | null }[]>(be.get('/prerace-exams', { params: { tab: 'CHO_KHAM' } })).catch(() => []) : Promise.resolve([]),
       USE_BACKEND ? beData<{ proposalCode: string }[]>(be.get('/prerace-exams', { params: { tab: 'DA_CO_KET_QUA' } })).catch(() => []) : Promise.resolve([]),
     ]);
     const codes = new Set([...waiting, ...done].map((e) => e.proposalCode));
     const matched = loaded.filter((p) => codes.has(p.id));
-    const proposals = matched.length ? matched : loaded;
+    const deadlines = new Map(waiting.map((e) => [e.proposalCode, e.examDeadline ?? null]));
+    const proposals = (matched.length ? matched : loaded).map((p) => (deadlines.get(p.id) ? { ...p, examDeadline: deadlines.get(p.id) } : p));
     return { proposals, tournaments, horses, protocols, inventory };
   },
 

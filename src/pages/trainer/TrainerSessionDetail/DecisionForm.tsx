@@ -14,7 +14,7 @@ export const DecisionForm: React.FC<{ session: TrainingSession; horse: Horse; ph
   const { busy, error, setError, run } = useAction(onDone);
   const [choice, setChoice] = useState<Choice>('stop');
   const [note, setNote] = useState('');
-  const [adj, setAdj] = useState({ intensity: (phase.intensity === 'Cao' ? 'Vừa' : 'Nhẹ') as Intensity, distanceM: Math.max(400, phase.distanceM - 400), hrLimit: s.thresholds.hr });
+  const [adj, setAdj] = useState({ intensity: (phase.intensity === 'Cao' ? 'Vừa' : 'Nhẹ') as Intensity, distanceM: Math.max(400, (phase.distanceM ?? 0) - 400), hrLimit: s.thresholds.hr });
 
   const recovered = (s.recovery ?? [])[(s.recovery ?? []).length - 1];
   const lock = trainingBlock(horse);
@@ -60,7 +60,7 @@ export const DecisionForm: React.FC<{ session: TrainingSession; horse: Horse; ph
             <div className="ht-field" style={{ margin: 0 }}>
               <label className="ht-label" htmlFor="adj-d">Quãng đường (m)</label>
               <input id="adj-d" type="number" step={100} min={200} className="ht-input" value={adj.distanceM} onChange={(e) => setAdj({ ...adj, distanceM: Number(e.target.value) })} />
-              <span className="ht-hint">Đang: {phase.estimated ? 'chưa có trên server' : `${phase.distanceM} m`}</span>
+              <span className="ht-hint">Đang: {phase.distanceM ? `${phase.distanceM} m` : 'chưa có trên server'}</span>
             </div>
             <div className="ht-field" style={{ margin: 0 }}>
               <label className="ht-label" htmlFor="adj-h">Ngưỡng bpm</label>

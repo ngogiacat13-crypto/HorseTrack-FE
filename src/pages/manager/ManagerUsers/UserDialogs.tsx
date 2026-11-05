@@ -12,9 +12,9 @@ const useReason = () => {
   return { reason, onChange: setReason };
 };
 
-export const AssignmentDialog: React.FC<{ user: ManagedUser; data: { grooms: GroomAssignment[]; stalls: AssignedStall[]; horses: AssignedHorse[] }; onClose: () => void; onDone: () => void }> = ({ user, data, onClose, onDone }) => (
+export const AssignmentDialog: React.FC<{ user: ManagedUser; data: { grooms: GroomAssignment[]; stalls: AssignedStall[]; horses: AssignedHorse[] }; onClose: () => void; onDone: () => void; onReload?: () => void }> = ({ user, data, onClose, onDone, onReload }) => (
   user.role === 'HeadTrainer'
-    ? <TrainerHorsesDialog user={user} stalls={data.stalls} horses={data.horses} onClose={onClose} onDone={onDone} />
+    ? <TrainerHorsesDialog user={user} stalls={data.stalls} horses={data.horses} onClose={onClose} onDone={onDone} onReload={onReload} />
     : <GroomZoneDialog user={user} data={data} onClose={onClose} onDone={onDone} />
 );
 

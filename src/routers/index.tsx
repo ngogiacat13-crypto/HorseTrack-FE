@@ -93,6 +93,7 @@ const ROLE_ROUTES: { role: Role; routes: [path: string, element: React.ReactElem
     [PATH.trainer.horse, <TrainerHorseRecord />],
     [PATH.trainer.plans, <TrainerPlans />],
     [PATH.trainer.planCreate, <TrainerPlanCreate />],
+    [PATH.trainer.planEdit, <TrainerPlanCreate />],
     [PATH.trainer.schedule, <TrainerSchedule />],
     [PATH.trainer.session, <TrainerSessionDetail />],
     [PATH.trainer.races, <TrainerRaces />],

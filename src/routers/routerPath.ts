@@ -29,6 +29,7 @@ export const PATH = {
     horse: '/trainer/horses/:id',
     plans: '/trainer/plans',
     planCreate: '/trainer/plans/new',
+    planEdit: '/trainer/plans/:id/edit',
     schedule: '/trainer/schedule',
     session: '/trainer/sessions/:id',
     races: '/trainer/races',
