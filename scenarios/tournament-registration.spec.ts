@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { signIn } from './support';
 
-test('owner sees eligibility reasons, proposes one horse and holds a slot', async ({ page }) => {
+test('TC-66 — owner sees eligibility reasons, proposes one horse and holds a slot', async ({ page }) => {
   await signIn(page, 'HorseOwner', 'Đỗ Minh Quân');
   await page.getByTestId('nav-owner-tournaments').click();
   await expect(page.getByTestId('tournament-fit-GD-0003')).toContainText('Phù hợp');
@@ -17,7 +17,7 @@ test('owner sees eligibility reasons, proposes one horse and holds a slot', asyn
   await expect(page.getByTestId('entry-cancel-btn')).toBeVisible();
 });
 
-test('trainer rejection needs a reason and frees the slot for the waitlist head', async ({ page }) => {
+test('TC-67 — trainer rejection needs a reason and frees the slot for the waitlist head', async ({ page }) => {
   await signIn(page, 'HeadTrainer', 'Trần Đức Hùng');
   await page.getByTestId('nav-trainer-race-confirmations').click();
   await page.getByTestId('trainer-reject-DK-0001').click();
@@ -37,7 +37,7 @@ test('trainer rejection needs a reason and frees the slot for the waitlist head'
   await expect(page.getByTestId('waitlist-table')).not.toContainText('Blaze');
 });
 
-test('vet pass issues the entry fee invoice for the owner', async ({ page }) => {
+test('TC-68 — vet pass issues the entry fee invoice for the owner', async ({ page }) => {
   await signIn(page, 'Veterinarian');
   await page.getByTestId('nav-vet-race-exams').click();
   await expect(page.getByTestId('vet-entry-deadline-DK-0002')).toContainText('04/10/2026 08:30');
@@ -55,7 +55,7 @@ test('vet pass issues the entry fee invoice for the owner', async ({ page }) => 
   await expect(page.getByTestId('entry-pay-btn')).toHaveAttribute('href', /\/owner\/invoices\/INV-/);
 });
 
-test('manager records results with prize money and resolves a complaint', async ({ page }) => {
+test('TC-ADM-09 @admin — manager records results with prize money and resolves a complaint', async ({ page }) => {
   await signIn(page, 'ClubManager');
   await page.goto('/manager/tournaments');
   await expect(page.getByTestId('tournament-row-GD-0005')).toContainText('Chờ nhập kết quả');
@@ -76,63 +76,71 @@ test('manager records results with prize money and resolves a complaint', async 
   await expect(page.getByTestId('complaint-empty')).toBeVisible();
 });
 
-test('manager imports an external tournament with complete data, VND fee and date rules, then publishes it', async ({ page }) => {
+test('TC-ADM-10 @admin — manager imports an external tournament with complete data, VND fee and date rules, then publishes it', async ({ page }) => {
   await signIn(page, 'ClubManager');
-  await page.getByTestId('nav-manager-tournaments').click();
-  await expect(page.getByTestId('tournament-row-GD-0001')).toBeVisible();
-  await expect(page.getByTestId('tournament-edit-GD-0001')).toHaveCount(0);
-  await page.getByTestId('tournament-create-btn').click();
+  await test.step('Mở quản lý giải và bắt đầu tạo giải', async () => {
+    await page.getByTestId('nav-manager-tournaments').click();
+    await expect(page.getByTestId('tournament-row-GD-0001')).toBeVisible();
+    await expect(page.getByTestId('tournament-edit-GD-0001')).toHaveCount(0);
+    await page.getByTestId('tournament-create-btn').click();
+  });
   const dialog = page.getByTestId('tournament-form-dialog');
-  await expect(dialog).toContainText('Nhập giải đấu');
-  await dialog.getByTestId('dialog-confirm').click();
-  await expect(page.getByTestId('tournament-form-missing')).toBeVisible();
-  await expect(dialog).toContainText('Nhập tuổi tối thiểu');
-  await expect(dialog).toContainText('Nhập cân nặng tối đa');
-  await expect(dialog).toContainText('Chọn ít nhất một giống');
+  await test.step('Kiểm tra trường bắt buộc', async () => {
+    await expect(dialog).toContainText('Nhập giải đấu');
+    await dialog.getByTestId('dialog-confirm').click();
+    await expect(page.getByTestId('tournament-form-missing')).toBeVisible();
+    await expect(dialog).toContainText('Nhập tuổi tối thiểu');
+    await expect(dialog).toContainText('Nhập cân nặng tối đa');
+    await expect(dialog).toContainText('Chọn ít nhất một giống');
+  });
 
-  await page.getByTestId('tournament-name').fill('Giải thử nghiệm mùa đông');
-  await page.getByTestId('tournament-organizer').fill('CLB Đua ngựa HCM');
-  await page.getByTestId('tournament-location').fill('Trường đua Đại Nam');
-  await page.getByTestId('tournament-raceDate').fill('2026-10-06');
-  await expect(dialog).toContainText('Ngày thi đấu phải sau hôm nay ít nhất 5 ngày');
-  await page.getByTestId('tournament-raceDate').fill('2026-12-20');
-  await page.getByTestId('tournament-registrationDeadline').fill('2026-12-18');
-  await expect(dialog).toContainText('Hạn đăng ký phải trước ngày thi đấu ít nhất 3 ngày');
-  await page.getByTestId('tournament-registrationDeadline').fill('2026-12-10');
+  await test.step('Nhập dữ liệu và xác thực ngày, phí VND, điều kiện cùng giải thưởng', async () => {
+    await page.getByTestId('tournament-name').fill('Giải thử nghiệm mùa đông');
+    await page.getByTestId('tournament-organizer').fill('CLB Đua ngựa HCM');
+    await page.getByTestId('tournament-location').fill('Trường đua Đại Nam');
+    await page.getByTestId('tournament-raceDate').fill('2026-10-06');
+    await expect(dialog).toContainText('Ngày thi đấu phải sau hôm nay ít nhất 5 ngày');
+    await page.getByTestId('tournament-raceDate').fill('2026-12-20');
+    await page.getByTestId('tournament-registrationDeadline').fill('2026-12-18');
+    await expect(dialog).toContainText('Hạn đăng ký phải trước ngày thi đấu ít nhất 3 ngày');
+    await page.getByTestId('tournament-registrationDeadline').fill('2026-12-10');
 
-  const fee = page.getByTestId('tournament-entryFee');
-  await fee.fill('5.000.000');
-  await expect(fee).toHaveValue('5.000.000');
-  await fee.dblclick();
-  expect(await fee.evaluate((el: HTMLInputElement) => el.selectionEnd! - el.selectionStart!)).toBe('5.000.000'.length);
+    const fee = page.getByTestId('tournament-entryFee');
+    await fee.fill('5.000.000');
+    await expect(fee).toHaveValue('5.000.000');
+    await fee.dblclick();
+    expect(await fee.evaluate((el: HTMLInputElement) => el.selectionEnd! - el.selectionStart!)).toBe('5.000.000'.length);
 
-  await page.getByTestId('tournament-minAgeYears').fill('3');
-  await page.getByTestId('tournament-maxAgeYears').fill('8');
-  await page.getByTestId('tournament-minWeightKg').fill('420');
-  await page.getByTestId('tournament-maxWeightKg').fill('560');
-  await page.getByTestId('tournament-breed-all').click();
-  await page.getByTestId('tournament-prize-amount-0').fill('50000000');
-  await expect(page.getByTestId('tournament-prize-amount-0')).toHaveValue('50.000.000');
-  await expect(page.getByTestId('tournament-prize-rank-2')).toHaveText('Hạng 3');
-  await page.getByTestId('tournament-prize-amount-1').fill('30000000');
-  await page.getByTestId('tournament-prize-amount-2').fill('10000000');
-  await page.getByTestId('tournament-prize-add').click();
-  await page.getByTestId('tournament-prize-add').click();
-  await expect(page.getByTestId('tournament-prize-add')).toHaveCount(0);
-  await page.getByTestId('tournament-prize-remove-4').click();
-  await page.getByTestId('tournament-prize-amount-3').fill('5000000');
-  await expect(page.getByTestId('tournament-prize-remove-2')).toHaveCount(0);
-  await dialog.getByTestId('dialog-confirm').click();
-  await expect(dialog).toHaveCount(0);
+    await page.getByTestId('tournament-minAgeYears').fill('3');
+    await page.getByTestId('tournament-maxAgeYears').fill('8');
+    await page.getByTestId('tournament-minWeightKg').fill('420');
+    await page.getByTestId('tournament-maxWeightKg').fill('560');
+    await page.getByTestId('tournament-breed-all').click();
+    await page.getByTestId('tournament-prize-amount-0').fill('50000000');
+    await expect(page.getByTestId('tournament-prize-amount-0')).toHaveValue('50.000.000');
+    await expect(page.getByTestId('tournament-prize-rank-2')).toHaveText('Hạng 3');
+    await page.getByTestId('tournament-prize-amount-1').fill('30000000');
+    await page.getByTestId('tournament-prize-amount-2').fill('10000000');
+    await page.getByTestId('tournament-prize-add').click();
+    await page.getByTestId('tournament-prize-add').click();
+    await expect(page.getByTestId('tournament-prize-add')).toHaveCount(0);
+    await page.getByTestId('tournament-prize-remove-4').click();
+    await page.getByTestId('tournament-prize-amount-3').fill('5000000');
+    await expect(page.getByTestId('tournament-prize-remove-2')).toHaveCount(0);
+  });
 
-  await page.getByRole('tab', { name: /Bản nháp/ }).click();
-  await expect(page.getByTestId('tournament-row-GD-0006')).toContainText('Giải thử nghiệm mùa đông');
-  await page.getByTestId('tournament-publish-GD-0006').click();
-  await page.getByTestId('tournament-publish-dialog').getByTestId('dialog-confirm').click();
-  await expect(page.getByTestId('tournament-row-GD-0006')).toHaveCount(0);
+  await test.step('Lưu bản nháp và công bố giải', async () => {
+    await dialog.getByTestId('dialog-confirm').click();
+    await expect(dialog).toHaveCount(0);
+    await page.getByRole('tab', { name: /Bản nháp/ }).click();
+    await expect(page.getByTestId('tournament-row-GD-0006')).toContainText('Giải thử nghiệm mùa đông');
+    await page.getByTestId('tournament-publish-GD-0006').click();
+    await page.getByTestId('tournament-publish-dialog').getByTestId('dialog-confirm').click();
+    await expect(page.getByTestId('tournament-row-GD-0006')).toHaveCount(0);
+  });
 });
 
-test('trainer cannot plan HIGH intensity within 7 days before a registered race', async ({ page }) => {
+test('TC-71 — trainer cannot plan HIGH intensity within 7 days before a registered race', async ({ page }) => {
   await signIn(page, 'HeadTrainer', 'Trần Đức Hùng');
   await page.goto('/trainer/plans/new?horse=h-galaxy');
   await expect(page.getByTestId('plan-race-rest-block')).toHaveCount(0);
@@ -140,7 +148,7 @@ test('trainer cannot plan HIGH intensity within 7 days before a registered race'
   await expect(page.getByTestId('plan-race-rest-block')).toContainText('08/10/2026');
 });
 
-test('manager finishes a tournament: unfinished proposals close, registered horses wait for results', async ({ page }) => {
+test('TC-ADM-11 @admin — manager finishes a tournament: unfinished proposals close, registered horses wait for results', async ({ page }) => {
   await signIn(page, 'ClubManager');
   await page.goto('/manager/tournaments/GD-0002');
   await page.getByTestId('tournament-finish-btn').click();
@@ -153,7 +161,7 @@ test('manager finishes a tournament: unfinished proposals close, registered hors
   await expect(page.getByTestId('tournament-results-btn')).toBeVisible();
 });
 
-test('owner sees the latest closed proposal and may propose another horse', async ({ page }) => {
+test('TC-73 — owner sees the latest closed proposal and may propose another horse', async ({ page }) => {
   await signIn(page, 'HorseOwner', 'Vũ Thị Mai');
   await page.getByTestId('nav-owner-tournaments').click();
   const last = page.getByTestId('tournament-last-entry-GD-0003');
@@ -163,7 +171,7 @@ test('owner sees the latest closed proposal and may propose another horse', asyn
   await expect(last).toContainText('có thể đề xuất ngựa khác');
 });
 
-test('manager records results before race day: the tournament ends and unfinished proposals are cancelled', async ({ page }) => {
+test('TC-ADM-12 @admin — manager records results before race day: the tournament ends and unfinished proposals are cancelled', async ({ page }) => {
   await signIn(page, 'ClubManager');
   await page.goto('/manager/tournaments/GD-0002');
   await page.getByTestId('tournament-results-btn').click();

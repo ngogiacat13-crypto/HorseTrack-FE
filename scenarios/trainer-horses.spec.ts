@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { signIn } from './support';
 
-test('a head trainer can be given horses from several zones without picking a zone', async ({ page }) => {
+test('TC-ADM-13 @admin — a head trainer can be given horses from several zones without picking a zone', async ({ page }) => {
   await signIn(page, 'ClubManager');
   await page.goto('/manager/users');
   await page.getByTestId('assign-duchung').click();

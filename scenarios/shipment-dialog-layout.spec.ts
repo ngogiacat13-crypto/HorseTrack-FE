@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { signIn } from './support';
 
-test('warehouse shipment item controls stay aligned on desktop and mobile', async ({ page }) => {
+test('TC-50 — warehouse shipment item controls stay aligned on desktop and mobile', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await signIn(page, 'WarehouseManager');
   await page.goto('/warehouse/shipments');

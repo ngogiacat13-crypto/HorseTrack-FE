@@ -6,7 +6,7 @@ const bigPdf = () => {
   return Buffer.concat([head, Buffer.alloc(5 * 1048576 - head.length, 0x20)]);
 };
 
-test('registration documents: PDF over 4 MB is rejected, large photos are compressed below 4 MB', async ({ page }) => {
+test('TC-02 — registration documents: PDF over 4 MB is rejected, large photos are compressed below 4 MB', async ({ page }) => {
   test.setTimeout(90_000);
   await signIn(page, 'HorseOwner');
   await page.goto('/owner/registrations/new');

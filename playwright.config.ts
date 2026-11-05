@@ -2,6 +2,7 @@ import { defineConfig } from '@playwright/test';
 
 const PORT = 5199;
 const onCi = !!process.env.CI;
+const isHeaded = process.argv.includes('--headed');
 
 export default defineConfig({
   testDir: './scenarios',
@@ -13,6 +14,7 @@ export default defineConfig({
   use: {
     baseURL: `http://localhost:${PORT}`,
     trace: 'retain-on-failure',
+    launchOptions: { slowMo: isHeaded ? 1500 : 0 },
   },
   webServer: {
     command: `npx vite --port ${PORT} --strictPort`,

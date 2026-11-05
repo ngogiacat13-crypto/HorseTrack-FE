@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { signIn } from './support';
 
-test('vet lock warns and owner sees ineligible proposal and refunded fee without actions', async ({ page }) => {
+test('TC-62 — vet lock warns and owner sees ineligible proposal and refunded fee without actions', async ({ page }) => {
   await signIn(page, 'Veterinarian');
   await page.goto('/vet/horses/h-arrow');
   await page.getByRole('button', { name: 'Khóa huấn luyện' }).click();
@@ -32,7 +32,7 @@ test('vet lock warns and owner sees ineligible proposal and refunded fee without
   await expect(page.getByRole('button', { name: 'Thanh toán qua VNPay' })).toHaveCount(0);
 });
 
-test('manager can filter refunded invoices without payment or debt actions', async ({ page }) => {
+test('TC-ADM-08 @admin — manager can filter refunded invoices without payment or debt actions', async ({ page }) => {
   await signIn(page, 'ClubManager');
   await page.goto('/manager/invoices');
   await page.getByTestId('manager-invoice-filter-refunded').click();
@@ -42,7 +42,7 @@ test('manager can filter refunded invoices without payment or debt actions', asy
   await expect(invoice).toContainText('—');
 });
 
-test('owner sees trainer confirmation deadline instead of a waitlist position', async ({ page }) => {
+test('TC-64 — owner sees trainer confirmation deadline instead of a waitlist position', async ({ page }) => {
   await signIn(page, 'HorseOwner', 'Đỗ Minh Quân');
   await page.getByTestId('nav-owner-race-entries').click();
   const entry = page.getByTestId('owner-entry-DK-0001');
@@ -51,7 +51,7 @@ test('owner sees trainer confirmation deadline instead of a waitlist position', 
   await expect(entry).not.toContainText('Vị trí chờ');
 });
 
-test('race notification destinations open for each recipient role', async ({ page }) => {
+test('TC-65 — race notification destinations open for each recipient role', async ({ page }) => {
   await signIn(page, 'HorseOwner', 'Đỗ Minh Quân');
   await page.goto('/owner/race-entries');
   await expect(page.getByTestId('page-title')).toContainText('Đề xuất của tôi');

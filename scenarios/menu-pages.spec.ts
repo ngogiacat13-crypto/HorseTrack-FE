@@ -2,7 +2,10 @@ import { expect, test } from '@playwright/test';
 import { ROLES, signIn, watchPageErrors } from './support';
 
 for (const role of ROLES) {
-  test(`${role}: every menu page opens without errors`, async ({ page }) => {
+  const title = role === 'ClubManager'
+    ? `TC-ADM-04 @admin — ${role}: every menu page opens without errors`
+    : `TC-${String(21 + ROLES.indexOf(role)).padStart(2, '0')} — ${role}: every menu page opens without errors`;
+  test(title, async ({ page }) => {
     const errors = watchPageErrors(page);
     await signIn(page, role);
     const links = page.getByTestId('sidebar').locator('[data-testid^="nav-"]');

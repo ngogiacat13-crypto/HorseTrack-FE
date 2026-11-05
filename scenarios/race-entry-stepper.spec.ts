@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { signIn } from './support';
 
-test('trainer race page shows the owner-led registration steps, not the old organizer flow', async ({ page }) => {
+test('TC-44 — trainer race page shows the owner-led registration steps, not the old organizer flow', async ({ page }) => {
   await signIn(page, 'HeadTrainer', 'Trần Đức Hùng');
   await page.goto('/trainer/races');
   const stepper = page.getByTestId('race-entry-stepper');

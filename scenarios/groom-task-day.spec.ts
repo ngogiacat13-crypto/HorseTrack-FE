@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { signIn } from './support';
 
-test('groom previews next-day tasks without being able to complete them', async ({ page }) => {
+test('TC-03 — groom previews next-day tasks without being able to complete them', async ({ page }) => {
   await signIn(page, 'Groom');
   await expect(page.getByTestId('task-TK-0301')).toBeVisible();
   await expect(page.getByTestId('task-TK-0324')).toHaveCount(0);
@@ -14,7 +14,7 @@ test('groom previews next-day tasks without being able to complete them', async 
   await expect(page.getByTestId('task-done-TK-0301')).toBeVisible();
 });
 
-test('groom can confirm a task only from 30 minutes before its scheduled time', async ({ page }) => {
+test('TC-04 — groom can confirm a task only from 30 minutes before its scheduled time', async ({ page }) => {
   await signIn(page, 'Groom');
   await expect(page.getByTestId('task-done-TK-0301')).toBeVisible();
   await expect(page.getByTestId('task-done-TK-0304')).toHaveCount(0);

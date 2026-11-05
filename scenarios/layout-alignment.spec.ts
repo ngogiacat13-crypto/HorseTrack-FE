@@ -43,7 +43,10 @@ const findLayoutIssues = (page: Page) => page.evaluate(() => {
 });
 
 for (const width of [1280, 1920]) for (const role of ROLES) {
-  test(`${role} @${width}px: form fields line up and nothing overflows`, async ({ page }) => {
+  const title = role === 'ClubManager'
+    ? `TC-ADM-${width === 1280 ? '02' : '03'} @admin — ${role} @${width}px: form fields line up and nothing overflows`
+    : `TC-${String(8 + (width === 1920 ? ROLES.length : 0) + ROLES.indexOf(role)).padStart(2, '0')} — ${role} @${width}px: form fields line up and nothing overflows`;
+  test(title, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
     await signIn(page, role);
     const links = page.getByTestId('sidebar').locator('[data-testid^="nav-"]');
@@ -63,7 +66,7 @@ for (const width of [1280, 1920]) for (const role of ROLES) {
   });
 }
 
-test('public sign-up and password pages line up', async ({ page }) => {
+test('TC-20 — public sign-up and password pages line up', async ({ page }) => {
   const found: string[] = [];
   for (const path of ['/login', '/register', '/forgot-password']) {
     await page.goto(path);

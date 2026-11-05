@@ -3,7 +3,7 @@ import { watchPageErrors } from './support';
 
 const services = ['Huấn luyện theo giáo án', 'Thú y & điều trị', 'Lưu chuồng & dinh dưỡng', 'Tham gia giải đấu', 'Theo dõi trực tuyến'];
 
-test('public landing introduces the club to horse owners: services, get-started steps, team, promises and FAQ', async ({ page }) => {
+test('TC-07 — public landing introduces the club to horse owners: services, get-started steps, team, promises and FAQ', async ({ page }) => {
   const errors = watchPageErrors(page);
   const viewports = [
     { width: 1440, height: 1000, columns: 6 },

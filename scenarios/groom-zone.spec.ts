@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { signIn } from './support';
 
-test('creating a groom account does not ask for a stall zone', async ({ page }) => {
+test('TC-ADM-01 @admin — creating a groom account does not ask for a stall zone', async ({ page }) => {
   await signIn(page, 'ClubManager');
   await page.goto('/manager/users');
   await page.getByRole('button', { name: 'Tạo tài khoản nhân viên' }).click();
@@ -10,7 +10,7 @@ test('creating a groom account does not ask for a stall zone', async ({ page }) 
   await page.getByTestId('dialog-cancel').click();
 });
 
-test('a groom keeps exactly one zone and zones of other grooms are locked', async ({ page }) => {
+test('TC-06 — a groom keeps exactly one zone and zones of other grooms are locked', async ({ page }) => {
   await signIn(page, 'ClubManager');
   await page.goto('/manager/users');
   await page.getByTestId('assign-vantoan').click();

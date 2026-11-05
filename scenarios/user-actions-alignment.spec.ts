@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { signIn } from './support';
 
-test('manager user list: lock buttons and secondary actions line up in fixed columns', async ({ page }) => {
+test('TC-ADM-14 @admin — manager user list: lock buttons and secondary actions line up in fixed columns', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await signIn(page, 'ClubManager');
   await page.getByTestId('nav-manager-users').click();

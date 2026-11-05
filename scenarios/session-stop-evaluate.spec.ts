@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { signIn } from './support';
 
-test('trainer evaluates a session that was stopped and sent to the vet', async ({ page }) => {
+test('TC-49 — trainer evaluates a session that was stopped and sent to the vet', async ({ page }) => {
   await signIn(page, 'HeadTrainer');
   await page.goto('/trainer/sessions/S-0023');
   await expect(page.getByTestId('session-sent-vet')).toContainText('C-0015');

@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { ROLE_HOME, ROLES, accountFor, signIn, watchPageErrors } from './support';
 
-test('a guest opening the site sees the introduction page first, then can go to login', async ({ page }) => {
+test('TC-51 — a guest opening the site sees the introduction page first, then can go to login', async ({ page }) => {
   await page.goto('/');
   await expect(page).toHaveURL(/\/$/);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('HorseTrack');
@@ -11,7 +11,7 @@ test('a guest opening the site sees the introduction page first, then can go to 
   await expect(page.getByTestId('login-identifier-hint')).toContainText('tên đăng nhập, email hoặc số điện thoại');
 });
 
-test('a wrong password shows an error and stays on login', async ({ page }) => {
+test('TC-52 — a wrong password shows an error and stays on login', async ({ page }) => {
   await page.goto('/login');
   await page.getByTestId('username-input').fill(accountFor('ClubManager').username);
   await page.getByTestId('password-input').fill('sai-mat-khau-123');
@@ -21,7 +21,10 @@ test('a wrong password shows an error and stays on login', async ({ page }) => {
 });
 
 for (const role of ROLES) {
-  test(`${role} lands on ${ROLE_HOME[role]} and can sign out`, async ({ page }) => {
+  const title = role === 'ClubManager'
+    ? `TC-ADM-06 @admin — ${role} lands on ${ROLE_HOME[role]} and can sign out`
+    : `TC-${String(53 + ROLES.indexOf(role)).padStart(2, '0')} — ${role} lands on ${ROLE_HOME[role]} and can sign out`;
+  test(title, async ({ page }) => {
     const errors = watchPageErrors(page);
     await signIn(page, role);
     await expect(page.getByTestId('page-title').first()).toBeVisible();

@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { signIn } from './support';
 
-test('owner sign-up checks Vietnamese phone and email format, full name is optional', async ({ page }) => {
+test('TC-46 — owner sign-up checks Vietnamese phone and email format, full name is optional', async ({ page }) => {
   await page.goto('/register');
   await page.locator('#username').fill('chungua_test');
   await page.locator('#phone').fill('0123456789');
@@ -13,7 +13,7 @@ test('owner sign-up checks Vietnamese phone and email format, full name is optio
   await expect(page.getByText('Vui lòng nhập họ và tên')).toHaveCount(0);
 });
 
-test('owner sign-up asks for the email OTP before creating the account', async ({ page }) => {
+test('TC-47 — owner sign-up asks for the email OTP before creating the account', async ({ page }) => {
   await page.goto('/register');
   await page.locator('#username').fill('chungua_otp');
   await page.locator('#phone').fill('0987654321');
@@ -31,7 +31,7 @@ test('owner sign-up asks for the email OTP before creating the account', async (
   await expect(page.getByText('Đăng ký thành công!')).toBeVisible();
 });
 
-test('horse registration suggests breeds, has no passport field and rejects a renamed file', async ({ page }) => {
+test('TC-48 — horse registration suggests breeds, has no passport field and rejects a renamed file', async ({ page }) => {
   await signIn(page, 'HorseOwner');
   await page.goto('/owner/registrations/new');
   await expect(page.getByTestId('registration-form')).toBeVisible();

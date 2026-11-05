@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { signIn } from './support';
 
-test('session date defaults to today and past days cannot be picked', async ({ page }) => {
+test('TC-01 — session date defaults to today and past days cannot be picked', async ({ page }) => {
   await signIn(page, 'HeadTrainer');
   await page.goto('/trainer/schedule');
   await page.getByRole('button', { name: 'Phân công phiên tập' }).click();

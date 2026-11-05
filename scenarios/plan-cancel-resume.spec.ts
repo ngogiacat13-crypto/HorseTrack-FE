@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { signIn } from './support';
 
-test('a started plan cannot be cancelled; an unstarted plan can', async ({ page }) => {
+test('TC-29 — a started plan cannot be cancelled; an unstarted plan can', async ({ page }) => {
   await signIn(page, 'HeadTrainer');
   await page.goto('/trainer/plans');
   await expect(page.locator('[data-testid^="cancel-plan-"]')).toHaveCount(0);
@@ -21,7 +21,7 @@ test('a started plan cannot be cancelled; an unstarted plan can', async ({ page 
   await expect(page.locator('td.id', { hasText: planId })).toBeVisible();
 });
 
-test('a paused plan waiting on the vet cannot be cancelled or restarted', async ({ page }) => {
+test('TC-30 — a paused plan waiting on the vet cannot be cancelled or restarted', async ({ page }) => {
   await signIn(page, 'HeadTrainer');
   await page.goto('/trainer/plans');
   await page.getByRole('tab', { name: /Tạm dừng/ }).click();
@@ -31,7 +31,7 @@ test('a paused plan waiting on the vet cannot be cancelled or restarted', async 
   await expect(page.locator('[data-testid^="resume-plan-"]')).toHaveCount(0);
 });
 
-test('a paused plan that is not waiting on the vet can be restarted', async ({ page }) => {
+test('TC-31 — a paused plan that is not waiting on the vet can be restarted', async ({ page }) => {
   await signIn(page, 'HeadTrainer');
   await page.goto('/trainer/plans');
   await page.getByRole('tab', { name: /Tạm dừng/ }).click();

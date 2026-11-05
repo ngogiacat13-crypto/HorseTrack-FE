@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { signIn } from './support';
 
-test('vet adds medicine to a stock-available protocol, creating the next version sent to stock check', async ({ page }) => {
+test('TC-35 — vet adds medicine to a stock-available protocol, creating the next version sent to stock check', async ({ page }) => {
   await signIn(page, 'Veterinarian');
   await page.goto('/vet/protocols/PD-0012');
   await expect(page.getByText('Sửa phác đồ (phiên bản mới)')).toHaveCount(0);
@@ -32,7 +32,7 @@ test('vet adds medicine to a stock-available protocol, creating the next version
   await expect(page.getByText('phiên bản 2')).toBeVisible();
 });
 
-test('during treatment the vet adds medicine with a reason instead of creating a new version', async ({ page }) => {
+test('TC-36 — during treatment the vet adds medicine with a reason instead of creating a new version', async ({ page }) => {
   await signIn(page, 'Veterinarian');
   await page.goto('/vet/protocols/PD-0013');
   await expect(page.getByTestId('add-items-btn')).toBeVisible();
@@ -50,7 +50,7 @@ test('during treatment the vet adds medicine with a reason instead of creating a
   await expect(page).toHaveURL(/PD-0009$/);
 });
 
-test('vet cancels a protocol waiting for stock check, giving a reason', async ({ page }) => {
+test('TC-37 — vet cancels a protocol waiting for stock check, giving a reason', async ({ page }) => {
   await signIn(page, 'Veterinarian');
   await page.goto('/vet/protocols/PD-0014');
   await page.getByTestId('cancel-protocol-btn').click();
@@ -60,7 +60,7 @@ test('vet cancels a protocol waiting for stock check, giving a reason', async ({
   await expect(page.getByText('Phác đồ đã đóng.')).toBeVisible();
 });
 
-test('vet cannot create another protocol for an exam case that already has an open protocol', async ({ page }) => {
+test('TC-38 — vet cannot create another protocol for an exam case that already has an open protocol', async ({ page }) => {
   await signIn(page, 'Veterinarian');
   await page.goto('/vet/protocols/new?horse=h-bolt&case=C-0009');
   await expect(page).toHaveURL(/\/vet\/protocols\/PD-0012$/);
@@ -69,14 +69,14 @@ test('vet cannot create another protocol for an exam case that already has an op
   await expect(page.getByTestId('cancel-protocol-btn')).toBeVisible();
 });
 
-test('vet can open a new protocol form after an old protocol is closed', async ({ page }) => {
+test('TC-39 — vet can open a new protocol form after an old protocol is closed', async ({ page }) => {
   await signIn(page, 'Veterinarian');
   await page.goto('/vet/protocols/new?horse=h-flash&case=C-0006');
   await expect(page).toHaveURL(/\/vet\/protocols\/new\?horse=h-flash&case=C-0006$/);
   await expect(page.getByText(/Tạo phác đồ điều trị/)).toBeVisible();
 });
 
-test('vet can mark a protocol as emergency', async ({ page }) => {
+test('TC-40 — vet can mark a protocol as emergency', async ({ page }) => {
   await signIn(page, 'Veterinarian');
   await page.goto('/vet/protocols/new?horse=h-flash&case=C-0006');
   const emergency = page.getByTestId('protocol-emergency');
@@ -85,7 +85,7 @@ test('vet can mark a protocol as emergency', async ({ page }) => {
   await expect(emergency).toBeChecked();
 });
 
-test('vet cannot complete a phase before its medicine is dispensed and paid', async ({ page }) => {
+test('TC-41 — vet cannot complete a phase before its medicine is dispensed and paid', async ({ page }) => {
   await signIn(page, 'Veterinarian');
   await page.goto('/vet/protocols/PD-0009');
   await expect(page.getByTestId('protocol-phase-start')).toBeDisabled();
@@ -93,7 +93,7 @@ test('vet cannot complete a phase before its medicine is dispensed and paid', as
   await expect(page.getByText(/chủ ngựa thanh toán và kho cấp thuốc/i)).toBeVisible();
 });
 
-test('owner sees the phase payment notice and invoice', async ({ page }) => {
+test('TC-42 — owner sees the phase payment notice and invoice', async ({ page }) => {
   await signIn(page, 'HorseOwner', 'Vũ Thị Mai');
   await page.goto('/owner/horses/h-wind');
   await page.getByRole('tab', { name: /Sức khỏe & điều trị/ }).click();
@@ -101,7 +101,7 @@ test('owner sees the phase payment notice and invoice', async ({ page }) => {
   await expect(page.getByTestId('phase-payment-notice')).toContainText('INV-0054');
 });
 
-test('warehouse sees replaced protocols and what changed between versions', async ({ page }) => {
+test('TC-43 — warehouse sees replaced protocols and what changed between versions', async ({ page }) => {
   await signIn(page, 'WarehouseManager');
   await page.goto('/warehouse/medical');
   await page.getByRole('tab', { name: /Bác sĩ đã đổi \/ hủy/ }).click();
