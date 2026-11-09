@@ -24,6 +24,8 @@ import { ManagerFinanceReport } from '../pages/manager/ManagerFinanceReport';
 import { ManagerUsers } from '../pages/manager/ManagerUsers';
 import { ManagerAuditLogs } from '../pages/manager/ManagerAuditLogs';
 import { EmailLogs } from '../features/email-logs';
+import { Refunds } from '../features/refunds';
+import { TrainingAdmin } from '../features/training-admin';
 import { ManagerComplaints, ManagerTournamentDetail, ManagerTournaments, OwnerEntries, OwnerTournaments, RACE_FLOW_V2, TrainerConfirmations, VetRaceEntryExams } from '../features/tournament-registration';
 
 import { TrainerHerdOverview } from '../pages/trainer/TrainerHerdOverview';
@@ -84,6 +86,8 @@ const ROLE_ROUTES: { role: Role; routes: [path: string, element: React.ReactElem
     [PATH.manager.users, <ManagerUsers />],
     [PATH.manager.auditLogs, <ManagerAuditLogs />],
     [PATH.manager.emailLogs, <EmailLogs />],
+    [PATH.manager.refunds, <Refunds />],
+    [PATH.manager.training, <TrainingAdmin />],
     [PATH.manager.tournaments, <ManagerTournaments />],
     [PATH.manager.tournament, <ManagerTournamentDetail />],
     [PATH.manager.raceComplaints, <ManagerComplaints />],

@@ -34,8 +34,8 @@ export const raceBlock = (h: Horse): string | null =>
 export const TRACK_TYPES: TrackType[] = ['SYNTHETIC', 'DIRT', 'TURF'];
 export const TRACK_LABEL: Record<TrackType, string> = { SYNTHETIC: 'Cỏ nhân tạo', DIRT: 'Đường đất', TURF: 'Đường cỏ' };
 export const trackLabel = (code?: string | null) => (code ? TRACK_LABEL[code as TrackType] ?? code : '');
-export const planTrack = (plan?: Pick<TrainingPlan, 'phases' | 'currentPhase'> | null) =>
-  (plan?.phases.find((p) => p.no === plan.currentPhase) ?? plan?.phases[0])?.trackType ?? null;
+export const planTrack = (plan?: Pick<TrainingPlan, 'phases' | 'currentPhase' | 'trackType'> | null) =>
+  plan?.trackType ?? (plan?.phases.find((p) => p.no === plan.currentPhase) ?? plan?.phases[0])?.trackType ?? null;
 
 export const PLAN_GUIDE: Record<string, StaffGuide> = {
   'Sức bền': {

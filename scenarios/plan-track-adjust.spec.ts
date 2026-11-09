@@ -11,7 +11,7 @@ const fillPlan = async (page: Page, horseId: string, name: string) => {
 
 test('a plan cannot be saved without a track, and the distance field is gone', async ({ page }) => {
   await signIn(page, 'HeadTrainer', TRAINER);
-  await fillPlan(page, 'h-wind', 'Giáo án chọn đường');
+  await fillPlan(page, 'h-arrow', 'Giáo án chọn đường');
   await expect(page.getByText('Quãng đường (m)')).toHaveCount(0);
   await page.getByTestId('plan-save').click();
   await expect(page.getByTestId('plan-single-phase')).toContainText('Chọn loại đường tập');
@@ -35,24 +35,21 @@ for (const [track, label] of [['SYNTHETIC', 'Cỏ nhân tạo'], ['DIRT', 'Đư�
   });
 }
 
-test('a second horse on the same track in overlapping dates sees the clash; another track saves', async ({ page }) => {
+test('two horses can share a track: the clash is checked per session time, not per plan', async ({ page }) => {
   await signIn(page, 'HeadTrainer', TRAINER);
-  await fillPlan(page, 'h-wind', 'Giáo án ngựa đầu');
+  await fillPlan(page, 'h-arrow', 'Giáo án ngựa đầu');
   await page.getByTestId('plan-track-select').selectOption('DIRT');
   await page.getByTestId('plan-save').click();
   await expect(page).toHaveURL(/\/trainer\/plans$/);
 
   await page.getByRole('link', { name: 'Tạo giáo án' }).click();
-  await page.locator('#horse').selectOption('h-arrow');
+  await page.locator('#horse').selectOption('h-blaze');
   await page.locator('#plan-name').fill('Giáo án ngựa thứ hai');
   await page.locator('#goal').fill('Chuẩn bị mùa giải');
   await page.getByTestId('plan-track-select').selectOption('DIRT');
   await page.getByTestId('plan-save').click();
-  await expect(page.getByTestId('plan-server-error')).toContainText('Đường đất đã có ngựa');
-  await expect(page.getByTestId('plan-server-error')).toContainText('Giáo án ngựa đầu');
-  await page.getByTestId('plan-track-select').selectOption('SYNTHETIC');
-  await page.getByTestId('plan-save').click();
   await expect(page).toHaveURL(/\/trainer\/plans$/);
+  await expect(page.getByTestId('plan-server-error')).toHaveCount(0);
 });
 
 test('changing the plan type previews that type\'s five steps and keeps the chosen track', async ({ page }) => {

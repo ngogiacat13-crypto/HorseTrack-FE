@@ -35,13 +35,14 @@ export const POLICY = {
   reactivationFee: 1_000_000,
 };
 
-const PAID_STATES = ['PAID', 'ACTIVE', 'REACTIVATION_PENDING', 'REFUNDED'];
+const PAID_STATES = ['PAID', 'ACTIVE', 'REACTIVATION_PENDING', 'REFUND_PENDING', 'REFUNDED'];
 export const isPaid = (i: Pick<OwnerInvoice, 'status'>) => PAID_STATES.includes(i.status);
 
 type BackendDue = { lateFee?: number; reactivationFee?: number; amountDue?: number };
 
 export const invoiceDue = (i: OwnerInvoice): InvoiceDue => {
   if (i.status === 'REFUNDED') return { overdueDays: 0, penalty: 0, reactivationFee: 0, total: 0, group: 'REFUNDED' };
+  if (i.status === 'REFUND_PENDING') return { overdueDays: 0, penalty: 0, reactivationFee: 0, total: 0, group: 'REFUND_PENDING' };
   if (isPaid(i)) return { overdueDays: 0, penalty: 0, reactivationFee: 0, total: i.amount, group: 'PAID' };
   const backend = i as OwnerInvoice & BackendDue;
   if (typeof backend.amountDue === 'number') {
@@ -59,7 +60,7 @@ export const invoiceDue = (i: OwnerInvoice): InvoiceDue => {
 };
 
 export const DUE_LABEL: Record<InvoiceDue['group'], [string, Tone]> = {
-  UNPAID: ['Chưa thanh toán', 'warning'], OVERDUE: ['Quá hạn', 'danger'], SUSPENDED: ['Đình chỉ', 'danger'], PAID: ['Đã thanh toán', 'success'], REFUNDED: ['Đã hoàn tiền', 'info'],
+  UNPAID: ['Chưa thanh toán', 'warning'], OVERDUE: ['Quá hạn', 'danger'], SUSPENDED: ['Đình chỉ', 'danger'], PAID: ['Đã thanh toán', 'success'], REFUND_PENDING: ['Chờ hoàn', 'warning'], REFUNDED: ['Đã hoàn tiền', 'info'],
 };
 export const invoiceLabel = (i: OwnerInvoice): [string, Tone] =>
   i.status === 'REACTIVATION_PENDING' ? ['Đã thanh toán · chờ kích hoạt lại', 'info'] : DUE_LABEL[invoiceDue(i).group];

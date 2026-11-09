@@ -73,3 +73,19 @@ export const RejectDialog: React.FC<{ reg: Registration; checks: Check[]; onClos
     </Dialog>
   );
 };
+
+export const DeleteRegistrationDialog: React.FC<{ reg: Registration; onClose: () => void; onDone: () => void }> = ({ reg, onClose, onDone }) => {
+  const actor = useActor();
+  const { busy, error, run } = useAction();
+  const [reason, setReason] = useState('');
+  const confirm = async () => { if (await run(() => managerApi.deleteRegistration(reg, reason, actor), `Đã xóa hồ sơ ngựa ${reg.horse.name}. Chủ ngựa được thông báo.`)) onDone(); };
+  return (
+    <Dialog open onClose={onClose} icon="x" tone="danger" danger busy={busy} busyLabel="Đang xóa…" testId="delete-registration-dialog"
+      title={`Xóa ngựa tạo nhầm · ${reg.horse.name}`} sub={`${reg.id} · chủ ngựa ${reg.owner.fullName}`} disabled={reason.trim().length < 5}
+      confirmLabel="Xóa hồ sơ ngựa" onConfirm={confirm}>
+      {error && <Callout tone="danger" testId="delete-registration-error" style={{ marginBottom: 14 }}>{error}</Callout>}
+      <Callout tone="info" style={{ marginBottom: 14 }}>Chỉ xóa được ngựa chưa cấp chuồng và chỉ có hồ sơ đăng ký. Ngựa đã có giáo án, ca khám, hóa đơn hoặc đề xuất thi đấu thì không xóa được.</Callout>
+      <ReasonField id="delete-registration-reason" label="Lý do xóa (ít nhất 5 ký tự)" value={reason} onChange={setReason} min={5} minHeight={72} placeholder="VD: Chủ ngựa đăng ký trùng hai lần" />
+    </Dialog>
+  );
+};

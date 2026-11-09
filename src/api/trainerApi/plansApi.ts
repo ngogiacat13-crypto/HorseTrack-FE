@@ -2,9 +2,9 @@ import { http } from '../http';
 import { type Actor, addAudit } from '../managerApi';
 import { be, beData, USE_BACKEND } from '../beClient';
 import { invalidate } from '../hybridAdapter';
-import { planAdjustable, planTrack, trackLabel } from './labels';
+import { planAdjustable, trackLabel } from './labels';
 import type { PlanPhase, TrainingPlan, TrainingSession } from './types';
-import { get, nextId, myHorses, ofHorses, getHorseChecked, withLiveStatus, CURRENT_PLAN } from './shared';
+import { get, nextId, myHorses, ofHorses, getHorseChecked, withLiveStatus, withPlanFlags, CURRENT_PLAN } from './shared';
 
 export interface PlanInput { name: string; type: string; goal: string; startDate: string; phases: PlanPhase[] }
 
@@ -17,7 +17,6 @@ const planEnd = (startDate: string, phases: PlanPhase[]) => {
   return new Date(dmyToDate(startDate).getTime() + (weeks * 7 - 1) * 864e5);
 };
 const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-const toDmy = (d: Date) => iso(d).split('-').reverse().join('/');
 
 const bePlanBody = (horseId: string, name: string, input: PlanInput) => ({
   horseId: Number(horseId), planName: name, startDate: iso(dmyToDate(input.startDate)), endDate: iso(planEnd(input.startDate, input.phases)),
@@ -34,14 +33,6 @@ const assertPlanShape = (name: string, input: PlanInput) => {
   if (!input.phases[0].trackType) throw new Error('Phải chọn loại đường tập: Cỏ nhân tạo, Đường đất hoặc Đường cỏ.');
 };
 
-const assertTrackFree = (all: TrainingPlan[], horseId: string, input: PlanInput) => {
-  const start = dmyToDate(input.startDate);
-  const end = planEnd(input.startDate, input.phases);
-  const taken = all.find((p) => p.horseId !== horseId && CURRENT_PLAN.includes(p.status) && planTrack(p) === input.phases[0].trackType
-    && dmyToDate(p.startDate) <= end && planEnd(p.startDate, p.phases) >= start);
-  if (taken) throw new Error(`${trackLabel(input.phases[0].trackType)} đã có ngựa ${taken.horseName} trong giáo án "${taken.name}" từ ${taken.startDate} đến ${toDmy(planEnd(taken.startDate, taken.phases))}. Mỗi loại đường chỉ một ngựa trong khoảng ngày giáo án trùng nhau.`);
-};
-
 export const plansApi = {
   async getPlans(actor: Actor) {
     const [plans, horses, sessions, available] = await Promise.all([
@@ -51,7 +42,7 @@ export const plansApi = {
       USE_BACKEND ? beData<{ horseId: number }[]>(be.get('/horses/available-for-training')).catch(() => null) : Promise.resolve(null),
     ]);
     const availableIds = available ? available.map((h) => String(h.horseId)) : null;
-    return { plans: await withLiveStatus(ofHorses(plans, horses), sessions), horses, sessions: ofHorses(sessions, horses), availableIds };
+    return { plans: withPlanFlags(await withLiveStatus(ofHorses(plans, horses), sessions), sessions), horses, sessions: ofHorses(sessions, horses), availableIds };
   },
 
   async createPlan(input: PlanInput & { horseId: string }, actor: Actor) {
@@ -65,7 +56,6 @@ export const plansApi = {
       return { id: String(planId), horseId: horse.id, horseName: horse.name, name, type: input.type, goal: input.goal, phases, currentPhase: 1, week: 1, status: 'PLANNED', startDate: input.startDate, createdBy: '—' } as TrainingPlan;
     }
     const all = await get<TrainingPlan[]>('/trainingPlans');
-    assertTrackFree(all, horse.id, input);
     const old = all.filter((p) => p.horseId === horse.id && CURRENT_PLAN.includes(p.status));
     await Promise.all(old.map((p) => http.patch(`/trainingPlans/${p.id}`, { status: 'REPLACED' })));
     const plan: TrainingPlan = {
@@ -88,16 +78,15 @@ export const plansApi = {
       invalidate('trainingPlans', 'trainingSessions');
       return { ...plan, name, type: input.type, goal: input.goal, startDate: input.startDate, phases, currentPhase: 1 };
     }
-    const [all, sessions] = await Promise.all([get<TrainingPlan[]>('/trainingPlans'), get<TrainingSession[]>('/trainingSessions')]);
+    const sessions = await get<TrainingSession[]>('/trainingSessions');
     if (!planAdjustable(plan, sessions)) throw new Error('Nhân viên đã xác nhận buổi tập của giáo án này, không điều chỉnh được nữa.');
-    assertTrackFree(all, horse.id, input);
     const { data } = await http.patch<TrainingPlan>(`/trainingPlans/${plan.id}`, { name, type: input.type, goal: input.goal, startDate: input.startDate, phases, currentPhase: 1 });
     await addAudit(actor, { action: 'UPDATE_TRAINING_PLAN', label: 'Điều chỉnh giáo án', object: `${plan.id} · ${horse.name}`, area: 'train', from: `${plan.name} · ${plan.type}`, to: `${name} · ${input.type} · ${trackLabel(input.phases[0].trackType)}` });
     return data;
   },
 
   async cancelPlan(plan: TrainingPlan, reason: string, actor: Actor) {
-    if (plan.status !== 'PLANNED') throw new Error('Giáo án đã bắt đầu, HLV không được hủy.');
+    if (!plan.canCancel) throw new Error('Giáo án này không hủy được nữa.');
     const why = reason.trim();
     if (why.length < 5 || why.length > 500) throw new Error('Lý do hủy từ 5 đến 500 ký tự.');
     await getHorseChecked(plan.horseId, actor);

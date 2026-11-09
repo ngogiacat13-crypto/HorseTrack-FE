@@ -22,6 +22,7 @@ export interface TrainingPlan {
   type: string; goal: string; phases: PlanPhase[];
   currentPhase: number; week: number; status: PlanStatus; startDate: string; createdBy: string; pausedReason?: string;
   staffGuide?: StaffGuide | null;
+  trackType?: TrackType | null; canAdjust?: boolean; canCancel?: boolean; canForceCancel?: boolean;
 }
 
 export type SessionStatus = 'SCHEDULED' | 'IN_PROGRESS' | 'PAUSED_PENDING_TRAINER' | 'RESUMED' | 'STOPPED' | 'COMPLETED';
@@ -29,7 +30,7 @@ export interface Reading { t: string; hr: number; speed: number }
 export interface TrainingSession {
   id: string; horseId: string; horseName: string; planId: string; phaseNo: number; label: string;
   date: string; time: string; groom: string; track: string; status: SessionStatus; confirmed?: boolean; cancelled?: boolean;
-  planType?: string | null; trackType?: TrackType | null; staffGuide?: StaffGuide | null;
+  planType?: string | null; trackType?: TrackType | null; staffGuide?: StaffGuide | null; canForceClose?: boolean;
   thresholds: { hr: number; speed: number };
   readings: Reading[]; recovery?: Reading[];
   pausedAt?: string; pausedReason?: string;

@@ -7,7 +7,7 @@ import { USE_BACKEND } from '../../../api/beClient';
 import { Icon } from '../../../components/ui/Icon';
 import { UserAction, UserTable } from './UserTable';
 import { RbacMatrix } from './RbacMatrix';
-import { AssignmentDialog, LockUserDialog } from './UserDialogs';
+import { AssignmentDialog, ChangeEmailDialog, DeleteUserDialog, LockUserDialog } from './UserDialogs';
 import { CreateStaffDialog } from './CreateStaffDialog';
 import { OwnerServiceDialog } from '../../../features/owner-service/OwnerServiceDialog';
 
@@ -62,6 +62,8 @@ export const ManagerUsers: React.FC = () => {
       {creating && <CreateStaffDialog onClose={() => setCreating(false)} onDone={(u) => { setUsers((xs) => [u, ...xs!]); setCreating(false); setTab('users'); }} />}
       {dlg?.kind === 'assign' && <AssignmentDialog user={dlg.user} data={assignmentData} onClose={() => setDlg(null)} onDone={() => { setDlg(null); managerApi.getGroomAssignments().then(setAssignmentData); }} onReload={() => { managerApi.getGroomAssignments().then(setAssignmentData); }} />}
       {dlg?.kind === 'service' && dlg.user.beId && <OwnerServiceDialog ownerId={dlg.user.beId} ownerName={dlg.user.fullName} onClose={() => setDlg(null)} />}
+      {dlg?.kind === 'email' && <ChangeEmailDialog user={dlg.user} onClose={() => setDlg(null)} onDone={(email) => applied({ email, canResendConfirmation: true, canChangeEmail: true })} />}
+      {dlg?.kind === 'delete' && <DeleteUserDialog user={dlg.user} onClose={() => setDlg(null)} onDone={() => { setUsers((xs) => xs!.filter((x) => x.id !== dlg.user.id)); setDlg(null); }} />}
       {dlg && (dlg.kind === 'lock' || dlg.kind === 'unlock') && <LockUserDialog user={dlg.user} lock={dlg.kind === 'lock'} onClose={() => setDlg(null)} onDone={applied} />}
     </div>
   );

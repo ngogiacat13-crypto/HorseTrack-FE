@@ -12,6 +12,7 @@ export interface HistoryItem { tone?: 'danger' | 'warning' | 'success' | 'info';
 export interface Registration {
   id: string;
   beId?: number;
+  canDelete?: boolean;
   horse: { name: string; breed: string; sex: string; age: number; code: string };
   owner: { fullName: string; email: string; phone: string };
   submittedAt: string;
@@ -41,7 +42,7 @@ export interface ProtocolWatch {
 }
 export interface Shipment { id: string; item: string; status: 'ORDERED' | 'IN_TRANSIT' | 'DELAYED' | 'RECEIVED' | 'CANCELLED'; etaOld?: string; eta: string; forRef: string }
 
-export type InvoiceStatus = 'UNPAID' | 'OVERDUE' | 'SUSPENDED' | 'REACTIVATION_PENDING' | 'PAID' | 'ACTIVE' | 'REFUNDED';
+export type InvoiceStatus = 'UNPAID' | 'OVERDUE' | 'SUSPENDED' | 'REACTIVATION_PENDING' | 'PAID' | 'ACTIVE' | 'REFUND_PENDING' | 'REFUNDED';
 export interface Invoice {
   id: string; horse: string; owner: string; period: string; dueDate: string; amount: number;
   overdueDays: number; status: InvoiceStatus; suspendedSince?: string; paidRef?: string; dueInDays?: number;
@@ -55,6 +56,7 @@ export interface ManagedUser {
   zones?: string[];
   beId?: number;
   emailConfirmed?: boolean;
+  canResendConfirmation?: boolean; canChangeEmail?: boolean; canDelete?: boolean; horsesAssigned?: number; horseLimit?: number;
 }
 export interface GroomAssignment { id: string; name: string; zones: string[]; role?: UserRole; pendingNote?: string }
 export type StaffRole = 'HeadTrainer' | 'Veterinarian' | 'Groom' | 'WarehouseManager';
@@ -66,7 +68,7 @@ export interface StaffInput {
 export const BE_STAFF_ROLE: Partial<Record<StaffRole, string>> = { HeadTrainer: 'Trainer', Veterinarian: 'Veterinarian', Groom: 'Groom', WarehouseManager: 'Warehouse Manager' };
 export interface AssignedStall { id: string; zone: string; horseId: string | null; horse: string | null; status: string; groom: string }
 export const MAX_TRAINER_HORSES = 5;
-export interface AssignedHorse { id: string; name: string; owner: string; stall: string; health: string; trainerId?: string; trainerName?: string | null; pendingNote?: string; pendingTrainerId?: string; pendingRelease?: boolean; openPlan?: string | null }
+export interface AssignedHorse { id: string; name: string; owner: string; stall: string; health: string; trainerId?: string; trainerName?: string | null; pendingNote?: string; pendingTrainerId?: string; pendingRelease?: boolean; openPlanName?: string | null; canChangeTrainer?: boolean }
 export interface RoleCheck { level: 'pass' | 'warn' | 'fail'; text: string }
 
 export type AuditArea = 'reg' | 'med' | 'train' | 'fin' | 'acct';
@@ -103,6 +105,13 @@ const beUserAction = async (url: string, body: Record<string, string>): Promise<
 };
 const beUserStatus = async (id: string) => (await beData<{ status?: string | null; isActive?: boolean }>(be.get(`/users/${id}`)));
 const toManaged = ({ password: _pw, fullname, ...u }: UserRecord): ManagedUser => ({ ...u, fullName: fullname });
+const STAFF_ROLES: UserRole[] = ['HeadTrainer', 'Veterinarian', 'Groom', 'WarehouseManager'];
+const withUserFlags = (u: ManagedUser): ManagedUser => {
+  if (USE_BACKEND) return u;
+  const unconfirmedStaff = STAFF_ROLES.includes(u.role) && u.emailConfirmed === false && u.status === 'ACTIVE';
+  return { ...u, canResendConfirmation: unconfirmedStaff, canChangeEmail: unconfirmedStaff, canDelete: unconfirmedStaff, horseLimit: u.role === 'HeadTrainer' ? MAX_TRAINER_HORSES : undefined };
+};
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const ensureStaffConfirmed = async (userId: number | string, fullName: string) => {
   const fresh = await beData<{ emailConfirmed?: boolean | null; isActive?: boolean | null }>(be.get(`/users/${userId}`));
@@ -251,7 +260,23 @@ export const managerApi = {
   },
 
   getRegistrations: () => get<Registration[]>('/registrations'),
-  getRegistration: (id: string) => get<Registration>(`/registrations/${id}`),
+  getRegistration: async (id: string) => {
+    const reg = await get<Registration>(`/registrations/${id}`);
+    return USE_BACKEND ? reg : { ...reg, canDelete: reg.status !== 'Approved' };
+  },
+
+  async deleteRegistration(reg: Registration, reason: string, actor: Actor) {
+    const why = reason.trim();
+    if (why.length < 5) throw new Error('Phải ghi lý do xóa (ít nhất 5 ký tự).');
+    if (USE_BACKEND) {
+      await be.delete(`/horses/${reg.beId}`, { params: { reason: why } });
+      invalidate('registrations', 'horses', 'auditLogs');
+      return;
+    }
+    if (!reg.canDelete) throw new Error(`Ngựa ${reg.horse.name} đã được duyệt và cấp chuồng, không xóa được.`);
+    await http.delete(`/registrations/${reg.id}`);
+    await addAudit(actor, { action: 'DELETE_HORSE', label: 'Xóa ngựa tạo nhầm', object: `${reg.id} · ${reg.horse.name}`, area: 'reg', from: reg.status, to: '—', reason: why });
+  },
 
   async approveRegistration(reg: Registration, checklist: ChecklistItem[], note: string, actor: Actor, stall?: { id: number; code: string }) {
     const history: HistoryItem[] = [
@@ -349,7 +374,35 @@ export const managerApi = {
     };
   },
 
-  getUsers: async () => (await get<UserRecord[]>('/users')).map(toManaged),
+  getUsers: async () => (await get<UserRecord[]>('/users')).map(toManaged).map(withUserFlags),
+
+  async changeStaffEmail(user: ManagedUser, email: string, actor: Actor): Promise<string> {
+    const next = email.trim();
+    if (!EMAIL_PATTERN.test(next)) throw new Error('Email không hợp lệ.');
+    if (next.toLowerCase() === user.email.toLowerCase()) throw new Error('Email mới trùng email hiện tại.');
+    if (USE_BACKEND) {
+      const res = await be.put<ApiResponse<null>>(`/users/${user.beId ?? user.id}/email`, { email: next }, { timeout: EMAIL_TIMEOUT });
+      invalidate('users', 'auditLogs');
+      return res.data.message;
+    }
+    if (!user.canChangeEmail) throw new Error('Chỉ sửa được email của nhân viên chưa xác nhận tài khoản.');
+    const users = await get<UserRecord[]>('/users');
+    if (users.some((u) => u.id !== user.id && u.email.toLowerCase() === next.toLowerCase())) throw new Error('Email đã được sử dụng.');
+    await http.patch(`/users/${user.id}`, { email: next });
+    await addAudit(actor, { action: 'CHANGE_STAFF_EMAIL', label: 'Sửa email nhân viên', object: `${user.username} · ${user.fullName}`, area: 'acct', from: user.email, to: next });
+    return `Đã đổi email và gửi liên kết xác nhận mới tới ${next}.`;
+  },
+
+  async deleteStaff(user: ManagedUser, actor: Actor) {
+    if (USE_BACKEND) {
+      await be.delete(`/users/${user.beId ?? user.id}`);
+      invalidate('users', 'auditLogs');
+      return;
+    }
+    if (!user.canDelete) throw new Error('Chỉ xóa được tài khoản nhân viên chưa xác nhận.');
+    await http.delete(`/users/${user.id}`);
+    await addAudit(actor, { action: 'DELETE_STAFF_ACCOUNT', label: 'Xóa tài khoản nhân viên tạo nhầm', object: `${user.username} · ${user.fullName}`, area: 'acct', from: user.role, to: '—' });
+  },
 
   async createStaff(input: StaffInput, actor: Actor): Promise<ManagedUser & { emailNote?: string; emailFailed?: boolean }> {
     const v = { ...input, fullName: input.fullName.trim(), username: input.username.trim(), email: input.email.trim(), phone: input.phone.replace(/[\s.-]/g, '') };
@@ -383,12 +436,15 @@ export const managerApi = {
   async getGroomAssignments() {
     const [grooms, users, stalls, allHorses, plans] = await Promise.all([
       get<GroomAssignment[]>('/grooms'), get<UserRecord[]>('/users'), get<AssignedStall[]>('/stalls'), get<AssignedHorse[]>('/horses'),
-      get<{ horseId: string; name: string; status: PlanStatus }[]>('/trainingPlans').catch(() => []),
+      USE_BACKEND ? Promise.resolve([]) : get<{ horseId: string; name: string; status: PlanStatus }[]>('/trainingPlans').catch(() => []),
     ]);
     const horses = allHorses.filter((h) => h.stall && h.stall !== '—' && h.stall !== 'Chưa cấp chuồng')
       .map((h) => ({
         ...h, trainerName: h.trainerName ?? users.find((u) => u.id === h.trainerId)?.fullname ?? null,
-        openPlan: plans.find((p) => p.horseId === h.id && OPEN_PLAN.includes(p.status))?.name ?? null,
+        ...(USE_BACKEND ? {} : (() => {
+          const openPlanName = plans.find((p) => p.horseId === h.id && OPEN_PLAN.includes(p.status))?.name ?? null;
+          return { openPlanName, canChangeTrainer: !openPlanName };
+        })()),
       }));
     const zonesOfTrainer = (id: string) => [...new Set(horses.filter((h) => h.trainerId === id).map((h) => stalls.find((s) => s.horseId === h.id)?.zone).filter((z): z is string => !!z))];
     const staffZones = users
@@ -447,7 +503,8 @@ export const managerApi = {
     const selected = new Set(horseIds);
     const dropped = assignments.horses.filter((h) => h.trainerId === user.id && !selected.has(h.id) && !h.pendingRelease);
     const added = assignments.horses.filter((h) => selected.has(h.id) && h.trainerId !== user.id && h.pendingTrainerId !== user.id);
-    if (added.length && horseIds.length > MAX_TRAINER_HORSES) throw new Error(`Mỗi HLV chỉ phụ trách tối đa ${MAX_TRAINER_HORSES} ngựa.`);
+    const limit = user.horseLimit ?? MAX_TRAINER_HORSES;
+    if (added.length && horseIds.length > limit) throw new Error(`Mỗi HLV chỉ phụ trách tối đa ${limit} ngựa.`);
     if (USE_BACKEND) {
       if (!added.length && !dropped.length) throw new Error('Không có thay đổi phân công.');
       const trainerId = Number(user.beId ?? user.id);

@@ -11,7 +11,7 @@ export interface InvoiceDue {
   penalty: number;
   reactivationFee: number;
   total: number;
-  group: 'UNPAID' | 'OVERDUE' | 'SUSPENDED' | 'PAID' | 'REFUNDED';
+  group: 'UNPAID' | 'OVERDUE' | 'SUSPENDED' | 'PAID' | 'REFUND_PENDING' | 'REFUNDED';
 }
 
 export type PaymentStatus = 'INIT' | 'PROCESSING' | 'PENDING_VERIFY' | 'VERIFIED' | 'FAILED';

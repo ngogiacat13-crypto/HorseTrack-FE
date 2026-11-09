@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { AssignedHorse, AssignedStall, GroomAssignment, ManagedUser, managerApi } from '../../../api/managerApi';
 import { useActor } from '../../../auth/AuthContext';
 import { useAction } from '../../../hooks/useAction';
-import { Callout, Dialog, ReasonField } from '../../../components/ui/Ht';
+import { Callout, Dialog, ReasonField, useToast } from '../../../components/ui/Ht';
 import { ROLE_LABEL } from '../../../components/layout/nav';
 import { USE_BACKEND } from '../../../api/beClient';
 import { TrainerHorsesDialog } from './TrainerHorsesDialog';
@@ -66,6 +66,45 @@ export const LockUserDialog: React.FC<{ user: ManagedUser; lock: boolean; onClos
       {lock && user.openTasks ? <Callout tone="demo" style={{ marginBottom: 14 }}>{user.openTasks} công việc đang mở của người này cần được giao lại.</Callout> : null}
       <ReasonField id="lock-reason" label={lock ? 'Lý do khóa' : 'Lý do mở khóa'} value={r.reason} minHeight={72}
         placeholder={lock ? 'VD: Nghỉ việc từ 05/10/2026.' : ''} onChange={r.onChange} />
+    </Dialog>
+  );
+};
+
+export const ChangeEmailDialog: React.FC<{ user: ManagedUser; onClose: () => void; onDone: (email: string) => void }> = ({ user, onClose, onDone }) => {
+  const actor = useActor();
+  const toast = useToast();
+  const { busy, error, run } = useAction();
+  const [email, setEmail] = useState(user.email);
+  const save = async () => {
+    let message = '';
+    if (await run(async () => { message = await managerApi.changeStaffEmail(user, email, actor); })) {
+      toast(message || `Đã đổi email của ${user.fullName}.`);
+      onDone(email.trim());
+    }
+  };
+  return (
+    <Dialog open onClose={onClose} icon="mail" tone="brand" width={520} busy={busy} busyLabel="Đang lưu…" testId="change-email-dialog"
+      title={`Sửa email · ${user.fullName}`} sub={`${user.username} · ${ROLE_LABEL[user.role]} · chưa xác nhận tài khoản`}
+      disabled={!email.trim() || email.trim() === user.email} confirmLabel="Lưu và gửi lại liên kết" onConfirm={save}>
+      {error && <Callout tone="danger" testId="change-email-error" style={{ marginBottom: 14 }}>{error}</Callout>}
+      <Callout tone="info" style={{ marginBottom: 14 }}>Hệ thống cấp mật khẩu tạm và liên kết xác nhận mới, gửi tới email mới. Liên kết cũ hết hiệu lực.</Callout>
+      <div className="ht-field" style={{ marginBottom: 0 }}>
+        <label className="ht-label" htmlFor="change-email">Email mới<span className="ht-req">*</span></label>
+        <input id="change-email" data-testid="change-email-input" type="email" className="ht-input" maxLength={255} value={email} onChange={(e) => setEmail(e.target.value)} />
+      </div>
+    </Dialog>
+  );
+};
+
+export const DeleteUserDialog: React.FC<{ user: ManagedUser; onClose: () => void; onDone: () => void }> = ({ user, onClose, onDone }) => {
+  const actor = useActor();
+  const { busy, error, run } = useAction();
+  const confirm = async () => { if (await run(() => managerApi.deleteStaff(user, actor), `Đã xóa tài khoản ${user.username}.`)) onDone(); };
+  return (
+    <Dialog open onClose={onClose} icon="x" tone="danger" danger busy={busy} busyLabel="Đang xóa…" testId="delete-user-dialog"
+      title={`Xóa tài khoản · ${user.fullName}`} sub={`${user.username} · ${user.email}`} confirmLabel="Xóa tài khoản" onConfirm={confirm}>
+      {error && <Callout tone="danger" testId="delete-user-error" style={{ marginBottom: 14 }}>{error}</Callout>}
+      <p style={{ margin: 0 }}>Chỉ xóa được tài khoản nhân viên tạo nhầm: chưa xác nhận và chưa có dữ liệu nghiệp vụ. Nếu đã có dữ liệu, hệ thống báo danh sách, khi đó hãy khóa tài khoản. Nhật ký hệ thống và nhật ký email vẫn được giữ.</p>
     </Dialog>
   );
 };

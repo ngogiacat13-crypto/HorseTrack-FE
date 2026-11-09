@@ -9,7 +9,7 @@ import { USE_BACKEND } from '../../../api/beClient';
 import { BillingActions, CancelInvoiceDialog } from '../../../features/invoice-billing';
 import { DEMO_NOW } from '../../../api/http';
 
-type Filter = 'all' | 'unpaid' | 'overdue' | 'suspended' | 'paid' | 'refunded';
+type Filter = 'all' | 'unpaid' | 'overdue' | 'suspended' | 'paid' | 'refundPending' | 'refunded';
 const isOverdue = (i: Invoice) => i.status === 'OVERDUE' || i.status === 'SUSPENDED';
 
 const nextDue = (items: Invoice[]) => {
@@ -32,6 +32,7 @@ export const ManagerInvoices: React.FC = () => {
     const okF = filter === 'all'
       || (filter === 'suspended' && (i.status === 'SUSPENDED' || i.status === 'REACTIVATION_PENDING'))
       || (filter === 'paid' && (i.status === 'PAID' || i.status === 'ACTIVE'))
+      || (filter === 'refundPending' && i.status === 'REFUND_PENDING')
       || (filter === 'refunded' && i.status === 'REFUNDED')
       || (filter === 'overdue' && i.status === 'OVERDUE')
       || (filter === 'unpaid' && i.status === 'UNPAID');
@@ -62,6 +63,7 @@ export const ManagerInvoices: React.FC = () => {
           { value: 'overdue' as const, label: 'Quá hạn' },
           { value: 'suspended' as const, label: 'Đình chỉ' },
           { value: 'paid' as const, label: 'Đã thanh toán' },
+          { value: 'refundPending' as const, label: 'Chờ hoàn', count: items.filter((i) => i.status === 'REFUND_PENDING').length },
           { value: 'refunded' as const, label: 'Đã hoàn tiền', count: items.filter((i) => i.status === 'REFUNDED').length },
         ].map((item) => (
           <button key={item.value} type="button" role="tab" className="ht-tab" aria-selected={filter === item.value} data-testid={`manager-invoice-filter-${item.value}`} onClick={() => setFilter(item.value)}>

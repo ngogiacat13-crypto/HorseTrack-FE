@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { guideOf, planAdjustable, trainerApi, trainingBlock, type TrackType, type TrainingPlan } from '../../../api/trainerApi';
+import { guideOf, trainerApi, trainingBlock, type TrackType, type TrainingPlan } from '../../../api/trainerApi';
 import { DEMO_NOW, type ApiError } from '../../../api/http';
 import { USE_BACKEND } from '../../../api/beClient';
 import { useActor } from '../../../auth/AuthContext';
@@ -25,7 +25,7 @@ export const TrainerPlanCreate: React.FC = () => {
   if (!id) return <PlanForm data={data} />;
 
   const plan = data.plans.find((p) => p.id === id);
-  const why = !plan ? `Không tìm thấy giáo án ${id}.` : !planAdjustable(plan, data.sessions) ? 'Chỉ điều chỉnh được giáo án chưa bắt đầu và chưa có buổi nào được Mã phu xác nhận.' : '';
+  const why = !plan ? `Không tìm thấy giáo án ${id}.` : !plan.canAdjust ? 'Chỉ điều chỉnh được giáo án chưa bắt đầu và chưa có buổi nào được Mã phu xác nhận.' : '';
   if (!plan || why) {
     return (
       <div className="ht ht-page">
@@ -167,7 +167,7 @@ const PlanForm: React.FC<{ data: PlansData; plan?: TrainingPlan }> = ({ data, pl
             </div>
           </Panel>
 
-          <Panel title="Giai đoạn" sub="Một giai đoạn: số tuần, cường độ, loại đường tập, số buổi/tuần và ngưỡng nhịp tim (BR_02). Mỗi loại đường chỉ một ngựa trong khoảng ngày trùng nhau.">
+          <Panel title="Giai đoạn" sub="Một giai đoạn: số tuần, cường độ, loại đường tập, số buổi/tuần và ngưỡng nhịp tim (BR_02). Nhiều ngựa dùng chung một đường được, nhưng mỗi đường chỉ một ngựa trong cùng khung giờ buổi tập (kiểm tra khi xếp buổi).">
             <div className="ht-panel__body" data-testid="plan-single-phase" style={{ display: 'grid', gap: 12 }}>
               {phases.slice(0, 1).map((p, i) => (
                 <PhaseRow key={i} phase={p} index={i} invalid={tried && !validPhase(p)} canRemove={false}

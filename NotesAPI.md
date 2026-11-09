@@ -927,3 +927,22 @@ Swagger server giờ có 182 API; FE gọi 170.
 - `GET /horses/{id}` trả `raceResults[]` (`tournamentName`, `raceDate`, `distanceM`, `rank`, `fieldSize`, `finishTimeSeconds`, `prizeAmount`), `raceCount`, `raceWins`, `totalPrize`. FE `hybridAdapter.toHorse` map sang `{ date dd/MM/yyyy, race, distance "1200 m" | "—", rank, field (mặc định 1), time m:ss.cc, prize }`; `DETAILS.horses` không còn bỏ `raceResults` khi tải chi tiết. Các thẻ Số lần thi đấu / Về nhất / Top 3 / Thứ hạng tốt nhất tự tính đúng; thêm cột Tiền thưởng và thẻ Tổng tiền thưởng; `fieldSize` ≤ 1 hiện “Hạng N” thay vì “N/1”. Đã đối chiếu server: ngựa O Long có 1 kết quả (Bình Định mở rộng · 1200 m · hạng 1 · 1:22.55 · 1.111.111 ₫).
 - Link “Mở trang đề xuất” trong tab này trỏ `/owner/race-entries` (trang mới) thay cho `/owner/races` cũ.
 
+## 48. Hoàn tiền, gỡ kẹt giáo án, sửa / xóa tài khoản và cờ cho FE (BE `e5036a3`, 09/11/2026)
+
+Theo mục “Bổ sung 11/2026” trong `SWAGGER_TEST_GUIDE.md` của BE. BE cần chạy `DATABASE_refunds.sql` trước khi deploy.
+
+| Chức năng (Quản lý CLB) | API | Màn hình FE |
+|---|---|---|
+| Danh sách khoản hoàn | `GET /billing/refunds` (lọc Chờ hoàn / Đã hoàn ở FE) | `/manager/refunds` (`src/features/refunds/`) |
+| Xác nhận đã hoàn | `PUT /billing/refunds/{id}/confirm` `{ transactionRef, transferredOn, transferredBy, note }` | Hộp “Xác nhận đã hoàn” |
+| Hủy cưỡng chế giáo án | `PUT /training-plans/{id}/force-cancel` `{ reason }` | `/manager/training` (`src/features/training-admin/`) |
+| Đóng cưỡng chế buổi tập | `PUT /training-sessions/{id}/force-close` `{ reason }` | `/manager/training` › Buổi tập |
+| Gán đường cho giáo án cũ | `PUT /training-plans/{id}/track` `{ trackType }` | `/manager/training` › Gán đường |
+| Sửa email nhân viên chưa xác nhận | `PUT /users/{id}/email` `{ email }` | `/manager/users` › Sửa email |
+| Xóa nhân viên tạo nhầm | `DELETE /users/{id}` | `/manager/users` › Xóa |
+| Xóa ngựa tạo nhầm | `DELETE /horses/{id}?reason=` | `/manager/registrations/:id` › Xóa ngựa tạo nhầm |
+
+- Hóa đơn `REFUND_PENDING` hiện nhãn **Chờ hoàn** (QL CLB: bộ lọc + nút “Xử lý hoàn tiền”; chủ ngựa: không có nút thanh toán, không tính vào nợ).
+- FE **chỉ đọc cờ** khi chạy backend, không tự tính luật: giáo án `trackType`, `canAdjust`, `canCancel`, `canForceCancel`; buổi tập `canForceClose`; người dùng `canResendConfirmation`, `canChangeEmail`, `canDelete`, `horsesAssigned` / `horseLimit`; ngựa `openPlanName`, `canChangeTrainer`, `canDelete`. Ở chế độ dữ liệu mẫu (`npm run dev`) các cờ này được tính trong lớp API để màn hình vẫn chỉ đọc cờ.
+- Đường tập khóa theo **buổi**: nhiều ngựa dùng chung một đường được; BE báo `400` khi xếp buổi trùng khung giờ (±60 phút) với ngựa khác trên cùng đường. FE bỏ kiểm tra trùng đường theo khoảng ngày giáo án và hiện nguyên lỗi BE.
+- Chưa thử với backend thật (server nhóm chưa trả `/v3/api-docs` lúc kiểm tra); đã chạy kịch bản dữ liệu mẫu `refunds`, `training-admin`, `staff-cleanup`.

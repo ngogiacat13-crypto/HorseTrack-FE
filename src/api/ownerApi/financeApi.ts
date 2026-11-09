@@ -30,7 +30,7 @@ export const financeApi = {
     return {
       payments: payments.filter(isFinishedPayment).sort((a, b) => b.id.localeCompare(a.id)),
       paid: verified.reduce((s, p) => s + p.amount, 0),
-      owed: invoices.filter((x) => x.due.group !== 'PAID' && x.due.group !== 'REFUNDED').reduce((s, x) => s + x.due.total, 0),
+      owed: invoices.filter((x) => x.due.group !== 'PAID' && x.due.group !== 'REFUNDED' && x.due.group !== 'REFUND_PENDING').reduce((s, x) => s + x.due.total, 0),
       invoices,
     };
   },
@@ -38,6 +38,7 @@ export const financeApi = {
   async startPayment(id: string, actor: Actor) {
     const inv = mineOrDeny(await get<OwnerInvoice>(`/invoices/${id}`), actor);
     if (inv.status === 'REFUNDED') throw new Error('Hóa đơn đã được hoàn tiền.');
+    if (inv.status === 'REFUND_PENDING') throw new Error('Hóa đơn đang chờ CLB hoàn tiền.');
     if (isPaid(inv)) throw new Error('Hóa đơn đã được thanh toán.');
     const all = await get<Payment[]>('/payments');
     const pending = all.find((p) => p.invoiceId === id && (p.status === 'PENDING_VERIFY' || p.status === 'PROCESSING'));
