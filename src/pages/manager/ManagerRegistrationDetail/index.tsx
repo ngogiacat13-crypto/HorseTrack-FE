@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { managerApi, Registration } from '../../../api/managerApi';
 import { useActor } from '../../../auth/AuthContext';
 import { Icon } from '../../../components/ui/Icon';
 import { BackButton, Badge, Callout, Loading, PageHeader, TimelineItem } from '../../../components/ui/Ht';
 import { ChecklistPanel } from './ChecklistPanel';
 import { Attachments, HorseInfo, OwnerInfo, RegistrationHistory } from './InfoPanels';
-import { ApproveDialog, RejectDialog } from './DecisionDialogs';
+import { ApproveDialog, DeleteRegistrationDialog, RejectDialog } from './DecisionDialogs';
 
 type Decision = { kind: 'Approved' | 'Rejected'; at: string };
 
@@ -17,7 +17,8 @@ export const ManagerRegistrationDetail: React.FC = () => {
   const [checks, setChecks] = useState<Registration['checklist']>([]);
   const [decision, setDecision] = useState<Decision | null>(null);
   const [history, setHistory] = useState<TimelineItem[]>([]);
-  const [dlg, setDlg] = useState<null | 'approve' | 'reject'>(null);
+  const [dlg, setDlg] = useState<null | 'approve' | 'reject' | 'delete'>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     managerApi.getRegistration(id).then((r) => {
@@ -87,8 +88,14 @@ export const ManagerRegistrationDetail: React.FC = () => {
             {d.status === 'Pending' && <> · đã chờ {d.waitingDays} ngày</>}
           </>
         }
-        actions={
-          decision ? (
+        actions={<>
+          {d.canDelete && (
+            <button type="button" className="ht-btn ht-btn--ghost" data-testid="delete-registration-btn" style={{ color: 'var(--danger-ink)' }} onClick={() => setDlg('delete')}>
+              <Icon name="x" />
+              Xóa ngựa tạo nhầm
+            </button>
+          )}
+          {decision ? (
             <span style={{ fontSize: 13, color: 'var(--muted)' }}>
               Đã xử lý <span className="ht-mono">{decision.at}</span>
             </span>
@@ -116,8 +123,8 @@ export const ManagerRegistrationDetail: React.FC = () => {
                 Phê duyệt
               </button>
             </>
-          )
-        }
+          )}
+        </>}
       />
 
       {!decision && !hasOwnership && (
@@ -169,6 +176,7 @@ export const ManagerRegistrationDetail: React.FC = () => {
           }
         />
       )}
+      {dlg === 'delete' && <DeleteRegistrationDialog reg={d} onClose={() => setDlg(null)} onDone={() => navigate('/manager/registrations')} />}
     </div>
   );
 };

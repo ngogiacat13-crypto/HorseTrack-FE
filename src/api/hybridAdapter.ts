@@ -106,6 +106,7 @@ const TASK_TYPE: Record<string, [string, string]> = {
 interface BeHorse { horseId: number; horseName: string; dob: string; gender: string; breed: string; pedigree?: string | null; weightKg: number; healthStatus: string; isLocked: boolean; ownerId: number; stallId: number | null; stallCode?: string | null; approvalStatus?: string | null; createdAt?: string | null;
   horseCode?: string | null; color?: string | null; heightCm?: number | null; ownerPhone?: string | null; heightHands?: number | null; passportNo?: string | null; healthCertIssuer?: string | null; healthCertExpiry?: string | null;
   registrationCode?: string | null; rejectReason?: string | null; allowResubmit?: boolean | null; assignedTrainerId?: number | null; assignedTrainerName?: string | null; ownerName?: string | null;
+  openPlanName?: string | null; canChangeTrainer?: boolean | null; canDelete?: boolean | null;
   raceResults?: BeRaceResult[] | null; totalPrize?: number | null }
 interface BeRaceResult { proposalId?: number | null; tournamentName?: string | null; raceDate?: string | null; rank?: number | null; finishTimeSeconds?: number | null; prizeAmount?: number | null; distanceM?: number | null; fieldSize?: number | null }
 const toRaceResult = (r: BeRaceResult) => ({
@@ -128,7 +129,8 @@ const injuriesOf = async (horseId: string) => {
 };
 interface BeStall { stallId: number; stallCode: string; barnZone: string; cleanStatus: string; currentHorseId: number | null; horseName: string | null }
 interface BePhase { phaseNo: number; name: string; weeks: number; intensity: string; trackType?: string | null; distanceM?: number | null; sessionsPerWeek?: number | null; maxHeartRate?: number | null; current?: boolean | null }
-interface BePlan { planId: number; planName: string; horseName: string; startDate: string; endDate: string; status: string; progress: number; type?: string | null; goal?: string | null; phases?: BePhase[] | null; staffGuide?: { summary: string; steps: string[] } | null }
+interface BePlan { planId: number; planName: string; horseName: string; startDate: string; endDate: string; status: string; progress: number; type?: string | null; goal?: string | null; phases?: BePhase[] | null; staffGuide?: { summary: string; steps: string[] } | null;
+  trackType?: string | null; canAdjust?: boolean | null; canCancel?: boolean | null; canForceCancel?: boolean | null }
 const INTENSITY: Record<string, string> = { LOW: 'Nhẹ', LIGHT: 'Nhẹ', MEDIUM: 'Vừa', MODERATE: 'Vừa', HIGH: 'Cao', 'NHẸ': 'Nhẹ', 'VỪA': 'Vừa', CAO: 'Cao' };
 const toPhases = (phases: BePhase[] | null | undefined, weeks: number) => phases?.length
   ? phases.map((ph) => ({ no: ph.phaseNo, name: ph.name, weeks: ph.weeks, intensity: INTENSITY[(ph.intensity ?? '').toUpperCase()] ?? ph.intensity, trackType: ph.trackType ?? null, distanceM: Number(ph.distanceM) || undefined, sessionsPerWeek: ph.sessionsPerWeek ?? 0, hrLimit: ph.maxHeartRate ?? SERVER_DEFAULT_MAX_HR }))
@@ -136,7 +138,7 @@ const toPhases = (phases: BePhase[] | null | undefined, weeks: number) => phases
 const currentPhaseOf = (phases: BePhase[] | null | undefined) => phases?.find((ph) => ph.current)?.phaseNo ?? 1;
 const phaseTrack = (phases?: BePhase[] | null) => (phases?.find((ph) => ph.current) ?? phases?.[0])?.trackType ?? null;
 const noteTrack = (notes?: string | null) => (notes ?? '').split(' · Ghi nhận:')[0];
-interface BePlanDetail { planId: number; planName: string; horseId: number | null; horseName: string; startDate: string; endDate: string; status: string; type?: string | null; phases?: BePhase[] | null; staffGuide?: { summary: string; steps: string[] } | null; sessions: (BeMonitor & { sessionId: number; phaseNo?: number | null; sessionDate: string; activityType: string; status: string; notes: string | null; assignedToId: number | null; assignedToName: string | null; evaluationScore?: number | null; evaluationComment?: string | null; evaluatedBy?: string | null; evaluatedAt?: string | null })[] }
+interface BePlanDetail { planId: number; planName: string; horseId: number | null; horseName: string; startDate: string; endDate: string; status: string; type?: string | null; trackType?: string | null; phases?: BePhase[] | null; staffGuide?: { summary: string; steps: string[] } | null; sessions: (BeMonitor & { sessionId: number; canForceClose?: boolean | null; phaseNo?: number | null; sessionDate: string; activityType: string; status: string; notes: string | null; assignedToId: number | null; assignedToName: string | null; evaluationScore?: number | null; evaluationComment?: string | null; evaluatedBy?: string | null; evaluatedAt?: string | null })[] }
 interface BeSchedule extends BeMonitor { sessionId: number; sessionDate: string; activityType: string; status: string; planName: string; planType?: string | null; trackType?: string | null; staffGuide?: string | null; steps?: string[] | null; notes?: string | null; horseName: string; stallZone: string; evaluationScore?: number | null; evaluationComment?: string | null; evaluatedBy?: string | null; evaluatedAt?: string | null }
 interface BeTask { taskId: number; taskCode?: string | null; taskType: string; title?: string | null; status: string; taskDate?: string | null; scheduledTime?: string | null; dueDate?: string | null; instructions?: string | null; completedAt?: string | null; horseName: string; stallCode?: string | null; stallZone: string; groomName?: string | null; warningNote?: string | null; dietNote?: string | null; overdue?: boolean | null; lateMinutes?: number | null; canComplete?: boolean | null; completableFrom?: string | null }
 interface BeCase { caseId: string; id?: number; horseId: number; horseName: string; source: string; issueType: string; severity: string; status: string; description: string; imageUrl?: string | null; reportedByName?: string | null; assignedVetName?: string | null; maxHeartRate: number; vetResult: string | null; createdAt: string; closedAt?: string | null }
@@ -203,6 +205,7 @@ const toHorse = (h: BeHorse, stalls: BeStall[], u: Me | null): Row => ({
   health: health(h.healthStatus), trainingLocked: !!h.isLocked, form: null, pendingCase: null,
   lock: h.isLocked ? { by: 'Bác sĩ thú y', at: '—', reason: 'Khóa từ hệ thống', review: '—' } : null,
   injuries: [], medicalHistory: [], raceResults: (h.raceResults ?? []).map(toRaceResult), medicalDiet: null,
+  openPlanName: h.openPlanName ?? null, canChangeTrainer: !!h.canChangeTrainer, canDelete: !!h.canDelete,
 });
 
 const isoToday = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
@@ -262,6 +265,7 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
       return {
         id: String(p.planId), horseId: (byName(horses, p.horseName)?.id as string) ?? '', horseName: p.horseName, name: p.planName,
         ...planMeta(p.goal ?? ''), ...(p.type ? { type: p.type } : {}), startDate: ddmmyyyy(p.startDate), createdBy: '—', staffGuide: p.staffGuide ?? null,
+        trackType: p.trackType ?? phaseTrack(p.phases), canAdjust: !!p.canAdjust, canCancel: !!p.canCancel, canForceCancel: !!p.canForceCancel,
         phases: toPhases(p.phases, weeks),
         currentPhase: currentPhaseOf(p.phases), week: Math.max(1, Math.round((p.progress ?? 0) * weeks / 100)), status: PLAN_STATUS[(p.status ?? '').toUpperCase()] ?? 'PAUSED',
       };
@@ -278,8 +282,8 @@ const LOADERS: Record<string, () => Promise<Row[]>> = {
       return details.flatMap((d, i) => (d?.sessions ?? []).map((s) => ({
         id: String(s.sessionId), horseId: plans[i].horseId, horseName: d!.horseName, planId: String(d!.planId), phaseNo: s.phaseNo ?? 1, label: s.activityType,
         date: ddmmyyyy(s.sessionDate), time: hhmm(s.sessionDate), groom: s.assignedToName ?? '—', groomId: s.assignedToId ? String(s.assignedToId) : null,
-        planType: d!.type ?? null, trackType: phaseTrack(d!.phases), staffGuide: d!.staffGuide ?? null,
-        track: trackLabel(phaseTrack(d!.phases)) || noteTrack(s.notes) || '—', metrics: (s.notes ?? '').split(' · Ghi nhận:')[1]?.split(',').map((m) => m.trim()).filter(Boolean),
+        planType: d!.type ?? null, trackType: d!.trackType ?? phaseTrack(d!.phases), staffGuide: d!.staffGuide ?? null, canForceClose: !!s.canForceClose,
+        track: trackLabel(d!.trackType ?? phaseTrack(d!.phases)) || noteTrack(s.notes) || '—', metrics: (s.notes ?? '').split(' · Ghi nhận:')[1]?.split(',').map((m) => m.trim()).filter(Boolean),
         status: SESSION[s.status?.toUpperCase()] ?? 'SCHEDULED', confirmed: s.status?.toUpperCase() === 'CONFIRMED', cancelled: s.status?.toUpperCase() === 'CANCELLED', ...monitor(s), decision: decisionFrom(s),
         evaluation: s.evaluationScore ? { score: s.evaluationScore, comment: s.evaluationComment ?? '', by: s.evaluatedBy ?? 'HLV', at: s.evaluatedAt ?? '' } : null,
       })));
@@ -514,7 +518,7 @@ const toRegistration = (h: BeHorse, history: BeRegistration[], owner: { fullName
   const decidedNote = status === 'Approved' ? `Cấp chuồng ${stall}` : status === 'Rejected' ? ((h.allowResubmit ?? latest?.allowResubmit) ? RESUBMIT_ALLOWED : 'Không cho nộp lại') : undefined;
   const healthCert = [h.healthCertIssuer, h.healthCertExpiry && `hết hạn ${ddmmyyyy(h.healthCertExpiry)}`].filter(Boolean).join(' · ');
   return {
-    id: `REG-${code}`, beId: h.horseId, registrationCode: latest?.registrationCode ?? h.registrationCode ?? null,
+    id: `REG-${code}`, beId: h.horseId, canDelete: !!h.canDelete, registrationCode: latest?.registrationCode ?? h.registrationCode ?? null,
     horse: { name: h.horseName, breed: h.breed, sex: sex(h.gender), age: age(h.dob), code: h.horseCode ?? `HT-${code}` },
     owner: { ...owner, phone: h.ownerPhone || owner.phone }, submittedAt: stamp(submitted),
     waitingDays: status === 'Pending' ? Math.max(0, Math.floor((Date.now() - heldSince) / 86400000)) : 0,

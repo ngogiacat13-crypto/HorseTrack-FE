@@ -58,6 +58,10 @@ export const scheduleApi = {
     const all = await get<TrainingSession[]>('/trainingSessions');
     const clash = all.find((s) => s.horseId === horse.id && s.date === input.date && s.time === input.time);
     if (clash) throw new Error(`${horse.name} đã có phiên ${clash.id} lúc ${input.time} ngày ${input.date}.`);
+    const toMinutes = (t: string) => Number(t.slice(0, 2)) * 60 + Number(t.slice(3, 5));
+    const unfinished = ['SCHEDULED', 'IN_PROGRESS', 'PAUSED_PENDING_TRAINER', 'RESUMED'];
+    const trackBusy = all.find((s) => s.horseId !== horse.id && s.track === input.track && s.date === input.date && unfinished.includes(s.status) && Math.abs(toMinutes(s.time) - toMinutes(input.time)) < 60);
+    if (trackBusy) throw new Error(`${input.track} đã có ngựa ${trackBusy.horseName} lúc ${trackBusy.time} ngày ${input.date}. Mỗi loại đường chỉ một ngựa trong cùng khung giờ buổi tập (±60 phút).`);
     const session: TrainingSession = {
       id: nextId(all.map((s) => s.id), 'S-'), horseId: horse.id, horseName: horse.name, planId: plan.id, phaseNo: phase.no,
       label: `${plan.type} · P${phase.no}`, date: input.date, time: input.time, groom: input.groom, track: input.track,

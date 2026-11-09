@@ -2,7 +2,7 @@ import type { Actor } from '../managerApi';
 import { be, beData, USE_BACKEND } from '../beClient';
 import type { FeedRequest } from '../vetApi';
 import type { TrainingPlan, TrainingSession, Tournament, RaceProposal, Vaccination, Stall } from './types';
-import { get, myHorses, getMyHorse, ofHorses, withLiveStatus } from './shared';
+import { get, myHorses, getMyHorse, ofHorses, withLiveStatus, withPlanFlags } from './shared';
 
 export const herdApi = {
   async getHerd(actor: Actor) {
@@ -26,7 +26,7 @@ export const herdApi = {
       get<Tournament[]>('/tournaments'),
       USE_BACKEND ? get<FeedRequest[]>('/feedRequests', { horseId: id }).catch(() => [] as FeedRequest[]) : Promise.resolve([] as FeedRequest[]),
     ]);
-    return { horse, plans: await withLiveStatus(plans, sessions), sessions, vaccinations, proposals, tournaments, feedRequests };
+    return { horse, plans: withPlanFlags(await withLiveStatus(plans, sessions), sessions), sessions, vaccinations, proposals, tournaments, feedRequests };
   },
 
 

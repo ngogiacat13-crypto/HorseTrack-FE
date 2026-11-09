@@ -138,6 +138,21 @@
       "role": "Groom",
       "lastLogin": "03/10 06:05",
       "status": "ACTIVE"
+    },
+    {
+      "id": "u-unconfirmed-1",
+      "username": "nvmoi",
+      "password": "password123",
+      "fullname": "Nguyễn Văn Mới",
+      "email": "moi@horsetrack.vn",
+      "phone": "0987000111",
+      "role": "Groom",
+      "lastLogin": "—",
+      "status": "ACTIVE",
+      "emailConfirmed": false,
+      "zones": [
+        "Khu A"
+      ]
     }
   ],
   "registrations": [
@@ -1811,6 +1826,27 @@
     }
   ],
   "invoices": [
+    {
+      "id": "INV-0057",
+      "horse": "Thunder",
+      "owner": "Hoàng Thị Lan",
+      "period": "10/2026",
+      "dueDate": "05/10/2026",
+      "amount": 5000000,
+      "overdueDays": 0,
+      "status": "REFUND_PENDING",
+      "horseId": "h-thunder",
+      "issuedAt": "01/10/2026",
+      "service": "Lệ phí giải đấu",
+      "lines": [
+        {
+          "label": "Lệ phí giải Mở rộng Bình Dương 2026 — Thunder",
+          "kind": "RACE",
+          "period": "10/2026",
+          "amount": 5000000
+        }
+      ]
+    },
     {
       "id": "INV-0055",
       "horse": "Star",
@@ -7245,6 +7281,46 @@
       "verifiedAt": null,
       "bankRef": null,
       "note": "Khách hủy giao dịch tại cổng VNPay"
+    }
+  ],
+  "refunds": [
+    {
+      "id": "2",
+      "invoiceId": "INV-0057",
+      "invoiceCode": "INV-0057",
+      "horseName": "Thunder",
+      "ownerName": "Hoàng Thị Lan",
+      "ownerEmail": "lan@horsetrack.vn",
+      "ownerPhone": "0945678901",
+      "amount": 5000000,
+      "reason": "Ngựa bị khóa y tế khi đã đóng lệ phí giải Mở rộng Bình Dương 2026",
+      "status": "PENDING",
+      "requestedAt": "02/10/2026 16:20",
+      "transactionRef": "",
+      "transferredOn": "",
+      "transferredBy": "",
+      "confirmedBy": "",
+      "confirmedAt": "",
+      "note": ""
+    },
+    {
+      "id": "1",
+      "invoiceId": "INV-0056",
+      "invoiceCode": "INV-0056",
+      "horseName": "Storm",
+      "ownerName": "Đỗ Minh Quân",
+      "ownerEmail": "quan@example.com",
+      "ownerPhone": "0912345670",
+      "amount": 5000000,
+      "reason": "Lệ phí giải được thanh toán sau khi đề xuất đã đóng",
+      "status": "DONE",
+      "requestedAt": "01/10/2026 09:00",
+      "transactionRef": "FT2610010001",
+      "transferredOn": "02/10/2026",
+      "transferredBy": "Kế toán CLB",
+      "confirmedBy": "Nguyễn Văn Minh",
+      "confirmedAt": "02/10/2026 10:15",
+      "note": ""
     }
   ]
 }

@@ -2,7 +2,7 @@ import { DEMO_NOW, http } from '../http';
 import { USE_BACKEND } from '../beClient';
 import type { Actor } from '../managerApi';
 import type { Horse, TrainingPlan, TrainingSession } from './types';
-import { trainingBlock } from './labels';
+import { planAdjustable, trainingBlock } from './labels';
 
 export const get = async <T,>(url: string, params?: Record<string, unknown>) => (await http.get<T>(url, { params })).data;
 export const nextId = (ids: string[], prefix: string, width = 4) => {
@@ -43,3 +43,7 @@ export const withLiveStatus = async (plans: TrainingPlan[], sessions?: TrainingS
   await Promise.all([...started].map((id) => http.patch(`/trainingPlans/${id}`, { status: 'ACTIVE' })));
   return plans.map((p) => (started.has(p.id) ? { ...p, status: 'ACTIVE' as const } : p));
 };
+
+export const withPlanFlags = (plans: TrainingPlan[], sessions: TrainingSession[]) => (USE_BACKEND ? plans : plans.map((p) => ({
+  ...p, canAdjust: planAdjustable(p, sessions), canCancel: p.status === 'PLANNED', canForceCancel: CURRENT_PLAN.includes(p.status),
+})));

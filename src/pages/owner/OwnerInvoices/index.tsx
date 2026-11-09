@@ -28,7 +28,7 @@ export const OwnerInvoices: React.FC = () => {
   const rows = data.invoices.filter((x) => tab === 'ALL' || x.due.group === tab);
   const count = (g: InvoiceDue['group']) => data.invoices.filter((x) => x.due.group === g).length;
   const owed = data.invoices.reduce((s, x) => s + x.due.total, 0);
-  const payable = data.invoices.filter((x) => x.due.group !== 'PAID' && x.due.group !== 'REFUNDED');
+  const payable = data.invoices.filter((x) => x.due.group !== 'PAID' && x.due.group !== 'REFUNDED' && x.due.group !== 'REFUND_PENDING');
   const late = data.invoices.filter((x) => x.due.group === 'OVERDUE' || x.due.group === 'SUSPENDED');
   const pending = data.payments.filter((p) => p.status === 'PENDING_VERIFY');
 
@@ -76,7 +76,7 @@ export const OwnerInvoices: React.FC = () => {
                     <td className="ht-mono" style={{ textAlign: 'right' }}>{money(i.amount)}</td>
                     <td className="ht-mono" style={{ textAlign: 'right', fontWeight: 600 }}>{money(due.total)}</td>
                     <td><Badge tone={tone}>{label}</Badge></td>
-                    <td><Link className="ht-more" data-testid={i.status === 'REFUNDED' ? `owner-refunded-invoice-${i.id}` : undefined} to={toPath(PATH.owner.invoice, { id: i.id })}>{i.status === 'REFUNDED' ? 'Xem hóa đơn' : 'Thanh toán'} <Icon name="arrow" /></Link></td>
+                    <td><Link className="ht-more" data-testid={i.status === 'REFUNDED' ? `owner-refunded-invoice-${i.id}` : undefined} to={toPath(PATH.owner.invoice, { id: i.id })}>{i.status === 'REFUNDED' || i.status === 'REFUND_PENDING' ? 'Xem hóa đơn' : 'Thanh toán'} <Icon name="arrow" /></Link></td>
                   </tr>
                 );
               })}

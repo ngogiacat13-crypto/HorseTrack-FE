@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Invoice, InvoiceStatus, managerApi, SUSPEND_AT } from '../../../api/managerApi';
 import { useActor } from '../../../auth/AuthContext';
 import { Icon } from '../../../components/ui/Icon';
@@ -9,7 +10,7 @@ import { DEMO_NOW } from '../../../api/http';
 
 const BADGE: Record<InvoiceStatus, [React.ComponentProps<typeof Badge>['tone'], string]> = {
   SUSPENDED: ['danger', 'Đình chỉ'], OVERDUE: ['warning', 'Quá hạn'], REACTIVATION_PENDING: ['info', 'Chờ kích hoạt lại'],
-  UNPAID: ['neutral', 'Chờ thanh toán'], PAID: ['success', 'Đã thanh toán'], ACTIVE: ['success', 'Đã kích hoạt lại'], REFUNDED: ['info', 'Đã hoàn tiền'],
+  UNPAID: ['neutral', 'Chờ thanh toán'], PAID: ['success', 'Đã thanh toán'], ACTIVE: ['success', 'Đã kích hoạt lại'], REFUND_PENDING: ['warning', 'Chờ hoàn'], REFUNDED: ['info', 'Đã hoàn tiền'],
 };
 
 interface Props { invoices: Invoice[]; q: string; onSearch: (q: string) => void; onSuspend: (i: Invoice) => void; onReactivate: (i: Invoice) => void; onCancel?: (i: Invoice) => void }
@@ -24,6 +25,7 @@ export const InvoiceTable: React.FC<Props> = ({ invoices, q, onSearch, onSuspend
       {i.status === 'OVERDUE' && i.overdueDays < SUSPEND_AT && <button type="button" className="ht-btn ht-btn--ghost ht-btn--sm" onClick={() => remind(i)}>Gửi nhắc</button>}
       {i.status === 'SUSPENDED' && <button type="button" className="ht-btn ht-btn--secondary ht-btn--sm" disabled title="Chưa tất toán nợ, phí phạt và phí kích hoạt (BR_14)">Kích hoạt lại</button>}
       {i.status === 'REACTIVATION_PENDING' && <button type="button" className="ht-btn ht-btn--primary ht-btn--sm" onClick={() => onReactivate(i)}>Kích hoạt lại</button>}
+      {i.status === 'REFUND_PENDING' && <Link className="ht-btn ht-btn--secondary ht-btn--sm" data-testid={`invoice-refund-${i.id}`} to="/manager/refunds">Xử lý hoàn tiền</Link>}
       {onCancel && (i.status === 'UNPAID' || i.status === 'OVERDUE') && <button type="button" className="ht-btn ht-btn--ghost ht-btn--sm" data-testid="cancel-invoice-btn" onClick={() => onCancel(i)}>Hủy</button>}
     </div>
   );

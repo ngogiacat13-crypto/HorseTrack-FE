@@ -6,7 +6,7 @@ import { ROLE_LABEL } from '../../../components/layout/nav';
 import { useDebounce } from '../../../hooks/useDebounce';
 
 type Role = ManagedUser['role'];
-export type UserAction = 'lock' | 'unlock' | 'assign' | 'resend' | 'service';
+export type UserAction = 'lock' | 'unlock' | 'assign' | 'resend' | 'service' | 'email' | 'delete';
 const ROLES = Object.keys(ROLE_LABEL) as Role[];
 
 export const UserTable: React.FC<{ users: ManagedUser[]; meId?: string; onAction: (kind: UserAction, u: ManagedUser) => void; showService?: boolean }> = ({ users, meId, onAction, showService }) => {
@@ -53,8 +53,10 @@ export const UserTable: React.FC<{ users: ManagedUser[]; meId?: string; onAction
                     {u.status === 'ACTIVE'
                       ? <button type="button" className="ht-btn ht-btn--secondary ht-btn--sm" style={{ width: '100%', justifyContent: 'center' }} onClick={() => onAction('lock', u)}><Icon name="lock" />Khóa</button>
                       : <button type="button" className="ht-btn ht-btn--secondary ht-btn--sm" style={{ width: '100%', justifyContent: 'center' }} onClick={() => onAction('unlock', u)}><Icon name="unlock" />Mở khóa</button>}
-                    <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
-                      {u.emailConfirmed === false && u.status === 'ACTIVE' && <button type="button" className="ht-btn ht-btn--ghost ht-btn--sm" data-testid={`resend-confirm-${u.username}`} onClick={() => onAction('resend', u)}><Icon name="mail" />Gửi lại mail</button>}
+                    <div style={{ display: 'flex', justifyContent: 'flex-start', flexWrap: 'wrap', gap: 4 }}>
+                      {u.canResendConfirmation && <button type="button" className="ht-btn ht-btn--ghost ht-btn--sm" data-testid={`resend-confirm-${u.username}`} onClick={() => onAction('resend', u)}><Icon name="mail" />Gửi lại mail</button>}
+                      {u.canChangeEmail && <button type="button" className="ht-btn ht-btn--ghost ht-btn--sm" data-testid={`change-email-${u.username}`} onClick={() => onAction('email', u)}><Icon name="at" />Sửa email</button>}
+                      {u.canDelete && <button type="button" className="ht-btn ht-btn--ghost ht-btn--sm" data-testid={`delete-user-${u.username}`} style={{ color: 'var(--danger-ink)' }} onClick={() => onAction('delete', u)}><Icon name="x" />Xóa</button>}
                       {(u.role === 'Groom' || u.role === 'HeadTrainer') && u.status === 'ACTIVE' && u.emailConfirmed !== false && <button type="button" className="ht-btn ht-btn--ghost ht-btn--sm" data-testid={`assign-${u.username}`} onClick={() => onAction('assign', u)}><Icon name="stable" />{u.role === 'HeadTrainer' ? 'Phân công ngựa' : 'Phân khu'}</button>}
                       {showService && u.role === 'HorseOwner' && u.beId && <button type="button" className="ht-btn ht-btn--ghost ht-btn--sm" data-testid={`owner-service-${u.username}`} onClick={() => onAction('service', u)}><Icon name="card" />Dịch vụ</button>}
                     </div>

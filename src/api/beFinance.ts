@@ -43,6 +43,7 @@ const TRANSACTION_STATUS: Record<string, PaymentStatus> = { PENDING_VERIFICATION
 const invoiceStatus = (i: BeInvoice): InvoiceStatus => {
   const service = (i.ownerServiceStatus ?? '').toUpperCase();
   if (i.status === 'REFUNDED') return 'REFUNDED';
+  if (i.status === 'REFUND_PENDING') return 'REFUND_PENDING';
   if (i.status === 'PAID') return service === 'REACTIVATION_PENDING' ? 'REACTIVATION_PENDING' : 'PAID';
   if (service === 'SUSPENDED') return 'SUSPENDED';
   return i.status === 'OVERDUE' || num(i.daysOverdue) > 0 ? 'OVERDUE' : 'UNPAID';

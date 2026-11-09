@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { horseInitials, planAdjustable, raceBlock, trainerApi, trainingBlock } from '../../../api/trainerApi';
+import { horseInitials, raceBlock, trainerApi, trainingBlock } from '../../../api/trainerApi';
 import { useActor } from '../../../auth/AuthContext';
 import { useFetch } from '../../../hooks/useFetch';
 import { Icon } from '../../../components/ui/Icon';
@@ -64,7 +64,7 @@ export const TrainerHorseRecord: React.FC = () => {
           <Tabs.Tab value="races" count={proposals.length}>Thi đấu</Tabs.Tab>
           {USE_BACKEND && <Tabs.Tab value="care">Việc chăm sóc</Tabs.Tab>}
         </Tabs.List>
-        <Tabs.Panel value="overview"><OverviewTab horse={horse} plan={plan} recent={history.slice(0, 4)} avg={avg} vaccinations={vaccinations} block={block} adjustable={!!plan && planAdjustable(plan, sessions)} feedRequests={data.feedRequests} onChanged={reload} /></Tabs.Panel>
+        <Tabs.Panel value="overview"><OverviewTab horse={horse} plan={plan} recent={history.slice(0, 4)} avg={avg} vaccinations={vaccinations} block={block} adjustable={!!plan?.canAdjust} feedRequests={data.feedRequests} onChanged={reload} /></Tabs.Panel>
         <Tabs.Panel value="health"><HealthTab horse={horse} /></Tabs.Panel>
         <Tabs.Panel value="training"><TrainingTab history={history} plans={plans} scored={scored.length} avg={avg} /></Tabs.Panel>
         <Tabs.Panel value="races"><RacesTab proposals={proposals} tournaments={tournaments} /></Tabs.Panel>

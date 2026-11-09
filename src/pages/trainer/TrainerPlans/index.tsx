@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { PLAN_LABEL, PlanStatus, phaseHr, phaseLoad, planAdjustable, trainerApi, type TrainingPlan } from '../../../api/trainerApi';
+import { PLAN_LABEL, PlanStatus, phaseHr, phaseLoad, trainerApi, type TrainingPlan } from '../../../api/trainerApi';
 import { useActor } from '../../../auth/AuthContext';
 import { useFetch } from '../../../hooks/useFetch';
 import { Icon } from '../../../components/ui/Icon';
@@ -72,12 +72,12 @@ export const TrainerPlans: React.FC = () => {
                         {p.status === 'PAUSED' && /ca khám|khóa|bác sĩ|chờ bs|ca c-/i.test(p.pausedReason ?? '') && (
                           <span className="sub" data-testid={`plan-wait-vet-${p.id}`}>Chờ bác sĩ đóng ca</span>
                         )}
-                        {planAdjustable(p, data.sessions) && (
+                        {p.canAdjust && (
                           <Link className="ht-btn ht-btn--secondary ht-btn--sm" data-testid={`edit-plan-${p.id}`} to={`/trainer/plans/${p.id}/edit`}>
                             <Icon name="calendar" size={14} />Điều chỉnh
                           </Link>
                         )}
-                        {p.status === 'PLANNED' && (
+                        {p.canCancel && (
                           <button type="button" className="ht-btn ht-btn--ghost ht-btn--sm" data-testid={`cancel-plan-${p.id}`} onClick={() => setDialog({ kind: 'cancel', plan: p })} style={{ color: 'var(--danger-ink)' }}>
                             <Icon name="ban" size={14} />Hủy
                           </button>

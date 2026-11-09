@@ -15,7 +15,8 @@ export const PayPanel: React.FC<{ invoice: OwnerInvoice; due: InvoiceDue; paymen
   const waiting = payments.find((p) => p.status === 'PENDING_VERIFY' || p.status === 'PROCESSING');
   const verified = payments.find((p) => p.status === 'VERIFIED');
   const refunded = due.group === 'REFUNDED';
-  const settled = due.group === 'PAID' || refunded;
+  const refundPending = due.group === 'REFUND_PENDING';
+  const settled = due.group === 'PAID' || refunded || refundPending;
 
   const pay = async () => {
     let id = '';
@@ -27,8 +28,8 @@ export const PayPanel: React.FC<{ invoice: OwnerInvoice; due: InvoiceDue; paymen
       <div className="ht-panel__body" style={{ display: 'grid', gap: 14 }}>
         {act.error && <Callout tone="danger">{act.error}</Callout>}
         <div>
-          <span style={{ fontSize: 12, color: 'var(--muted)' }}>{refunded ? 'Số tiền đã hoàn' : due.group === 'PAID' ? 'Đã thanh toán' : 'Số tiền phải trả'}</span>
-          <div className="ht-amount">{money(refunded ? i.amount : due.group === 'PAID' ? verified?.amount ?? i.amount : due.total)}</div>
+          <span style={{ fontSize: 12, color: 'var(--muted)' }}>{refunded ? 'Số tiền đã hoàn' : refundPending ? 'Số tiền chờ hoàn' : due.group === 'PAID' ? 'Đã thanh toán' : 'Số tiền phải trả'}</span>
+          <div className="ht-amount">{money(refunded || refundPending ? i.amount : due.group === 'PAID' ? verified?.amount ?? i.amount : due.total)}</div>
         </div>
         <dl className="ht-sum">
           <dt>Giá trị dịch vụ</dt><dd>{money(i.amount)}</dd>
@@ -39,6 +40,7 @@ export const PayPanel: React.FC<{ invoice: OwnerInvoice; due: InvoiceDue; paymen
           </>}
         </dl>
 
+        {refundPending && <Callout tone="demo" icon="clock" testId="owner-invoice-refund-pending" title="Chờ hoàn tiền">CLB đang chuyển trả {money(i.amount)} cho hóa đơn <span className="ht-mono">{i.id}</span>. Bạn sẽ nhận thông báo khi tiền đã được chuyển.</Callout>}
         {refunded && <Callout tone="info" testId="owner-invoice-refunded" title="Đã hoàn tiền">Hóa đơn <span className="ht-mono">{i.id}</span> đã hoàn {money(i.amount)}.</Callout>}
         {!settled && !waiting && (
           <button type="button" className="ht-btn ht-btn--primary" disabled={act.busy} onClick={pay}><Icon name="card" size={16} />{act.busy ? 'Đang tạo giao dịch…' : 'Thanh toán qua VNPay'}</button>

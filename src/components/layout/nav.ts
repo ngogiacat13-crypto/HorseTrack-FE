@@ -20,6 +20,7 @@ export const NAV_BY_ROLE: Record<Role, NavGroup[]> = {
     { title: 'Vận hành', items: [
       { path: PATH.manager.registrations, icon: 'clip', label: 'Đăng ký ngựa', count: 3 },
       { path: PATH.manager.medicalMonitoring, icon: 'heart', label: 'Theo dõi y tế', count: 2 },
+      { path: PATH.manager.training, icon: 'calendar', label: 'Giáo án & buổi tập' },
     ] },
     ...(RACE_FLOW_V2 ? [{ title: 'Thi đấu', items: [
       { path: PATH.manager.tournaments, icon: 'trend' as const, label: 'Giải đấu' },
@@ -27,6 +28,7 @@ export const NAV_BY_ROLE: Record<Role, NavGroup[]> = {
     ] }] : []),
     { title: 'Tài chính', items: [
       { path: PATH.manager.invoices, icon: 'receipt', label: 'Hóa đơn', count: 4, tone: 'danger' },
+      { path: PATH.manager.refunds, icon: 'card', label: 'Hoàn tiền' },
       { path: PATH.manager.reports, icon: 'chart', label: 'Báo cáo tài chính' },
     ] },
     { title: 'Quản trị', items: [

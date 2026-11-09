@@ -20,6 +20,8 @@ export const PATH = {
     users: '/manager/users',
     auditLogs: '/manager/audit-logs',
     emailLogs: '/manager/email-logs',
+    refunds: '/manager/refunds',
+    training: '/manager/training',
     tournaments: '/manager/tournaments',
     tournament: '/manager/tournaments/:id',
     raceComplaints: '/manager/race-complaints',
