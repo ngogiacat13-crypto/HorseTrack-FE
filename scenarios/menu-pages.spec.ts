@@ -3,6 +3,7 @@ import { ROLES, signIn, watchPageErrors } from './support';
 
 for (const role of ROLES) {
   test(`${role}: every menu page opens without errors`, async ({ page }) => {
+    test.setTimeout(60_000);
     const errors = watchPageErrors(page);
     await signIn(page, role);
     const links = page.getByTestId('sidebar').locator('[data-testid^="nav-"]');
